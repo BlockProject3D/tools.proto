@@ -26,13 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::model::Protocol;
+use serde::Deserialize;
+use crate::model::message::Message;
+use crate::model::structure::Structure;
 
-mod model;
-mod generator;
-
-fn main() {
-    let file = std::fs::read_to_string("./test.json5").unwrap();
-    let proto: Protocol = json5::from_str(&file).unwrap();
-    println!("{:?}", proto);
+#[derive(Clone, Debug, Deserialize)]
+pub struct Protocol {
+    pub structs: Vec<Structure>,
+    pub messages: Vec<Message>
 }

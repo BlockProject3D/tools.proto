@@ -1,0 +1,46 @@
+{
+    structs: [
+        {
+            name: "IntContainer",
+            fields: [
+                {
+                    name: "test_int",
+                    ty: "unsigned",
+                    bits: 32
+                }
+            ]
+        }
+    ],
+    messages: [
+        {
+            name: "Test1",
+            fields: [
+                {
+                    name: "s1",
+                    ty: { string: {} }
+                },
+                {
+                    name: "p1",
+                    ty: { item: { name: "IntContainer" } }
+                }
+            ]
+        },
+        {
+            name: "Test",
+            fields: [
+                {
+                    name: "s1",
+                    ty: { string: {} }
+                },
+                {
+                    name: "s2",
+                    ty: { string: {} }
+                },
+                {
+                    name: "p1",
+                    ty: { option: { item: "Test1" } }
+                }
+            ]
+        }
+    ]
+}

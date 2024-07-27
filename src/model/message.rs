@@ -26,13 +26,35 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::model::Protocol;
+use serde::Deserialize;
 
-mod model;
-mod generator;
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum MessageFieldType {
+    Item {
+        name: String
+    },
+    List {
+        max_len: usize,
+        item: String
+    },
+    Option {
+        item: String
+    },
+    String {
+        max_len: Option<usize>
+    },
+    Payload
+}
 
-fn main() {
-    let file = std::fs::read_to_string("./test.json5").unwrap();
-    let proto: Protocol = json5::from_str(&file).unwrap();
-    println!("{:?}", proto);
+#[derive(Clone, Debug, Deserialize)]
+pub struct MessageField {
+    pub name: String,
+    pub ty: MessageFieldType
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Message {
+    pub name: String,
+    pub fields: Vec<MessageField>
 }
