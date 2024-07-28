@@ -102,13 +102,13 @@ impl AnyField {
                             Ok(Self::Field(Field {
                                 name: value.name,
                                 ty: FieldType::Fixed(fixed.ty),
-                                optional: value.optional
+                                optional: value.optional.unwrap_or_default()
                             }))
                         } else {
                             Ok(Self::Field(Field {
                                 name: value.name,
                                 ty: FieldType::Ref(Referenced::Struct(r)),
-                                optional: value.optional
+                                optional: value.optional.unwrap_or_default()
                             }))
                         }
                     },
@@ -116,7 +116,7 @@ impl AnyField {
                         Ok(Self::Field(Field {
                             name: value.name,
                             ty: FieldType::Ref(Referenced::Message(r)),
-                            optional: value.optional
+                            optional: value.optional.unwrap_or_default()
                         }))
                     }
                 }
@@ -136,7 +136,7 @@ impl AnyField {
                                 max_len,
                                 ty
                             }),
-                            optional: value.optional
+                            optional: value.optional.unwrap_or_default()
                         }))
                     },
                     Referenced::Message(item_type) => {
@@ -147,7 +147,7 @@ impl AnyField {
                                 ty,
                                 max_len
                             }),
-                            optional: value.optional
+                            optional: value.optional.unwrap_or_default()
                         }))
                     }
                 }
@@ -158,7 +158,7 @@ impl AnyField {
                         Ok(Self::Field(Field {
                             name: value.name,
                             ty: FieldType::NullTerminatedString,
-                            optional: value.optional
+                            optional: value.optional.unwrap_or_default()
                         }))
                     },
                     Some(max_len) => {
@@ -169,7 +169,7 @@ impl AnyField {
                                 max_len,
                                 ty
                             }),
-                            optional: value.optional
+                            optional: value.optional.unwrap_or_default()
                         }))
                     }
                 }
@@ -177,7 +177,7 @@ impl AnyField {
             MessageFieldType::Payload => Ok(Self::Payload(Field {
                 name: value.name,
                 ty: Payload::Data,
-                optional: value.optional
+                optional: value.optional.unwrap_or_default()
             }))
         }
     }

@@ -48,7 +48,7 @@ pub enum MessageFieldType {
 pub struct MessageField {
     pub name: String,
     pub ty: MessageFieldType,
-    pub optional: bool
+    pub optional: Option<bool>
 }
 
 #[derive(Clone, Debug, Deserialize)]

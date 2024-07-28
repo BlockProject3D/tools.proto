@@ -34,5 +34,6 @@ mod compiler;
 fn main() {
     let file = std::fs::read_to_string("./test.json5").unwrap();
     let proto: Protocol = json5::from_str(&file).unwrap();
-    println!("{:?}", proto);
+    let compiled = compiler::Protocol::from_model(proto).unwrap();
+    println!("{:?}", compiled);
 }
