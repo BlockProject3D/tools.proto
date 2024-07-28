@@ -31,12 +31,20 @@ use crate::compiler::error::CompilerError;
 use crate::compiler::Protocol;
 use crate::compiler::structure::{FixedFieldType, Structure};
 use crate::model::message::MessageFieldType;
-use crate::model::structure::StructFieldType;
 
 #[derive(Clone, Debug)]
 pub enum Referenced {
     Struct(Rc<Structure>),
     Message(Rc<Message>)
+}
+
+impl Referenced {
+    pub fn name(&self) -> &str {
+        match self {
+            Referenced::Struct(v) => &v.name,
+            Referenced::Message(v) => &v.name
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -97,7 +105,8 @@ impl AnyField {
                     .ok_or_else(|| CompilerError::UndefinedReference(name))?;
                 match r {
                     Referenced::Struct(r) => {
-                        if r.fields.len() == 1 && r.fields[0].as_fixed().is_some() {
+                        if r.fields.len() == 1 && r.fields[0].as_fixed().is_some()
+                            && r.fields[0].as_fixed().map(|v| v.loc.bit_size % 8 == 0).unwrap_or_default() {
                             let fixed = unsafe { r.fields[0].as_fixed().unwrap_unchecked() };
                             Ok(Self::Field(Field {
                                 name: value.name,
