@@ -38,9 +38,6 @@ pub enum MessageFieldType {
         max_len: usize,
         item: String
     },
-    Option {
-        item: String
-    },
     String {
         max_len: Option<usize>
     },
@@ -50,7 +47,8 @@ pub enum MessageFieldType {
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageField {
     pub name: String,
-    pub ty: MessageFieldType
+    pub ty: MessageFieldType,
+    pub optional: bool
 }
 
 #[derive(Clone, Debug, Deserialize)]

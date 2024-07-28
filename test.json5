@@ -38,7 +38,8 @@
                 },
                 {
                     name: "p1",
-                    ty: { option: { item: "Test1" } }
+                    ty: { item: "Test1" },
+                    optional: true
                 }
             ]
         }
