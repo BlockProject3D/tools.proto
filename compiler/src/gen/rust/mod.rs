@@ -26,14 +26,30 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::model::Protocol;
+mod message;
 
-mod model;
-mod compiler;
+use bp3d_util::simple_error;
+use itertools::Itertools;
+use crate::compiler::Protocol;
+use crate::gen::{File, Generator};
+use crate::gen::rust::message::gen_message_decl;
 
-fn main() {
-    let file = std::fs::read_to_string("./test.json5").unwrap();
-    let proto: Protocol = json5::from_str(&file).unwrap();
-    let compiled = compiler::Protocol::from_model(proto).unwrap();
-    println!("{:?}", compiled);
+simple_error! {
+    pub Error {
+        Unknown => "unknown"
+    }
+}
+
+pub struct GeneratorRust;
+
+impl Generator for GeneratorRust {
+    type Error = Error;
+
+    fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error> {
+        let decl_messages_code = proto.messages.iter().map(|(_, v)| gen_message_decl(v)).join("\n");
+        Ok(vec![File {
+            name: "messages.rs".into(),
+            data: decl_messages_code
+        }])
+    }
 }

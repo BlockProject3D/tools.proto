@@ -1,0 +1,10 @@
+[package]
+name = "bp3d-protoc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0.204", features = ["derive"] }
+json5 = "0.4.1"
+bp3d-util = { version = "1.0.0", features = ["simple-error"] }
+itertools = "0.13.0"
