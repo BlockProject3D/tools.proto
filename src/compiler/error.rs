@@ -26,13 +26,15 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::model::Protocol;
+use bp3d_util::simple_error;
+use crate::model::structure::StructFieldType;
 
-mod model;
-mod compiler;
-
-fn main() {
-    let file = std::fs::read_to_string("./test.json5").unwrap();
-    let proto: Protocol = json5::from_str(&file).unwrap();
-    println!("{:?}", proto);
+simple_error! {
+    pub CompilerError {
+        MultiPayload => "message has more than 1 payload",
+        UnsupportedBitSize(usize) => "unsupported bit size for fixed field ({}), maximum is 64",
+        UnsupportedType(StructFieldType) => "unsuportted field type in struct: {:?}",
+        MissingBitSize => "missing bits specifier on a structure field",
+        UndefinedReference(String) => "undefined reference to '{}'"
+    }
 }

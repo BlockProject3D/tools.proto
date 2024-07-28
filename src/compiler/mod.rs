@@ -26,13 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::model::Protocol;
+pub mod message;
+pub mod structure;
+mod error;
+mod protocol;
 
-mod model;
-mod compiler;
-
-fn main() {
-    let file = std::fs::read_to_string("./test.json5").unwrap();
-    let proto: Protocol = json5::from_str(&file).unwrap();
-    println!("{:?}", proto);
-}
+pub use protocol::Protocol;
+pub use error::CompilerError;

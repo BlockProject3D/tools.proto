@@ -26,13 +26,32 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::model::Protocol;
+use std::collections::HashMap;
+use std::rc::Rc;
+use crate::compiler::error::CompilerError;
+use crate::compiler::message::Message;
+use crate::compiler::structure::Structure;
 
-mod model;
-mod compiler;
+#[derive(Clone, Debug)]
+pub struct Protocol {
+    pub structs: HashMap<String, Rc<Structure>>,
+    pub messages: HashMap<String, Rc<Message>>
+}
 
-fn main() {
-    let file = std::fs::read_to_string("./test.json5").unwrap();
-    let proto: Protocol = json5::from_str(&file).unwrap();
-    println!("{:?}", proto);
+impl Protocol {
+    pub fn from_model(value: crate::model::Protocol) -> Result<Self, CompilerError> {
+        let mut proto = Protocol {
+            structs: HashMap::new(),
+            messages: HashMap::new()
+        };
+        for v in value.structs {
+            let v = Structure::from_model(&proto, v)?;
+            proto.structs.insert(v.name.clone(), Rc::new(v));
+        }
+        for v in value.messages {
+            let v = Message::from_model(&proto, v)?;
+            proto.messages.insert(v.name.clone(), Rc::new(v));
+        }
+        Ok(proto)
+    }
 }
