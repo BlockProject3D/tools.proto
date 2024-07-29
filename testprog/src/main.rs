@@ -26,22 +26,21 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-impl<'a> bp3d_proto::message::WriteTo for Test1<'a> {
-    type Input = Self;
+use bp3d_proto::message::{FromSlice, WriteTo};
 
-    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> std::io::Result<()> {
-        bp3d_proto::util::NullTerminatedString::write_to(&input.s1, &mut out)?;
-        u32::write_to(&input.p1, &mut out)?;
-        Ok(())
-    }
-}
-impl<'a> bp3d_proto::message::WriteTo for Test<'a> {
-    type Input = Self;
+include!("../../messages.rs");
+include!("../../messages_from_slice.rs");
+include!("../../messages_write.rs");
 
-    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> std::io::Result<()> {
-        bp3d_proto::util::NullTerminatedString::write_to(&input.s1, &mut out)?;
-        bp3d_proto::util::NullTerminatedString::write_to(&input.s2, &mut out)?;
-        bp3d_proto::util::Optional::<Test1>::write_to(&input.p1, &mut out)?;
-        Ok(())
-    }
+fn main() {
+    let msg = Test1 {
+        p1: 42,
+        s1: "this is a test"
+    };
+    let mut v = Vec::new();
+    Test1::write_to(&msg, &mut v).unwrap();
+    let msg = Test1::from_slice(&v).unwrap().into_inner();
+    assert_eq!(msg.p1, 42);
+    assert_eq!(msg.s1, "this is a test");
+    println!("{:?}", msg);
 }

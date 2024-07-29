@@ -53,8 +53,7 @@ pub fn gen_message_write_impl(msg: &Message) -> String {
     let generics = Generics::from_message(msg).to_code();
     let mut code = format!("impl{} bp3d_proto::message::WriteTo for {}{} {{\n", generics, msg.name, generics);
     code += "    type Input = Self;\n\n";
-    code += "    fn write_to(input: &Self) -> std::io::Result<()> {\n";
-    code += "        use bp3d_proto::message::WriteTo;\n";
+    code += "    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> std::io::Result<()> {\n";
     for field in &msg.fields {
         code += &gen_field_write_impl(field);
     }

@@ -62,7 +62,6 @@ pub fn gen_message_from_slice_impl(msg: &Message) -> String {
     let mut code = format!("impl<'a> bp3d_proto::message::FromSlice<'a> for {}{} {{\n", msg.name, generics);
     code += "    type Output = Self;\n\n";
     code += "    fn from_slice(slice: &'a [u8]) -> Result<bp3d_proto::message::Message<Self>, bp3d_proto::message::Error> {\n";
-    code += "        use bp3d_proto::message::FromSlice;\n";
     code += "        let mut byte_offset: usize = 0;\n";
     for field in &msg.fields {
         code += &gen_field_from_slice_impl(field);
@@ -78,7 +77,7 @@ pub fn gen_message_from_slice_impl(msg: &Message) -> String {
         code += &format!("            {},\n", payload.name);
     }
     code += "        };\n";
-    code += "        Message::new(byte_offset, data)\n";
+    code += "        Ok(bp3d_proto::message::Message::new(byte_offset, data))\n";
     code += "    }";
     code += "\n}";
     code

@@ -26,10 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#[derive(Copy, Clone, Debug)]
 pub struct Test1<'a> {
     pub s1: &'a str,
     pub p1: u32
 }
+#[derive(Copy, Clone, Debug)]
 pub struct Test<'a> {
     pub s1: &'a str,
     pub s2: &'a str,

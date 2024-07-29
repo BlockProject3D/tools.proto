@@ -68,7 +68,7 @@ fn gen_payload_decl(field: &Field<Payload>) -> String {
 
 pub fn gen_message_decl(msg: &Message) -> String {
     let generics = Generics::from_message(msg).to_code();
-    let mut code = format!("pub struct {}", msg.name);
+    let mut code = format!("#[derive(Copy, Clone, Debug)]\npub struct {}", msg.name);
     code += &generics;
     code += " {\n";
     let fields = msg.fields.iter()

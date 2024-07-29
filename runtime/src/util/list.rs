@@ -32,6 +32,7 @@ use crate::FixedSize;
 use crate::message::{Error, FromSlice, Message, WriteTo};
 use crate::util::ToUsize;
 
+#[derive(Copy, Clone, Debug)]
 pub struct Array<'a, T, Item> {
     data: &'a [u8],
     len: usize,
@@ -70,6 +71,7 @@ impl<'a, T: ToUsize + WriteTo<Input = T>, Item: FixedSize> WriteTo for Array<'a,
     }
 }
 
+#[derive(Copy, Clone, Debug)]
 pub struct List<'a, T, Item> {
     data: &'a [u8],
     len: usize,

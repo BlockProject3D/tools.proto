@@ -30,7 +30,6 @@ impl<'a> bp3d_proto::message::FromSlice<'a> for Test1<'a> {
     type Output = Self;
 
     fn from_slice(slice: &'a [u8]) -> Result<bp3d_proto::message::Message<Self>, bp3d_proto::message::Error> {
-        use bp3d_proto::message::FromSlice;
         let mut byte_offset: usize = 0;
         let s1_msg = bp3d_proto::util::NullTerminatedString::from_slice(&slice[byte_offset..])?;
         byte_offset += s1_msg.size();
@@ -42,14 +41,13 @@ impl<'a> bp3d_proto::message::FromSlice<'a> for Test1<'a> {
             s1,
             p1,
         };
-        Message::new(byte_offset, data)
+        Ok(bp3d_proto::message::Message::new(byte_offset, data))
     }
 }
 impl<'a> bp3d_proto::message::FromSlice<'a> for Test<'a> {
     type Output = Self;
 
     fn from_slice(slice: &'a [u8]) -> Result<bp3d_proto::message::Message<Self>, bp3d_proto::message::Error> {
-        use bp3d_proto::message::FromSlice;
         let mut byte_offset: usize = 0;
         let s1_msg = bp3d_proto::util::NullTerminatedString::from_slice(&slice[byte_offset..])?;
         byte_offset += s1_msg.size();
@@ -65,6 +63,6 @@ impl<'a> bp3d_proto::message::FromSlice<'a> for Test<'a> {
             s2,
             p1,
         };
-        Message::new(byte_offset, data)
+        Ok(bp3d_proto::message::Message::new(byte_offset, data))
     }
 }
