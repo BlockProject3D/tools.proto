@@ -27,12 +27,15 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 mod message;
+mod message_from_slice;
+mod util;
 
 use bp3d_util::simple_error;
 use itertools::Itertools;
 use crate::compiler::Protocol;
 use crate::gen::{File, Generator};
-use crate::gen::rust::message::{gen_message_decl, gen_message_from_slice_impl};
+use crate::gen::rust::message::gen_message_decl;
+use crate::gen::rust::message_from_slice::gen_message_from_slice_impl;
 
 simple_error! {
     pub Error {

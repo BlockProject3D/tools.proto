@@ -63,3 +63,7 @@ pub trait FromSlice<'a> {
     fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error>;
     //fn copy_to_slice(&self, out_slice: &mut [u8]);
 }
+
+pub trait Write {
+    fn write<W: std::io::Write>(&self, out: W) -> std::io::Result<()>;
+}
