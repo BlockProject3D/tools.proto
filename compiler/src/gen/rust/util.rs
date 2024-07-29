@@ -29,12 +29,11 @@
 use crate::compiler::message::{FieldType, Message};
 use crate::compiler::structure::FixedFieldType;
 
-pub struct Generics<'a> {
-    pub has_lifetime: bool,
-    pub lifetime: &'a str
+pub struct Generics {
+    pub has_lifetime: bool
 }
 
-impl<'a> Generics<'a> {
+impl Generics {
     pub fn from_message(msg: &Message) -> Self {
         let has_lifetime = msg.fields.iter().any(|v| match v.ty {
             FieldType::Ref(_) => true,
@@ -44,15 +43,14 @@ impl<'a> Generics<'a> {
             _ => false
         });
         Generics {
-            has_lifetime,
-            lifetime: "'a"
+            has_lifetime
         }
     }
 
-    pub fn to_vec(&self) -> Vec<&'a str> {
+    pub fn to_vec(&self) -> Vec<&'static str> {
         let mut generics = Vec::new();
         if self.has_lifetime {
-            generics.push(self.lifetime);
+            generics.push("'a");
         }
         generics
     }
