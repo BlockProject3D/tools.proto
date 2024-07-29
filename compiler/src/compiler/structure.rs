@@ -47,6 +47,19 @@ pub enum FixedFieldType {
 }
 
 impl FixedFieldType {
+    pub fn to_unsigned_integer(self) -> FixedFieldType {
+        match self {
+            FixedFieldType::Int8 => FixedFieldType::UInt8,
+            FixedFieldType::Int16 => FixedFieldType::UInt16,
+            FixedFieldType::Int32 => FixedFieldType::UInt32,
+            FixedFieldType::Int64 => FixedFieldType::UInt64,
+            FixedFieldType::Float32 => FixedFieldType::UInt32,
+            FixedFieldType::Float64 => FixedFieldType::UInt64,
+            FixedFieldType::Bool => FixedFieldType::UInt8,
+            v => v
+        }
+    }
+
     pub fn from_max_value(max_value: usize) -> Result<Self, CompilerError> {
         let bit_size = if max_value > u32::MAX as usize {
             64

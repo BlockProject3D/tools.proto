@@ -26,8 +26,33 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod scalar;
-mod codec;
+use std::ops::{BitAnd, BitOr, Shl, Shr};
+use bytesutil::{ReadBytes, WriteBytes};
+use crate::util::ToUsize;
 
-pub use scalar::*;
-pub use codec::Codec;
+pub struct Codec<B>(B);
+
+impl<B> Codec<B> {
+    pub fn new(slice: B) -> Self {
+        Self(slice)
+    }
+}
+
+impl<B: AsRef<[u8]>> Codec<B> {
+    pub fn read<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>, const BitOffset: usize, const BitSize: usize>(&self) -> T {
+        let mask: usize = (1 << BitSize) - 1;
+        let value = T::read_bytes_be(self.0.as_ref());
+        (value >> T::from_usize(BitOffset)) & T::from_usize(mask)
+    }
+}
+
+impl<B: AsMut<[u8]> + AsRef<[u8]>> Codec<B> {
+    pub fn write<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>, const BitOffset: usize, const BitSize: usize>(&mut self, value: T) {
+        let mask: usize = (1 << BitSize) - 1;
+        let reset_mask = !(mask << BitOffset);
+        let original = T::read_bytes_be(self.0.as_ref());
+        let clean = original & T::from_usize(reset_mask);
+        let value = (value & T::from_usize(mask)) << T::from_usize(BitOffset);
+        (clean | value).write_bytes_be(self.0.as_mut());
+    }
+}
