@@ -26,37 +26,36 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod message;
+use std::marker::PhantomData;
+use bytesutil::ReadBytes;
+use crate::message::{Error, FromSlice, Message};
+use crate::util::ToUsize;
 
-use bp3d_util::simple_error;
-use itertools::Itertools;
-use crate::compiler::Protocol;
-use crate::gen::{File, Generator};
-use crate::gen::rust::message::{gen_message_decl, gen_message_from_slice_impl};
+pub struct NullTerminatedString;
 
-simple_error! {
-    pub Error {
-        Unknown => "unknown"
+impl<'a> FromSlice<'a> for NullTerminatedString {
+    type Output = &'a str;
+
+    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
+        let string = slice.iter().enumerate().find_map(|(id, v)| match *v == 0x0 {
+            true => Some(id),
+            false => None
+        }).map(|pos| std::str::from_utf8(&slice[0..pos]))
+            .ok_or(Error::Truncated)?.map_err(|_| Error::InvalidUtf8)?;
+        Ok(Message::new(string.len() + 1, string))
     }
 }
 
-pub struct GeneratorRust;
+pub struct VarcharString<T>(PhantomData<T>);
 
-impl Generator for GeneratorRust {
-    type Error = Error;
+impl<'a, T: ReadBytes + ToUsize> FromSlice<'a> for VarcharString<T> {
+    type Output = &'a str;
 
-    fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error> {
-        let decl_messages_code = proto.messages.iter().map(|(_, v)| gen_message_decl(v)).join("\n");
-        let impl_from_slice_messages_code = proto.messages.iter().map(|(_, v)| gen_message_from_slice_impl(v)).join("\n");
-        Ok(vec![
-            File {
-                name: "messages.rs".into(),
-                data: decl_messages_code
-            },
-            File {
-                name: "messages_from_slice.rs".into(),
-                data: impl_from_slice_messages_code
-            }
-        ])
+    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
+        let msg = T::from_slice(slice)?;
+        let size = msg.size();
+        let subslice = &slice[size..size + msg.into_inner().to_usize()];
+        let string = std::str::from_utf8(subslice).map_err(|_| Error::InvalidUtf8)?;
+        Ok(Message::new(size + string.len(), string))
     }
 }

@@ -26,37 +26,40 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod message;
-
 use bp3d_util::simple_error;
-use itertools::Itertools;
-use crate::compiler::Protocol;
-use crate::gen::{File, Generator};
-use crate::gen::rust::message::{gen_message_decl, gen_message_from_slice_impl};
 
 simple_error! {
     pub Error {
-        Unknown => "unknown"
+        InvalidUtf8 => "invalid UTF-8 string",
+        Truncated => "truncated input"
     }
 }
 
-pub struct GeneratorRust;
+pub struct Message<T> {
+    data: T,
+    size: usize
+}
 
-impl Generator for GeneratorRust {
-    type Error = Error;
-
-    fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error> {
-        let decl_messages_code = proto.messages.iter().map(|(_, v)| gen_message_decl(v)).join("\n");
-        let impl_from_slice_messages_code = proto.messages.iter().map(|(_, v)| gen_message_from_slice_impl(v)).join("\n");
-        Ok(vec![
-            File {
-                name: "messages.rs".into(),
-                data: decl_messages_code
-            },
-            File {
-                name: "messages_from_slice.rs".into(),
-                data: impl_from_slice_messages_code
-            }
-        ])
+impl<T> Message<T> {
+    pub fn new(size: usize, data: T) -> Self {
+        Self {
+            data,
+            size
+        }
     }
+
+    pub fn into_inner(self) -> T {
+        self.data
+    }
+
+    pub fn size(&self) -> usize {
+        self.size
+    }
+}
+
+pub trait FromSlice<'a> {
+    type Output: Sized;
+
+    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error>;
+    //fn copy_to_slice(&self, out_slice: &mut [u8]);
 }

@@ -26,37 +26,51 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod message;
+use std::marker::PhantomData;
+use bytesutil::ReadBytes;
+use crate::FixedSize;
+use crate::message::{Error, FromSlice, Message};
 
-use bp3d_util::simple_error;
-use itertools::Itertools;
-use crate::compiler::Protocol;
-use crate::gen::{File, Generator};
-use crate::gen::rust::message::{gen_message_decl, gen_message_from_slice_impl};
+pub struct Optional<T>(PhantomData<T>);
 
-simple_error! {
-    pub Error {
-        Unknown => "unknown"
+impl<'a, T: FromSlice<'a, Output = T>> FromSlice<'a> for Optional<T> {
+    type Output = Option<T>;
+
+    fn from_slice(slice: &'a [u8]) -> Result<Message<Option<T>>, Error> {
+        if slice.len() < 2 {
+            Err(Error::Truncated)
+        } else {
+            let b = slice[0] > 0;
+            if b {
+                let msg = T::from_slice(&slice[1..])?;
+                Ok(Message::new(msg.size() + 1, Some(msg.into_inner())))
+            } else {
+                Ok(Message::new(1, None))
+            }
+        }
     }
 }
 
-pub struct GeneratorRust;
+impl<'a, T: ReadBytes> FromSlice<'a> for T {
+    type Output = Self;
 
-impl Generator for GeneratorRust {
-    type Error = Error;
+    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
+        let size = std::mem::size_of::<T>();
+        if slice.len() < size {
+            Err(Error::Truncated)
+        } else {
+            let value = T::read_bytes_be(slice);
+            Ok(Message::new(size, value))
+        }
+    }
+}
 
-    fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error> {
-        let decl_messages_code = proto.messages.iter().map(|(_, v)| gen_message_decl(v)).join("\n");
-        let impl_from_slice_messages_code = proto.messages.iter().map(|(_, v)| gen_message_from_slice_impl(v)).join("\n");
-        Ok(vec![
-            File {
-                name: "messages.rs".into(),
-                data: decl_messages_code
-            },
-            File {
-                name: "messages_from_slice.rs".into(),
-                data: impl_from_slice_messages_code
-            }
-        ])
+pub struct Buffer;
+
+impl<'a> FromSlice<'a> for Buffer {
+    type Output = &'a [u8];
+
+    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
+        Ok(Message::new(slice.len(), slice))
     }
 }

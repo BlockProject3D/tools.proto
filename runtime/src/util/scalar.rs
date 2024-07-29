@@ -26,37 +26,20 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod message;
-
-use bp3d_util::simple_error;
-use itertools::Itertools;
-use crate::compiler::Protocol;
-use crate::gen::{File, Generator};
-use crate::gen::rust::message::{gen_message_decl, gen_message_from_slice_impl};
-
-simple_error! {
-    pub Error {
-        Unknown => "unknown"
-    }
+pub trait ToUsize {
+    fn to_usize(self) -> usize;
 }
 
-pub struct GeneratorRust;
-
-impl Generator for GeneratorRust {
-    type Error = Error;
-
-    fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error> {
-        let decl_messages_code = proto.messages.iter().map(|(_, v)| gen_message_decl(v)).join("\n");
-        let impl_from_slice_messages_code = proto.messages.iter().map(|(_, v)| gen_message_from_slice_impl(v)).join("\n");
-        Ok(vec![
-            File {
-                name: "messages.rs".into(),
-                data: decl_messages_code
-            },
-            File {
-                name: "messages_from_slice.rs".into(),
-                data: impl_from_slice_messages_code
+macro_rules! impl_to_usize {
+    ($($t: ty)*) => {
+        $(
+            impl ToUsize for $t {
+                fn to_usize(self) -> usize {
+                    self as _
+                }
             }
-        ])
-    }
+        )*
+    };
 }
+
+impl_to_usize!(u8 u16 u32 u64);

@@ -1,0 +1,8 @@
+[package]
+name = "bp3d-proto"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bp3d-util = { version = "1.0.0", features = ["simple-error"] }
+bytesutil = "0.7.0"

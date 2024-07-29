@@ -68,8 +68,14 @@ pub struct ListField {
 }
 
 #[derive(Clone, Debug)]
+pub struct FixedField {
+    pub byte_size: usize,
+    pub ty: FixedFieldType
+}
+
+#[derive(Clone, Debug)]
 pub enum FieldType {
-    Fixed(FixedFieldType),
+    Fixed(FixedField),
     Ref(Referenced),
     NullTerminatedString,
     VarcharString(VarcharStringField),
@@ -110,7 +116,10 @@ impl AnyField {
                             let fixed = unsafe { r.fields[0].as_fixed().unwrap_unchecked() };
                             Ok(Self::Field(Field {
                                 name: value.name,
-                                ty: FieldType::Fixed(fixed.ty),
+                                ty: FieldType::Fixed(FixedField {
+                                    ty: fixed.ty,
+                                    byte_size: fixed.loc.byte_size
+                                }),
                                 optional: value.optional.unwrap_or_default()
                             }))
                         } else {
