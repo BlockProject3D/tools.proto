@@ -90,7 +90,7 @@ pub fn gen_field_type(ty: FixedFieldType) -> &'static str {
 
 pub fn gen_optional(optional: bool, type_name: &str) -> String {
     if optional {
-        format!("bp3d_proto::util::Optional::<{}>", type_name)
+        format!("bp3d_proto::message::util::Optional::<{}>", type_name)
     } else {
         type_name.into()
     }

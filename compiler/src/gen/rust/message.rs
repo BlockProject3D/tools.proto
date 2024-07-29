@@ -43,7 +43,7 @@ fn gen_field_decl(field: &Field<FieldType>) -> String {
         },
         FieldType::NullTerminatedString => code += "&'a str",
         FieldType::VarcharString(_) => code += "&'a str",
-        FieldType::FixedList(v) => code += &format!("bp3d_proto::util::Array<'a, {}, {}>", gen_field_type(v.ty), v.item_type.name),
+        FieldType::FixedList(v) => code += &format!("bp3d_proto::message::util::Array<'a, {}, {}>", gen_field_type(v.ty), v.item_type.name),
     }
     if field.optional {
         code += ">"
@@ -57,7 +57,7 @@ fn gen_payload_decl(field: &Field<Payload>) -> String {
         code += "Option<"
     }
     match &field.ty {
-        Payload::List(v) => code += &format!("bp3d_proto::util::List<'a, {}, {}>", gen_field_type(v.ty), v.item_type.name),
+        Payload::List(v) => code += &format!("bp3d_proto::message::util::List<'a, {}, {}>", gen_field_type(v.ty), v.item_type.name),
         Payload::Data => code += "&'a [u8]"
     }
     if field.optional {

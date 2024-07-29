@@ -26,22 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-impl<'a> bp3d_proto::message::WriteTo for Test1<'a> {
-    type Input = Self;
+mod string;
+mod common;
+mod list;
 
-    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> std::io::Result<()> {
-        bp3d_proto::message::util::NullTerminatedString::write_to(&input.s1, &mut out)?;
-        u32::write_to(&input.p1, &mut out)?;
-        Ok(())
-    }
-}
-impl<'a> bp3d_proto::message::WriteTo for Test<'a> {
-    type Input = Self;
-
-    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> std::io::Result<()> {
-        bp3d_proto::message::util::NullTerminatedString::write_to(&input.s1, &mut out)?;
-        bp3d_proto::message::util::NullTerminatedString::write_to(&input.s2, &mut out)?;
-        bp3d_proto::message::util::Optional::<Test1>::write_to(&input.p1, &mut out)?;
-        Ok(())
-    }
-}
+pub use common::*;
+pub use string::*;
+pub use list::*;

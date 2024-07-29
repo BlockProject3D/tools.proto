@@ -36,16 +36,16 @@ fn gen_field_write_impl(field: &Field<FieldType>) -> String {
             Referenced::Struct(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &v.name), field.name),
             Referenced::Message(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &v.name), field.name),
         }
-        FieldType::NullTerminatedString => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, "bp3d_proto::util::NullTerminatedString"), field.name),
-        FieldType::VarcharString(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::util::VarcharString<{}>", gen_field_type(v.ty))), field.name),
-        FieldType::FixedList(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::util::Array<{}, {}>", gen_field_type(v.ty), v.item_type.name)), field.name)
+        FieldType::NullTerminatedString => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, "bp3d_proto::message::util::NullTerminatedString"), field.name),
+        FieldType::VarcharString(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::VarcharString<{}>", gen_field_type(v.ty))), field.name),
+        FieldType::FixedList(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array<{}, {}>", gen_field_type(v.ty), v.item_type.name)), field.name)
     }
 }
 
 fn gen_payload_write_impl(field: &Field<Payload>) -> String {
     match &field.ty {
-        Payload::List(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::util::List<{}, {}>", gen_field_type(v.ty), v.item_type.name)), field.name),
-        Payload::Data => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, "bp3d_proto::util::Buffer"), field.name)
+        Payload::List(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::List<{}, {}>", gen_field_type(v.ty), v.item_type.name)), field.name),
+        Payload::Data => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, "bp3d_proto::message::util::Buffer"), field.name)
     }
 }
 

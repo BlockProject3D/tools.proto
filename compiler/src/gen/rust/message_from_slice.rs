@@ -36,9 +36,9 @@ fn gen_field_from_slice_impl(field: &Field<FieldType>) -> String {
             Referenced::Struct(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &v.name)),
             Referenced::Message(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &v.name)),
         }
-        FieldType::NullTerminatedString => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::util::NullTerminatedString")),
-        FieldType::VarcharString(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::util::VarcharString<{}>", gen_field_type(v.ty)))),
-        FieldType::FixedList(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::util::Array<{}, {}>", gen_field_type(v.ty), v.item_type.name)))
+        FieldType::NullTerminatedString => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::message::util::NullTerminatedString")),
+        FieldType::VarcharString(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::VarcharString<{}>", gen_field_type(v.ty)))),
+        FieldType::FixedList(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array<{}, {}>", gen_field_type(v.ty), v.item_type.name)))
     };
     let mut code = format!("        let {}_msg = {}?;\n", field.name, msg_code);
     code += &format!("        byte_offset += {}_msg.size();\n", field.name);
@@ -48,8 +48,8 @@ fn gen_field_from_slice_impl(field: &Field<FieldType>) -> String {
 
 fn gen_payload_from_slice_impl(field: &Field<Payload>) -> String {
     let msg_code = match &field.ty {
-        Payload::List(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::util::List<{}, {}>", gen_field_type(v.ty), v.item_type.name))),
-        Payload::Data => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::util::Buffer"))
+        Payload::List(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::List<{}, {}>", gen_field_type(v.ty), v.item_type.name))),
+        Payload::Data => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::message::util::Buffer"))
     };
     let mut code = format!("        let {}_msg = {}?;\n", field.name, msg_code);
     code += &format!("        byte_offset += {}_msg.size();\n", field.name);

@@ -31,7 +31,7 @@ impl<'a> bp3d_proto::message::FromSlice<'a> for Test1<'a> {
 
     fn from_slice(slice: &'a [u8]) -> Result<bp3d_proto::message::Message<Self>, bp3d_proto::message::Error> {
         let mut byte_offset: usize = 0;
-        let s1_msg = bp3d_proto::util::NullTerminatedString::from_slice(&slice[byte_offset..])?;
+        let s1_msg = bp3d_proto::message::util::NullTerminatedString::from_slice(&slice[byte_offset..])?;
         byte_offset += s1_msg.size();
         let s1 = s1_msg.into_inner();
         let p1_msg = u32::from_slice(&slice[byte_offset..])?;
@@ -49,13 +49,13 @@ impl<'a> bp3d_proto::message::FromSlice<'a> for Test<'a> {
 
     fn from_slice(slice: &'a [u8]) -> Result<bp3d_proto::message::Message<Self>, bp3d_proto::message::Error> {
         let mut byte_offset: usize = 0;
-        let s1_msg = bp3d_proto::util::NullTerminatedString::from_slice(&slice[byte_offset..])?;
+        let s1_msg = bp3d_proto::message::util::NullTerminatedString::from_slice(&slice[byte_offset..])?;
         byte_offset += s1_msg.size();
         let s1 = s1_msg.into_inner();
-        let s2_msg = bp3d_proto::util::NullTerminatedString::from_slice(&slice[byte_offset..])?;
+        let s2_msg = bp3d_proto::message::util::NullTerminatedString::from_slice(&slice[byte_offset..])?;
         byte_offset += s2_msg.size();
         let s2 = s2_msg.into_inner();
-        let p1_msg = bp3d_proto::util::Optional::<Test1>::from_slice(&slice[byte_offset..])?;
+        let p1_msg = bp3d_proto::message::util::Optional::<Test1>::from_slice(&slice[byte_offset..])?;
         byte_offset += p1_msg.size();
         let p1 = p1_msg.into_inner();
         let data = Test {
