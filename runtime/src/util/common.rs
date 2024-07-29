@@ -26,9 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::io::Write;
 use std::marker::PhantomData;
 use bytesutil::ReadBytes;
-use crate::message::{Error, FromSlice, Message};
+use crate::message::{Error, FromSlice, Message, WriteTo};
 
 pub struct Optional<T>(PhantomData<T>);
 
@@ -50,6 +51,20 @@ impl<'a, T: FromSlice<'a, Output = T>> FromSlice<'a> for Optional<T> {
     }
 }
 
+impl<T: WriteTo<Input = T>> WriteTo for Optional<T> {
+    type Input = Option<T>;
+
+    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> std::io::Result<()> {
+        match input {
+            None => out.write_all(&[0x0]),
+            Some(v) => {
+                out.write_all(&[0x1])?;
+                T::write_to(v, out)
+            }
+        }
+    }
+}
+
 impl<'a, T: ReadBytes> FromSlice<'a> for T {
     type Output = Self;
 
@@ -64,6 +79,14 @@ impl<'a, T: ReadBytes> FromSlice<'a> for T {
     }
 }
 
+impl<T: bytesutil::WriteTo> WriteTo for T {
+    type Input = T;
+
+    fn write_to<W: Write>(input: &Self::Input, out: W) -> std::io::Result<()> {
+        input.write_to_be(out)
+    }
+}
+
 pub struct Buffer;
 
 impl<'a> FromSlice<'a> for Buffer {
@@ -71,5 +94,13 @@ impl<'a> FromSlice<'a> for Buffer {
 
     fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
         Ok(Message::new(slice.len(), slice))
+    }
+}
+
+impl WriteTo for Buffer {
+    type Input = [u8];
+
+    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> std::io::Result<()> {
+        out.write_all(input)
     }
 }

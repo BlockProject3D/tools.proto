@@ -29,7 +29,7 @@
 use std::marker::PhantomData;
 use bytesutil::ReadBytes;
 use crate::FixedSize;
-use crate::message::{Error, FromSlice, Message};
+use crate::message::{Error, FromSlice, Message, WriteTo};
 use crate::util::ToUsize;
 
 pub struct Array<'a, T, Item> {
@@ -61,6 +61,15 @@ impl<'a, T: ReadBytes + ToUsize, Item: FixedSize + FromSlice<'a, Output = Item>>
     }
 }
 
+impl<'a, T: ToUsize + WriteTo<Input = T>, Item: FixedSize> WriteTo for Array<'a, T, Item> {
+    type Input = Array<'a, T, Item>;
+
+    fn write_to<W: std::io::Write>(input: &Self::Input, mut out: W) -> std::io::Result<()> {
+        T::write_to(&T::from_usize(input.len), &mut out)?;
+        out.write_all(input.data)
+    }
+}
+
 pub struct List<'a, T, Item> {
     data: &'a [u8],
     len: usize,
@@ -82,5 +91,14 @@ impl<'a, T: ReadBytes + ToUsize, Item: FromSlice<'a, Output = Item>> FromSlice<'
             useless: PhantomData::default(),
             useless1: PhantomData::default()
         }))
+    }
+}
+
+impl<'a, T: ToUsize + WriteTo<Input = T>, Item: FixedSize> WriteTo for List<'a, T, Item> {
+    type Input = List<'a, T, Item>;
+
+    fn write_to<W: std::io::Write>(input: &Self::Input, mut out: W) -> std::io::Result<()> {
+        T::write_to(&T::from_usize(input.len), &mut out)?;
+        out.write_all(input.data)
     }
 }

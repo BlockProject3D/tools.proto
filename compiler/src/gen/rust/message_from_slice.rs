@@ -27,15 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::message::{Field, FieldType, Message, Payload, Referenced};
-use crate::gen::rust::util::{gen_field_type, Generics};
-
-fn gen_optional(optional: bool, type_name: &str) -> String {
-    if optional {
-        format!("bp3d_proto::util::Optional::<{}>", type_name)
-    } else {
-        type_name.into()
-    }
-}
+use crate::gen::rust::util::{gen_field_type, gen_optional, Generics};
 
 fn gen_field_from_slice_impl(field: &Field<FieldType>) -> String {
     let msg_code = match &field.ty {
@@ -66,12 +58,8 @@ fn gen_payload_from_slice_impl(field: &Field<Payload>) -> String {
 }
 
 pub fn gen_message_from_slice_impl(msg: &Message) -> String {
-    let mut generics = Generics::from_message(msg);
-    generics.has_structures = false;
-    generics.has_lifetime = true;
-    let generics = generics.to_code();
-    let instance = Generics::from_message(msg).set_structures("&'a [u8]").to_code();
-    let mut code = format!("impl{} bp3d_proto::message::FromSlice<'a> for {}{} {{\n", generics, msg.name, instance);
+    let generics = Generics::from_message(msg).to_code();
+    let mut code = format!("impl<'a> bp3d_proto::message::FromSlice<'a> for {}{} {{\n", msg.name, generics);
     code += "    type Output = Self;\n\n";
     code += "    fn from_slice(slice: &'a [u8]) -> Result<bp3d_proto::message::Message<Self>, bp3d_proto::message::Error> {\n";
     code += "        use bp3d_proto::message::FromSlice;\n";

@@ -26,47 +26,24 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod message;
-mod message_from_slice;
-mod util;
-mod message_write;
+impl<'a> bp3d_proto::message::WriteTo for Test1<'a> {
+    type Input = Self;
 
-use bp3d_util::simple_error;
-use itertools::Itertools;
-use crate::compiler::Protocol;
-use crate::gen::{File, Generator};
-use crate::gen::rust::message::gen_message_decl;
-use crate::gen::rust::message_from_slice::gen_message_from_slice_impl;
-use crate::gen::rust::message_write::gen_message_write_impl;
-
-simple_error! {
-    pub Error {
-        Unknown => "unknown"
+    fn write_to(input: &Self) -> std::io::Result<()> {
+        use bp3d_proto::message::WriteTo;
+        bp3d_proto::util::NullTerminatedString::write_to(&input.s1, &mut out)?;
+        u32::write_to(&input.p1, &mut out)?;
+        Ok(())
     }
 }
+impl<'a> bp3d_proto::message::WriteTo for Test<'a> {
+    type Input = Self;
 
-pub struct GeneratorRust;
-
-impl Generator for GeneratorRust {
-    type Error = Error;
-
-    fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error> {
-        let decl_messages_code = proto.messages.iter().map(|(_, v)| gen_message_decl(v)).join("\n");
-        let impl_from_slice_messages_code = proto.messages.iter().map(|(_, v)| gen_message_from_slice_impl(v)).join("\n");
-        let impl_write_messages_code = proto.messages.iter().map(|(_, v)| gen_message_write_impl(v)).join("\n");
-        Ok(vec![
-            File {
-                name: "messages.rs".into(),
-                data: decl_messages_code
-            },
-            File {
-                name: "messages_from_slice.rs".into(),
-                data: impl_from_slice_messages_code
-            },
-            File {
-                name: "messages_write.rs".into(),
-                data: impl_write_messages_code
-            }
-        ])
+    fn write_to(input: &Self) -> std::io::Result<()> {
+        use bp3d_proto::message::WriteTo;
+        bp3d_proto::util::NullTerminatedString::write_to(&input.s1, &mut out)?;
+        bp3d_proto::util::NullTerminatedString::write_to(&input.s2, &mut out)?;
+        bp3d_proto::util::Optional::<Test1>::write_to(&input.p1, &mut out)?;
+        Ok(())
     }
 }

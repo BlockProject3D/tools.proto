@@ -28,6 +28,7 @@
 
 pub trait ToUsize {
     fn to_usize(self) -> usize;
+    fn from_usize(value: usize) -> Self;
 }
 
 macro_rules! impl_to_usize {
@@ -36,6 +37,9 @@ macro_rules! impl_to_usize {
             impl ToUsize for $t {
                 fn to_usize(self) -> usize {
                     self as _
+                }
+                fn from_usize(value: usize) -> Self {
+                    value as _
                 }
             }
         )*

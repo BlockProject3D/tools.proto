@@ -38,7 +38,7 @@ fn gen_field_decl(field: &Field<FieldType>) -> String {
     match &field.ty {
         FieldType::Fixed(ty) => code += gen_field_type(ty.ty),
         FieldType::Ref(v) => match v {
-            Referenced::Struct(v) => code += &format!("{}<T>", v.name),
+            Referenced::Struct(v) => code += &format!("{}<&'a [u8]>", v.name),
             Referenced::Message(v) => code += &format!("{}<'a>", v.name),
         },
         FieldType::NullTerminatedString => code += "&'a str",

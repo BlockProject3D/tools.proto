@@ -26,9 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::io::Write;
 use std::marker::PhantomData;
 use bytesutil::ReadBytes;
-use crate::message::{Error, FromSlice, Message};
+use crate::message::{Error, FromSlice, Message, WriteTo};
 use crate::util::ToUsize;
 
 pub struct NullTerminatedString;
@@ -46,6 +47,15 @@ impl<'a> FromSlice<'a> for NullTerminatedString {
     }
 }
 
+impl WriteTo for NullTerminatedString {
+    type Input = str;
+
+    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> std::io::Result<()> {
+        out.write_all(input.as_bytes())?;
+        out.write_all(&[0x0])
+    }
+}
+
 pub struct VarcharString<T>(PhantomData<T>);
 
 impl<'a, T: ReadBytes + ToUsize> FromSlice<'a> for VarcharString<T> {
@@ -57,5 +67,14 @@ impl<'a, T: ReadBytes + ToUsize> FromSlice<'a> for VarcharString<T> {
         let subslice = &slice[size..size + msg.into_inner().to_usize()];
         let string = std::str::from_utf8(subslice).map_err(|_| Error::InvalidUtf8)?;
         Ok(Message::new(size + string.len(), string))
+    }
+}
+
+impl<T: ToUsize + bytesutil::WriteTo> WriteTo for VarcharString<T> {
+    type Input = str;
+
+    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> std::io::Result<()> {
+        T::from_usize(input.len()).write_to_be(&mut out)?;
+        out.write_all(input.as_bytes())
     }
 }

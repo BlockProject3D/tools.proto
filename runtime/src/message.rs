@@ -64,6 +64,8 @@ pub trait FromSlice<'a> {
     //fn copy_to_slice(&self, out_slice: &mut [u8]);
 }
 
-pub trait Write {
-    fn write<W: std::io::Write>(&self, out: W) -> std::io::Result<()>;
+pub trait WriteTo {
+    type Input: ?Sized;
+
+    fn write_to<W: std::io::Write>(input: &Self::Input, out: W) -> std::io::Result<()>;
 }

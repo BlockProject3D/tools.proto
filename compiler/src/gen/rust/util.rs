@@ -26,16 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::{FieldType, Message, Referenced};
+use crate::compiler::message::{FieldType, Message};
 use crate::compiler::structure::FixedFieldType;
 
 pub struct Generics<'a> {
     pub has_lifetime: bool,
-    pub has_structures: bool,
-    pub has_payload: bool,
-    pub lifetime: &'a str,
-    pub structures: &'a str,
-    pub payload: &'a str
+    pub lifetime: &'a str
 }
 
 impl<'a> Generics<'a> {
@@ -47,21 +43,9 @@ impl<'a> Generics<'a> {
             FieldType::FixedList(_) => true,
             _ => false
         });
-        let has_structures = msg.fields.iter().any(|v| match &v.ty {
-            FieldType::Ref(v) => match v {
-                Referenced::Struct(_) => true,
-                Referenced::Message(_) => false
-            },
-            _ => false
-        });
-        let has_payload = msg.payload.is_some();
         Generics {
             has_lifetime,
-            has_structures,
-            has_payload,
-            lifetime: "'a",
-            structures: "T",
-            payload: "P"
+            lifetime: "'a"
         }
     }
 
@@ -70,26 +54,10 @@ impl<'a> Generics<'a> {
         self
     }
 
-    pub fn set_structures(&mut self, structures: &'a str) -> &mut Self {
-        self.structures = structures;
-        self
-    }
-
-    pub fn set_payload(&mut self, payload: &'a str) -> &mut Self {
-        self.payload = payload;
-        self
-    }
-
     pub fn to_vec(&self) -> Vec<&'a str> {
         let mut generics = Vec::new();
         if self.has_lifetime {
             generics.push(self.lifetime);
-        }
-        if self.has_structures {
-            generics.push(self.structures);
-        }
-        if self.has_payload {
-            generics.push(self.payload);
         }
         generics
     }
@@ -117,5 +85,13 @@ pub fn gen_field_type(ty: FixedFieldType) -> &'static str {
         FixedFieldType::Float32 => "f32",
         FixedFieldType::Float64 => "f64",
         FixedFieldType::Bool => "bool"
+    }
+}
+
+pub fn gen_optional(optional: bool, type_name: &str) -> String {
+    if optional {
+        format!("bp3d_proto::util::Optional::<{}>", type_name)
+    } else {
+        type_name.into()
     }
 }
