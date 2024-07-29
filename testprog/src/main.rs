@@ -33,14 +33,20 @@ include!("../../messages_from_slice.rs");
 include!("../../messages_write.rs");
 
 fn main() {
-    let msg = Test1 {
-        p1: 42,
-        s1: "this is a test"
+    let msg = Test {
+        p1: Some(Test1 {
+            s1: "this is a test",
+            p1: 42
+        }),
+        s1: "a test",
+        s2: "hello world",
     };
     let mut v = Vec::new();
-    Test1::write_to(&msg, &mut v).unwrap();
-    let msg = Test1::from_slice(&v).unwrap().into_inner();
-    assert_eq!(msg.p1, 42);
-    assert_eq!(msg.s1, "this is a test");
+    Test::write_to(&msg, &mut v).unwrap();
+    let msg = Test::from_slice(&v).unwrap().into_inner();
+    assert_eq!(msg.p1.unwrap().p1, 42);
+    assert_eq!(msg.p1.unwrap().s1, "this is a test");
+    assert_eq!(msg.s1, "a test");
+    assert_eq!(msg.s2, "hello world");
     println!("{:?}", msg);
 }
