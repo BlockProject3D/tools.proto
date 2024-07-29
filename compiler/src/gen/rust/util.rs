@@ -49,11 +49,6 @@ impl<'a> Generics<'a> {
         }
     }
 
-    pub fn set_lifetime(&mut self, lifetime: &'a str) -> &mut Self {
-        self.lifetime = lifetime;
-        self
-    }
-
     pub fn to_vec(&self) -> Vec<&'a str> {
         let mut generics = Vec::new();
         if self.has_lifetime {
