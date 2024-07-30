@@ -34,23 +34,30 @@ use crate::compiler::structure::Structure;
 
 #[derive(Clone, Debug)]
 pub struct Protocol {
-    pub structs: HashMap<String, Rc<Structure>>,
-    pub messages: HashMap<String, Rc<Message>>
+    pub structs_by_name: HashMap<String, Rc<Structure>>,
+    pub messages_by_name: HashMap<String, Rc<Message>>,
+    pub structs: Vec<Rc<Structure>>,
+    pub messages: Vec<Rc<Message>>
+
 }
 
 impl Protocol {
     pub fn from_model(value: crate::model::Protocol) -> Result<Self, CompilerError> {
         let mut proto = Protocol {
-            structs: HashMap::new(),
-            messages: HashMap::new()
+            structs_by_name: HashMap::new(),
+            messages_by_name: HashMap::new(),
+            structs: Vec::new(),
+            messages: Vec::new()
         };
         for v in value.structs {
-            let v = Structure::from_model(&proto, v)?;
-            proto.structs.insert(v.name.clone(), Rc::new(v));
+            let v = Rc::new(Structure::from_model(&proto, v)?);
+            proto.structs_by_name.insert(v.name.clone(), v.clone());
+            proto.structs.push(v);
         }
         for v in value.messages {
-            let v = Message::from_model(&proto, v)?;
-            proto.messages.insert(v.name.clone(), Rc::new(v));
+            let v = Rc::new(Message::from_model(&proto, v)?);
+            proto.messages_by_name.insert(v.name.clone(), v.clone());
+            proto.messages.push(v);
         }
         Ok(proto)
     }

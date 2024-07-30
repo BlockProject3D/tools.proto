@@ -169,7 +169,7 @@ impl Field {
     fn from_model(proto: &Protocol, last_bit_offset: usize, value: crate::model::structure::StructField) -> Result<(Self, usize), CompilerError> {
         match value.ty {
             StructFieldType::Struct { name } => {
-                let r = proto.structs.get(&name).ok_or_else(|| CompilerError::UndefinedReference(name))?;
+                let r = proto.structs_by_name.get(&name).ok_or_else(|| CompilerError::UndefinedReference(name))?;
                 Ok((Self::Struct(StructField {
                     name: value.name,
                     r: r.clone(),

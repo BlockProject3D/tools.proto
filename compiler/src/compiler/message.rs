@@ -105,9 +105,9 @@ impl AnyField {
     fn from_model(proto: &Protocol, value: crate::model::message::MessageField) -> Result<Self, CompilerError> {
         match value.ty {
             MessageFieldType::Item { name } => {
-                let r = proto.structs.get(&name)
+                let r = proto.structs_by_name.get(&name)
                     .map(|v| Referenced::Struct(v.clone()))
-                    .or_else(|| proto.messages.get(&name).map(|v| Referenced::Message(v.clone())))
+                    .or_else(|| proto.messages_by_name.get(&name).map(|v| Referenced::Message(v.clone())))
                     .ok_or_else(|| CompilerError::UndefinedReference(name))?;
                 match r {
                     Referenced::Struct(r) => {
@@ -140,9 +140,9 @@ impl AnyField {
                 }
             },
             MessageFieldType::List { max_len, item } => {
-                let r = proto.structs.get(&item)
+                let r = proto.structs_by_name.get(&item)
                     .map(|v| Referenced::Struct(v.clone()))
-                    .or_else(|| proto.messages.get(&item).map(|v| Referenced::Message(v.clone())))
+                    .or_else(|| proto.messages_by_name.get(&item).map(|v| Referenced::Message(v.clone())))
                     .ok_or_else(|| CompilerError::UndefinedReference(item))?;
                 let ty = FixedFieldType::from_max_value(max_len)?;
                 match r {
