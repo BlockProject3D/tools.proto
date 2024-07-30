@@ -103,12 +103,12 @@ pub enum AnyField {
 
 impl AnyField {
     fn from_model(proto: &Protocol, value: crate::model::message::MessageField) -> Result<Self, CompilerError> {
-        match value.ty {
-            MessageFieldType::Item { name } => {
-                let r = proto.structs_by_name.get(&name)
+        match value.info {
+            MessageFieldType::Item { item_type } => {
+                let r = proto.structs_by_name.get(&item_type)
                     .map(|v| Referenced::Struct(v.clone()))
-                    .or_else(|| proto.messages_by_name.get(&name).map(|v| Referenced::Message(v.clone())))
-                    .ok_or_else(|| CompilerError::UndefinedReference(name))?;
+                    .or_else(|| proto.messages_by_name.get(&item_type).map(|v| Referenced::Message(v.clone())))
+                    .ok_or_else(|| CompilerError::UndefinedReference(item_type))?;
                 match r {
                     Referenced::Struct(r) => {
                         if r.fields.len() == 1 && r.fields[0].as_fixed().is_some()
@@ -139,11 +139,11 @@ impl AnyField {
                     }
                 }
             },
-            MessageFieldType::List { max_len, item } => {
-                let r = proto.structs_by_name.get(&item)
+            MessageFieldType::List { max_len, item_type } => {
+                let r = proto.structs_by_name.get(&item_type)
                     .map(|v| Referenced::Struct(v.clone()))
-                    .or_else(|| proto.messages_by_name.get(&item).map(|v| Referenced::Message(v.clone())))
-                    .ok_or_else(|| CompilerError::UndefinedReference(item))?;
+                    .or_else(|| proto.messages_by_name.get(&item_type).map(|v| Referenced::Message(v.clone())))
+                    .ok_or_else(|| CompilerError::UndefinedReference(item_type))?;
                 let ty = FixedFieldType::from_max_value(max_len)?;
                 match r {
                     Referenced::Struct(item_type) => {

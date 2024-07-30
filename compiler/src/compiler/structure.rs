@@ -167,9 +167,9 @@ impl Field {
     }
 
     fn from_model(proto: &Protocol, last_bit_offset: usize, value: crate::model::structure::StructField) -> Result<(Self, usize), CompilerError> {
-        match value.ty {
-            StructFieldType::Struct { name } => {
-                let r = proto.structs_by_name.get(&name).ok_or_else(|| CompilerError::UndefinedReference(name))?;
+        match value.info {
+            StructFieldType::Struct { item_type } => {
+                let r = proto.structs_by_name.get(&item_type).ok_or_else(|| CompilerError::UndefinedReference(item_type))?;
                 Ok((Self::Struct(StructField {
                     name: value.name,
                     r: r.clone(),
@@ -178,7 +178,7 @@ impl Field {
             },
             _ => {
                 let bit_size = value.bits.ok_or(CompilerError::MissingBitSize)?;
-                let ty = FixedFieldType::from_model(value.ty, bit_size)?;
+                let ty = FixedFieldType::from_model(value.info, bit_size)?;
                 let loc = Location::from_model(bit_size, last_bit_offset);
                 Ok((Self::Fixed(FixedField {
                     name: value.name,

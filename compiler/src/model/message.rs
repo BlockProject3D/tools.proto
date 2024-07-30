@@ -30,13 +30,14 @@ use serde::Deserialize;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[serde(tag = "type")]
 pub enum MessageFieldType {
     Item {
-        name: String
+        item_type: String
     },
     List {
         max_len: usize,
-        item: String
+        item_type: String
     },
     String {
         max_len: Option<usize>
@@ -47,7 +48,7 @@ pub enum MessageFieldType {
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageField {
     pub name: String,
-    pub ty: MessageFieldType,
+    pub info: MessageFieldType,
     pub optional: Option<bool>
 }
 

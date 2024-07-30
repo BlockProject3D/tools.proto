@@ -30,20 +30,21 @@ use serde::Deserialize;
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[serde(tag = "type")]
 pub enum StructFieldType {
     Integer,
     Unsigned,
     Float,
     Boolean,
     Struct {
-        name: String
+        item_type: String
     }
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct StructField {
     pub name: String,
-    pub ty: StructFieldType,
+    pub info: StructFieldType,
     pub bits: Option<usize>,
 }
 

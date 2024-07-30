@@ -5,7 +5,9 @@
             fields: [
                 {
                     name: "test_int",
-                    ty: "unsigned",
+                    info: {
+                        type: "unsigned"
+                    },
                     bits: 32
                 }
             ]
@@ -17,11 +19,16 @@
             fields: [
                 {
                     name: "s1",
-                    ty: { string: {} }
+                    info: {
+                        type: "string"
+                    }
                 },
                 {
                     name: "p1",
-                    ty: { item: { name: "IntContainer" } }
+                    info: {
+                        type: "item",
+                        item_type: "IntContainer"
+                    }
                 }
             ]
         },
@@ -30,15 +37,22 @@
             fields: [
                 {
                     name: "s1",
-                    ty: { string: {} }
+                    info: {
+                        type: "string"
+                    }
                 },
                 {
                     name: "s2",
-                    ty: { string: {} }
+                    info: {
+                        type: "string"
+                    }
                 },
                 {
                     name: "p1",
-                    ty: { item: { name: "Test1" } },
+                    info: {
+                        type: "item",
+                        item_type: "Test1"
+                    },
                     optional: true
                 }
             ]
