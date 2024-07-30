@@ -26,16 +26,44 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_util::simple_error;
-use crate::model::structure::StructFieldType;
+use std::collections::HashMap;
+use crate::compiler::Protocol;
 
-simple_error! {
-    pub CompilerError {
-        MultiPayload => "message has more than 1 payload",
-        UnsupportedBitSize(usize) => "unsupported bit size for fixed field ({}), maximum is 64",
-        UnsupportedType(StructFieldType) => "unsuportted field type in struct: {:?}",
-        MissingBitSize => "missing bits specifier on a structure field",
-        UndefinedReference(String) => "undefined reference to '{}'",
-        SolverError => "failed to resolve imported type"
+pub trait ImportResolver {
+    fn get_protocol_by_name(&self, name: &str) -> Option<&Protocol>;
+    fn get_full_type_path(&self, protocol: &str, type_name: &str) -> Option<String>;
+}
+
+#[derive(Clone, Debug)]
+pub struct TypePathMap {
+    type_path_by_name: HashMap<String, String>
+}
+
+impl TypePathMap {
+    pub fn new() -> Self {
+        Self {
+            type_path_by_name: HashMap::new()
+        }
+    }
+
+    pub fn add(&mut self, name: String, type_path: String) {
+        self.type_path_by_name.insert(name, type_path);
+    }
+
+    pub fn get<'a>(&'a self, item_type: &'a str) -> &'a str {
+        match self.type_path_by_name.get(item_type) {
+            None => item_type,
+            Some(v) => &*v
+        }
+    }
+}
+
+impl ImportResolver for () {
+    fn get_protocol_by_name(&self, _: &str) -> Option<&Protocol> {
+        None
+    }
+
+    fn get_full_type_path(&self, _: &str, _: &str) -> Option<String> {
+        None
     }
 }

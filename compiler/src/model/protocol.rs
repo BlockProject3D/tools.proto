@@ -31,7 +31,15 @@ use crate::model::message::Message;
 use crate::model::structure::Structure;
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct Import {
+    pub protocol: String,
+    pub type_name: String
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct Protocol {
+    pub name: String,
+    pub imports: Option<Vec<Import>>,
     pub structs: Vec<Structure>,
     pub messages: Vec<Message>
 }

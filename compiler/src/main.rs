@@ -37,7 +37,7 @@ mod gen;
 fn main() {
     let file = std::fs::read_to_string("./test.json5").unwrap();
     let proto: Protocol = json5::from_str(&file).unwrap();
-    let compiled = compiler::Protocol::from_model(proto).unwrap();
+    let compiled = compiler::Protocol::from_model(proto, ()).unwrap();
     let files = gen::GeneratorRust::generate(compiled).unwrap();
     for file in files {
         let folder = file.name.find("/").map(|id| &file.name[..id]);

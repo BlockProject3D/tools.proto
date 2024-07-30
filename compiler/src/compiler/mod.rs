@@ -30,6 +30,7 @@ pub mod message;
 pub mod structure;
 mod error;
 mod protocol;
+pub mod util;
 
 pub use protocol::Protocol;
 pub use error::CompilerError;

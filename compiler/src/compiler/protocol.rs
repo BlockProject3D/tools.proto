@@ -31,24 +31,50 @@ use std::rc::Rc;
 use crate::compiler::error::CompilerError;
 use crate::compiler::message::Message;
 use crate::compiler::structure::Structure;
+use crate::compiler::util::{ImportResolver, TypePathMap};
 
 #[derive(Clone, Debug)]
 pub struct Protocol {
+    pub name: String,
+    pub type_path_by_name: TypePathMap,
     pub structs_by_name: HashMap<String, Rc<Structure>>,
     pub messages_by_name: HashMap<String, Rc<Message>>,
     pub structs: Vec<Rc<Structure>>,
     pub messages: Vec<Rc<Message>>
-
 }
 
 impl Protocol {
-    pub fn from_model(value: crate::model::Protocol) -> Result<Self, CompilerError> {
+    pub fn from_model<T: ImportResolver>(value: crate::model::Protocol, solver: T) -> Result<Self, CompilerError> {
         let mut proto = Protocol {
+            name: value.name,
+            type_path_by_name: TypePathMap::new(),
             structs_by_name: HashMap::new(),
             messages_by_name: HashMap::new(),
             structs: Vec::new(),
             messages: Vec::new()
         };
+        if let Some(imports) = value.imports {
+            for v in imports {
+                let r = solver.get_protocol_by_name(&v.protocol);
+                let r = match r {
+                    Some(r) => r,
+                    None => return Err(CompilerError::UndefinedReference(v.protocol))
+                };
+                match r.structs_by_name.get(&v.type_name) {
+                    None => {
+                        let msg = r.messages_by_name.get(&v.type_name).ok_or(CompilerError::UndefinedReference(format!("{}::{}", v.protocol, v.type_name)))?;
+                        let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(CompilerError::SolverError)?;
+                        proto.messages_by_name.insert(v.type_name, msg.clone());
+                        proto.type_path_by_name.add(msg.name.clone(), type_path);
+                    },
+                    Some(vv) => {
+                        let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(CompilerError::SolverError)?;
+                        proto.structs_by_name.insert(v.type_name, vv.clone());
+                        proto.type_path_by_name.add(vv.name.clone(), type_path);
+                    }
+                }
+            }
+        }
         for v in value.structs {
             let v = Rc::new(Structure::from_model(&proto, v)?);
             proto.structs_by_name.insert(v.name.clone(), v.clone());

@@ -53,10 +53,10 @@ impl Generator for GeneratorRust {
     type Error = Error;
 
     fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error> {
-        let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(v)).join("\n");
-        let impl_from_slice_messages_code = proto.messages.iter().map(|v| gen_message_from_slice_impl(v)).join("\n");
-        let impl_write_messages_code = proto.messages.iter().map(|v| gen_message_write_impl(v)).join("\n");
-        let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(v)).join("\n");
+        let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(v, &proto.type_path_by_name)).join("\n");
+        let impl_from_slice_messages_code = proto.messages.iter().map(|v| gen_message_from_slice_impl(v, &proto.type_path_by_name)).join("\n");
+        let impl_write_messages_code = proto.messages.iter().map(|v| gen_message_write_impl(v, &proto.type_path_by_name)).join("\n");
+        let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(v, &proto.type_path_by_name)).join("\n");
         Ok(vec![
             File {
                 name: "messages.rs".into(),

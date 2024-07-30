@@ -28,9 +28,10 @@
 
 use itertools::Itertools;
 use crate::compiler::message::{Field, FieldType, Message, Payload, Referenced};
+use crate::compiler::util::TypePathMap;
 use crate::gen::rust::util::{gen_field_type, Generics};
 
-fn gen_field_decl(field: &Field<FieldType>) -> String {
+fn gen_field_decl(field: &Field<FieldType>, type_path_by_name: &TypePathMap) -> String {
     let mut code = format!("    pub {}: ", field.name);
     if field.optional {
         code += "Option<"
@@ -38,12 +39,12 @@ fn gen_field_decl(field: &Field<FieldType>) -> String {
     match &field.ty {
         FieldType::Fixed(ty) => code += gen_field_type(ty.ty),
         FieldType::Ref(v) => match v {
-            Referenced::Struct(v) => code += &format!("{}<&'a [u8]>", v.name),
-            Referenced::Message(v) => code += &format!("{}<'a>", v.name),
+            Referenced::Struct(v) => code += &format!("{}<&'a [u8]>", type_path_by_name.get(&v.name)),
+            Referenced::Message(v) => code += &format!("{}<'a>", type_path_by_name.get(&v.name)),
         },
         FieldType::NullTerminatedString => code += "&'a str",
         FieldType::VarcharString(_) => code += "&'a str",
-        FieldType::FixedList(v) => code += &format!("bp3d_proto::message::util::Array<'a, {}, {}>", gen_field_type(v.ty), v.item_type.name),
+        FieldType::FixedList(v) => code += &format!("bp3d_proto::message::util::Array<'a, {}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)),
     }
     if field.optional {
         code += ">"
@@ -51,13 +52,13 @@ fn gen_field_decl(field: &Field<FieldType>) -> String {
     code
 }
 
-fn gen_payload_decl(field: &Field<Payload>) -> String {
+fn gen_payload_decl(field: &Field<Payload>, type_path_by_name: &TypePathMap) -> String {
     let mut code = format!("    pub {}: ", field.name);
     if field.optional {
         code += "Option<"
     }
     match &field.ty {
-        Payload::List(v) => code += &format!("bp3d_proto::message::util::List<'a, {}, {}>", gen_field_type(v.ty), v.item_type.name),
+        Payload::List(v) => code += &format!("bp3d_proto::message::util::List<'a, {}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)),
         Payload::Data => code += "&'a [u8]"
     }
     if field.optional {
@@ -66,17 +67,17 @@ fn gen_payload_decl(field: &Field<Payload>) -> String {
     code
 }
 
-pub fn gen_message_decl(msg: &Message) -> String {
+pub fn gen_message_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
     let generics = Generics::from_message(msg).to_code();
     let mut code = format!("#[derive(Copy, Clone, Debug)]\npub struct {}", msg.name);
     code += &generics;
     code += " {\n";
     let fields = msg.fields.iter()
-        .map(|v| gen_field_decl(v))
+        .map(|v| gen_field_decl(v, type_path_by_name))
         .join(",\n");
     code += &fields;
     if let Some(payload) = &msg.payload {
-        code += &format!("{},\n", gen_payload_decl(payload));
+        code += &format!("{},\n", gen_payload_decl(payload, type_path_by_name));
     }
     code += "\n}";
     code
