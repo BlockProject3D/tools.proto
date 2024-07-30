@@ -26,28 +26,36 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto::message::{FromSlice, WriteTo};
+#[derive(Copy, Clone)]
+pub struct IntContainer<T> {
+    data: T
+}
+impl<T> IntContainer<T> {
+    pub fn new(data: T) -> Self {
+        Self { data }
+    }
+}
+impl<T> bp3d_proto::FixedSize for IntContainer<T> {
+    const SIZE: usize = 4;
+}
+impl<'a> bp3d_proto::message::FromSlice<'a> for IntContainer<&'a [u8]> {
+    type Output = Self;
 
-include!("../../messages.rs");
-include!("../../messages_from_slice.rs");
-include!("../../messages_write.rs");
-include!("../../structures.rs");
-
-fn main() {
-    let msg = Test {
-        p1: Some(Test1 {
-            s1: "this is a test",
-            p1: 42
-        }),
-        s1: "a test",
-        s2: "hello world",
-    };
-    let mut v = Vec::new();
-    Test::write_to(&msg, &mut v).unwrap();
-    let msg = Test::from_slice(&v).unwrap().into_inner();
-    assert_eq!(msg.p1.unwrap().p1, 42);
-    assert_eq!(msg.p1.unwrap().s1, "this is a test");
-    assert_eq!(msg.s1, "a test");
-    assert_eq!(msg.s2, "hello world");
-    println!("{:?}", msg);
+    fn from_slice(slice: &'a [u8]) -> Result<bp3d_proto::message::Message<Self>, bp3d_proto::message::Error> {
+        if slice.len() < <Self as bp3d_proto::FixedSize>::SIZE {
+            Err(bp3d_proto::message::Error::Truncated)
+        } else {
+            Ok(bp3d_proto::message::Message::new(<Self as bp3d_proto::FixedSize>::SIZE, Self::new(&slice[..<Self as bp3d_proto::FixedSize>::SIZE])))
+        }
+    }
+}
+impl<T: AsRef<[u8]>> IntContainer<T> {
+    pub fn get_raw_test_int(&self) -> u32 {
+        bp3d_proto::util::Codec::new(&self.data.as_ref()[0..4]).read::<u32, 0, 32>() as u32
+    }
+}
+impl<T: AsMut<[u8]>> IntContainer<T> {
+    pub fn set_raw_test_int(&mut self, value: u32) {
+        bp3d_proto::util::Codec::new(&mut self.data.as_mut()[0..4]).write::<u32, 0, 32>(value as u32)
+    }
 }

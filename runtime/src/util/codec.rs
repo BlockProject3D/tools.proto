@@ -39,20 +39,56 @@ impl<B> Codec<B> {
 }
 
 impl<B: AsRef<[u8]>> Codec<B> {
-    pub fn read<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>, const BitOffset: usize, const BitSize: usize>(&self) -> T {
+    fn read_unchecked<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>, const BitOffset: usize, const BitSize: usize>(&self) -> T {
         let mask: usize = (1 << BitSize) - 1;
         let value = T::read_bytes_be(self.0.as_ref());
         (value >> T::from_usize(BitOffset)) & T::from_usize(mask)
     }
+
+    pub fn read<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>, const BitOffset: usize, const BitSize: usize>(&self) -> T {
+        if std::mem::size_of::<T>() != self.0.as_ref().len() {
+            let mut data = [0; 8];
+            data[..self.0.as_ref().len()].copy_from_slice(self.0.as_ref());
+            Codec::new(&data).read_unchecked::<T, BitOffset, BitSize>()
+        } else {
+            self.read_unchecked::<T, BitOffset, BitSize>()
+        }
+    }
 }
 
 impl<B: AsMut<[u8]> + AsRef<[u8]>> Codec<B> {
-    pub fn write<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>, const BitOffset: usize, const BitSize: usize>(&mut self, value: T) {
+    fn write_unchecked<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>, const BitOffset: usize, const BitSize: usize>(&mut self, value: T) {
         let mask: usize = (1 << BitSize) - 1;
         let reset_mask = !(mask << BitOffset);
         let original = T::read_bytes_be(self.0.as_ref());
         let clean = original & T::from_usize(reset_mask);
         let value = (value & T::from_usize(mask)) << T::from_usize(BitOffset);
         (clean | value).write_bytes_be(self.0.as_mut());
+    }
+
+    pub fn write<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>, const BitOffset: usize, const BitSize: usize>(&mut self, value: T) {
+        if std::mem::size_of::<T>() != self.0.as_ref().len() {
+            let mut data = [0; 8];
+            data[..self.0.as_ref().len()].copy_from_slice(self.0.as_ref());
+            Codec::new(&mut data).write_unchecked::<T, BitOffset, BitSize>(value);
+            let motherfuckingrust = self.0.as_ref().len();
+            self.0.as_mut().copy_from_slice(&data[..motherfuckingrust]);
+        } else {
+            self.write_unchecked::<T, BitOffset, BitSize>(value);
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::util::Codec;
+
+    #[test]
+    fn basic() {
+        let buffer = [0xFF, 0xFF, 0xFF, 0xFF];
+        assert_eq!(Codec::new(&buffer[0..4]).read::<u32, 0, 32>(), 0xFFFFFFFF);
+        assert_eq!(Codec::new(&buffer[0..1]).read::<u8, 0, 1>(), 1);
+        assert_eq!(Codec::new(&buffer[0..1]).read::<u8, 0, 4>(), 0xF);
+        assert_eq!(Codec::new(&buffer[0..1]).read::<u8, 4, 4>(), 0xF);
     }
 }

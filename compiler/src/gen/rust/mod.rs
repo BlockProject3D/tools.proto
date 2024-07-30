@@ -30,6 +30,7 @@ mod message;
 mod message_from_slice;
 mod util;
 mod message_write;
+mod structure;
 
 use bp3d_util::simple_error;
 use itertools::Itertools;
@@ -38,6 +39,7 @@ use crate::gen::{File, Generator};
 use crate::gen::rust::message::gen_message_decl;
 use crate::gen::rust::message_from_slice::gen_message_from_slice_impl;
 use crate::gen::rust::message_write::gen_message_write_impl;
+use crate::gen::rust::structure::gen_structure_decl;
 
 simple_error! {
     pub Error {
@@ -54,6 +56,7 @@ impl Generator for GeneratorRust {
         let decl_messages_code = proto.messages.iter().map(|(_, v)| gen_message_decl(v)).join("\n");
         let impl_from_slice_messages_code = proto.messages.iter().map(|(_, v)| gen_message_from_slice_impl(v)).join("\n");
         let impl_write_messages_code = proto.messages.iter().map(|(_, v)| gen_message_write_impl(v)).join("\n");
+        let decl_structures = proto.structs.iter().map(|(_, v)| gen_structure_decl(v)).join("\n");
         Ok(vec![
             File {
                 name: "messages.rs".into(),
@@ -66,6 +69,10 @@ impl Generator for GeneratorRust {
             File {
                 name: "messages_write.rs".into(),
                 data: impl_write_messages_code
+            },
+            File {
+                name: "structures.rs".into(),
+                data: decl_structures
             }
         ])
     }
