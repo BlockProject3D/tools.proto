@@ -26,9 +26,52 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::marker::PhantomData;
 use std::ops::{BitAnd, BitOr, Shl, Shr};
 use bytesutil::{ReadBytes, WriteBytes};
 use crate::util::ToUsize;
+
+pub struct ArrayCodec<B, Item, const ItemBitSize: usize> {
+    buffer: B,
+    useless: PhantomData<Item>
+}
+
+impl<B, Item, const ItemBitSize: usize> ArrayCodec<B, Item, ItemBitSize> {
+    pub fn new(buffer: B) -> Self {
+        Self {
+            buffer,
+            useless: PhantomData::default()
+        }
+    }
+}
+
+impl<B: AsRef<[u8]>, Item: ReadBytes + ToUsize + BitAnd<Output = Item> + Shr<Output = Item>, const ItemBitSize: usize> ArrayCodec<B, Item, ItemBitSize> {
+    pub fn get_raw(&self, index: usize) -> Item {
+        let byte_size = ItemBitSize / 8;
+        let pos = index * byte_size;
+        let end = pos + byte_size;
+        Codec::new(&self.buffer.as_ref()[pos..end]).read::<Item, 0, ItemBitSize>()
+    }
+
+    pub fn len(&self) -> usize {
+        let byte_size = ItemBitSize / 8;
+        self.buffer.as_ref().len() / byte_size
+    }
+
+    pub fn iter_raw(&self) -> impl Iterator<Item = Item> + '_ {
+        let byte_size = ItemBitSize / 8;
+        self.buffer.as_ref().chunks(byte_size).map(|v| Codec::new(v).read::<Item, 0, ItemBitSize>())
+    }
+}
+
+impl<B: AsMut<[u8]>, Item: ReadBytes + WriteBytes + ToUsize + BitAnd<Output = Item> + BitOr<Output = Item> + Shr<Output = Item> + Shl<Output = Item>, const ItemBitSize: usize> ArrayCodec<B, Item, ItemBitSize> {
+    pub fn set_raw(&mut self, index: usize, value: Item) {
+        let byte_size = ItemBitSize / 8;
+        let pos = index * byte_size;
+        let end = pos + byte_size;
+        Codec::new(&mut self.buffer.as_mut()[pos..end]).write::<Item, 0, ItemBitSize>(value);
+    }
+}
 
 pub struct Codec<B>(B);
 

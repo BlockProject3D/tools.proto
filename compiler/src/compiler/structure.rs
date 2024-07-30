@@ -146,6 +146,20 @@ pub struct FixedField {
 }
 
 #[derive(Clone, Debug)]
+pub struct FixedArrayField {
+    pub name: String,
+    pub ty: FixedFieldType,
+    pub array_len: usize,
+    pub loc: Location
+}
+
+impl FixedArrayField {
+    pub fn item_bit_size(&self) -> usize {
+        self.loc.bit_size / self.array_len
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct StructField {
     pub name: String,
     pub r: Rc<Structure>,
@@ -155,6 +169,7 @@ pub struct StructField {
 #[derive(Clone, Debug)]
 pub enum Field {
     Fixed(FixedField),
+    Array(FixedArrayField),
     Struct(StructField)
 }
 
@@ -162,7 +177,7 @@ impl Field {
     pub fn as_fixed(&self) -> Option<&FixedField> {
         match self {
             Field::Fixed(v) => Some(v),
-            Field::Struct(_) => None
+            _ => None
         }
     }
 
@@ -178,13 +193,26 @@ impl Field {
             },
             _ => {
                 let bit_size = value.bits.ok_or(CompilerError::MissingBitSize)?;
+                let array_len = value.array_len.unwrap_or(1);
                 let ty = FixedFieldType::from_model(value.info, bit_size)?;
-                let loc = Location::from_model(bit_size, last_bit_offset);
-                Ok((Self::Fixed(FixedField {
-                    name: value.name,
-                    ty,
-                    loc
-                }), last_bit_offset + bit_size))
+                let loc = Location::from_model(bit_size * array_len, last_bit_offset);
+                if array_len > 1 {
+                    if bit_size % 8 != 0 {
+                        return Err(CompilerError::UnalignedArrayCodec);
+                    }
+                    Ok((Self::Array(FixedArrayField {
+                        name: value.name,
+                        array_len,
+                        ty,
+                        loc
+                    }), last_bit_offset + bit_size))
+                } else {
+                    Ok((Self::Fixed(FixedField {
+                        name: value.name,
+                        ty,
+                        loc
+                    }), last_bit_offset + bit_size))
+                }
             }
         }
     }

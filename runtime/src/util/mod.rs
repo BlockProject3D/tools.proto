@@ -30,4 +30,4 @@ mod scalar;
 mod codec;
 
 pub use scalar::*;
-pub use codec::Codec;
+pub use codec::*;

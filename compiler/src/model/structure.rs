@@ -46,6 +46,7 @@ pub struct StructField {
     pub name: String,
     pub info: StructFieldType,
     pub bits: Option<usize>,
+    pub array_len: Option<usize>
 }
 
 #[derive(Clone, Debug, Deserialize)]

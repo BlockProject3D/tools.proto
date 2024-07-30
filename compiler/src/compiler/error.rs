@@ -36,6 +36,7 @@ simple_error! {
         UnsupportedType(StructFieldType) => "unsuportted field type in struct: {:?}",
         MissingBitSize => "missing bits specifier on a structure field",
         UndefinedReference(String) => "undefined reference to '{}'",
+        UnalignedArrayCodec => "unaligned array in structure",
         SolverError => "failed to resolve imported type"
     }
 }

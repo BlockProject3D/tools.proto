@@ -69,6 +69,13 @@ fn gen_field_getter(field: &Field, type_path_by_name: &TypePathMap) -> String {
             code += "    }\n";
             code
         }
+        Field::Array(v) => {
+            let raw_field_type = gen_field_type(v.ty.to_unsigned_integer());
+            let mut code = format!("    pub fn get_{}(&self) -> bp3d_proto::util::ArrayCodec<&[u8], {}, {}> {{\n", v.name, raw_field_type, v.item_bit_size());
+            code += &format!("        bp3d_proto::util::ArrayCodec::new(&self.data.as_ref()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_size);
+            code += "    }\n";
+            code
+        },
         Field::Struct(v) => {
             let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", v.name, type_path_by_name.get(&v.r.name));
             code += &format!("        {}::new(&self.data.as_ref()[{}..{}])\n", v.r.name, v.loc.byte_offset, v.loc.byte_size);
@@ -84,6 +91,13 @@ fn gen_field_setter(field: &Field, type_path_by_name: &TypePathMap) -> String {
             let raw_field_type = gen_field_type(v.ty.to_unsigned_integer());
             let mut code = format!("    pub fn set_raw_{}(&mut self, value: {}) {{\n", v.name, raw_field_type);
             code += &format!("        bp3d_proto::util::Codec::new(&mut self.data.as_mut()[{}..{}]).write::<{}, {}, {}>(value)\n", v.loc.byte_offset, v.loc.byte_size, gen_field_type(v.ty.to_unsigned_integer()), v.loc.bit_offset, v.loc.bit_size);
+            code += "    }\n";
+            code
+        }
+        Field::Array(v) => {
+            let raw_field_type = gen_field_type(v.ty.to_unsigned_integer());
+            let mut code = format!("    pub fn get_{}_mut(&mut self) -> bp3d_proto::util::ArrayCodec<&mut [u8], {}, {}> {{\n", v.name, raw_field_type, v.item_bit_size());
+            code += &format!("        bp3d_proto::util::ArrayCodec::new(&mut self.data.as_mut()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_size);
             code += "    }\n";
             code
         }
