@@ -51,11 +51,11 @@ impl<'a> bp3d_proto::message::FromSlice<'a> for IntContainer<&'a [u8]> {
 }
 impl<T: AsRef<[u8]>> IntContainer<T> {
     pub fn get_raw_test_int(&self) -> u32 {
-        bp3d_proto::util::Codec::new(&self.data.as_ref()[0..4]).read::<u32, 0, 32>() as u32
+        bp3d_proto::util::Codec::new(&self.data.as_ref()[0..4]).read::<u32, 0, 32>()
     }
 }
 impl<T: AsMut<[u8]>> IntContainer<T> {
     pub fn set_raw_test_int(&mut self, value: u32) {
-        bp3d_proto::util::Codec::new(&mut self.data.as_mut()[0..4]).write::<u32, 0, 32>(value as u32)
+        bp3d_proto::util::Codec::new(&mut self.data.as_mut()[0..4]).write::<u32, 0, 32>(value)
     }
 }

@@ -1,4 +1,5 @@
 {
+    name: "test",
     structs: [
         {
             name: "IntContainer",
