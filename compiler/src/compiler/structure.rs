@@ -199,7 +199,6 @@ pub struct FixedField {
 #[derive(Clone, Debug)]
 pub struct FixedArrayField {
     pub name: String,
-    pub ty: FixedFieldType,
     pub array_len: usize,
     pub loc: Location
 }
@@ -255,7 +254,6 @@ impl Field {
                     Ok((Self::Array(FixedArrayField {
                         name: value.name,
                         array_len,
-                        ty,
                         loc
                     }), last_bit_offset + bit_size))
                 } else {

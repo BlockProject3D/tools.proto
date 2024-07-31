@@ -29,7 +29,7 @@
 use std::rc::Rc;
 use crate::compiler::error::CompilerError;
 use crate::compiler::Protocol;
-use crate::compiler::structure::{FieldView, FixedFieldType, Structure};
+use crate::compiler::structure::{FixedFieldType, Structure};
 use crate::model::message::MessageFieldType;
 
 #[derive(Clone, Debug)]
@@ -50,26 +50,22 @@ impl Referenced {
 #[derive(Clone, Debug)]
 pub struct FixedListField {
     pub ty: FixedFieldType,
-    pub max_len: usize,
     pub item_type: Rc<Structure>
 }
 
 #[derive(Clone, Debug)]
 pub struct VarcharStringField {
     pub ty: FixedFieldType,
-    pub max_len: usize
 }
 
 #[derive(Clone, Debug)]
 pub struct ListField {
     pub ty: FixedFieldType,
-    pub max_len: usize,
     pub item_type: Rc<Message>
 }
 
 #[derive(Clone, Debug)]
 pub struct FixedField {
-    pub byte_size: usize,
     pub ty: FixedFieldType
 }
 
@@ -118,8 +114,7 @@ impl AnyField {
                             Ok(Self::Field(Field {
                                 name: value.name,
                                 ty: FieldType::Fixed(FixedField {
-                                    ty: fixed.ty,
-                                    byte_size: fixed.loc.byte_size
+                                    ty: fixed.ty
                                 }),
                                 optional: value.optional.unwrap_or_default()
                             }))
@@ -152,7 +147,6 @@ impl AnyField {
                             name: value.name,
                             ty: FieldType::FixedList(FixedListField {
                                 item_type,
-                                max_len,
                                 ty
                             }),
                             optional: value.optional.unwrap_or_default()
@@ -164,7 +158,6 @@ impl AnyField {
                             ty: Payload::List(ListField {
                                 item_type,
                                 ty,
-                                max_len
                             }),
                             optional: value.optional.unwrap_or_default()
                         }))
@@ -185,7 +178,6 @@ impl AnyField {
                         Ok(Self::Field(Field {
                             name: value.name,
                             ty: FieldType::VarcharString(VarcharStringField {
-                                max_len,
                                 ty
                             }),
                             optional: value.optional.unwrap_or_default()

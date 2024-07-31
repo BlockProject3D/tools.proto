@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::borrow::Cow;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use crate::compiler::Protocol;
 
 mod rust;

@@ -116,7 +116,6 @@ fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) ->
     match &field.view {
         FieldView::Float { a, b, .. } => {
             let field_type = gen_field_type(field.ty);
-            let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
             let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
             code += &format!("        let raw_value = self.get_raw_{}() as {};\n", field.name, field_type);
             code += &format!("        raw_value * {} + {}", a, b);
