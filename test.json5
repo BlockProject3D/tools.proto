@@ -7,9 +7,9 @@
                 {
                     name: "test_int",
                     info: {
-                        type: "unsigned"
-                    },
-                    bits: 32
+                        type: "unsigned",
+                        bits: 32
+                    }
                 }
             ]
         }

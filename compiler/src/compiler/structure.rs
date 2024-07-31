@@ -29,7 +29,7 @@
 use std::rc::Rc;
 use crate::compiler::error::CompilerError;
 use crate::compiler::Protocol;
-use crate::model::structure::StructFieldType;
+use crate::model::structure::{SimpleType, StructFieldType};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FixedFieldType {
@@ -47,19 +47,6 @@ pub enum FixedFieldType {
 }
 
 impl FixedFieldType {
-    pub fn to_unsigned_integer(self) -> FixedFieldType {
-        match self {
-            FixedFieldType::Int8 => FixedFieldType::UInt8,
-            FixedFieldType::Int16 => FixedFieldType::UInt16,
-            FixedFieldType::Int32 => FixedFieldType::UInt32,
-            FixedFieldType::Int64 => FixedFieldType::UInt64,
-            FixedFieldType::Float32 => FixedFieldType::UInt32,
-            FixedFieldType::Float64 => FixedFieldType::UInt64,
-            FixedFieldType::Bool => FixedFieldType::UInt8,
-            v => v
-        }
-    }
-
     pub fn from_max_value(max_value: usize) -> Result<Self, CompilerError> {
         let bit_size = if max_value > u32::MAX as usize {
             64
@@ -70,43 +57,46 @@ impl FixedFieldType {
         } else {
             8
         };
-        Self::from_model(StructFieldType::Unsigned, bit_size)
+        Self::from_model(StructFieldType::Unsigned { bits: bit_size })
     }
 
-    pub fn from_model(ty: StructFieldType, bit_size: usize) -> Result<Self, CompilerError> {
-        if ty == StructFieldType::Boolean {
+    pub fn from_model(ty1: StructFieldType) -> Result<Self, CompilerError> {
+        let motherfuckingrust = ty1.clone();
+        let ty = ty1.get_simple_type();
+        let bit_size = ty1.get_bit_size().ok_or(CompilerError::UnsupportedType(ty1))?;
+        if ty == SimpleType::Boolean {
             Ok(Self::Bool)
-        } else if ty == StructFieldType::Float && bit_size == 32 {
+        } else if ty == SimpleType::Float && bit_size == 32 {
             Ok(Self::Float32)
-        } else if ty == StructFieldType::Float && bit_size == 64 {
+        } else if ty == SimpleType::Float && bit_size == 64 {
             Ok(Self::Float64)
         } else if bit_size > 32 && bit_size <= 64 {
             match ty {
-                StructFieldType::Integer => Ok(Self::Int64),
-                StructFieldType::Unsigned => Ok(Self::UInt64),
-                StructFieldType::Float => Ok(Self::Float64),
-                _ => Err(CompilerError::UnsupportedType(ty))
+                SimpleType::Signed => Ok(Self::Int64),
+                SimpleType::Unsigned => Ok(Self::UInt64),
+                SimpleType::Float => Ok(Self::Float64),
+                _ => Err(CompilerError::UnsupportedType(motherfuckingrust))
             }
         } else if bit_size > 16 && bit_size <= 32 {
             match ty {
-                StructFieldType::Integer => Ok(Self::Int32),
-                StructFieldType::Unsigned => Ok(Self::UInt32),
-                StructFieldType::Float => Ok(Self::Float64),
-                _ => Err(CompilerError::UnsupportedType(ty))
+                SimpleType::Signed => Ok(Self::Int32),
+                SimpleType::Unsigned => Ok(Self::UInt32),
+                SimpleType::Float => Ok(Self::Float64),
+                _ => Err(CompilerError::UnsupportedType(motherfuckingrust))
             }
         } else if bit_size > 8 && bit_size <= 16 {
             match ty {
-                StructFieldType::Integer => Ok(Self::Int16),
-                StructFieldType::Unsigned => Ok(Self::UInt16),
-                StructFieldType::Float => Ok(Self::Float32),
-                _ => Err(CompilerError::UnsupportedType(ty))
+                SimpleType::Signed => Ok(Self::Int16),
+                SimpleType::Unsigned => Ok(Self::UInt16),
+                SimpleType::Float => Ok(Self::Float32),
+                _ => Err(CompilerError::UnsupportedType(motherfuckingrust))
             }
         } else if bit_size > 0 && bit_size <= 8 {
             match ty {
-                StructFieldType::Integer => Ok(Self::Int8),
-                StructFieldType::Unsigned => Ok(Self::UInt8),
-                StructFieldType::Float => Ok(Self::Float32),
-                _ => Err(CompilerError::UnsupportedType(ty))
+                SimpleType::Signed => Ok(Self::Int8),
+                SimpleType::Unsigned => Ok(Self::UInt8),
+                SimpleType::Float => Ok(Self::Float32),
+                _ => Err(CompilerError::UnsupportedType(motherfuckingrust))
             }
         } else {
             Err(CompilerError::UnsupportedBitSize(bit_size))
@@ -135,6 +125,10 @@ impl Location {
                 bit_size / 8
             }
         }
+    }
+
+    pub fn get_unsigned_integer_type(&self) -> FixedFieldType {
+        FixedFieldType::from_model(StructFieldType::Unsigned { bits: self.bit_size }).unwrap()
     }
 }
 
@@ -192,9 +186,9 @@ impl Field {
                 }), last_bit_offset + r.bit_size))
             },
             _ => {
-                let bit_size = value.bits.ok_or(CompilerError::MissingBitSize)?;
+                let bit_size = value.info.get_bit_size().ok_or(CompilerError::MissingBitSize)?;
                 let array_len = value.array_len.unwrap_or(1);
-                let ty = FixedFieldType::from_model(value.info, bit_size)?;
+                let ty = FixedFieldType::from_model(value.info)?;
                 let loc = Location::from_model(bit_size * array_len, last_bit_offset);
                 if array_len > 1 {
                     if bit_size % 8 != 0 {

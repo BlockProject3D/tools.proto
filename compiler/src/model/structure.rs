@@ -28,16 +28,55 @@
 
 use serde::Deserialize;
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
 pub enum StructFieldType {
-    Integer,
+    Signed {
+        bits: usize
+    },
+    Unsigned {
+        bits: usize
+    },
+    Float {
+        bits: usize
+    },
+    Boolean {
+        bits: usize
+    },
+    Struct {
+        item_type: String
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum SimpleType {
+    Signed,
     Unsigned,
     Float,
     Boolean,
-    Struct {
-        item_type: String
+    Struct
+}
+
+impl StructFieldType {
+    pub fn get_simple_type(&self) -> SimpleType {
+        match self {
+            StructFieldType::Signed { .. } => SimpleType::Signed,
+            StructFieldType::Unsigned { .. } => SimpleType::Unsigned,
+            StructFieldType::Float { .. } => SimpleType::Float,
+            StructFieldType::Boolean { .. } => SimpleType::Boolean,
+            StructFieldType::Struct { .. } => SimpleType::Struct
+        }
+    }
+
+    pub fn get_bit_size(&self) -> Option<usize> {
+        match self {
+            StructFieldType::Signed { bits } => Some(*bits),
+            StructFieldType::Unsigned { bits } => Some(*bits),
+            StructFieldType::Float { bits } => Some(*bits),
+            StructFieldType::Boolean { bits } => Some(*bits),
+            StructFieldType::Struct { .. } => None
+        }
     }
 }
 
@@ -45,7 +84,6 @@ pub enum StructFieldType {
 pub struct StructField {
     pub name: String,
     pub info: StructFieldType,
-    pub bits: Option<usize>,
     pub array_len: Option<usize>
 }
 
