@@ -29,7 +29,7 @@
 use std::rc::Rc;
 use crate::compiler::error::CompilerError;
 use crate::compiler::Protocol;
-use crate::compiler::structure::{FixedFieldType, Structure};
+use crate::compiler::structure::{FieldView, FixedFieldType, Structure};
 use crate::model::message::MessageFieldType;
 
 #[derive(Clone, Debug)]
@@ -112,6 +112,7 @@ impl AnyField {
                 match r {
                     Referenced::Struct(r) => {
                         if r.fields.len() == 1 && r.fields[0].as_fixed().is_some()
+                            && r.fields[0].as_fixed().map(|v| v.view.is_transmute()).unwrap_or_default()
                             && r.fields[0].as_fixed().map(|v| v.loc.bit_size % 8 == 0).unwrap_or_default() {
                             let fixed = unsafe { r.fields[0].as_fixed().unwrap_unchecked() };
                             Ok(Self::Field(Field {

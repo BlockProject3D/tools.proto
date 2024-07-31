@@ -29,7 +29,8 @@
 use std::rc::Rc;
 use crate::compiler::error::CompilerError;
 use crate::compiler::Protocol;
-use crate::model::structure::{SimpleType, StructFieldType};
+use crate::compiler::r#enum::Enum;
+use crate::model::structure::{SimpleType, StructFieldType, StructFieldView};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FixedFieldType {
@@ -113,7 +114,7 @@ pub struct Location {
 }
 
 impl Location {
-    pub fn from_model(bit_size: usize, bit_offset: usize) -> Self {
+    fn from_model(bit_size: usize, bit_offset: usize) -> Self {
         let byte_offset = bit_offset / 8;
         Self {
             byte_offset,
@@ -133,10 +134,66 @@ impl Location {
 }
 
 #[derive(Clone, Debug)]
+pub enum FieldView {
+    Float {
+        a: f64,
+        b: f64,
+        a_inv: f64,
+        b_inv: f64
+    },
+    Enum(Rc<Enum>),
+    Transmute
+}
+
+impl FieldView {
+    pub fn is_transmute(&self) -> bool {
+        match self {
+            FieldView::Transmute => true,
+            _ => false
+        }
+    }
+
+    fn from_model(proto: &Protocol, ty: SimpleType, bit_size: usize, value: Option<StructFieldView>) -> Result<Self, CompilerError> {
+        match value {
+            Some(StructFieldView::Enum { name }) => {
+                if ty != SimpleType::Unsigned {
+                    return Err(CompilerError::UnsupportedViewType(ty));
+                }
+                let r = proto.enums_by_name.get(&name).ok_or_else(|| CompilerError::UndefinedReference(name))?;
+                Ok(FieldView::Enum(r.clone()))
+            }
+            Some(StructFieldView::FloatRange { min, max }) => {
+                if ty != SimpleType::Float {
+                    return Err(CompilerError::UnsupportedViewType(ty));
+                }
+                let raw_max: usize = (1 << bit_size) - 1;
+                let a = max / (raw_max as f64);
+                let b = min;
+                let a_inv = 1.0 / a;
+                let b_inv = -b;
+                Ok(FieldView::Float { a, b, a_inv, b_inv })
+            }
+            Some(StructFieldView::FloatMultiplier { multiplier }) => {
+                if ty != SimpleType::Float {
+                    return Err(CompilerError::UnsupportedViewType(ty));
+                }
+                let a = multiplier;
+                let b = 0.0;
+                let a_inv = 1.0 / a;
+                let b_inv = 0.0;
+                Ok(FieldView::Float { a, b, a_inv, b_inv })
+            }
+            None => Ok(FieldView::Transmute)
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct FixedField {
     pub name: String,
     pub ty: FixedFieldType,
-    pub loc: Location
+    pub loc: Location,
+    pub view: FieldView
 }
 
 #[derive(Clone, Debug)]
@@ -188,6 +245,7 @@ impl Field {
             _ => {
                 let bit_size = value.info.get_bit_size().ok_or(CompilerError::MissingBitSize)?;
                 let array_len = value.array_len.unwrap_or(1);
+                let view = FieldView::from_model(proto, value.info.get_simple_type(), bit_size, value.view)?;
                 let ty = FixedFieldType::from_model(value.info)?;
                 let loc = Location::from_model(bit_size * array_len, last_bit_offset);
                 if array_len > 1 {
@@ -204,7 +262,8 @@ impl Field {
                     Ok((Self::Fixed(FixedField {
                         name: value.name,
                         ty,
-                        loc
+                        loc,
+                        view
                     }), last_bit_offset + bit_size))
                 }
             }

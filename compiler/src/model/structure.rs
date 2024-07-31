@@ -31,6 +31,22 @@ use serde::Deserialize;
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
+pub enum StructFieldView {
+    Enum {
+        name: String
+    },
+    FloatRange {
+        min: f64,
+        max: f64
+    },
+    FloatMultiplier {
+        multiplier: f64
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[serde(tag = "type")]
 pub enum StructFieldType {
     Signed {
         bits: usize
@@ -84,6 +100,7 @@ impl StructFieldType {
 pub struct StructField {
     pub name: String,
     pub info: StructFieldType,
+    pub view: Option<StructFieldView>,
     pub array_len: Option<usize>
 }
 

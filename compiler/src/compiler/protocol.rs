@@ -101,7 +101,7 @@ impl Protocol {
         }
         if let Some(enums) = value.enums {
             for v in enums {
-                let v = Rc::new(Enum::from_model(v));
+                let v = Rc::new(Enum::from_model(v)?);
                 proto.enums_by_name.insert(v.name.clone(), v.clone());
                 proto.enums.push(v);
             }

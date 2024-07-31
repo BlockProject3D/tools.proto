@@ -26,19 +26,24 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::compiler::CompilerError;
+
 #[derive(Clone, Debug)]
 pub struct Enum {
     pub name: String,
+    pub largest: usize,
     pub variants: Vec<(String, usize)>
 }
 
 impl Enum {
-    pub fn from_model(value: crate::model::protocol::Enum) -> Enum {
+    pub fn from_model(value: crate::model::protocol::Enum) -> Result<Enum, CompilerError> {
         let mut variants: Vec<(String, usize)> = value.variants.into_iter().collect();
         variants.sort_by(|(_, v), (_, v1)| v.cmp(v1));
-        Enum {
+        let largest = variants.last().map(|(_, v)| *v).ok_or(CompilerError::ZeroEnum)?;
+        Ok(Enum {
             name: value.name,
-            variants
-        }
+            variants,
+            largest
+        })
     }
 }

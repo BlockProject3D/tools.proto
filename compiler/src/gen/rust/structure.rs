@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::structure::{Field, Structure};
+use crate::compiler::structure::{Field, FieldView, FixedField, Structure};
 use crate::compiler::util::TypePathMap;
 use crate::gen::rust::util::gen_field_type;
 
@@ -67,6 +67,7 @@ fn gen_field_getter(field: &Field, type_path_by_name: &TypePathMap) -> String {
             let mut code = format!("    pub fn get_raw_{}(&self) -> {} {{\n", v.name, raw_field_type);
             code += &format!("        bp3d_proto::util::Codec::new(&self.data.as_ref()[{}..{}]).read::<{}, {}, {}>()\n", v.loc.byte_offset, v.loc.byte_size, raw_field_type, v.loc.bit_offset, v.loc.bit_size);
             code += "    }\n";
+            code += &gen_field_view_getter(v, type_path_by_name);
             code
         }
         Field::Array(v) => {
@@ -92,6 +93,7 @@ fn gen_field_setter(field: &Field, type_path_by_name: &TypePathMap) -> String {
             let mut code = format!("    pub fn set_raw_{}(&mut self, value: {}) {{\n", v.name, raw_field_type);
             code += &format!("        bp3d_proto::util::Codec::new(&mut self.data.as_mut()[{}..{}]).write::<{}, {}, {}>(value)\n", v.loc.byte_offset, v.loc.byte_size, raw_field_type, v.loc.bit_offset, v.loc.bit_size);
             code += "    }\n";
+            code += &gen_field_view_setter(v, type_path_by_name);
             code
         }
         Field::Array(v) => {
@@ -104,6 +106,79 @@ fn gen_field_setter(field: &Field, type_path_by_name: &TypePathMap) -> String {
         Field::Struct(v) => {
             let mut code = format!("    pub fn get_{}_mut(&self) -> {} {{\n", v.name, type_path_by_name.get(&v.r.name));
             code += &format!("        {}::new(&mut self.data.as_mut()[{}..{}])\n", v.r.name, v.loc.byte_offset, v.loc.byte_size);
+            code += "    }\n";
+            code
+        }
+    }
+}
+
+fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) -> String {
+    match &field.view {
+        FieldView::Float { a, b, .. } => {
+            let field_type = gen_field_type(field.ty);
+            let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
+            let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
+            code += &format!("        let raw_value = self.get_raw_{}() as {};\n", field.name, field_type);
+            code += &format!("        raw_value * {} + {}", a, b);
+            code += "    }\n";
+            code
+        },
+        FieldView::Enum(e) => {
+            let item_type = type_path_by_name.get(&e.name);
+            let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
+            let mut code = format!("    pub fn get_{}(&self) -> Option<{}> {{\n", field.name, item_type);
+            code += &format!("        let raw_value = self.get_raw_{}();\n", field.name);
+            code += &format!("        if raw_value > {} {{\n", e.largest);
+            code += "            None\n";
+            code += "        } else {\n";
+            code += &format!("        unsafe {{ std::mem::transmute::<{}, {}>(raw_value) }}\n", raw_field_type, item_type);
+            code += "        }\n";
+            code += "    }\n";
+            code
+        },
+        FieldView::Transmute => {
+            let field_type = gen_field_type(field.ty);
+            let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
+            let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
+            if raw_field_type != field_type {
+                code += &format!("        unsafe {{ std::mem::transmute::<{}, {}>(self.get_raw_{}()) }}\n", raw_field_type, field_type, field.name);
+            } else {
+                code += &format!("        self.get_raw_{}()\n", field.name);
+            }
+            code += "    }\n";
+            code
+        }
+    }
+}
+
+fn gen_field_view_setter(field: &FixedField, type_path_by_name: &TypePathMap) -> String {
+    match &field.view {
+        FieldView::Float { a_inv, b_inv, .. } => {
+            let field_type = gen_field_type(field.ty);
+            let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
+            let mut code = format!("    pub fn set_{}(&mut self, value: {}) {{\n", field.name, field_type);
+            code += &format!("        let raw_value = value * {} + {}", a_inv, b_inv);
+            code += &format!("        self.set_raw_{}(value as {});\n", field.name, raw_field_type);
+            code += "    }\n";
+            code
+        },
+        FieldView::Enum(e) => {
+            let item_type = type_path_by_name.get(&e.name);
+            let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
+            let mut code = format!("    pub fn set_{}(&mut self, value: {}) {{\n", field.name, item_type);
+            code += &format!("        self.set_raw_{}(value as {});\n", field.name, raw_field_type);
+            code += "    }\n";
+            code
+        },
+        FieldView::Transmute => {
+            let field_type = gen_field_type(field.ty);
+            let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
+            let mut code = format!("    pub fn set_{}(&mut self, value: {}) {{\n", field.name, field_type);
+            if raw_field_type != field_type {
+                code += &format!("        self.set_raw_{}(unsafe {{ std::mem::transmute::<{}, {}>() }});\n", field.name, field_type, raw_field_type);
+            } else {
+                code += &format!("        self.set_raw_{}(value);\n", field.name);
+            }
             code += "    }\n";
             code
         }

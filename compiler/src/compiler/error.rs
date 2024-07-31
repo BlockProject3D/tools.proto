@@ -27,16 +27,18 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use bp3d_util::simple_error;
-use crate::model::structure::StructFieldType;
+use crate::model::structure::{SimpleType, StructFieldType};
 
 simple_error! {
     pub CompilerError {
         MultiPayload => "message has more than 1 payload",
         UnsupportedBitSize(usize) => "unsupported bit size for fixed field ({}), maximum is 64",
-        UnsupportedType(StructFieldType) => "unsuportted field type in struct: {:?}",
+        UnsupportedType(StructFieldType) => "unsupported field type in struct: {:?}",
+        UnsupportedViewType(SimpleType) => "unsupported view for type: {:?}",
         MissingBitSize => "missing bits specifier on a structure field",
         UndefinedReference(String) => "undefined reference to '{}'",
         UnalignedArrayCodec => "unaligned array in structure",
-        SolverError => "failed to resolve imported type"
+        SolverError => "failed to resolve imported type",
+        ZeroEnum => "enums must have at least 1 variant"
     }
 }
