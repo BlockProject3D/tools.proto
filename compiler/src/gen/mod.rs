@@ -73,7 +73,9 @@ pub trait Generator {
     type Error: std::error::Error;
 
     fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error>;
-    fn generate_umbrella<'a>(files: impl Iterator<Item=&'a File>) -> Result<String, Self::Error>;
+    fn generate_umbrella<'a>(_: impl Iterator<Item=&'a File>) -> Result<String, Self::Error> {
+        Ok(String::new())
+    }
 }
 
 pub use rust::GeneratorRust;
