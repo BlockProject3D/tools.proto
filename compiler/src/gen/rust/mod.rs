@@ -69,7 +69,7 @@ impl Generator for GeneratorRust {
         ])
     }
 
-    fn generate_umbrella<'a>(files: impl Iterator<Item=&'a File>) -> Result<String, Self::Error> {
+    fn generate_umbrella<'a>(proto_name: &str, files: impl Iterator<Item=&'a File>) -> Result<String, Self::Error> {
         todo!()
     }
 }

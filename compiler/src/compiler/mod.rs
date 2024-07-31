@@ -34,4 +34,4 @@ pub mod util;
 pub mod r#enum;
 
 pub use protocol::Protocol;
-pub use error::CompilerError;
+pub use error::Error;

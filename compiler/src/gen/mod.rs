@@ -32,6 +32,7 @@ use crate::compiler::Protocol;
 
 mod rust;
 
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub enum FileType {
     MessageWriting,
     MessageReading,
@@ -55,6 +56,10 @@ impl File {
         }
     }
 
+    pub fn ty(&self) -> FileType {
+        self.ty
+    }
+
     pub fn write(self, out_directory: &Path) -> std::io::Result<()> {
         if self.data.len() > 1 {
             let sub_folder = self.name.find("/").map(|id| &self.name[..id]);
@@ -73,7 +78,7 @@ pub trait Generator {
     type Error: std::error::Error;
 
     fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error>;
-    fn generate_umbrella<'a>(_: impl Iterator<Item=&'a File>) -> Result<String, Self::Error> {
+    fn generate_umbrella<'a>(_: &str, _: impl Iterator<Item=&'a File>) -> Result<String, Self::Error> {
         Ok(String::new())
     }
 }

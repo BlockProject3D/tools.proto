@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::rc::Rc;
-use crate::compiler::error::CompilerError;
+use crate::compiler::error::Error;
 use crate::compiler::Protocol;
 use crate::compiler::r#enum::Enum;
 use crate::model::structure::{SimpleType, StructFieldType, StructFieldView};
@@ -48,7 +48,7 @@ pub enum FixedFieldType {
 }
 
 impl FixedFieldType {
-    pub fn from_max_value(max_value: usize) -> Result<Self, CompilerError> {
+    pub fn from_max_value(max_value: usize) -> Result<Self, Error> {
         let bit_size = if max_value > u32::MAX as usize {
             64
         } else if max_value > u16::MAX as usize {
@@ -61,10 +61,10 @@ impl FixedFieldType {
         Self::from_model(StructFieldType::Unsigned { bits: bit_size })
     }
 
-    pub fn from_model(ty1: StructFieldType) -> Result<Self, CompilerError> {
+    pub fn from_model(ty1: StructFieldType) -> Result<Self, Error> {
         let motherfuckingrust = ty1.clone();
         let ty = ty1.get_simple_type();
-        let bit_size = ty1.get_bit_size().ok_or(CompilerError::UnsupportedType(ty1))?;
+        let bit_size = ty1.get_bit_size().ok_or(Error::UnsupportedType(ty1))?;
         if ty == SimpleType::Boolean {
             Ok(Self::Bool)
         } else if ty == SimpleType::Float && bit_size == 32 {
@@ -76,31 +76,31 @@ impl FixedFieldType {
                 SimpleType::Signed => Ok(Self::Int64),
                 SimpleType::Unsigned => Ok(Self::UInt64),
                 SimpleType::Float => Ok(Self::Float64),
-                _ => Err(CompilerError::UnsupportedType(motherfuckingrust))
+                _ => Err(Error::UnsupportedType(motherfuckingrust))
             }
         } else if bit_size > 16 && bit_size <= 32 {
             match ty {
                 SimpleType::Signed => Ok(Self::Int32),
                 SimpleType::Unsigned => Ok(Self::UInt32),
                 SimpleType::Float => Ok(Self::Float64),
-                _ => Err(CompilerError::UnsupportedType(motherfuckingrust))
+                _ => Err(Error::UnsupportedType(motherfuckingrust))
             }
         } else if bit_size > 8 && bit_size <= 16 {
             match ty {
                 SimpleType::Signed => Ok(Self::Int16),
                 SimpleType::Unsigned => Ok(Self::UInt16),
                 SimpleType::Float => Ok(Self::Float32),
-                _ => Err(CompilerError::UnsupportedType(motherfuckingrust))
+                _ => Err(Error::UnsupportedType(motherfuckingrust))
             }
         } else if bit_size > 0 && bit_size <= 8 {
             match ty {
                 SimpleType::Signed => Ok(Self::Int8),
                 SimpleType::Unsigned => Ok(Self::UInt8),
                 SimpleType::Float => Ok(Self::Float32),
-                _ => Err(CompilerError::UnsupportedType(motherfuckingrust))
+                _ => Err(Error::UnsupportedType(motherfuckingrust))
             }
         } else {
-            Err(CompilerError::UnsupportedBitSize(bit_size))
+            Err(Error::UnsupportedBitSize(bit_size))
         }
     }
 }
@@ -153,18 +153,18 @@ impl FieldView {
         }
     }
 
-    fn from_model(proto: &Protocol, ty: SimpleType, bit_size: usize, value: Option<StructFieldView>) -> Result<Self, CompilerError> {
+    fn from_model(proto: &Protocol, ty: SimpleType, bit_size: usize, value: Option<StructFieldView>) -> Result<Self, Error> {
         match value {
             Some(StructFieldView::Enum { name }) => {
                 if ty != SimpleType::Unsigned {
-                    return Err(CompilerError::UnsupportedViewType(ty));
+                    return Err(Error::UnsupportedViewType(ty));
                 }
-                let r = proto.enums_by_name.get(&name).ok_or_else(|| CompilerError::UndefinedReference(name))?;
+                let r = proto.enums_by_name.get(&name).ok_or_else(|| Error::UndefinedReference(name))?;
                 Ok(FieldView::Enum(r.clone()))
             }
             Some(StructFieldView::FloatRange { min, max }) => {
                 if ty != SimpleType::Float {
-                    return Err(CompilerError::UnsupportedViewType(ty));
+                    return Err(Error::UnsupportedViewType(ty));
                 }
                 let raw_max: usize = (1 << bit_size) - 1;
                 let a = max / (raw_max as f64);
@@ -175,7 +175,7 @@ impl FieldView {
             }
             Some(StructFieldView::FloatMultiplier { multiplier }) => {
                 if ty != SimpleType::Float {
-                    return Err(CompilerError::UnsupportedViewType(ty));
+                    return Err(Error::UnsupportedViewType(ty));
                 }
                 let a = multiplier;
                 let b = 0.0;
@@ -231,10 +231,10 @@ impl Field {
         }
     }
 
-    fn from_model(proto: &Protocol, last_bit_offset: usize, value: crate::model::structure::StructField) -> Result<(Self, usize), CompilerError> {
+    fn from_model(proto: &Protocol, last_bit_offset: usize, value: crate::model::structure::StructField) -> Result<(Self, usize), Error> {
         match value.info {
             StructFieldType::Struct { item_type } => {
-                let r = proto.structs_by_name.get(&item_type).ok_or_else(|| CompilerError::UndefinedReference(item_type))?;
+                let r = proto.structs_by_name.get(&item_type).ok_or_else(|| Error::UndefinedReference(item_type))?;
                 Ok((Self::Struct(StructField {
                     name: value.name,
                     r: r.clone(),
@@ -242,14 +242,14 @@ impl Field {
                 }), last_bit_offset + r.bit_size))
             },
             _ => {
-                let bit_size = value.info.get_bit_size().ok_or(CompilerError::MissingBitSize)?;
+                let bit_size = value.info.get_bit_size().ok_or(Error::MissingBitSize)?;
                 let array_len = value.array_len.unwrap_or(1);
                 let view = FieldView::from_model(proto, value.info.get_simple_type(), bit_size, value.view)?;
                 let ty = FixedFieldType::from_model(value.info)?;
                 let loc = Location::from_model(bit_size * array_len, last_bit_offset);
                 if array_len > 1 {
                     if bit_size % 8 != 0 {
-                        return Err(CompilerError::UnalignedArrayCodec);
+                        return Err(Error::UnalignedArrayCodec);
                     }
                     Ok((Self::Array(FixedArrayField {
                         name: value.name,
@@ -278,7 +278,7 @@ pub struct Structure {
 }
 
 impl Structure {
-    pub fn from_model(proto: &Protocol, value: crate::model::structure::Structure) -> Result<Structure, CompilerError> {
+    pub fn from_model(proto: &Protocol, value: crate::model::structure::Structure) -> Result<Structure, Error> {
         let mut last_bit_offset = 0;
         let fields = value.fields.into_iter().map(|v| {
             let res = Field::from_model(proto, last_bit_offset, v);
@@ -289,7 +289,7 @@ impl Structure {
         });
         Ok(Structure {
             name: value.name,
-            fields: fields.collect::<Result<Vec<Field>, CompilerError>>()?,
+            fields: fields.collect::<Result<Vec<Field>, Error>>()?,
             bit_size: last_bit_offset,
             byte_size: if last_bit_offset % 8 != 0 {
                 (last_bit_offset / 8) + 1

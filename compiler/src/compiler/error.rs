@@ -30,7 +30,7 @@ use bp3d_util::simple_error;
 use crate::model::structure::{SimpleType, StructFieldType};
 
 simple_error! {
-    pub CompilerError {
+    pub Error {
         MultiPayload => "message has more than 1 payload",
         UnsupportedBitSize(usize) => "unsupported bit size for fixed field ({}), maximum is 64",
         UnsupportedType(StructFieldType) => "unsupported field type in struct: {:?}",

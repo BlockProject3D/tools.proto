@@ -26,15 +26,19 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::path::Path;
-use crate::gen::Generator;
-use crate::model::Protocol;
-
 mod model;
-mod compiler;
-mod gen;
+pub mod compiler;
+pub mod gen;
+mod error;
+pub mod util;
+mod interface;
 
-fn main() {
+pub use error::Error;
+pub use interface::*;
+
+//TODO: Rename CompilerError to Error
+
+/*fn main() {
     let file = std::fs::read_to_string("./test.json5").unwrap();
     let proto: Protocol = json5::from_str(&file).unwrap();
     let compiled = compiler::Protocol::from_model(proto, ()).unwrap();
@@ -42,4 +46,4 @@ fn main() {
     for file in files {
         file.write(Path::new("./")).unwrap();
     }
-}
+}*/

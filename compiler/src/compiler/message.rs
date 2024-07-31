@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::rc::Rc;
-use crate::compiler::error::CompilerError;
+use crate::compiler::error::Error;
 use crate::compiler::Protocol;
 use crate::compiler::structure::{FixedFieldType, Structure};
 use crate::model::message::MessageFieldType;
@@ -98,13 +98,13 @@ pub enum AnyField {
 }
 
 impl AnyField {
-    fn from_model(proto: &Protocol, value: crate::model::message::MessageField) -> Result<Self, CompilerError> {
+    fn from_model(proto: &Protocol, value: crate::model::message::MessageField) -> Result<Self, Error> {
         match value.info {
             MessageFieldType::Item { item_type } => {
                 let r = proto.structs_by_name.get(&item_type)
                     .map(|v| Referenced::Struct(v.clone()))
                     .or_else(|| proto.messages_by_name.get(&item_type).map(|v| Referenced::Message(v.clone())))
-                    .ok_or_else(|| CompilerError::UndefinedReference(item_type))?;
+                    .ok_or_else(|| Error::UndefinedReference(item_type))?;
                 match r {
                     Referenced::Struct(r) => {
                         if r.fields.len() == 1 && r.fields[0].as_fixed().is_some()
@@ -139,7 +139,7 @@ impl AnyField {
                 let r = proto.structs_by_name.get(&item_type)
                     .map(|v| Referenced::Struct(v.clone()))
                     .or_else(|| proto.messages_by_name.get(&item_type).map(|v| Referenced::Message(v.clone())))
-                    .ok_or_else(|| CompilerError::UndefinedReference(item_type))?;
+                    .ok_or_else(|| Error::UndefinedReference(item_type))?;
                 let ty = FixedFieldType::from_max_value(max_len)?;
                 match r {
                     Referenced::Struct(item_type) => {
@@ -202,10 +202,10 @@ pub struct Message {
 }
 
 impl Message {
-    pub fn from_model(proto: &Protocol, value: crate::model::message::Message) -> Result<Message, CompilerError> {
+    pub fn from_model(proto: &Protocol, value: crate::model::message::Message) -> Result<Message, Error> {
         let unsorted = value.fields.into_iter()
             .map(|v| AnyField::from_model(proto, v))
-            .collect::<Result<Vec<AnyField>, CompilerError>>()?;
+            .collect::<Result<Vec<AnyField>, Error>>()?;
         let mut payloads = Vec::new();
         let mut fields = Vec::new();
         for v in unsorted {
@@ -215,7 +215,7 @@ impl Message {
             }
         }
         if payloads.len() > 1 {
-            return Err(CompilerError::MultiPayload);
+            return Err(Error::MultiPayload);
         }
         let payload = payloads.into_iter().next();
         Ok(Message {

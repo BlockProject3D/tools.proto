@@ -1,2 +1,2 @@
 [workspace]
-members = ["compiler", "runtime", "testprog"]
+members = [ "cli","compiler", "runtime", "testprog"]

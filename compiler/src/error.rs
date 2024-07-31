@@ -26,24 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::Error;
-
-#[derive(Clone, Debug)]
-pub struct Enum {
-    pub name: String,
-    pub largest: usize,
-    pub variants: Vec<(String, usize)>
-}
-
-impl Enum {
-    pub fn from_model(value: crate::model::protocol::Enum) -> Result<Enum, Error> {
-        let mut variants: Vec<(String, usize)> = value.variants.into_iter().collect();
-        variants.sort_by(|(_, v), (_, v1)| v.cmp(v1));
-        let largest = variants.last().map(|(_, v)| *v).ok_or(Error::ZeroEnum)?;
-        Ok(Enum {
-            name: value.name,
-            variants,
-            largest
-        })
+use bp3d_util::simple_error;
+simple_error! {
+    pub Error {
+        Io(std::io::Error) => "io error: {}",
+        Model(json5::Error) => "model parse error: {}",
+        Compiler(crate::compiler::Error) => "compiler error: {}",
+        Generator(String) => "generator error: {}"
     }
 }

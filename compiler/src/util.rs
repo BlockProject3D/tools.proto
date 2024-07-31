@@ -26,24 +26,44 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::Error;
+use std::collections::HashMap;
+use crate::compiler::Protocol;
+use crate::compiler::util::ImportResolver;
+use crate::ImportSolver;
 
-#[derive(Clone, Debug)]
-pub struct Enum {
-    pub name: String,
-    pub largest: usize,
-    pub variants: Vec<(String, usize)>
+pub struct SimpleImportSolver<'a> {
+    import_map: HashMap<String, (String, Protocol)>,
+    separator: &'a str
 }
 
-impl Enum {
-    pub fn from_model(value: crate::model::protocol::Enum) -> Result<Enum, Error> {
-        let mut variants: Vec<(String, usize)> = value.variants.into_iter().collect();
-        variants.sort_by(|(_, v), (_, v1)| v.cmp(v1));
-        let largest = variants.last().map(|(_, v)| *v).ok_or(Error::ZeroEnum)?;
-        Ok(Enum {
-            name: value.name,
-            variants,
-            largest
-        })
+impl<'a> ImportSolver for SimpleImportSolver<'a> {
+    fn register(&mut self, base_import_path: String, protocol: Protocol) {
+        self.import_map.insert(protocol.name.clone(), (base_import_path, protocol));
+    }
+}
+
+impl<'a> SimpleImportSolver<'a> {
+    pub fn new(separator: &'a str) -> Self {
+        Self {
+            import_map: HashMap::new(),
+            separator
+        }
+    }
+}
+
+impl<'a> Default for SimpleImportSolver<'a> {
+    fn default() -> Self {
+        Self::new("::")
+    }
+}
+
+impl<'a> ImportResolver for SimpleImportSolver<'a> {
+    fn get_protocol_by_name(&self, name: &str) -> Option<&Protocol> {
+        self.import_map.get(name).map(|(_, v)| v)
+    }
+
+    fn get_full_type_path(&self, protocol: &str, type_name: &str) -> Option<String> {
+        let import_path = self.import_map.get(protocol).map(|(k, _)| k)?;
+        Some(format!("{}{}{}", import_path, self.separator, type_name))
     }
 }

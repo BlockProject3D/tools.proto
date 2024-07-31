@@ -28,7 +28,7 @@
 
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::compiler::error::CompilerError;
+use crate::compiler::error::Error;
 use crate::compiler::message::Message;
 use crate::compiler::r#enum::Enum;
 use crate::compiler::structure::Structure;
@@ -47,7 +47,7 @@ pub struct Protocol {
 }
 
 impl Protocol {
-    pub fn from_model<T: ImportResolver>(value: crate::model::Protocol, solver: T) -> Result<Self, CompilerError> {
+    pub fn from_model<T: ImportResolver>(value: crate::model::Protocol, solver: &T) -> Result<Self, Error> {
         let mut proto = Protocol {
             name: value.name,
             type_path_by_name: TypePathMap::new(),
@@ -63,26 +63,26 @@ impl Protocol {
                 let r = solver.get_protocol_by_name(&v.protocol);
                 let r = match r {
                     Some(r) => r,
-                    None => return Err(CompilerError::UndefinedReference(v.protocol))
+                    None => return Err(Error::UndefinedReference(v.protocol))
                 };
                 match r.structs_by_name.get(&v.type_name) {
                     None => {
                         match r.enums_by_name.get(&v.type_name) {
                             None => {
-                                let msg = r.messages_by_name.get(&v.type_name).ok_or(CompilerError::UndefinedReference(format!("{}::{}", v.protocol, v.type_name)))?;
-                                let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(CompilerError::SolverError)?;
+                                let msg = r.messages_by_name.get(&v.type_name).ok_or(Error::UndefinedReference(format!("{}::{}", v.protocol, v.type_name)))?;
+                                let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
                                 proto.messages_by_name.insert(v.type_name, msg.clone());
                                 proto.type_path_by_name.add(msg.name.clone(), type_path);
                             },
                             Some(vv) => {
-                                let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(CompilerError::SolverError)?;
+                                let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
                                 proto.enums_by_name.insert(v.type_name, vv.clone());
                                 proto.type_path_by_name.add(vv.name.clone(), type_path);
                             }
                         }
                     },
                     Some(vv) => {
-                        let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(CompilerError::SolverError)?;
+                        let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
                         proto.structs_by_name.insert(v.type_name, vv.clone());
                         proto.type_path_by_name.add(vv.name.clone(), type_path);
                     }
