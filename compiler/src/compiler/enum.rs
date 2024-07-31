@@ -26,28 +26,19 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::collections::HashMap;
-use serde::Deserialize;
-use crate::model::message::Message;
-use crate::model::structure::Structure;
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct Import {
-    pub protocol: String,
-    pub type_name: String
-}
-
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Enum {
     pub name: String,
-    pub variants: HashMap<String, usize>
+    pub variants: Vec<(String, usize)>
 }
 
-#[derive(Clone, Debug, Deserialize)]
-pub struct Protocol {
-    pub name: String,
-    pub imports: Option<Vec<Import>>,
-    pub structs: Vec<Structure>,
-    pub messages: Vec<Message>,
-    pub enums: Option<Vec<Enum>>
+impl Enum {
+    pub fn from_model(value: crate::model::protocol::Enum) -> Enum {
+        let mut variants: Vec<(String, usize)> = value.variants.into_iter().collect();
+        variants.sort_by(|(_, v), (_, v1)| v.cmp(v1));
+        Enum {
+            name: value.name,
+            variants
+        }
+    }
 }

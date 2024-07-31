@@ -30,6 +30,6 @@
 
 pub mod message;
 pub mod structure;
-mod protocol;
+pub mod protocol;
 
 pub use protocol::Protocol;

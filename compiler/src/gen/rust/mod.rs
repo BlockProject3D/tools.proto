@@ -31,6 +31,7 @@ mod message_from_slice;
 mod util;
 mod message_write;
 mod structure;
+mod r#enum;
 
 use bp3d_util::simple_error;
 use itertools::Itertools;
@@ -39,6 +40,7 @@ use crate::gen::{File, Generator};
 use crate::gen::rust::message::gen_message_decl;
 use crate::gen::rust::message_from_slice::gen_message_from_slice_impl;
 use crate::gen::rust::message_write::gen_message_write_impl;
+use crate::gen::rust::r#enum::gen_enum_decl;
 use crate::gen::rust::structure::gen_structure_decl;
 
 simple_error! {
@@ -57,6 +59,7 @@ impl Generator for GeneratorRust {
         let impl_from_slice_messages_code = proto.messages.iter().map(|v| gen_message_from_slice_impl(v, &proto.type_path_by_name)).join("\n");
         let impl_write_messages_code = proto.messages.iter().map(|v| gen_message_write_impl(v, &proto.type_path_by_name)).join("\n");
         let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(v, &proto.type_path_by_name)).join("\n");
+        let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(v)).join("\n");
         Ok(vec![
             File {
                 name: "messages.rs".into(),
@@ -73,6 +76,10 @@ impl Generator for GeneratorRust {
             File {
                 name: "structures.rs".into(),
                 data: decl_structures
+            },
+            File {
+                name: "enums.rs".into(),
+                data: decl_enums
             }
         ])
     }

@@ -26,28 +26,14 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::collections::HashMap;
-use serde::Deserialize;
-use crate::model::message::Message;
-use crate::model::structure::Structure;
 
-#[derive(Clone, Debug, Deserialize)]
-pub struct Import {
-    pub protocol: String,
-    pub type_name: String
-}
+use crate::compiler::r#enum::Enum;
 
-#[derive(Clone, Debug, Deserialize)]
-pub struct Enum {
-    pub name: String,
-    pub variants: HashMap<String, usize>
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct Protocol {
-    pub name: String,
-    pub imports: Option<Vec<Import>>,
-    pub structs: Vec<Structure>,
-    pub messages: Vec<Message>,
-    pub enums: Option<Vec<Enum>>
+pub fn gen_enum_decl(e: &Enum) -> String {
+    let mut code = format!("#[derive(Copy, Clone)]\npub enum {} {{\n", e.name);
+    for (k, v) in &e.variants {
+        code += &format!("    {} = {},\n", k, v);
+    }
+    code += "}\n";
+    code
 }
