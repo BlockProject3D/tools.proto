@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::path::PathBuf;
+use std::path::Path;
 use crate::gen::Generator;
 use crate::model::Protocol;
 
@@ -40,10 +40,6 @@ fn main() {
     let compiled = compiler::Protocol::from_model(proto, ()).unwrap();
     let files = gen::GeneratorRust::generate(compiled).unwrap();
     for file in files {
-        let folder = file.name.find("/").map(|id| &file.name[..id]);
-        if let Some(folder) = folder {
-            std::fs::create_dir(PathBuf::from("./").join(folder)).unwrap()
-        }
-        std::fs::write(file.name, file.data).unwrap();
+        file.write(Path::new("./")).unwrap();
     }
 }

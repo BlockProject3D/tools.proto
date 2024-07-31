@@ -26,19 +26,54 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::borrow::Cow;
+use std::path::{Path, PathBuf};
 use crate::compiler::Protocol;
 
 mod rust;
 
+pub enum FileType {
+    MessageWriting,
+    MessageReading,
+    Message,
+    Structure,
+    Enum
+}
+
 pub struct File {
-    pub name: String,
-    pub data: String
+    name: Cow<'static, str>,
+    data: String,
+    ty: FileType
+}
+
+impl File {
+    pub fn new(ty: FileType, name: impl Into<Cow<'static, str>>, data: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            ty,
+            data: data.into()
+        }
+    }
+
+    pub fn write(self, out_directory: &Path) -> std::io::Result<()> {
+        if self.data.len() > 1 {
+            let sub_folder = self.name.find("/").map(|id| &self.name[..id]);
+            if let Some(sub_folder) = sub_folder {
+                std::fs::create_dir(out_directory.join(sub_folder))?;
+            }
+            let path = out_directory.join(&*self.name);
+            std::fs::write(path, self.data)
+        } else {
+            Ok(())
+        }
+    }
 }
 
 pub trait Generator {
     type Error: std::error::Error;
 
     fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error>;
+    fn generate_umbrella<'a>(files: impl Iterator<Item=&'a File>) -> Result<String, Self::Error>;
 }
 
 pub use rust::GeneratorRust;

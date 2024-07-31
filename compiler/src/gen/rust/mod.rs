@@ -36,7 +36,7 @@ mod r#enum;
 use bp3d_util::simple_error;
 use itertools::Itertools;
 use crate::compiler::Protocol;
-use crate::gen::{File, Generator};
+use crate::gen::{File, FileType, Generator};
 use crate::gen::rust::message::gen_message_decl;
 use crate::gen::rust::message_from_slice::gen_message_from_slice_impl;
 use crate::gen::rust::message_write::gen_message_write_impl;
@@ -61,26 +61,15 @@ impl Generator for GeneratorRust {
         let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(v, &proto.type_path_by_name)).join("\n");
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(v)).join("\n");
         Ok(vec![
-            File {
-                name: "messages.rs".into(),
-                data: decl_messages_code
-            },
-            File {
-                name: "messages_from_slice.rs".into(),
-                data: impl_from_slice_messages_code
-            },
-            File {
-                name: "messages_write.rs".into(),
-                data: impl_write_messages_code
-            },
-            File {
-                name: "structures.rs".into(),
-                data: decl_structures
-            },
-            File {
-                name: "enums.rs".into(),
-                data: decl_enums
-            }
+            File::new(FileType::Message, "messages.rs", decl_messages_code),
+            File::new(FileType::MessageReading, "messages_from_slice.rs", impl_from_slice_messages_code),
+            File::new(FileType::MessageWriting, "messages_write.rs", impl_write_messages_code),
+            File::new(FileType::Structure, "structures.rs", decl_structures),
+            File::new(FileType::Enum, "enums.rs", decl_enums)
         ])
+    }
+
+    fn generate_umbrella<'a>(files: impl Iterator<Item=&'a File>) -> Result<String, Self::Error> {
+        todo!()
     }
 }
