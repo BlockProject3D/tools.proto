@@ -1,0 +1,21 @@
+name: Development
+
+on:
+  - push
+  - workflow_dispatch
+
+jobs:
+  Test:
+    uses: BlockProject3D/workflows/.github/workflows/Build_Test.yml@main
+
+  Analyze:
+    uses: BlockProject3D/workflows/.github/workflows/Analyze.yml@main
+    needs: Test
+
+  CodeCov:
+    uses: BlockProject3D/workflows/.github/workflows/CodeCov.yml@main
+    needs: Test
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    with:
+      binpath: target/debug
