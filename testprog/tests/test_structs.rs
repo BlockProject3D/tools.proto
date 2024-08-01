@@ -26,20 +26,43 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::gen::GeneratorRust;
-use bp3d_protoc::Loader;
-use bp3d_protoc::util::SimpleImportSolver;
+use testprog::structs::{Flags, Floats, Numbers};
 
-fn main() {
-    let out_dir = std::env::var("OUT_DIR").unwrap();
-    let mut loader = Loader::new();
-    loader.load("./src/test.json5").unwrap();
-    loader.load("./src/structs.json5").unwrap();
-    let generated = loader.compile(SimpleImportSolver::default()).unwrap()
-        .set_use_messages(true).set_use_structs(true)
-        .set_reads_messages(true).set_writes_messages(true)
-        .generate::<GeneratorRust>(out_dir).unwrap();
-    for proto in generated {
-        println!("cargo::rustc-env=BP3D_PROTOC_{}={}", proto.name.to_ascii_uppercase(), proto.path.display());
-    }
+#[test]
+fn numbers() {
+    let mut nums = Numbers::new_on_stack();
+    nums.set_u_a(0x123456AB);
+    nums.set_a(-424242);
+    nums.set_u_b(0x1234);
+    nums.set_b(-4242);
+    nums.set_u_c(0x12);
+    nums.set_c(-42);
+    assert_eq!(nums.get_u_a(), 0x123456AB);
+    assert_eq!(nums.get_a(), -424242);
+    assert_eq!(nums.get_u_b(), 0x1234);
+    assert_eq!(nums.get_b(), -4242);
+    assert_eq!(nums.get_u_c(), 0x12);
+    assert_eq!(nums.get_c(), -42);
+}
+
+#[test]
+fn flags() {
+    let mut flags = Flags::new_on_stack();
+    flags.set_a(true);
+    flags.set_b(true);
+    flags.set_c(true);
+    flags.set_d(true);
+    assert!(flags.get_a());
+    assert!(flags.get_b());
+    assert!(flags.get_c());
+    assert!(flags.get_d());
+}
+
+#[test]
+fn floats() {
+    let mut floats = Floats::new_on_stack();
+    floats.set_a(4242.0);
+    floats.set_b(4242.4242);
+    assert_eq!(floats.get_a(), 4242.0);
+    assert_eq!(floats.get_b(), 4242.4242);
 }

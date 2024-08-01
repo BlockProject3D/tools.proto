@@ -27,13 +27,10 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use bp3d_proto::message::{FromSlice, WriteTo};
+use testprog::test::{Test, Test1};
 
-include!(env!("BP3D_PROTOC_TEST"));
-
-use test::Test;
-use test::Test1;
-
-fn main() {
+#[test]
+fn test() {
     let msg = Test {
         p1: Some(Test1 {
             s1: "this is a test",

@@ -26,20 +26,5 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::gen::GeneratorRust;
-use bp3d_protoc::Loader;
-use bp3d_protoc::util::SimpleImportSolver;
-
-fn main() {
-    let out_dir = std::env::var("OUT_DIR").unwrap();
-    let mut loader = Loader::new();
-    loader.load("./src/test.json5").unwrap();
-    loader.load("./src/structs.json5").unwrap();
-    let generated = loader.compile(SimpleImportSolver::default()).unwrap()
-        .set_use_messages(true).set_use_structs(true)
-        .set_reads_messages(true).set_writes_messages(true)
-        .generate::<GeneratorRust>(out_dir).unwrap();
-    for proto in generated {
-        println!("cargo::rustc-env=BP3D_PROTOC_{}={}", proto.name.to_ascii_uppercase(), proto.path.display());
-    }
-}
+include!(env!("BP3D_PROTOC_TEST"));
+include!(env!("BP3D_PROTOC_STRUCTS"));
