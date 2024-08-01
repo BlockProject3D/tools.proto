@@ -239,6 +239,7 @@ pub struct FixedField {
 #[derive(Clone, Debug)]
 pub struct FixedArrayField {
     pub name: String,
+    pub ty: FixedFieldType,
     pub array_len: usize,
     pub loc: Location
 }
@@ -282,11 +283,12 @@ impl Field {
                 }), last_bit_offset + r.bit_size))
             },
             _ => {
-                let bit_size = value.info.get_bit_size().ok_or(Error::MissingBitSize)?;
                 let array_len = value.array_len.unwrap_or(1);
+                let mut bit_size = value.info.get_bit_size().ok_or(Error::MissingBitSize)?;
                 let view = FieldView::from_model(proto, value.info.get_simple_type(), bit_size, value.view)?;
+                bit_size *= array_len;
                 let ty = FixedFieldType::from_model(value.info)?;
-                let loc = Location::from_model(bit_size * array_len, last_bit_offset);
+                let loc = Location::from_model(bit_size, last_bit_offset);
                 if array_len > 1 {
                     if bit_size % 8 != 0 {
                         return Err(Error::UnalignedArrayCodec);
@@ -294,6 +296,7 @@ impl Field {
                     Ok((Self::Array(FixedArrayField {
                         name: value.name,
                         array_len,
+                        ty,
                         loc
                     }), last_bit_offset + bit_size))
                 } else {

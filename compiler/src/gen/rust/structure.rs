@@ -96,8 +96,8 @@ fn gen_field_getter(field: &Field, type_path_by_name: &TypePathMap) -> String {
             code
         }
         Field::Array(v) => {
-            let raw_field_type = gen_field_type(v.loc.get_unsigned_integer_type());
-            let mut code = format!("    pub fn get_{}(&self) -> bp3d_proto::util::ArrayCodec<&[u8], {}, {}> {{\n", v.name, raw_field_type, v.item_bit_size());
+            let field_type = gen_field_type(v.ty);
+            let mut code = format!("    pub fn get_{}(&self) -> bp3d_proto::codec::ArrayCodec<&[u8], {}, {}> {{\n", v.name, field_type, v.item_bit_size());
             code += &format!("        bp3d_proto::codec::ArrayCodec::new(&self.data.as_ref()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             code += "    }\n";
             code
@@ -132,8 +132,8 @@ fn gen_field_setter(field: &Field, type_path_by_name: &TypePathMap) -> String {
             code
         }
         Field::Array(v) => {
-            let raw_field_type = gen_field_type(v.loc.get_unsigned_integer_type());
-            let mut code = format!("    pub fn get_{}_mut(&mut self) -> bp3d_proto::util::ArrayCodec<&mut [u8], {}, {}> {{\n", v.name, raw_field_type, v.item_bit_size());
+            let field_type = gen_field_type(v.ty);
+            let mut code = format!("    pub fn get_{}_mut(&mut self) -> bp3d_proto::codec::ArrayCodec<&mut [u8], {}, {}> {{\n", v.name, field_type, v.item_bit_size());
             code += &format!("        bp3d_proto::codec::ArrayCodec::new(&mut self.data.as_mut()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             code += "    }\n";
             code
