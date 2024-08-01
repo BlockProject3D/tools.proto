@@ -47,7 +47,7 @@ pub struct Enum {
 pub struct Protocol {
     pub name: String,
     pub imports: Option<Vec<Import>>,
-    pub structs: Vec<Structure>,
-    pub messages: Vec<Message>,
+    pub structs: Option<Vec<Structure>>,
+    pub messages: Option<Vec<Message>>,
     pub enums: Option<Vec<Enum>>
 }

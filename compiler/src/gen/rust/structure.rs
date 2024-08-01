@@ -36,6 +36,11 @@ fn gen_structure_impl_new(s: &Structure) -> String {
     code += "        Self { data }\n";
     code += "    }\n";
     code += "}\n";
+    code += &format!("impl {}<[u8; {}]> {{\n", s.name, s.byte_size);
+    code += "    pub fn new_on_stack() -> Self {\n";
+    code += &format!("        Self {{ data: [0; {}] }}\n", s.byte_size);
+    code += "    }\n";
+    code += "}\n";
     code
 }
 
@@ -72,9 +77,9 @@ fn gen_field_getter(field: &Field, type_path_by_name: &TypePathMap) -> String {
             };
             let mut code = format!("    pub fn get_raw_{}(&self) -> {} {{\n", v.name, raw_field_type);
             if v.loc.bit_size % 8 != 0 {
-                code += &format!("        unsafe {{ bp3d_proto::codec::BitCodec::new(&self.data.as_ref()[{}..{}]).{}::<{}, {}, {}>() }}\n", v.loc.byte_offset, v.loc.byte_size, function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size);
+                code += &format!("        unsafe {{ bp3d_proto::codec::BitCodec::new(&self.data.as_ref()[{}..{}]).{}::<{}, {}, {}>() }}\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size, function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size);
             } else {
-                code += &format!("        unsafe {{ bp3d_proto::codec::ByteCodec::new(&self.data.as_ref()[{}..{}]).{}::<{}>() }}\n", v.loc.byte_offset, v.loc.byte_size, function_name, raw_field_type);
+                code += &format!("        unsafe {{ bp3d_proto::codec::ByteCodec::new(&self.data.as_ref()[{}..{}]).{}::<{}>() }}\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size, function_name, raw_field_type);
             }
             code += "    }\n";
             code += &gen_field_view_getter(v, type_path_by_name);
@@ -83,13 +88,13 @@ fn gen_field_getter(field: &Field, type_path_by_name: &TypePathMap) -> String {
         Field::Array(v) => {
             let raw_field_type = gen_field_type(v.loc.get_unsigned_integer_type());
             let mut code = format!("    pub fn get_{}(&self) -> bp3d_proto::util::ArrayCodec<&[u8], {}, {}> {{\n", v.name, raw_field_type, v.item_bit_size());
-            code += &format!("        bp3d_proto::codec::ArrayCodec::new(&self.data.as_ref()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_size);
+            code += &format!("        bp3d_proto::codec::ArrayCodec::new(&self.data.as_ref()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             code += "    }\n";
             code
         },
         Field::Struct(v) => {
             let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", v.name, type_path_by_name.get(&v.r.name));
-            code += &format!("        {}::new(&self.data.as_ref()[{}..{}])\n", v.r.name, v.loc.byte_offset, v.loc.byte_size);
+            code += &format!("        {}::new(&self.data.as_ref()[{}..{}])\n", v.r.name, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             code += "    }\n";
             code
         }
@@ -108,9 +113,9 @@ fn gen_field_setter(field: &Field, type_path_by_name: &TypePathMap) -> String {
                 false => "write_aligned"
             };
             if v.loc.bit_size % 8 != 0 {
-                code += &format!("        unsafe {{ bp3d_proto::codec::BitCodec::new(&mut self.data.as_mut()[{}..{}]).{}::<{}, {}, {}>(value) }}\n", v.loc.byte_offset, v.loc.byte_size, function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size);
+                code += &format!("        unsafe {{ bp3d_proto::codec::BitCodec::new(&mut self.data.as_mut()[{}..{}]).{}::<{}, {}, {}>(value) }}\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size, function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size);
             } else {
-                code += &format!("        unsafe {{ bp3d_proto::codec::ByteCodec::new(&mut self.data.as_mut()[{}..{}]).{}::<{}>(value) }}\n", v.loc.byte_offset, v.loc.byte_size, function_name, raw_field_type);
+                code += &format!("        unsafe {{ bp3d_proto::codec::ByteCodec::new(&mut self.data.as_mut()[{}..{}]).{}::<{}>(value) }}\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size, function_name, raw_field_type);
             }
             code += "    }\n";
             code += &gen_field_view_setter(v, type_path_by_name);
@@ -119,13 +124,13 @@ fn gen_field_setter(field: &Field, type_path_by_name: &TypePathMap) -> String {
         Field::Array(v) => {
             let raw_field_type = gen_field_type(v.loc.get_unsigned_integer_type());
             let mut code = format!("    pub fn get_{}_mut(&mut self) -> bp3d_proto::util::ArrayCodec<&mut [u8], {}, {}> {{\n", v.name, raw_field_type, v.item_bit_size());
-            code += &format!("        bp3d_proto::codec::ArrayCodec::new(&mut self.data.as_mut()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_size);
+            code += &format!("        bp3d_proto::codec::ArrayCodec::new(&mut self.data.as_mut()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             code += "    }\n";
             code
         }
         Field::Struct(v) => {
             let mut code = format!("    pub fn get_{}_mut(&self) -> {} {{\n", v.name, type_path_by_name.get(&v.r.name));
-            code += &format!("        {}::new(&mut self.data.as_mut()[{}..{}])\n", v.r.name, v.loc.byte_offset, v.loc.byte_size);
+            code += &format!("        {}::new(&mut self.data.as_mut()[{}..{}])\n", v.r.name, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             code += "    }\n";
             code
         }
@@ -160,7 +165,11 @@ fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
             let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
             if raw_field_type != field_type {
-                code += &format!("        unsafe {{ std::mem::transmute::<{}, {}>(self.get_raw_{}()) }}\n", raw_field_type, field_type, field.name);
+                if field_type == "bool" {
+                    code += &format!("        if self.get_raw_{}() != 0 {{ true }} else {{ false }}\n", field.name);
+                } else {
+                    code += &format!("        unsafe {{ std::mem::transmute::<{}, {}>(self.get_raw_{}()) }}\n", raw_field_type, field_type, field.name);
+                }
             } else {
                 code += &format!("        self.get_raw_{}()\n", field.name);
             }
@@ -194,7 +203,11 @@ fn gen_field_view_setter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
             let mut code = format!("    pub fn set_{}(&mut self, value: {}) {{\n", field.name, field_type);
             if raw_field_type != field_type {
-                code += &format!("        self.set_raw_{}(unsafe {{ std::mem::transmute::<{}, {}>() }});\n", field.name, field_type, raw_field_type);
+                if field_type == "bool" {
+                    code += &format!("        self.set_raw_{}(if value {{ 1 }} else {{ 0 }});\n", field.name);
+                } else {
+                    code += &format!("        self.set_raw_{}(unsafe {{ std::mem::transmute::<{}, {}>(value) }});\n", field.name, field_type, raw_field_type);
+                }
             } else {
                 code += &format!("        self.set_raw_{}(value);\n", field.name);
             }
@@ -223,7 +236,7 @@ fn gen_structure_setters(s: &Structure, type_path_by_name: &TypePathMap) -> Stri
 }
 
 pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap) -> String {
-    let mut code = format!("#[derive(Copy, Clone)]\npub struct {}<T> {{\n", s.name);
+    let mut code = format!("#[derive(Copy, Clone, Default)]\npub struct {}<T = [u8; {}]> {{\n", s.name, s.byte_size);
     code += "    data: T\n";
     code += "}\n";
     code += &gen_structure_impl_new(s);

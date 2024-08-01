@@ -89,15 +89,19 @@ impl Protocol {
                 }
             }
         }
-        for v in value.structs {
-            let v = Rc::new(Structure::from_model(&proto, v)?);
-            proto.structs_by_name.insert(v.name.clone(), v.clone());
-            proto.structs.push(v);
+        if let Some(structs) = value.structs {
+            for v in structs {
+                let v = Rc::new(Structure::from_model(&proto, v)?);
+                proto.structs_by_name.insert(v.name.clone(), v.clone());
+                proto.structs.push(v);
+            }
         }
-        for v in value.messages {
-            let v = Rc::new(Message::from_model(&proto, v)?);
-            proto.messages_by_name.insert(v.name.clone(), v.clone());
-            proto.messages.push(v);
+        if let Some(messages) = value.messages {
+            for v in messages {
+                let v = Rc::new(Message::from_model(&proto, v)?);
+                proto.messages_by_name.insert(v.name.clone(), v.clone());
+                proto.messages.push(v);
+            }
         }
         if let Some(enums) = value.enums {
             for v in enums {
