@@ -28,17 +28,4 @@
 
 pub mod message;
 pub mod util;
-
-pub trait Size {
-    fn size(&self) -> usize;
-}
-
-pub trait FixedSize {
-    const SIZE: usize;
-}
-
-impl<T: FixedSize> Size for T {
-    fn size(&self) -> usize {
-        Self::SIZE
-    }
-}
+pub mod codec;

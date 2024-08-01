@@ -27,7 +27,19 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 mod scalar;
-mod codec;
 
 pub use scalar::*;
-pub use codec::*;
+
+pub trait Size {
+    fn size(&self) -> usize;
+}
+
+pub trait FixedSize {
+    const SIZE: usize;
+}
+
+impl<T: FixedSize> Size for T {
+    fn size(&self) -> usize {
+        Self::SIZE
+    }
+}

@@ -26,12 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod model;
-pub mod compiler;
-pub mod gen;
-mod error;
-pub mod util;
-mod interface;
+mod bytes;
+mod bits;
+mod arrays;
 
-pub use error::Error;
-pub use interface::*;
+pub use arrays::ArrayCodec;
+pub use bits::BitCodec;
+pub use bytes::ByteCodec;

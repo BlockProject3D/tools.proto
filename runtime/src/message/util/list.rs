@@ -28,7 +28,7 @@
 
 use std::marker::PhantomData;
 use bytesutil::ReadBytes;
-use crate::FixedSize;
+use crate::util::FixedSize;
 use crate::message::{Error, FromSlice, Message, WriteTo};
 use crate::util::ToUsize;
 

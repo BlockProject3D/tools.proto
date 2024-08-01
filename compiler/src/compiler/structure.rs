@@ -48,6 +48,22 @@ pub enum FixedFieldType {
 }
 
 impl FixedFieldType {
+    pub fn get_byte_size(&self) -> usize {
+        match self {
+            FixedFieldType::Int8 => 1,
+            FixedFieldType::Int16 => 2,
+            FixedFieldType::Int32 => 4,
+            FixedFieldType::Int64 => 8,
+            FixedFieldType::UInt8 => 1,
+            FixedFieldType::UInt16 => 2,
+            FixedFieldType::UInt32 => 4,
+            FixedFieldType::UInt64 => 8,
+            FixedFieldType::Float32 => 4,
+            FixedFieldType::Float64 => 8,
+            FixedFieldType::Bool => 1
+        }
+    }
+
     pub fn from_max_value(max_value: usize) -> Result<Self, Error> {
         let bit_size = if max_value > u32::MAX as usize {
             64
