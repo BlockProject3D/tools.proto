@@ -209,6 +209,9 @@ impl FieldView {
                 Ok(FieldView::Float { a, b, a_inv, b_inv })
             }
             None => {
+                if ty == SimpleType::Float && bit_size != 32 && bit_size != 64 {
+                    return Err(Error::UnsupportedViewType(ty));
+                }
                 if ty == SimpleType::Signed && bit_size != 8 && bit_size != 16 && bit_size != 32 && bit_size != 64 {
                     let max_value = 1 << (bit_size - 1);
                     Ok(FieldView::SignedCast{
