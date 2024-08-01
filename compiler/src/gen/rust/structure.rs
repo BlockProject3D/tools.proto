@@ -184,24 +184,26 @@ fn gen_field_view_setter(field: &FixedField, type_path_by_name: &TypePathMap) ->
         FieldView::Float { a_inv, b_inv, .. } => {
             let field_type = gen_field_type(field.ty);
             let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
-            let mut code = format!("    pub fn set_{}(&mut self, value: {}) {{\n", field.name, field_type);
+            let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, field_type);
             code += &format!("        let raw_value = value * {} + {}", a_inv, b_inv);
             code += &format!("        self.set_raw_{}(value as {});\n", field.name, raw_field_type);
+            code += "        self\n";
             code += "    }\n";
             code
         },
         FieldView::Enum(e) => {
             let item_type = type_path_by_name.get(&e.name);
             let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
-            let mut code = format!("    pub fn set_{}(&mut self, value: {}) {{\n", field.name, item_type);
+            let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, item_type);
             code += &format!("        self.set_raw_{}(value as {});\n", field.name, raw_field_type);
+            code += "        self\n";
             code += "    }\n";
             code
         },
         FieldView::Transmute => {
             let field_type = gen_field_type(field.ty);
             let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
-            let mut code = format!("    pub fn set_{}(&mut self, value: {}) {{\n", field.name, field_type);
+            let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, field_type);
             if raw_field_type != field_type {
                 if field_type == "bool" {
                     code += &format!("        self.set_raw_{}(if value {{ 1 }} else {{ 0 }});\n", field.name);
@@ -211,6 +213,7 @@ fn gen_field_view_setter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             } else {
                 code += &format!("        self.set_raw_{}(value);\n", field.name);
             }
+            code += "        self\n";
             code += "    }\n";
             code
         }

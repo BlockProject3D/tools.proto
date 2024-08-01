@@ -31,12 +31,7 @@ use testprog::structs::{Flags, Floats, Numbers};
 #[test]
 fn numbers() {
     let mut nums = Numbers::new_on_stack();
-    nums.set_u_a(0x123456AB);
-    nums.set_a(-424242);
-    nums.set_u_b(0x1234);
-    nums.set_b(-4242);
-    nums.set_u_c(0x12);
-    nums.set_c(-42);
+    nums.set_u_a(0x123456AB).set_a(-424242).set_u_b(0x1234).set_b(-4242).set_u_c(0x12).set_c(-42);
     assert_eq!(nums.get_u_a(), 0x123456AB);
     assert_eq!(nums.get_a(), -424242);
     assert_eq!(nums.get_u_b(), 0x1234);
@@ -48,10 +43,7 @@ fn numbers() {
 #[test]
 fn flags() {
     let mut flags = Flags::new_on_stack();
-    flags.set_a(true);
-    flags.set_b(true);
-    flags.set_c(true);
-    flags.set_d(true);
+    flags.set_a(true).set_b(true).set_c(true).set_d(true);
     assert!(flags.get_a());
     assert!(flags.get_b());
     assert!(flags.get_c());
@@ -61,8 +53,7 @@ fn flags() {
 #[test]
 fn floats() {
     let mut floats = Floats::new_on_stack();
-    floats.set_a(4242.0);
-    floats.set_b(4242.4242);
+    floats.set_a(4242.0).set_b(4242.4242);
     assert_eq!(floats.get_a(), 4242.0);
     assert_eq!(floats.get_b(), 4242.4242);
 }
