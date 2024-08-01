@@ -27,10 +27,8 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::marker::PhantomData;
-use std::ops::{BitAnd, BitOr, Shl, Shr};
 use bytesutil::{ReadBytes, WriteBytes};
 use crate::codec::ByteCodec;
-use crate::util::ToUsize;
 
 pub struct ArrayCodec<B, Item, const ITEM_BIT_SIZE: usize> {
     buffer: B,
@@ -46,7 +44,7 @@ impl<B, Item, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, ITEM_BIT_SIZE> {
     }
 }
 
-impl<B: AsRef<[u8]>, Item: ReadBytes + ToUsize + BitAnd<Output = Item> + Shr<Output = Item>, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, ITEM_BIT_SIZE> {
+impl<B: AsRef<[u8]>, Item: ReadBytes, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, ITEM_BIT_SIZE> {
     pub fn get_raw(&self, index: usize) -> Item {
         let byte_size = ITEM_BIT_SIZE / 8;
         let pos = index * byte_size;
@@ -65,11 +63,24 @@ impl<B: AsRef<[u8]>, Item: ReadBytes + ToUsize + BitAnd<Output = Item> + Shr<Out
     }
 }
 
-impl<B: AsMut<[u8]>, Item: ReadBytes + WriteBytes + ToUsize + BitAnd<Output = Item> + BitOr<Output = Item> + Shr<Output = Item> + Shl<Output = Item>, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, ITEM_BIT_SIZE> {
-    pub fn set_raw(&mut self, index: usize, value: Item) {
+impl<B: AsMut<[u8]>, Item: WriteBytes, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, ITEM_BIT_SIZE> {
+    pub fn set_raw(&mut self, index: usize, value: Item) -> &mut Self {
         let byte_size = ITEM_BIT_SIZE / 8;
         let pos = index * byte_size;
         let end = pos + byte_size;
         ByteCodec::new(&mut self.buffer.as_mut()[pos..end]).write::<Item>(value);
+        self
+    }
+}
+
+impl<B: AsMut<[u8]>> AsMut<[u8]> for ArrayCodec<B, u8, 8> {
+    fn as_mut(&mut self) -> &mut [u8] {
+        self.buffer.as_mut()
+    }
+}
+
+impl<B: AsRef<[u8]>> AsRef<[u8]> for ArrayCodec<B, u8, 8> {
+    fn as_ref(&self) -> &[u8] {
+        self.buffer.as_ref()
     }
 }
