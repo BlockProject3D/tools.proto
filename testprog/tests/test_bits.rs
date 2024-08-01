@@ -26,6 +26,33 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-include!(env!("BP3D_PROTOC_TEST"));
-include!(env!("BP3D_PROTOC_STRUCTS"));
-include!(env!("BP3D_PROTOC_BITS"));
+use bp3d_proto::util::Size;
+use testprog::bits::Numbers;
+
+#[test]
+fn numbers() {
+    let mut nums = Numbers::new_on_stack();
+    assert_eq!(nums.size(), 4);
+    nums.set_a(-8).set_b(15).set_c(-65536).set_d(127);
+    assert_eq!(nums.get_a(), -8);
+    assert_eq!(nums.get_b(), 15);
+    assert_eq!(nums.get_c(), -65536);
+    assert_eq!(nums.get_d(), 127);
+    nums.set_c(65535);
+    assert_eq!(nums.get_c(), 65535);
+}
+
+#[test]
+fn numbers_raw() {
+    let mut nums = Numbers::new_on_stack();
+    nums.set_raw_a(15);
+    nums.set_raw_b(15);
+    nums.set_raw_c(65536);
+    nums.set_raw_d(127);
+    nums.set_raw_c(65536);
+    assert_eq!(nums.get_raw_a(), 15);
+    assert_eq!(nums.get_a(), -8);
+    assert_eq!(nums.get_raw_b(), 15);
+    assert_eq!(nums.get_raw_c(), 65536);
+    assert_eq!(nums.get_raw_d(), 127);
+}

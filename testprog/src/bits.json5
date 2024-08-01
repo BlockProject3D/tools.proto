@@ -1,0 +1,38 @@
+{
+    name: "bits",
+    structs: [
+        {
+            name: "Numbers",
+            fields: [
+                {
+                    name: "a",
+                    info: {
+                        type: "signed",
+                        bits: 4
+                    }
+                },
+                {
+                    name: "b",
+                    info: {
+                        type: "unsigned",
+                        bits: 4
+                    }
+                },
+                {
+                    name: "c",
+                    info: {
+                        type: "signed",
+                        bits: 17
+                    }
+                },
+                {
+                    name: "d",
+                    info: {
+                        type: "unsigned",
+                        bits: 7
+                    }
+                }
+            ]
+        }
+    ]
+}

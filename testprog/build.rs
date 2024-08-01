@@ -35,6 +35,7 @@ fn main() {
     let mut loader = Loader::new();
     loader.load("./src/test.json5").unwrap();
     loader.load("./src/structs.json5").unwrap();
+    loader.load("./src/bits.json5").unwrap();
     let generated = loader.compile(SimpleImportSolver::default()).unwrap()
         .set_use_messages(true).set_use_structs(true)
         .set_reads_messages(true).set_writes_messages(true)
