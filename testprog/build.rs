@@ -26,28 +26,19 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto::message::{FromSlice, WriteTo};
-
-include!(env!("BP3D_PROTOC_TEST"));
-
-use test::Test;
-use test::Test1;
+use bp3d_protoc::gen::GeneratorRust;
+use bp3d_protoc::Loader;
+use bp3d_protoc::util::SimpleImportSolver;
 
 fn main() {
-    let msg = Test {
-        p1: Some(Test1 {
-            s1: "this is a test",
-            p1: 42
-        }),
-        s1: "a test",
-        s2: "hello world",
-    };
-    let mut v = Vec::new();
-    Test::write_to(&msg, &mut v).unwrap();
-    let msg = Test::from_slice(&v).unwrap().into_inner();
-    assert_eq!(msg.p1.unwrap().p1, 42);
-    assert_eq!(msg.p1.unwrap().s1, "this is a test");
-    assert_eq!(msg.s1, "a test");
-    assert_eq!(msg.s2, "hello world");
-    println!("{:?}", msg);
+    let out_dir = std::env::var("OUT_DIR").unwrap();
+    let mut loader = Loader::new();
+    loader.load("./src/test.json5").unwrap();
+    let generated = loader.compile(SimpleImportSolver::default()).unwrap()
+        .set_use_messages(true).set_use_structs(true)
+        .set_reads_messages(true).set_writes_messages(true)
+        .generate::<GeneratorRust>(out_dir).unwrap();
+    for proto in generated {
+        println!("cargo::rustc-env=BP3D_PROTOC_{}={}", proto.name.to_ascii_uppercase(), proto.path.display());
+    }
 }

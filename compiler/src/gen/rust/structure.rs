@@ -50,10 +50,10 @@ fn gen_structure_impl_from_slice(s: &Structure) -> String {
     let mut code = format!("impl<'a> bp3d_proto::message::FromSlice<'a> for {}<&'a [u8]> {{\n", s.name);
     code += "    type Output = Self;\n\n";
     code += "    fn from_slice(slice: &'a [u8]) -> Result<bp3d_proto::message::Message<Self>, bp3d_proto::message::Error> {\n";
-    code += "        if slice.len() < <Self as bp3d_proto::FixedSize>::SIZE {\n";
+    code += "        if slice.len() < <Self as bp3d_proto::util::FixedSize>::SIZE {\n";
     code += "            Err(bp3d_proto::message::Error::Truncated)\n";
     code += "        } else {\n";
-    code += "            Ok(bp3d_proto::message::Message::new(<Self as bp3d_proto::FixedSize>::SIZE, Self::new(&slice[..<Self as bp3d_proto::FixedSize>::SIZE])))\n";
+    code += "            Ok(bp3d_proto::message::Message::new(<Self as bp3d_proto::util::FixedSize>::SIZE, Self::new(&slice[..<Self as bp3d_proto::util::FixedSize>::SIZE])))\n";
     code += "        }\n";
     code += "    }\n";
     code += "}\n";
