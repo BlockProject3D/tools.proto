@@ -26,23 +26,24 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::gen::GeneratorRust;
-use bp3d_protoc::Loader;
-use bp3d_protoc::util::SimpleImportSolver;
+use bp3d_proto::util::Size;
+use testprog::struct_arrays::Basic;
 
-fn main() {
-    let out_dir = std::env::var("OUT_DIR").unwrap();
-    let mut loader = Loader::new();
-    loader.load("./src/test.json5").unwrap();
-    loader.load("./src/structs.json5").unwrap();
-    loader.load("./src/bits.json5").unwrap();
-    loader.load("./src/views.json5").unwrap();
-    loader.load("./src/struct_arrays.json5").unwrap();
-    let generated = loader.compile(SimpleImportSolver::default()).unwrap()
-        .set_use_messages(true).set_use_structs(true).set_use_enums(true)
-        .set_reads_messages(true).set_writes_messages(true)
-        .generate::<GeneratorRust>(out_dir).unwrap();
-    for proto in generated {
-        println!("cargo::rustc-env=BP3D_PROTOC_{}={}", proto.name.to_ascii_uppercase(), proto.path.display());
-    }
+#[test]
+fn basic() {
+    let mut basic = Basic::new_on_stack();
+    assert_eq!(basic.size(), 58);
+    basic.get_p3_mut().set_raw(0, 42.42).set_raw(1, 42.42)
+        .set_raw(2, 42.42).set_raw(3, 42.42);
+    assert_eq!(basic.get_p3().get_raw(0), 42.42);
+    assert_eq!(basic.get_p3().get_raw(1), 42.42);
+    assert_eq!(basic.get_p3().get_raw(2), 42.42);
+    assert_eq!(basic.get_p3().get_raw(3), 42.42);
+    basic.set_p1(424242);
+    assert_eq!(basic.get_p1(), 424242);
+    basic.get_p2_mut().as_mut()[..14].copy_from_slice(b"this is a test");
+    assert_eq!(&basic.get_p2().as_ref()[..14], b"this is a test");
+    basic.get_p4_mut().set_raw(0, 0xABCDEF).set_raw(1, 0xABCDEF);
+    assert_eq!(basic.get_p4().get_raw(0), 0xABCDEF);
+    assert_eq!(basic.get_p4().get_raw(1), 0xABCDEF);
 }

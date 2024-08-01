@@ -1,0 +1,42 @@
+{
+    name: "struct_arrays",
+    structs: [
+        {
+            name: "Basic",
+            fields: [
+                {
+                    name: "p1",
+                    info: {
+                        type: "unsigned",
+                        bits: 32
+                    }
+                },
+                {
+                    // Block of 32 characters (should be accessible as a &[u8] from rust).
+                    name: "p2",
+                    info: {
+                        type: "unsigned",
+                        bits: 8
+                    },
+                    array_len: 32
+                },
+                {
+                    name: "p3",
+                    info: {
+                        type: "float",
+                        bits: 32
+                    },
+                    array_len: 4
+                },
+                {
+                    name: "p4",
+                    info: {
+                        type: "unsigned",
+                        bits: 24
+                    },
+                    array_len: 2
+                }
+            ]
+        }
+    ]
+}
