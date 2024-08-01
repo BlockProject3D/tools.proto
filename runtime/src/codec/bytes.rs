@@ -40,7 +40,7 @@ impl<B> ByteCodec<B> {
 
 impl<B: AsRef<[u8]>> ByteCodec<B> {
     pub unsafe fn read_aligned<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>>(&self) -> T {
-        T::read_bytes_be(self.0.as_ref())
+        T::read_bytes_le(self.0.as_ref())
     }
 
     pub unsafe fn read_unaligned<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>>(&self) -> T {
@@ -60,7 +60,7 @@ impl<B: AsRef<[u8]>> ByteCodec<B> {
 
 impl<B: AsMut<[u8]> + AsRef<[u8]>> ByteCodec<B> {
     pub unsafe fn write_aligned<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>>(&mut self, value: T) {
-        value.write_bytes_be(self.0.as_mut());
+        value.write_bytes_le(self.0.as_mut());
     }
 
     pub unsafe fn write_unaligned<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>>(&mut self, value: T) {
