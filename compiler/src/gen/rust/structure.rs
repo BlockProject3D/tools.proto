@@ -69,7 +69,6 @@ fn gen_structure_impl_write_to(s: &Structure) -> String {
     let mut code = format!("impl<'a> bp3d_proto::message::WriteTo for {}<&'a [u8]> {{\n", s.name);
     code += "    type Input = Self;\n\n";
     code += "    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> std::io::Result<()> {\n";
-    code += "        use std::io::Write;\n";
     code += "        out.write_all(&input.data)\n";
     code += "    }\n";
     code += "}\n";
@@ -104,7 +103,7 @@ fn gen_field_getter(field: &Field, type_path_by_name: &TypePathMap) -> String {
             code
         },
         Field::Struct(v) => {
-            let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", v.name, type_path_by_name.get(&v.r.name));
+            let mut code = format!("    pub fn get_{}(&self) -> {}<&[u8]> {{\n", v.name, type_path_by_name.get(&v.r.name));
             code += &format!("        {}::new(&self.data.as_ref()[{}..{}])\n", v.r.name, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             code += "    }\n";
             code
@@ -140,7 +139,7 @@ fn gen_field_setter(field: &Field, type_path_by_name: &TypePathMap) -> String {
             code
         }
         Field::Struct(v) => {
-            let mut code = format!("    pub fn get_{}_mut(&self) -> {} {{\n", v.name, type_path_by_name.get(&v.r.name));
+            let mut code = format!("    pub fn get_{}_mut(&mut self) -> {}<&mut [u8]> {{\n", v.name, type_path_by_name.get(&v.r.name));
             code += &format!("        {}::new(&mut self.data.as_mut()[{}..{}])\n", v.r.name, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             code += "    }\n";
             code
@@ -269,7 +268,7 @@ fn gen_structure_setters(s: &Structure, type_path_by_name: &TypePathMap) -> Stri
 }
 
 pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap) -> String {
-    let mut code = format!("#[derive(Copy, Clone, Default, Debug)]\npub struct {}<T = [u8; {}]> {{\n", s.name, s.byte_size);
+    let mut code = format!("#[derive(Copy, Clone, Default, Debug)]\npub struct {}<T> {{\n", s.name);
     code += "    data: T\n";
     code += "}\n";
     code += &gen_structure_impl_new(s);

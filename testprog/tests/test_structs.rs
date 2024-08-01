@@ -26,12 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use testprog::structs::{Flags, Floats, Numbers};
+use bp3d_proto::util::Size;
+use testprog::structs::{Flags, Floats, Numbers, Master};
 
-#[test]
-fn numbers() {
-    let mut nums = Numbers::new_on_stack();
-    nums.set_u_a(0x123456AB).set_a(-424242).set_u_b(0x1234).set_b(-4242).set_u_c(0x12).set_c(-42);
+fn check_numbers<T: AsRef<[u8]>>(nums: &Numbers<T>) {
     assert_eq!(nums.get_u_a(), 0x123456AB);
     assert_eq!(nums.get_a(), -424242);
     assert_eq!(nums.get_u_b(), 0x1234);
@@ -40,20 +38,50 @@ fn numbers() {
     assert_eq!(nums.get_c(), -42);
 }
 
-#[test]
-fn flags() {
-    let mut flags = Flags::new_on_stack();
-    flags.set_a(true).set_b(true).set_c(true).set_d(true);
+fn check_flags<T: AsRef<[u8]>>(flags: &Flags<T>) {
     assert!(flags.get_a());
     assert!(flags.get_b());
     assert!(flags.get_c());
     assert!(flags.get_d());
 }
 
+fn check_floats<T: AsRef<[u8]>>(floats: &Floats<T>) {
+    assert_eq!(floats.get_a(), 4242.0);
+    assert_eq!(floats.get_b(), 4242.4242);
+}
+
+#[test]
+fn numbers() {
+    let mut nums = Numbers::new_on_stack();
+    assert_eq!(nums.size(), 14);
+    nums.set_u_a(0x123456AB).set_a(-424242).set_u_b(0x1234).set_b(-4242).set_u_c(0x12).set_c(-42);
+    check_numbers(&nums);
+}
+
+#[test]
+fn flags() {
+    let mut flags = Flags::new_on_stack();
+    assert_eq!(flags.size(), 15);
+    flags.set_a(true).set_b(true).set_c(true).set_d(true);
+    check_flags(&flags);
+}
+
 #[test]
 fn floats() {
     let mut floats = Floats::new_on_stack();
+    assert_eq!(floats.size(), 12);
     floats.set_a(4242.0).set_b(4242.4242);
-    assert_eq!(floats.get_a(), 4242.0);
-    assert_eq!(floats.get_b(), 4242.4242);
+    check_floats(&floats);
+}
+
+#[test]
+fn master() {
+    let mut master = Master::new_on_stack();
+    assert_eq!(master.size(), 14 + 15 + 12);
+    master.get_nums_mut().set_u_a(0x123456AB).set_a(-424242).set_u_b(0x1234).set_b(-4242).set_u_c(0x12).set_c(-42);
+    master.get_flags_mut().set_a(true).set_b(true).set_c(true).set_d(true);
+    master.get_floats_mut().set_a(4242.0).set_b(4242.4242);
+    check_numbers(&master.get_nums());
+    check_flags(&master.get_flags());
+    check_floats(&master.get_floats());
 }

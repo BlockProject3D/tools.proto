@@ -99,6 +99,32 @@
                     }
                 }
             ]
+        },
+        {
+            name: "Master",
+            fields: [
+                {
+                    name: "floats",
+                    info: {
+                        type: "struct",
+                        item_type: "Floats"
+                    }
+                },
+                {
+                    name: "nums",
+                    info: {
+                        type: "struct",
+                        item_type: "Numbers"
+                    }
+                },
+                {
+                    name: "flags",
+                    info: {
+                        type: "struct",
+                        item_type: "Flags"
+                    }
+                }
+            ]
         }
     ]
 }
