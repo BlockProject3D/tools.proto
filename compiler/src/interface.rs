@@ -140,7 +140,11 @@ impl Protoc {
                 }
             });
             let umbrella = T::generate_umbrella(&name, files_iter).map_err(|e| Error::Generator(e.to_string()))?;
-            let umbrella_path = out_directory.as_ref().join("umbrella.rs");
+            let out_path = out_directory.as_ref().join(&name);
+            if !out_path.exists() {
+                std::fs::create_dir(&out_path).map_err(Error::Io)?;
+            }
+            let umbrella_path = out_path.join("umbrella.rs");
             std::fs::write(&umbrella_path, umbrella).map_err(Error::Io)?;
             let files_iter = files.into_iter().filter(|v| {
                 match v.ty() {
@@ -152,7 +156,7 @@ impl Protoc {
                 }
             });
             for file in files_iter {
-                file.write(out_directory.as_ref()).map_err(Error::Io)?;
+                file.write(&out_path).map_err(Error::Io)?;
             }
             generated_protocols.push(Proto {
                 name,
