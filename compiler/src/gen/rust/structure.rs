@@ -65,6 +65,17 @@ fn gen_structure_impl_from_slice(s: &Structure) -> String {
     code
 }
 
+fn gen_structure_impl_write_to(s: &Structure) -> String {
+    let mut code = format!("impl<'a> bp3d_proto::message::WriteTo for {}<&'a [u8]> {{\n", s.name);
+    code += "    type Input = Self;\n\n";
+    code += "    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> std::io::Result<()> {\n";
+    code += "        use std::io::Write;\n";
+    code += "        out.write_all(&input.data)\n";
+    code += "    }\n";
+    code += "}\n";
+    code
+}
+
 fn gen_field_getter(field: &Field, type_path_by_name: &TypePathMap) -> String {
     match field {
         Field::Fixed(v) => {
@@ -164,15 +175,30 @@ fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             let field_type = gen_field_type(field.ty);
             let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
             let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
-            if raw_field_type != field_type {
-                if field_type == "bool" {
-                    code += &format!("        if self.get_raw_{}() != 0 {{ true }} else {{ false }}\n", field.name);
-                } else {
-                    code += &format!("        unsafe {{ std::mem::transmute::<{}, {}>(self.get_raw_{}()) }}\n", raw_field_type, field_type, field.name);
-                }
+            if field_type == "bool" {
+                code += &format!("        if self.get_raw_{}() != 0 {{ true }} else {{ false }}\n", field.name);
             } else {
-                code += &format!("        self.get_raw_{}()\n", field.name);
+                code += &format!("        unsafe {{ std::mem::transmute::<{}, {}>(self.get_raw_{}()) }}\n", raw_field_type, field_type, field.name);
             }
+            code += "    }\n";
+            code
+        },
+        FieldView::SignedCast { max_positive, max_value} => {
+            let field_type = gen_field_type(field.ty);
+            let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
+            code += &format!("        let raw_value = self.get_raw_{}();\n", field.name);
+            code += &format!("        if raw_value > {} {{\n", max_positive);
+            code += &format!("            -((raw_value & {}) as {})\n", max_value, field_type);
+            code += "        } else {\n";
+            code += &format!("            (raw_value & {}) as {}\n", max_positive, field_type);
+            code += "        }\n";
+            code += "    }\n";
+            code
+        },
+        FieldView::None => {
+            let field_type = gen_field_type(field.ty);
+            let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
+            code += &format!("        self.get_raw_{}()\n", field.name);
             code += "    }\n";
             code
         }
@@ -200,19 +226,23 @@ fn gen_field_view_setter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             code += "    }\n";
             code
         },
-        FieldView::Transmute => {
+        FieldView::Transmute | FieldView::SignedCast { .. } => {
             let field_type = gen_field_type(field.ty);
             let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
             let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, field_type);
-            if raw_field_type != field_type {
-                if field_type == "bool" {
-                    code += &format!("        self.set_raw_{}(if value {{ 1 }} else {{ 0 }});\n", field.name);
-                } else {
-                    code += &format!("        self.set_raw_{}(unsafe {{ std::mem::transmute::<{}, {}>(value) }});\n", field.name, field_type, raw_field_type);
-                }
+            if field_type == "bool" {
+                code += &format!("        self.set_raw_{}(if value {{ 1 }} else {{ 0 }});\n", field.name);
             } else {
-                code += &format!("        self.set_raw_{}(value);\n", field.name);
+                code += &format!("        self.set_raw_{}(unsafe {{ std::mem::transmute::<{}, {}>(value) }});\n", field.name, field_type, raw_field_type);
             }
+            code += "        self\n";
+            code += "    }\n";
+            code
+        },
+        FieldView::None => {
+            let field_type = gen_field_type(field.ty);
+            let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, field_type);
+            code += &format!("        self.set_raw_{}(value);\n", field.name);
             code += "        self\n";
             code += "    }\n";
             code
@@ -239,11 +269,12 @@ fn gen_structure_setters(s: &Structure, type_path_by_name: &TypePathMap) -> Stri
 }
 
 pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap) -> String {
-    let mut code = format!("#[derive(Copy, Clone, Default)]\npub struct {}<T = [u8; {}]> {{\n", s.name, s.byte_size);
+    let mut code = format!("#[derive(Copy, Clone, Default, Debug)]\npub struct {}<T = [u8; {}]> {{\n", s.name, s.byte_size);
     code += "    data: T\n";
     code += "}\n";
     code += &gen_structure_impl_new(s);
     code += &gen_structure_impl_fixed_size(s);
+    code += &gen_structure_impl_write_to(s);
     code += &gen_structure_impl_from_slice(s);
     code += &gen_structure_getters(s, type_path_by_name);
     code += &gen_structure_setters(s, type_path_by_name);

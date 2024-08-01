@@ -144,20 +144,36 @@ impl Location {
 
 #[derive(Clone, Debug)]
 pub enum FieldView {
+    /// Apply a float view based on an affine transformation function.
     Float {
         a: f64,
         b: f64,
         a_inv: f64,
         b_inv: f64
     },
+
+    /// Apply an enum view.
     Enum(Rc<Enum>),
-    Transmute
+
+    /// Apply a raw C-like cast (used for unsigned > signed and unsigned > float of same bit size).
+    Transmute,
+
+    /// Apply a unsigned > signed cast on a non T-aligned value,
+    /// the maximum positive value is passed in.
+    SignedCast {
+        max_positive: usize,
+        max_value: usize
+    },
+
+    /// Don't do anything special, just return the raw value.
+    None
 }
 
 impl FieldView {
     pub fn is_transmute(&self) -> bool {
         match self {
             FieldView::Transmute => true,
+            FieldView::None => true,
             _ => false
         }
     }
@@ -192,7 +208,19 @@ impl FieldView {
                 let b_inv = 0.0;
                 Ok(FieldView::Float { a, b, a_inv, b_inv })
             }
-            None => Ok(FieldView::Transmute)
+            None => {
+                if ty == SimpleType::Signed && bit_size != 8 && bit_size != 16 && bit_size != 32 && bit_size != 64 {
+                    let max_value = 1 << (bit_size - 1);
+                    Ok(FieldView::SignedCast{
+                        max_positive: max_value - 1,
+                        max_value
+                    })
+                } else if ty == SimpleType::Unsigned {
+                    Ok(FieldView::None)
+                } else {
+                    Ok(FieldView::Transmute)
+                }
+            }
         }
     }
 }
