@@ -32,12 +32,12 @@ use bytesutil::{ReadBytes, WriteBytes};
 use crate::codec::ByteCodec;
 use crate::util::ToUsize;
 
-pub struct ArrayCodec<B, Item, const ItemBitSize: usize> {
+pub struct ArrayCodec<B, Item, const ITEM_BIT_SIZE: usize> {
     buffer: B,
     useless: PhantomData<Item>
 }
 
-impl<B, Item, const ItemBitSize: usize> ArrayCodec<B, Item, ItemBitSize> {
+impl<B, Item, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, ITEM_BIT_SIZE> {
     pub fn new(buffer: B) -> Self {
         Self {
             buffer,
@@ -46,28 +46,28 @@ impl<B, Item, const ItemBitSize: usize> ArrayCodec<B, Item, ItemBitSize> {
     }
 }
 
-impl<B: AsRef<[u8]>, Item: ReadBytes + ToUsize + BitAnd<Output = Item> + Shr<Output = Item>, const ItemBitSize: usize> ArrayCodec<B, Item, ItemBitSize> {
+impl<B: AsRef<[u8]>, Item: ReadBytes + ToUsize + BitAnd<Output = Item> + Shr<Output = Item>, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, ITEM_BIT_SIZE> {
     pub fn get_raw(&self, index: usize) -> Item {
-        let byte_size = ItemBitSize / 8;
+        let byte_size = ITEM_BIT_SIZE / 8;
         let pos = index * byte_size;
         let end = pos + byte_size;
         ByteCodec::new(&self.buffer.as_ref()[pos..end]).read::<Item>()
     }
 
     pub fn len(&self) -> usize {
-        let byte_size = ItemBitSize / 8;
+        let byte_size = ITEM_BIT_SIZE / 8;
         self.buffer.as_ref().len() / byte_size
     }
 
     pub fn iter_raw(&self) -> impl Iterator<Item = Item> + '_ {
-        let byte_size = ItemBitSize / 8;
+        let byte_size = ITEM_BIT_SIZE / 8;
         self.buffer.as_ref().chunks(byte_size).map(|v| ByteCodec::new(v).read::<Item>())
     }
 }
 
-impl<B: AsMut<[u8]>, Item: ReadBytes + WriteBytes + ToUsize + BitAnd<Output = Item> + BitOr<Output = Item> + Shr<Output = Item> + Shl<Output = Item>, const ItemBitSize: usize> ArrayCodec<B, Item, ItemBitSize> {
+impl<B: AsMut<[u8]>, Item: ReadBytes + WriteBytes + ToUsize + BitAnd<Output = Item> + BitOr<Output = Item> + Shr<Output = Item> + Shl<Output = Item>, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, ITEM_BIT_SIZE> {
     pub fn set_raw(&mut self, index: usize, value: Item) {
-        let byte_size = ItemBitSize / 8;
+        let byte_size = ITEM_BIT_SIZE / 8;
         let pos = index * byte_size;
         let end = pos + byte_size;
         ByteCodec::new(&mut self.buffer.as_mut()[pos..end]).write::<Item>(value);

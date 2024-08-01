@@ -69,7 +69,7 @@ impl<'a, T: ReadBytes> FromSlice<'a> for T {
     type Output = Self;
 
     fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
-        let size = std::mem::size_of::<T>();
+        let size = size_of::<T>();
         if slice.len() < size {
             Err(Error::Truncated)
         } else {

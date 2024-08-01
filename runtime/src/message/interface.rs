@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use bp3d_util::simple_error;
+
 simple_error! {
     pub Error {
         InvalidUtf8 => "invalid UTF-8 string",
@@ -59,7 +60,7 @@ impl<T> Message<T> {
 pub trait FromSlice<'a> {
     type Output: Sized;
 
-    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, crate::message::Error>;
+    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error>;
     //fn copy_to_slice(&self, out_slice: &mut [u8]);
 }
 

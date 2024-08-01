@@ -45,6 +45,12 @@ impl Referenced {
             Referenced::Message(v) => &v.name
         }
     }
+
+    pub fn lookup(proto: &Protocol, reference_name: &str) -> Option<Self> {
+        proto.structs_by_name.get(reference_name)
+            .map(|v| Referenced::Struct(v.clone()))
+            .or_else(|| proto.messages_by_name.get(reference_name).map(|v| Referenced::Message(v.clone())))
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -101,10 +107,7 @@ impl AnyField {
     fn from_model(proto: &Protocol, value: crate::model::message::MessageField) -> Result<Self, Error> {
         match value.info {
             MessageFieldType::Item { item_type } => {
-                let r = proto.structs_by_name.get(&item_type)
-                    .map(|v| Referenced::Struct(v.clone()))
-                    .or_else(|| proto.messages_by_name.get(&item_type).map(|v| Referenced::Message(v.clone())))
-                    .ok_or_else(|| Error::UndefinedReference(item_type))?;
+                let r = Referenced::lookup(proto, &item_type).ok_or_else(|| Error::UndefinedReference(item_type))?;
                 match r {
                     Referenced::Struct(r) => {
                         if r.fields.len() == 1 && r.fields[0].as_fixed().is_some()
@@ -136,10 +139,7 @@ impl AnyField {
                 }
             },
             MessageFieldType::List { max_len, item_type } => {
-                let r = proto.structs_by_name.get(&item_type)
-                    .map(|v| Referenced::Struct(v.clone()))
-                    .or_else(|| proto.messages_by_name.get(&item_type).map(|v| Referenced::Message(v.clone())))
-                    .ok_or_else(|| Error::UndefinedReference(item_type))?;
+                let r = Referenced::lookup(proto, &item_type).ok_or_else(|| Error::UndefinedReference(item_type))?;
                 let ty = FixedFieldType::from_max_value(max_len)?;
                 match r {
                     Referenced::Struct(item_type) => {

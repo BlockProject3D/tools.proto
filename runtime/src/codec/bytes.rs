@@ -50,7 +50,7 @@ impl<B: AsRef<[u8]>> ByteCodec<B> {
     }
 
     pub fn read<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>>(&self) -> T {
-        if std::mem::size_of::<T>() != self.0.as_ref().len() {
+        if size_of::<T>() != self.0.as_ref().len() {
             unsafe { self.read_unaligned::<T>() }
         } else {
             unsafe { self.read_aligned::<T>() }
@@ -72,7 +72,7 @@ impl<B: AsMut<[u8]> + AsRef<[u8]>> ByteCodec<B> {
     }
 
     pub fn write<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>>(&mut self, value: T) {
-        if std::mem::size_of::<T>() != self.0.as_ref().len() {
+        if size_of::<T>() != self.0.as_ref().len() {
             unsafe { self.write_unaligned::<T>(value); }
         } else {
             unsafe { self.write_aligned::<T>(value); }

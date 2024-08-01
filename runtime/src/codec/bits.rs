@@ -39,50 +39,50 @@ impl<B> BitCodec<B> {
 }
 
 impl<B: AsRef<[u8]>> BitCodec<B> {
-    pub unsafe fn read_aligned<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>, const BitOffset: usize, const BitSize: usize>(&self) -> T {
-        let mask: usize = (1 << BitSize) - 1;
+    pub unsafe fn read_aligned<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>, const BIT_OFFSET: usize, const BIT_SIZE: usize>(&self) -> T {
+        let mask: usize = (1 << BIT_SIZE) - 1;
         let value = T::read_bytes_be(self.0.as_ref());
-        (value >> T::from_usize(BitOffset)) & T::from_usize(mask)
+        (value >> T::from_usize(BIT_OFFSET)) & T::from_usize(mask)
     }
 
-    pub unsafe fn read_unaligned<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>, const BitOffset: usize, const BitSize: usize>(&self) -> T {
+    pub unsafe fn read_unaligned<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>, const BIT_OFFSET: usize, const BIT_SIZE: usize>(&self) -> T {
         let mut data = [0; 8];
         data[..self.0.as_ref().len()].copy_from_slice(self.0.as_ref());
-        BitCodec::new(&data).read_aligned::<T, BitOffset, BitSize>()
+        BitCodec::new(&data).read_aligned::<T, BIT_OFFSET, BIT_SIZE>()
     }
 
-    pub fn read<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>, const BitOffset: usize, const BitSize: usize>(&self) -> T {
-        if std::mem::size_of::<T>() != self.0.as_ref().len() {
-            unsafe { self.read_unaligned::<T, BitOffset, BitSize>() }
+    pub fn read<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>, const BIT_OFFSET: usize, const BIT_SIZE: usize>(&self) -> T {
+        if size_of::<T>() != self.0.as_ref().len() {
+            unsafe { self.read_unaligned::<T, BIT_OFFSET, BIT_SIZE>() }
         } else {
-            unsafe { self.read_aligned::<T, BitOffset, BitSize>() }
+            unsafe { self.read_aligned::<T, BIT_OFFSET, BIT_SIZE>() }
         }
     }
 }
 
 impl<B: AsMut<[u8]> + AsRef<[u8]>> BitCodec<B> {
-    pub unsafe fn write_aligned<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>, const BitOffset: usize, const BitSize: usize>(&mut self, value: T) {
-        let mask: usize = (1 << BitSize) - 1;
-        let reset_mask = !(mask << BitOffset);
+    pub unsafe fn write_aligned<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>, const BIT_OFFSET: usize, const BIT_SIZE: usize>(&mut self, value: T) {
+        let mask: usize = (1 << BIT_SIZE) - 1;
+        let reset_mask = !(mask << BIT_OFFSET);
         let original = T::read_bytes_be(self.0.as_ref());
         let clean = original & T::from_usize(reset_mask);
-        let value = (value & T::from_usize(mask)) << T::from_usize(BitOffset);
+        let value = (value & T::from_usize(mask)) << T::from_usize(BIT_OFFSET);
         (clean | value).write_bytes_be(self.0.as_mut());
     }
 
-    pub unsafe fn write_unaligned<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>, const BitOffset: usize, const BitSize: usize>(&mut self, value: T) {
+    pub unsafe fn write_unaligned<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>, const BIT_OFFSET: usize, const BIT_SIZE: usize>(&mut self, value: T) {
         let mut data = [0; 8];
         data[..self.0.as_ref().len()].copy_from_slice(self.0.as_ref());
-        BitCodec::new(&mut data).write_aligned::<T, BitOffset, BitSize>(value);
+        BitCodec::new(&mut data).write_aligned::<T, BIT_OFFSET, BIT_SIZE>(value);
         let motherfuckingrust = self.0.as_ref().len();
         self.0.as_mut().copy_from_slice(&data[..motherfuckingrust]);
     }
 
-    pub fn write<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>, const BitOffset: usize, const BitSize: usize>(&mut self, value: T) {
-        if std::mem::size_of::<T>() != self.0.as_ref().len() {
-            unsafe { self.write_unaligned::<T, BitOffset, BitSize>(value); }
+    pub fn write<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>, const BIT_OFFSET: usize, const BIT_SIZE: usize>(&mut self, value: T) {
+        if size_of::<T>() != self.0.as_ref().len() {
+            unsafe { self.write_unaligned::<T, BIT_OFFSET, BIT_SIZE>(value); }
         } else {
-            unsafe { self.write_aligned::<T, BitOffset, BitSize>(value); }
+            unsafe { self.write_aligned::<T, BIT_OFFSET, BIT_SIZE>(value); }
         }
     }
 }

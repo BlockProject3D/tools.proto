@@ -47,6 +47,15 @@ pub enum FixedFieldType {
     Bool
 }
 
+fn map_numeric(ty: SimpleType, signed: FixedFieldType, unsigned: FixedFieldType, float: FixedFieldType) -> Option<FixedFieldType> {
+    match ty {
+        SimpleType::Signed => Some(signed),
+        SimpleType::Unsigned => Some(unsigned),
+        SimpleType::Float => Some(float),
+        _ => None
+    }
+}
+
 impl FixedFieldType {
     pub fn get_byte_size(&self) -> usize {
         match self {
@@ -88,33 +97,17 @@ impl FixedFieldType {
         } else if ty == SimpleType::Float && bit_size == 64 {
             Ok(Self::Float64)
         } else if bit_size > 32 && bit_size <= 64 {
-            match ty {
-                SimpleType::Signed => Ok(Self::Int64),
-                SimpleType::Unsigned => Ok(Self::UInt64),
-                SimpleType::Float => Ok(Self::Float64),
-                _ => Err(Error::UnsupportedType(motherfuckingrust))
-            }
+            map_numeric(ty, Self::Int64, Self::UInt64, Self::Float64)
+                .ok_or_else(|| Error::UnsupportedType(motherfuckingrust))
         } else if bit_size > 16 && bit_size <= 32 {
-            match ty {
-                SimpleType::Signed => Ok(Self::Int32),
-                SimpleType::Unsigned => Ok(Self::UInt32),
-                SimpleType::Float => Ok(Self::Float64),
-                _ => Err(Error::UnsupportedType(motherfuckingrust))
-            }
+            map_numeric(ty, Self::Int32, Self::UInt32, Self::Float64)
+                .ok_or_else(|| Error::UnsupportedType(motherfuckingrust))
         } else if bit_size > 8 && bit_size <= 16 {
-            match ty {
-                SimpleType::Signed => Ok(Self::Int16),
-                SimpleType::Unsigned => Ok(Self::UInt16),
-                SimpleType::Float => Ok(Self::Float32),
-                _ => Err(Error::UnsupportedType(motherfuckingrust))
-            }
+            map_numeric(ty, Self::Int16, Self::UInt16, Self::Float32)
+                .ok_or_else(|| Error::UnsupportedType(motherfuckingrust))
         } else if bit_size > 0 && bit_size <= 8 {
-            match ty {
-                SimpleType::Signed => Ok(Self::Int8),
-                SimpleType::Unsigned => Ok(Self::UInt8),
-                SimpleType::Float => Ok(Self::Float32),
-                _ => Err(Error::UnsupportedType(motherfuckingrust))
-            }
+            map_numeric(ty, Self::Int8, Self::UInt8, Self::Float32)
+                .ok_or_else(|| Error::UnsupportedType(motherfuckingrust))
         } else {
             Err(Error::UnsupportedBitSize(bit_size))
         }
