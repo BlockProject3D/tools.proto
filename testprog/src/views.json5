@@ -1,0 +1,33 @@
+{
+    name: "views",
+    structs: [
+        {
+            name: "Floats",
+            fields: [
+                {
+                    name: "a",
+                    info: {
+                        type: "float",
+                        bits: 17
+                    },
+                    view: {
+                        type: "float-range",
+                        min: 0,
+                        max: 10
+                    }
+                },
+                {
+                    name: "b",
+                    info: {
+                        type: "float",
+                        bits: 7
+                    },
+                    view: {
+                        type: "float-multiplier",
+                        multiplier: 0.1
+                    }
+                }
+            ]
+        }
+    ]
+}

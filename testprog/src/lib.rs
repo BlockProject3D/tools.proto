@@ -29,3 +29,4 @@
 include!(env!("BP3D_PROTOC_TEST"));
 include!(env!("BP3D_PROTOC_STRUCTS"));
 include!(env!("BP3D_PROTOC_BITS"));
+include!(env!("BP3D_PROTOC_VIEWS"));

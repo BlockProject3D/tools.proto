@@ -154,7 +154,7 @@ fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             let field_type = gen_field_type(field.ty);
             let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
             code += &format!("        let raw_value = self.get_raw_{}() as {};\n", field.name, field_type);
-            code += &format!("        raw_value * {} + {}", a, b);
+            code += &format!("        raw_value * {:?} + {:?}\n", a, b);
             code += "    }\n";
             code
         },
@@ -211,8 +211,8 @@ fn gen_field_view_setter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             let field_type = gen_field_type(field.ty);
             let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
             let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, field_type);
-            code += &format!("        let raw_value = value * {} + {}", a_inv, b_inv);
-            code += &format!("        self.set_raw_{}(value as {});\n", field.name, raw_field_type);
+            code += &format!("        let raw_value = value * {:?} + {:?};\n", a_inv, b_inv);
+            code += &format!("        self.set_raw_{}(raw_value as {});\n", field.name, raw_field_type);
             code += "        self\n";
             code += "    }\n";
             code

@@ -26,22 +26,22 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::gen::GeneratorRust;
-use bp3d_protoc::Loader;
-use bp3d_protoc::util::SimpleImportSolver;
+use testprog::views::Floats;
 
-fn main() {
-    let out_dir = std::env::var("OUT_DIR").unwrap();
-    let mut loader = Loader::new();
-    loader.load("./src/test.json5").unwrap();
-    loader.load("./src/structs.json5").unwrap();
-    loader.load("./src/bits.json5").unwrap();
-    loader.load("./src/views.json5").unwrap();
-    let generated = loader.compile(SimpleImportSolver::default()).unwrap()
-        .set_use_messages(true).set_use_structs(true).set_use_enums(true)
-        .set_reads_messages(true).set_writes_messages(true)
-        .generate::<GeneratorRust>(out_dir).unwrap();
-    for proto in generated {
-        println!("cargo::rustc-env=BP3D_PROTOC_{}={}", proto.name.to_ascii_uppercase(), proto.path.display());
-    }
+macro_rules! assert_feq {
+    ($actual: expr, $expected: expr, $delta: expr) => {
+        if ($actual - $expected).abs() > $delta {
+            panic!("assertion '(actual - expected) < delta' failed:\n actual: {}\n expected: {}\n delta: {}", $actual, $expected, $delta);
+        }
+    };
+}
+
+#[test]
+fn floats() {
+    let mut floats = Floats::new_on_stack();
+    floats.set_a(4.4242).set_b(12.7);
+    assert_feq!(floats.get_a(), 4.4242, 0.0001);
+    assert_feq!(floats.get_b(), 12.7, 0.1);
+    floats.set_raw_b(127);
+    assert_feq!(floats.get_b(), 12.7, 0.1);
 }
