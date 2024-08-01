@@ -73,7 +73,7 @@ impl Generator for GeneratorRust {
     fn generate_umbrella<'a>(proto_name: &str, files: impl Iterator<Item=&'a Path>) -> Result<String, Self::Error> {
         let mut code = format!("pub mod {} {{\n", proto_name);
         for file in files {
-            code += &format!("include!(\"{}\");\n", file.display());
+            code += &format!("include!({:?});\n", file);
         }
         code += "}\n";
         Ok(code)
