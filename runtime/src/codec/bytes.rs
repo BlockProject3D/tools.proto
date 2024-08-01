@@ -28,7 +28,6 @@
 
 use std::ops::{BitAnd, BitOr, Shl, Shr};
 use bytesutil::{ReadBytes, WriteBytes};
-use crate::util::ToUsize;
 
 pub struct ByteCodec<B>(B);
 
@@ -39,17 +38,17 @@ impl<B> ByteCodec<B> {
 }
 
 impl<B: AsRef<[u8]>> ByteCodec<B> {
-    pub unsafe fn read_aligned<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>>(&self) -> T {
+    pub unsafe fn read_aligned<T: ReadBytes + Shr<Output = T> + BitAnd<Output = T>>(&self) -> T {
         T::read_bytes_le(self.0.as_ref())
     }
 
-    pub unsafe fn read_unaligned<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>>(&self) -> T {
+    pub unsafe fn read_unaligned<T: ReadBytes + Shr<Output = T> + BitAnd<Output = T>>(&self) -> T {
         let mut data = [0; 8];
         data[..self.0.as_ref().len()].copy_from_slice(self.0.as_ref());
         ByteCodec::new(&data).read_aligned::<T>()
     }
 
-    pub fn read<T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>>(&self) -> T {
+    pub fn read<T: ReadBytes + Shr<Output = T> + BitAnd<Output = T>>(&self) -> T {
         if size_of::<T>() != self.0.as_ref().len() {
             unsafe { self.read_unaligned::<T>() }
         } else {
@@ -59,11 +58,11 @@ impl<B: AsRef<[u8]>> ByteCodec<B> {
 }
 
 impl<B: AsMut<[u8]> + AsRef<[u8]>> ByteCodec<B> {
-    pub unsafe fn write_aligned<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>>(&mut self, value: T) {
+    pub unsafe fn write_aligned<T: ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>>(&mut self, value: T) {
         value.write_bytes_le(self.0.as_mut());
     }
 
-    pub unsafe fn write_unaligned<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>>(&mut self, value: T) {
+    pub unsafe fn write_unaligned<T: ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>>(&mut self, value: T) {
         let mut data = [0; 8];
         data[..self.0.as_ref().len()].copy_from_slice(self.0.as_ref());
         ByteCodec::new(&mut data).write_aligned::<T>(value);
@@ -71,7 +70,7 @@ impl<B: AsMut<[u8]> + AsRef<[u8]>> ByteCodec<B> {
         self.0.as_mut().copy_from_slice(&data[..motherfuckingrust]);
     }
 
-    pub fn write<T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>>(&mut self, value: T) {
+    pub fn write<T: ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>>(&mut self, value: T) {
         if size_of::<T>() != self.0.as_ref().len() {
             unsafe { self.write_unaligned::<T>(value); }
         } else {
