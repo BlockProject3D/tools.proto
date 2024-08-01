@@ -33,6 +33,7 @@ mod message_write;
 mod structure;
 mod r#enum;
 
+use std::path::Path;
 use bp3d_util::simple_error;
 use itertools::Itertools;
 use crate::compiler::Protocol;
@@ -69,10 +70,10 @@ impl Generator for GeneratorRust {
         ])
     }
 
-    fn generate_umbrella<'a>(proto_name: &str, files: impl Iterator<Item=&'a File>) -> Result<String, Self::Error> {
-        let mut code = format!("mod {} {{\n", proto_name);
+    fn generate_umbrella<'a>(proto_name: &str, files: impl Iterator<Item=&'a Path>) -> Result<String, Self::Error> {
+        let mut code = format!("pub mod {} {{\n", proto_name);
         for file in files {
-            code += &format!("include!(\"{}\");\n", file.name);
+            code += &format!("include!(\"{}\");\n", file.display());
         }
         code += "}\n";
         Ok(code)

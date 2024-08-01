@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::borrow::Cow;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use crate::compiler::Protocol;
 
 mod rust;
@@ -60,16 +60,17 @@ impl File {
         self.ty
     }
 
-    pub fn write(self, out_directory: &Path) -> std::io::Result<()> {
+    pub fn write(self, out_directory: &Path) -> std::io::Result<Option<PathBuf>> {
         if self.data.len() > 1 {
             let sub_folder = self.name.find("/").map(|id| &self.name[..id]);
             if let Some(sub_folder) = sub_folder {
                 std::fs::create_dir(out_directory.join(sub_folder))?;
             }
             let path = out_directory.join(&*self.name);
-            std::fs::write(path, self.data)
+            std::fs::write(&path, self.data)?;
+            Ok(Some(path))
         } else {
-            Ok(())
+            Ok(None)
         }
     }
 }
@@ -78,7 +79,7 @@ pub trait Generator {
     type Error: std::error::Error;
 
     fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error>;
-    fn generate_umbrella<'a>(_: &str, _: impl Iterator<Item=&'a File>) -> Result<String, Self::Error> {
+    fn generate_umbrella<'a>(_: &str, _: impl Iterator<Item=&'a Path>) -> Result<String, Self::Error> {
         Ok(String::new())
     }
 }

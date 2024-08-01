@@ -76,7 +76,7 @@ impl Loader {
 
 pub struct Proto {
     pub name: String,
-    pub umbrella_path: PathBuf
+    pub path: PathBuf
 }
 
 pub struct Protoc {
@@ -130,22 +130,10 @@ impl Protoc {
         for proto in self.protocols {
             let name = proto.name.clone();
             let files = T::generate(proto).map_err(|e| Error::Generator(e.to_string()))?;
-            let files_iter = files.iter().filter(|v| {
-                match v.ty() {
-                    FileType::MessageWriting => self.write_messages,
-                    FileType::MessageReading => self.read_messages,
-                    FileType::Message => self.use_messages,
-                    FileType::Structure => self.use_structs,
-                    FileType::Enum => self.use_enums
-                }
-            });
-            let umbrella = T::generate_umbrella(&name, files_iter).map_err(|e| Error::Generator(e.to_string()))?;
             let out_path = out_directory.as_ref().join(&name);
             if !out_path.exists() {
                 std::fs::create_dir(&out_path).map_err(Error::Io)?;
             }
-            let umbrella_path = out_path.join("umbrella.rs");
-            std::fs::write(&umbrella_path, umbrella).map_err(Error::Io)?;
             let files_iter = files.into_iter().filter(|v| {
                 match v.ty() {
                     FileType::MessageWriting => self.write_messages,
@@ -155,12 +143,27 @@ impl Protoc {
                     FileType::Enum => self.use_enums
                 }
             });
-            for file in files_iter {
-                file.write(&out_path).map_err(Error::Io)?;
+            let iter = files_iter.into_iter().map(|v| v.write(&out_path))
+                .filter_map(|v| match v {
+                    Ok(o) => match o {
+                        Some(o) => Some(Ok(o)),
+                        None => None
+                    },
+                    Err(e) => Some(Err(e))
+                })
+                .collect::<std::io::Result<Vec<PathBuf>>>().map_err(Error::Io)?;
+            let umbrella = T::generate_umbrella(&name, iter.iter().map(|v| &**v)).map_err(|e| Error::Generator(e.to_string()))?;
+            let proto_path;
+            if umbrella.len() > 1 {
+                let umbrella_path = out_path.join("umbrella.rs");
+                std::fs::write(&umbrella_path, umbrella).map_err(Error::Io)?;
+                proto_path = umbrella_path;
+            } else {
+                proto_path = out_path;
             }
             generated_protocols.push(Proto {
                 name,
-                umbrella_path
+                path: proto_path
             })
         }
         Ok(generated_protocols)
