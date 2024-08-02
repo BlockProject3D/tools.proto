@@ -272,6 +272,14 @@ impl Field {
         }
     }
 
+    pub fn name(&self) -> &str {
+        match self {
+            Field::Fixed(v) => &v.name,
+            Field::Array(v) => &v.name,
+            Field::Struct(v) => &v.name
+        }
+    }
+
     fn from_model(proto: &Protocol, last_bit_offset: usize, value: crate::model::structure::StructField) -> Result<(Self, usize), Error> {
         match value.info {
             StructFieldType::Struct { item_type } => {

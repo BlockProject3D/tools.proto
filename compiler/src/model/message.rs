@@ -42,7 +42,11 @@ pub enum MessageFieldType {
     String {
         max_len: Option<usize>
     },
-    Payload
+    Payload,
+    Union {
+        on: String,
+        item_type: String
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]

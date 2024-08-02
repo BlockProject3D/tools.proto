@@ -50,9 +50,10 @@ impl<'a> FromSlice<'a> for NullTerminatedString {
 impl WriteTo for NullTerminatedString {
     type Input = str;
 
-    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> std::io::Result<()> {
+    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {
         out.write_all(input.as_bytes())?;
-        out.write_all(&[0x0])
+        out.write_all(&[0x0])?;
+        Ok(())
     }
 }
 
@@ -73,8 +74,9 @@ impl<'a, T: ReadBytes + ToUsize> FromSlice<'a> for VarcharString<T> {
 impl<T: ToUsize + bytesutil::WriteTo> WriteTo for VarcharString<T> {
     type Input = str;
 
-    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> std::io::Result<()> {
+    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {
         T::from_usize(input.len()).write_to_be(&mut out)?;
-        out.write_all(input.as_bytes())
+        out.write_all(input.as_bytes())?;
+        Ok(())
     }
 }

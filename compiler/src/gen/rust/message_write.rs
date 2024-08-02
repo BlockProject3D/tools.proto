@@ -39,7 +39,8 @@ fn gen_field_write_impl(field: &Field<FieldType>, type_path_by_name: &TypePathMa
         }
         FieldType::NullTerminatedString => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, "bp3d_proto::message::util::NullTerminatedString"), field.name),
         FieldType::VarcharString(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::VarcharString<{}>", gen_field_type(v.ty))), field.name),
-        FieldType::FixedList(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name))), field.name)
+        FieldType::FixedList(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name))), field.name),
+        FieldType::Union(v) => format!("{}::write_to(&input.{}, &input.{}, &mut out)?;\n", type_path_by_name.get(&v.r.name), field.name, v.on_name)
     }
 }
 
@@ -54,7 +55,7 @@ pub fn gen_message_write_impl(msg: &Message, type_path_by_name: &TypePathMap) ->
     let generics = Generics::from_message(msg).to_code();
     let mut code = format!("impl{} bp3d_proto::message::WriteTo for {}{} {{\n", generics, msg.name, generics);
     code += "    type Input = Self;\n\n";
-    code += "    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> std::io::Result<()> {\n";
+    code += "    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {\n";
     for field in &msg.fields {
         code += &gen_field_write_impl(field, type_path_by_name);
     }

@@ -54,7 +54,7 @@ fn gen_structure_impl_fixed_size(s: &Structure) -> String {
 fn gen_structure_impl_from_slice(s: &Structure) -> String {
     let mut code = format!("impl<'a> bp3d_proto::message::FromSlice<'a> for {}<&'a [u8]> {{\n", s.name);
     code += "    type Output = Self;\n\n";
-    code += "    fn from_slice(slice: &'a [u8]) -> Result<bp3d_proto::message::Message<Self>, bp3d_proto::message::Error> {\n";
+    code += "    fn from_slice(slice: &'a [u8]) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {\n";
     code += "        if slice.len() < <Self as bp3d_proto::util::FixedSize>::SIZE {\n";
     code += "            Err(bp3d_proto::message::Error::Truncated)\n";
     code += "        } else {\n";
@@ -68,8 +68,9 @@ fn gen_structure_impl_from_slice(s: &Structure) -> String {
 fn gen_structure_impl_write_to(s: &Structure) -> String {
     let mut code = format!("impl<'a> bp3d_proto::message::WriteTo for {}<&'a [u8]> {{\n", s.name);
     code += "    type Input = Self;\n\n";
-    code += "    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> std::io::Result<()> {\n";
-    code += "        out.write_all(&input.data)\n";
+    code += "    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {\n";
+    code += "        out.write_all(&input.data)?;\n";
+    code += "        Ok(())\n";
     code += "    }\n";
     code += "}\n";
     code

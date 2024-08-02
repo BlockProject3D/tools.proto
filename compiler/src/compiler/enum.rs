@@ -26,23 +26,30 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::collections::HashMap;
 use crate::compiler::Error;
 
 #[derive(Clone, Debug)]
 pub struct Enum {
     pub name: String,
     pub largest: usize,
-    pub variants: Vec<(String, usize)>
+    pub variants: Vec<(String, usize)>,
+    pub variants_map: HashMap<String, usize>
 }
 
 impl Enum {
     pub fn from_model(value: crate::model::protocol::Enum) -> Result<Enum, Error> {
         let mut variants: Vec<(String, usize)> = value.variants.into_iter().collect();
         variants.sort_by(|(_, v), (_, v1)| v.cmp(v1));
+        let mut variants_map = HashMap::new();
         let largest = variants.last().map(|(_, v)| *v).ok_or(Error::ZeroEnum)?;
+        for (k, v) in &variants {
+            variants_map.insert(k.clone(), *v);
+        }
         Ok(Enum {
             name: value.name,
             variants,
+            variants_map,
             largest
         })
     }

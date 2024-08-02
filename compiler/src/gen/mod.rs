@@ -38,7 +38,8 @@ pub enum FileType {
     MessageReading,
     Message,
     Structure,
-    Enum
+    Enum,
+    Union
 }
 
 pub struct File {

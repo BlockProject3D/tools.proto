@@ -31,9 +31,13 @@ use bp3d_util::simple_error;
 simple_error! {
     pub Error {
         InvalidUtf8 => "invalid UTF-8 string",
-        Truncated => "truncated input"
+        Truncated => "truncated input",
+        InvalidUnionDiscriminant(usize) => "invalid union discriminant ({})",
+        (impl From) Io(std::io::Error) => "io error: {}"
     }
 }
+
+pub type Result<T> = std::result::Result<T, Error>;
 
 pub struct Message<T> {
     data: T,
@@ -55,17 +59,21 @@ impl<T> Message<T> {
     pub fn size(&self) -> usize {
         self.size
     }
+
+    pub fn map<T1, F: FnOnce(T) -> T1>(self, f: F) -> Message<T1> {
+        Message::new(self.size(), f(self.into_inner()))
+    }
 }
 
 pub trait FromSlice<'a> {
     type Output: Sized;
 
-    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error>;
+    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>>;
     //fn copy_to_slice(&self, out_slice: &mut [u8]);
 }
 
 pub trait WriteTo {
     type Input: ?Sized;
 
-    fn write_to<W: std::io::Write>(input: &Self::Input, out: W) -> std::io::Result<()>;
+    fn write_to<W: std::io::Write>(input: &Self::Input, out: W) -> Result<()>;
 }

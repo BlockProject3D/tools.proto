@@ -32,6 +32,9 @@ mod error;
 mod protocol;
 pub mod util;
 pub mod r#enum;
+pub mod union;
 
 pub use protocol::Protocol;
 pub use error::Error;
+
+//TODO: Sanitizer check: forbid nested payloads in message fields.

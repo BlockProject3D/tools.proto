@@ -39,6 +39,10 @@ simple_error! {
         UndefinedReference(String) => "undefined reference to '{}'",
         UnalignedArrayCodec => "unaligned array in structure",
         SolverError => "failed to resolve imported type",
-        ZeroEnum => "enums must have at least 1 variant"
+        ZeroEnum => "enums must have at least 1 variant",
+        InvalidUnionDiscriminant => "invalid union discriminant path",
+        FloatInUnionDiscriminant => "floats are not allowed as union discriminants",
+        InvalidUnionCase(String) => "invalid union case {}",
+        UnionTypeMismatch => "mismatch with union discriminant types" 
     }
 }

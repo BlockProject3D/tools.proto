@@ -26,11 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 use crate::compiler::r#enum::Enum;
 
 pub fn gen_enum_decl(e: &Enum) -> String {
-    let mut code = format!("#[derive(Copy, Clone)]\npub enum {} {{\n", e.name);
+    let mut code = format!("#[derive(Copy, Clone, Debug)]\npub enum {} {{\n", e.name);
     for (k, v) in &e.variants {
         code += &format!("    {} = {},\n", k, v);
     }

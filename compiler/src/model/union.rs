@@ -26,12 +26,18 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//TODO: Support for dynamic sized unions in messages
-//TODO: Support for static sized unions in structures
+use serde::Deserialize;
 
-pub mod message;
-pub mod structure;
-pub mod protocol;
-pub mod union;
+#[derive(Clone, Debug, Deserialize)]
+pub struct UnionField {
+    pub name: String,
+    pub case: String,
+    pub item_type: String
+}
 
-pub use protocol::Protocol;
+#[derive(Clone, Debug, Deserialize)]
+pub struct Union  {
+    pub name: String,
+    pub discriminant: String,
+    pub cases: Vec<UnionField>
+}

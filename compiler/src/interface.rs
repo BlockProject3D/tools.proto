@@ -85,7 +85,8 @@ pub struct Protoc {
     read_messages: bool,
     use_enums: bool,
     use_structs: bool,
-    use_messages: bool
+    use_messages: bool,
+    use_unions: bool
 }
 
 impl Protoc {
@@ -96,7 +97,8 @@ impl Protoc {
             read_messages: false,
             use_enums: true,
             use_structs: true,
-            use_messages: true
+            use_messages: true,
+            use_unions: true
         }
     }
 
@@ -125,6 +127,11 @@ impl Protoc {
         self
     }
 
+    pub fn set_use_unions(mut self, flag: bool) -> Self {
+        self.use_unions = flag;
+        self
+    }
+
     pub fn generate<T: Generator>(self, out_directory: impl AsRef<Path>) -> Result<Vec<Proto>, Error> {
         let mut generated_protocols = Vec::new();
         for proto in self.protocols {
@@ -140,7 +147,8 @@ impl Protoc {
                     FileType::MessageReading => self.read_messages,
                     FileType::Message => self.use_messages,
                     FileType::Structure => self.use_structs,
-                    FileType::Enum => self.use_enums
+                    FileType::Enum => self.use_enums,
+                    FileType::Union => self.use_unions
                 }
             });
             let iter = files_iter.into_iter().map(|v| v.write(&out_path))

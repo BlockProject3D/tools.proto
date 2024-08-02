@@ -39,7 +39,8 @@ fn gen_field_from_slice_impl(field: &Field<FieldType>, type_path_by_name: &TypeP
         }
         FieldType::NullTerminatedString => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::message::util::NullTerminatedString")),
         FieldType::VarcharString(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::VarcharString<{}>", gen_field_type(v.ty)))),
-        FieldType::FixedList(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name))))
+        FieldType::FixedList(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)))),
+        FieldType::Union(v) => format!("{}::from_slice(&slice[byte_offset..], &{})", gen_optional(field.optional, type_path_by_name.get(&v.r.name)), v.on_name)
     };
     let mut code = format!("        let {}_msg = {}?;\n", field.name, msg_code);
     code += &format!("        byte_offset += {}_msg.size();\n", field.name);
@@ -62,7 +63,7 @@ pub fn gen_message_from_slice_impl(msg: &Message, type_path_by_name: &TypePathMa
     let generics = Generics::from_message(msg).to_code();
     let mut code = format!("impl<'a> bp3d_proto::message::FromSlice<'a> for {}{} {{\n", msg.name, generics);
     code += "    type Output = Self;\n\n";
-    code += "    fn from_slice(slice: &'a [u8]) -> Result<bp3d_proto::message::Message<Self>, bp3d_proto::message::Error> {\n";
+    code += "    fn from_slice(slice: &'a [u8]) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {\n";
     code += "        let mut byte_offset: usize = 0;\n";
     for field in &msg.fields {
         code += &gen_field_from_slice_impl(field, type_path_by_name);

@@ -40,6 +40,7 @@ impl Generics {
             FieldType::NullTerminatedString => true,
             FieldType::VarcharString(_) => true,
             FieldType::FixedList(_) => true,
+            FieldType::Union(_) => true,
             _ => false
         });
         Generics {

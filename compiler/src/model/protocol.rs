@@ -30,6 +30,7 @@ use std::collections::HashMap;
 use serde::Deserialize;
 use crate::model::message::Message;
 use crate::model::structure::Structure;
+use crate::model::union::Union;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Import {
@@ -49,5 +50,6 @@ pub struct Protocol {
     pub imports: Option<Vec<Import>>,
     pub structs: Option<Vec<Structure>>,
     pub messages: Option<Vec<Message>>,
-    pub enums: Option<Vec<Enum>>
+    pub enums: Option<Vec<Enum>>,
+    pub unions: Option<Vec<Union>>
 }

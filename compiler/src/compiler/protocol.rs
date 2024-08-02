@@ -32,6 +32,7 @@ use crate::compiler::error::Error;
 use crate::compiler::message::Message;
 use crate::compiler::r#enum::Enum;
 use crate::compiler::structure::Structure;
+use crate::compiler::union::Union;
 use crate::compiler::util::{ImportResolver, TypePathMap};
 
 #[derive(Clone, Debug)]
@@ -41,9 +42,11 @@ pub struct Protocol {
     pub structs_by_name: HashMap<String, Rc<Structure>>,
     pub messages_by_name: HashMap<String, Rc<Message>>,
     pub enums_by_name: HashMap<String, Rc<Enum>>,
+    pub unions_by_name: HashMap<String, Rc<Union>>,
     pub structs: Vec<Rc<Structure>>,
     pub messages: Vec<Rc<Message>>,
-    pub enums: Vec<Rc<Enum>>
+    pub enums: Vec<Rc<Enum>>,
+    pub unions: Vec<Rc<Union>>
 }
 
 impl Protocol {
@@ -54,9 +57,11 @@ impl Protocol {
             structs_by_name: HashMap::new(),
             messages_by_name: HashMap::new(),
             enums_by_name: HashMap::new(),
+            unions_by_name: HashMap::new(),
             structs: Vec::new(),
             messages: Vec::new(),
-            enums: Vec::new()
+            enums: Vec::new(),
+            unions: Vec::new()
         };
         if let Some(imports) = value.imports {
             for v in imports {
@@ -69,10 +74,19 @@ impl Protocol {
                     None => {
                         match r.enums_by_name.get(&v.type_name) {
                             None => {
-                                let msg = r.messages_by_name.get(&v.type_name).ok_or(Error::UndefinedReference(format!("{}::{}", v.protocol, v.type_name)))?;
-                                let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
-                                proto.messages_by_name.insert(v.type_name, msg.clone());
-                                proto.type_path_by_name.add(msg.name.clone(), type_path);
+                                match r.unions_by_name.get(&v.type_name) {
+                                    Some(vv) => {
+                                        let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
+                                        proto.unions_by_name.insert(v.type_name, vv.clone());
+                                        proto.type_path_by_name.add(vv.name.clone(), type_path);
+                                    },
+                                    None => {
+                                        let msg = r.messages_by_name.get(&v.type_name).ok_or(Error::UndefinedReference(format!("{}::{}", v.protocol, v.type_name)))?;
+                                        let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
+                                        proto.messages_by_name.insert(v.type_name, msg.clone());
+                                        proto.type_path_by_name.add(msg.name.clone(), type_path);
+                                    }
+                                }
                             },
                             Some(vv) => {
                                 let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
@@ -89,6 +103,20 @@ impl Protocol {
                 }
             }
         }
+        if let Some(enums) = value.enums {
+            for v in enums {
+                let v = Rc::new(Enum::from_model(v)?);
+                proto.enums_by_name.insert(v.name.clone(), v.clone());
+                proto.enums.push(v);
+            }
+        }
+        if let Some(unions) = value.unions {
+            for v in unions {
+                let v = Rc::new(Union::from_model(&proto, v)?);
+                proto.unions_by_name.insert(v.name.clone(), v.clone());
+                proto.unions.push(v);
+            }
+        }
         if let Some(structs) = value.structs {
             for v in structs {
                 let v = Rc::new(Structure::from_model(&proto, v)?);
@@ -101,13 +129,6 @@ impl Protocol {
                 let v = Rc::new(Message::from_model(&proto, v)?);
                 proto.messages_by_name.insert(v.name.clone(), v.clone());
                 proto.messages.push(v);
-            }
-        }
-        if let Some(enums) = value.enums {
-            for v in enums {
-                let v = Rc::new(Enum::from_model(v)?);
-                proto.enums_by_name.insert(v.name.clone(), v.clone());
-                proto.enums.push(v);
             }
         }
         Ok(proto)

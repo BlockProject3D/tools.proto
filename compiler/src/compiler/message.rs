@@ -30,6 +30,7 @@ use std::rc::Rc;
 use crate::compiler::error::Error;
 use crate::compiler::Protocol;
 use crate::compiler::structure::{FixedFieldType, Structure};
+use crate::compiler::union::Union;
 use crate::model::message::MessageFieldType;
 
 #[derive(Clone, Debug)]
@@ -76,12 +77,20 @@ pub struct FixedField {
 }
 
 #[derive(Clone, Debug)]
+pub struct UnionField {
+    pub r: Rc<Union>,
+    pub on_name: String,
+    pub on_index: usize
+}
+
+#[derive(Clone, Debug)]
 pub enum FieldType {
     Fixed(FixedField),
     Ref(Referenced),
     NullTerminatedString,
     VarcharString(VarcharStringField),
-    FixedList(FixedListField)
+    FixedList(FixedListField),
+    Union(UnionField)
 }
 
 #[derive(Clone, Debug)]
@@ -104,7 +113,7 @@ pub enum AnyField {
 }
 
 impl AnyField {
-    fn from_model(proto: &Protocol, value: crate::model::message::MessageField) -> Result<Self, Error> {
+    fn from_model(proto: &Protocol, unsorted: &[AnyField], value: crate::model::message::MessageField) -> Result<Self, Error> {
         match value.info {
             MessageFieldType::Item { item_type } => {
                 let r = Referenced::lookup(proto, &item_type).ok_or_else(|| Error::UndefinedReference(item_type))?;
@@ -185,11 +194,46 @@ impl AnyField {
                     }
                 }
             },
+            MessageFieldType::Union { on, item_type } => {
+                let (on_index, on_field) = unsorted.iter().enumerate().find_map(|(k, v)| match v {
+                    AnyField::Payload(_) => None,
+                    AnyField::Field(f) => if f.name == on {
+                        Some((k, f))
+                    } else {
+                        None
+                    }
+                }).ok_or_else(|| Error::UndefinedReference(on))?;
+                let r = proto.unions_by_name.get(&item_type).ok_or_else(|| Error::UndefinedReference(item_type))?;
+                match &on_field.ty {
+                    FieldType::Ref(v) => match v {
+                        Referenced::Struct(v) => {
+                            if !Rc::ptr_eq(&r.discriminant.root, v) {
+                                return Err(Error::UnionTypeMismatch);
+                            }
+                        }
+                        _ => return Err(Error::UnionTypeMismatch)
+                    }
+                    _ => return Err(Error::UnionTypeMismatch)
+                }
+                let on_name = on_field.name.clone();
+                if value.optional.unwrap_or_default() {
+                    eprintln!("WARNING: ignoring unsupported optional flag on union message field!");
+                }
+                Ok(Self::Field(Field {
+                    name: value.name,
+                    ty: FieldType::Union(UnionField {
+                        r: r.clone(),
+                        on_name,
+                        on_index
+                    }),
+                    optional: false
+                }))
+            }
             MessageFieldType::Payload => Ok(Self::Payload(Field {
                 name: value.name,
                 ty: Payload::Data,
                 optional: value.optional.unwrap_or_default()
-            }))
+            })),
         }
     }
 }
@@ -203,9 +247,10 @@ pub struct Message {
 
 impl Message {
     pub fn from_model(proto: &Protocol, value: crate::model::message::Message) -> Result<Message, Error> {
-        let unsorted = value.fields.into_iter()
-            .map(|v| AnyField::from_model(proto, v))
-            .collect::<Result<Vec<AnyField>, Error>>()?;
+        let mut unsorted = Vec::with_capacity(value.fields.len());
+        for v in value.fields {
+            unsorted.push(AnyField::from_model(proto, &unsorted, v)?);
+        }
         let mut payloads = Vec::new();
         let mut fields = Vec::new();
         for v in unsorted {

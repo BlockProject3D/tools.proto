@@ -54,14 +54,15 @@ impl<'a, T: FromSlice<'a, Output = T>> FromSlice<'a> for Optional<T> {
 impl<T: WriteTo<Input = T>> WriteTo for Optional<T> {
     type Input = Option<T>;
 
-    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> std::io::Result<()> {
+    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {
         match input {
-            None => out.write_all(&[0x0]),
+            None => out.write_all(&[0x0])?,
             Some(v) => {
                 out.write_all(&[0x1])?;
-                T::write_to(v, out)
+                T::write_to(v, out)?;
             }
         }
+        Ok(())
     }
 }
 
@@ -82,8 +83,9 @@ impl<'a, T: ReadBytes> FromSlice<'a> for T {
 impl<T: bytesutil::WriteTo> WriteTo for T {
     type Input = T;
 
-    fn write_to<W: Write>(input: &Self::Input, out: W) -> std::io::Result<()> {
-        input.write_to_be(out)
+    fn write_to<W: Write>(input: &Self::Input, out: W) -> Result<(), Error> {
+        input.write_to_be(out)?;
+        Ok(())
     }
 }
 
@@ -100,7 +102,8 @@ impl<'a> FromSlice<'a> for Buffer {
 impl WriteTo for Buffer {
     type Input = [u8];
 
-    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> std::io::Result<()> {
-        out.write_all(input)
+    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {
+        out.write_all(input)?;
+        Ok(())
     }
 }
