@@ -54,7 +54,10 @@ fn gen_union_from_slice_impl(u: &Union) -> String {
     code += &format!("        let discriminant = discriminant.{};\n", discriminant_path);
     code += "        match discriminant {\n";
     for case in &u.cases {
-        code += &format!("            {} => {}::from_slice(slice).map(|v| v.map(Self::{})),\n", case.case, case.item_type.name(), case.name);
+        match &case.item_type {
+            Some(item_type) => code += &format!("            {} => {}::from_slice(slice).map(|v| v.map(Self::{})),\n", case.case, item_type.name(), case.name),
+            None => code += &format!("            {} => Ok(bp3d_proto::message::Message::new(0, Self::{})),\n", case.case, case.name)
+        }
     }
     code += "            _ => Err(bp3d_proto::message::Error::InvalidUnionDiscriminant(discriminant)\n";
     code += "        }\n";
@@ -71,7 +74,9 @@ fn gen_union_write_to_impl(u: &Union) -> String {
     code += &format!("        let discriminant = discriminant.{};\n", discriminant_path);
     code += "        match input {\n";
     for case in &u.cases {
-        code += &format!("            {}(v) => if discriminant == {} {{ {}::write_to(v, &mut out)? }} else {{ return Err(bp3d_proto::message::Error::InvalidUnionDiscriminant(discriminant)) }},\n", case.name, case.case, case.item_type.name());
+        if let Some(item_type) = &case.item_type {
+            code += &format!("            {}(v) => if discriminant == {} {{ {}::write_to(v, &mut out)? }} else {{ return Err(bp3d_proto::message::Error::InvalidUnionDiscriminant(discriminant)) }},\n", case.name, case.case, item_type.name());
+        }
     }
     code += "        };\n";
     code += "        Ok(())\n";
@@ -100,8 +105,9 @@ pub fn gen_union_decl(u: &Union) -> String {
     let mut code = format!("#[derive(Copy, Clone, Debug)]\npub enum {}<'a> {{\n", u.name);
     for case in &u.cases {
         match &case.item_type {
-            Referenced::Struct(v) => code += &format!("    {}({}<&'a [u8]>),\n", case.name, v.name),
-            Referenced::Message(v) => code += &format!("    {}({}<&'a>),\n", case.name, v.name)
+            Some(Referenced::Struct(v)) => code += &format!("    {}({}<&'a [u8]>),\n", case.name, v.name),
+            Some(Referenced::Message(v)) => code += &format!("    {}({}<&'a>),\n", case.name, v.name),
+            None => code += &format!("    {},\n", case.name)
         }
     }
     code += "}\n";

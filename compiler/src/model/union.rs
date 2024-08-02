@@ -32,7 +32,7 @@ use serde::Deserialize;
 pub struct UnionField {
     pub name: String,
     pub case: String,
-    pub item_type: String
+    pub item_type: Option<String>
 }
 
 #[derive(Clone, Debug, Deserialize)]

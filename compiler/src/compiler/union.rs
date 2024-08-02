@@ -35,7 +35,7 @@ use crate::compiler::structure::{Field, FieldView, FixedField, Structure};
 pub struct UnionField {
     pub name: String,
     pub case: usize,
-    pub item_type: Referenced
+    pub item_type: Option<Referenced>
 }
 
 impl UnionField {
@@ -49,7 +49,8 @@ impl UnionField {
             }
             FieldView::None => value.case.parse().map_err(|_| Error::InvalidUnionCase(value.case))?
         };
-        let item_type = Referenced::lookup(proto, &value.item_type).ok_or_else(|| Error::UndefinedReference(value.item_type))?;
+        let item_type = value.item_type.map(|v| Referenced::lookup(proto, &v).ok_or_else(|| Error::UndefinedReference(v)))
+            .transpose()?;
         Ok(UnionField {
             name: value.name,
             case,
