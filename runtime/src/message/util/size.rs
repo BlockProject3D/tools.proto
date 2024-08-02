@@ -26,11 +26,29 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod string;
-mod common;
-mod list;
-mod size;
+use std::io::Write;
+use std::marker::PhantomData;
+use crate::message::WriteTo;
 
-pub use common::*;
-pub use string::*;
-pub use list::*;
+struct Counter(usize);
+
+impl Write for Counter {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        self.0 += buf.len();
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
+}
+
+pub struct SizeOf<Msg>(PhantomData<Msg>);
+
+impl<Msg: WriteTo<Input = Msg>> SizeOf<Msg> {
+    pub fn get(msg: &Msg) -> crate::message::Result<usize> {
+        let mut counter = Counter(0);
+        Msg::write_to(msg, &mut counter)?;
+        Ok(counter.0)
+    }
+}
