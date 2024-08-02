@@ -187,7 +187,7 @@ fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
             code += &format!("        let raw_value = self.get_raw_{}();\n", field.name);
             code += &format!("        if raw_value > {} {{\n", max_positive);
-            code += &format!("            -((raw_value & {}) as {})\n", max_value, field_type);
+            code += &format!("            -((((!raw_value) & {max_positive}) + 1) as {})\n", field_type);
             code += "        } else {\n";
             code += &format!("            (raw_value & {}) as {}\n", max_positive, field_type);
             code += "        }\n";
