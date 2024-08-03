@@ -26,11 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::{Field, FieldType, Message, Payload, Referenced};
+use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
 use crate::gen::rust::util::{gen_field_type, gen_optional, Generics};
 
-fn gen_field_write_impl(field: &Field<FieldType>, type_path_by_name: &TypePathMap) -> String {
+fn gen_field_write_impl(field: &Field, type_path_by_name: &TypePathMap) -> String {
     match &field.ty {
         FieldType::Fixed(ty) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, gen_field_type(ty.ty)), field.name),
         FieldType::Ref(v) => match v {
@@ -40,14 +40,9 @@ fn gen_field_write_impl(field: &Field<FieldType>, type_path_by_name: &TypePathMa
         FieldType::NullTerminatedString => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, "bp3d_proto::message::util::NullTerminatedString"), field.name),
         FieldType::VarcharString(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::VarcharString<{}>", gen_field_type(v.ty))), field.name),
         FieldType::Array(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name))), field.name),
-        FieldType::Union(v) => format!("{}::write_to(&input.{}, &input.{}, &mut out)?;\n", type_path_by_name.get(&v.r.name), field.name, v.on_name)
-    }
-}
-
-fn gen_payload_write_impl(field: &Field<Payload>, type_path_by_name: &TypePathMap) -> String {
-    match &field.ty {
-        Payload::List(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::List<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name))), field.name),
-        Payload::Data => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, "bp3d_proto::message::util::Buffer"), field.name)
+        FieldType::Union(v) => format!("{}::write_to(&input.{}, &input.{}, &mut out)?;\n", type_path_by_name.get(&v.r.name), field.name, v.on_name),
+        FieldType::List(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::List<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name))), field.name),
+        FieldType::Payload => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, "bp3d_proto::message::util::Buffer"), field.name)
     }
 }
 
@@ -58,9 +53,6 @@ pub fn gen_message_write_impl(msg: &Message, type_path_by_name: &TypePathMap) ->
     code += "    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {\n";
     for field in &msg.fields {
         code += &gen_field_write_impl(field, type_path_by_name);
-    }
-    if let Some(payload) = &msg.payload {
-        code += &gen_payload_write_impl(payload, type_path_by_name);
     }
     code += "        Ok(())\n";
     code += "    }";

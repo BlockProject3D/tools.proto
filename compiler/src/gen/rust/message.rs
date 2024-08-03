@@ -27,11 +27,11 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use itertools::Itertools;
-use crate::compiler::message::{Field, FieldType, Message, Payload, Referenced};
+use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
 use crate::gen::rust::util::{gen_field_type, Generics};
 
-fn gen_field_decl(field: &Field<FieldType>, type_path_by_name: &TypePathMap) -> String {
+fn gen_field_decl(field: &Field, type_path_by_name: &TypePathMap) -> String {
     let mut code = format!("    pub {}: ", field.name);
     if field.optional {
         code += "Option<"
@@ -45,22 +45,10 @@ fn gen_field_decl(field: &Field<FieldType>, type_path_by_name: &TypePathMap) -> 
         FieldType::NullTerminatedString => code += "&'a str",
         FieldType::VarcharString(_) => code += "&'a str",
         FieldType::Array(v) => code += &format!("bp3d_proto::message::util::Array<'a, {}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)),
-        FieldType::Union(v) => code += &format!("{}<'a>", type_path_by_name.get(&v.r.name))
-    }
-    if field.optional {
-        code += ">"
-    }
-    code
-}
+        FieldType::Union(v) => code += &format!("{}<'a>", type_path_by_name.get(&v.r.name)),
+        FieldType::List(v) => code += &format!("bp3d_proto::message::util::List<'a, {}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)),
+        FieldType::Payload => code += "&'a [u8]"
 
-fn gen_payload_decl(field: &Field<Payload>, type_path_by_name: &TypePathMap) -> String {
-    let mut code = format!("    pub {}: ", field.name);
-    if field.optional {
-        code += "Option<"
-    }
-    match &field.ty {
-        Payload::List(v) => code += &format!("bp3d_proto::message::util::List<'a, {}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)),
-        Payload::Data => code += "&'a [u8]"
     }
     if field.optional {
         code += ">"
@@ -77,9 +65,6 @@ pub fn gen_message_decl(msg: &Message, type_path_by_name: &TypePathMap) -> Strin
         .map(|v| gen_field_decl(v, type_path_by_name))
         .join(",\n");
     code += &fields;
-    if let Some(payload) = &msg.payload {
-        code += &format!("{},\n", gen_payload_decl(payload, type_path_by_name));
-    }
     code += "\n}";
     code
 }

@@ -26,11 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::{Field, FieldType, Message, Payload, Referenced};
+use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
 use crate::gen::rust::util::{gen_field_type, gen_optional, Generics};
 
-fn gen_field_from_slice_impl(field: &Field<FieldType>, type_path_by_name: &TypePathMap) -> String {
+fn gen_field_from_slice_impl(field: &Field, type_path_by_name: &TypePathMap) -> String {
     let msg_code = match &field.ty {
         FieldType::Fixed(ty) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, gen_field_type(ty.ty))),
         FieldType::Ref(v) => match v {
@@ -40,18 +40,9 @@ fn gen_field_from_slice_impl(field: &Field<FieldType>, type_path_by_name: &TypeP
         FieldType::NullTerminatedString => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::message::util::NullTerminatedString")),
         FieldType::VarcharString(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::VarcharString<{}>", gen_field_type(v.ty)))),
         FieldType::Array(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)))),
-        FieldType::Union(v) => format!("{}::from_slice(&slice[byte_offset..], &{})", gen_optional(field.optional, type_path_by_name.get(&v.r.name)), v.on_name)
-    };
-    let mut code = format!("        let {}_msg = {}?;\n", field.name, msg_code);
-    code += &format!("        byte_offset += {}_msg.size();\n", field.name);
-    code += &format!("        let {} = {}_msg.into_inner();\n", field.name, field.name);
-    code
-}
-
-fn gen_payload_from_slice_impl(field: &Field<Payload>, type_path_by_name: &TypePathMap) -> String {
-    let msg_code = match &field.ty {
-        Payload::List(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::List<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)))),
-        Payload::Data => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::message::util::Buffer"))
+        FieldType::Union(v) => format!("{}::from_slice(&slice[byte_offset..], &{})", gen_optional(field.optional, type_path_by_name.get(&v.r.name)), v.on_name),
+        FieldType::List(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::List<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)))),
+        FieldType::Payload => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::message::util::Buffer"))
     };
     let mut code = format!("        let {}_msg = {}?;\n", field.name, msg_code);
     code += &format!("        byte_offset += {}_msg.size();\n", field.name);
@@ -68,15 +59,9 @@ pub fn gen_message_from_slice_impl(msg: &Message, type_path_by_name: &TypePathMa
     for field in &msg.fields {
         code += &gen_field_from_slice_impl(field, type_path_by_name);
     }
-    if let Some(payload) = &msg.payload {
-        code += &gen_payload_from_slice_impl(payload, type_path_by_name);
-    }
     code += &format!("        let data = {} {{\n", msg.name);
     for field in &msg.fields {
         code += &format!("            {},\n", field.name);
-    }
-    if let Some(payload) = &msg.payload {
-        code += &format!("            {},\n", payload.name);
     }
     code += "        };\n";
     code += "        Ok(bp3d_proto::message::Message::new(byte_offset, data))\n";

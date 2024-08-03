@@ -55,7 +55,7 @@ impl Referenced {
 }
 
 #[derive(Clone, Debug)]
-pub struct FixedListField {
+pub struct ArrayField {
     pub ty: FixedFieldType,
     pub item_type: Rc<Structure>
 }
@@ -89,31 +89,28 @@ pub enum FieldType {
     Ref(Referenced),
     NullTerminatedString,
     VarcharString(VarcharStringField),
-    Array(FixedListField),
-    Union(UnionField)
-}
-
-#[derive(Clone, Debug)]
-pub enum Payload {
+    Array(ArrayField),
+    Union(UnionField),
     List(ListField),
-    Data
+    Payload
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct SizeInfo {
+    pub is_dyn_sized: bool,
+    pub is_element_dyn_sized: bool
 }
 
 #[derive(Clone, Debug)]
-pub struct Field<T> {
+pub struct Field {
     pub name: String,
-    pub ty: T,
-    pub optional: bool
+    pub ty: FieldType,
+    pub optional: bool,
+    pub size: SizeInfo
 }
 
-#[derive(Clone, Debug)]
-pub enum AnyField {
-    Payload(Field<Payload>),
-    Field(Field<FieldType>)
-}
-
-impl AnyField {
-    fn from_model(proto: &Protocol, unsorted: &[AnyField], value: crate::model::message::MessageField) -> Result<Self, Error> {
+impl Field {
+    fn from_model(proto: &Protocol, unsorted: &[Field], value: crate::model::message::MessageField) -> Result<Self, Error> {
         match value.info {
             MessageFieldType::Item { item_type } => {
                 let r = Referenced::lookup(proto, &item_type).ok_or_else(|| Error::UndefinedReference(item_type))?;
@@ -123,27 +120,36 @@ impl AnyField {
                             && r.fields[0].as_fixed().map(|v| v.view.is_transmute()).unwrap_or_default()
                             && r.fields[0].as_fixed().map(|v| v.loc.bit_size % 8 == 0).unwrap_or_default() {
                             let fixed = unsafe { r.fields[0].as_fixed().unwrap_unchecked() };
-                            Ok(Self::Field(Field {
+                            Ok(Field {
                                 name: value.name,
                                 ty: FieldType::Fixed(FixedField {
                                     ty: fixed.ty
                                 }),
-                                optional: value.optional.unwrap_or_default()
-                            }))
+                                optional: value.optional.unwrap_or_default(),
+                                size: SizeInfo {
+                                    is_dyn_sized: false,
+                                    is_element_dyn_sized: false
+                                }
+                            })
                         } else {
-                            Ok(Self::Field(Field {
+                            Ok(Field {
                                 name: value.name,
                                 ty: FieldType::Ref(Referenced::Struct(r)),
-                                optional: value.optional.unwrap_or_default()
-                            }))
+                                optional: value.optional.unwrap_or_default(),
+                                size: SizeInfo {
+                                    is_dyn_sized: false,
+                                    is_element_dyn_sized: false
+                                }
+                            })
                         }
                     },
                     Referenced::Message(r) => {
-                        Ok(Self::Field(Field {
+                        Ok(Field {
                             name: value.name,
-                            ty: FieldType::Ref(Referenced::Message(r)),
-                            optional: value.optional.unwrap_or_default()
-                        }))
+                            optional: value.optional.unwrap_or_default(),
+                            size: r.size,
+                            ty: FieldType::Ref(Referenced::Message(r))
+                        })
                     }
                 }
             },
@@ -152,57 +158,70 @@ impl AnyField {
                 let ty = FixedFieldType::from_max_value(max_len)?;
                 match r {
                     Referenced::Struct(item_type) => {
-                        Ok(Self::Field(Field {
+                        Ok(Field {
                             name: value.name,
-                            ty: FieldType::Array(FixedListField {
+                            ty: FieldType::Array(ArrayField {
                                 item_type,
                                 ty
                             }),
-                            optional: value.optional.unwrap_or_default()
-                        }))
+                            optional: value.optional.unwrap_or_default(),
+                            size: SizeInfo {
+                                is_element_dyn_sized: false,
+                                is_dyn_sized: true
+                            }
+                        })
                     },
                     Referenced::Message(item_type) => {
-                        Ok(Self::Payload(Field {
+                        Ok(Field {
                             name: value.name,
-                            ty: Payload::List(ListField {
+                            ty: FieldType::List(ListField {
                                 item_type,
                                 ty,
                             }),
-                            optional: value.optional.unwrap_or_default()
-                        }))
+                            optional: value.optional.unwrap_or_default(),
+                            size: SizeInfo {
+                                is_element_dyn_sized: true,
+                                is_dyn_sized: true
+                            }
+                        })
                     }
                 }
             },
             MessageFieldType::String { max_len } => {
                 match max_len {
                     None => {
-                        Ok(Self::Field(Field {
+                        Ok(Field {
                             name: value.name,
                             ty: FieldType::NullTerminatedString,
-                            optional: value.optional.unwrap_or_default()
-                        }))
+                            optional: value.optional.unwrap_or_default(),
+                            size: SizeInfo {
+                                is_element_dyn_sized: false,
+                                is_dyn_sized: true
+                            }
+                        })
                     },
                     Some(max_len) => {
                         let ty = FixedFieldType::from_max_value(max_len)?;
-                        Ok(Self::Field(Field {
+                        Ok(Field {
                             name: value.name,
                             ty: FieldType::VarcharString(VarcharStringField {
                                 ty
                             }),
-                            optional: value.optional.unwrap_or_default()
-                        }))
+                            optional: value.optional.unwrap_or_default(),
+                            size: SizeInfo {
+                                is_element_dyn_sized: false,
+                                is_dyn_sized: true
+                            }
+                        })
                     }
                 }
             },
             MessageFieldType::Union { on, item_type } => {
-                let (on_index, on_field) = unsorted.iter().enumerate().find_map(|(k, v)| match v {
-                    AnyField::Payload(_) => None,
-                    AnyField::Field(f) => if f.name == on {
-                        Some((k, f))
+                let (on_index, on_field) = unsorted.iter().enumerate().find_map(|(k, v)| if v.name == on {
+                        Some((k, v))
                     } else {
                         None
-                    }
-                }).ok_or_else(|| Error::UndefinedReference(on))?;
+                    }).ok_or_else(|| Error::UndefinedReference(on))?;
                 let r = proto.unions_by_name.get(&item_type).ok_or_else(|| Error::UndefinedReference(item_type))?;
                 match &on_field.ty {
                     FieldType::Ref(v) => match v {
@@ -219,21 +238,26 @@ impl AnyField {
                 if value.optional.unwrap_or_default() {
                     eprintln!("WARNING: ignoring unsupported optional flag on union message field!");
                 }
-                Ok(Self::Field(Field {
+                Ok(Field {
                     name: value.name,
                     ty: FieldType::Union(UnionField {
                         r: r.clone(),
                         on_name,
                         on_index
                     }),
-                    optional: false
-                }))
+                    optional: false,
+                    size: r.size
+                })
             }
-            MessageFieldType::Payload => Ok(Self::Payload(Field {
+            MessageFieldType::Payload => Ok(Field {
                 name: value.name,
-                ty: Payload::Data,
-                optional: value.optional.unwrap_or_default()
-            })),
+                ty: FieldType::Payload,
+                optional: value.optional.unwrap_or_default(),
+                size: SizeInfo {
+                    is_dyn_sized: true,
+                    is_element_dyn_sized: true
+                }
+            }),
         }
     }
 }
@@ -241,32 +265,35 @@ impl AnyField {
 #[derive(Clone, Debug)]
 pub struct Message {
     pub name: String,
-    pub fields: Vec<Field<FieldType>>,
-    pub payload: Option<Field<Payload>>
+    pub fields: Vec<Field>,
+    pub size: SizeInfo
 }
 
 impl Message {
     pub fn from_model(proto: &Protocol, value: crate::model::message::Message) -> Result<Message, Error> {
-        let mut unsorted = Vec::with_capacity(value.fields.len());
+        let mut fields = Vec::with_capacity(value.fields.len());
+        let mut dyn_sized_elem_count = 0;
+        let mut is_dyn_sized = false;
         for v in value.fields {
-            unsorted.push(AnyField::from_model(proto, &unsorted, v)?);
-        }
-        let mut payloads = Vec::new();
-        let mut fields = Vec::new();
-        for v in unsorted {
-            match v {
-                AnyField::Payload(v) => payloads.push(v),
-                AnyField::Field(v) => fields.push(v)
+            let field = Field::from_model(proto, &fields, v)?;
+            if field.size.is_dyn_sized {
+                is_dyn_sized = true;
             }
+            if field.size.is_element_dyn_sized {
+                dyn_sized_elem_count += 1;
+            }
+            fields.push(field);
         }
-        if payloads.len() > 1 {
-            return Err(Error::MultiPayload);
+        if dyn_sized_elem_count > 1 {
+            return Err(Error::MultiPayload)
         }
-        let payload = payloads.into_iter().next();
         Ok(Message {
             name: value.name,
             fields,
-            payload
+            size: SizeInfo {
+                is_dyn_sized,
+                is_element_dyn_sized: dyn_sized_elem_count > 0
+            }
         })
     }
 }

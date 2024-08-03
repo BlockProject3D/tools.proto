@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::rc::Rc;
-use crate::compiler::message::Referenced;
+use crate::compiler::message::{Referenced, SizeInfo};
 use crate::compiler::{Error, Protocol};
 use crate::compiler::structure::{Field, FieldView, FixedField, Structure};
 
@@ -132,7 +132,8 @@ impl DiscriminantField {
 pub struct Union  {
     pub name: String,
     pub discriminant: DiscriminantField,
-    pub cases: Vec<UnionField>
+    pub cases: Vec<UnionField>,
+    pub size: SizeInfo
 }
 
 impl Union {
@@ -140,10 +141,22 @@ impl Union {
         let discriminant = DiscriminantField::from_model(proto, value.discriminant)?;
         let cases = value.cases.into_iter().map(|v| UnionField::from_model(proto, discriminant.get_leaf(), v))
             .collect::<Result<Vec<UnionField>, Error>>()?;
+        let is_element_dyn_sized = cases.iter().any(|v| v.item_type.as_ref().map(|v| match v {
+            Referenced::Struct(_) => false,
+            Referenced::Message(v) => v.size.is_element_dyn_sized
+        }).unwrap_or_default());
+        let is_dyn_sized = cases.iter().any(|v| v.item_type.as_ref().map(|v| match v {
+            Referenced::Struct(_) => false,
+            Referenced::Message(v) => v.size.is_dyn_sized
+        }).unwrap_or_default());
         Ok(Union {
             name: value.name,
             discriminant,
-            cases
+            cases,
+            size: SizeInfo {
+                is_element_dyn_sized,
+                is_dyn_sized
+            }
         })
     }
 }
