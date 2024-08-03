@@ -58,8 +58,12 @@ fn get_discriminant_path_mut(u: &Union) -> String {
 fn gen_union_from_slice_impl(u: &Union, type_path_by_name: &TypePathMap) -> String {
     let generics = get_generics(u);
     let mut code = format!("impl<'a> {}{generics} {{\n", u.name);
-    code += &format!("    pub fn from_slice(slice: &'a [u8], discriminant: &{}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{\n", type_path_by_name.get(&u.discriminant.root.name));
-    code += "        use bp3d_proto::message::FromSlice;\n";
+    if generics != "" {
+        code += &format!("    pub fn from_slice(slice: &'a [u8], discriminant: &{}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{\n", type_path_by_name.get(&u.discriminant.root.name));
+        code += "        use bp3d_proto::message::FromSlice;\n";
+    } else {
+        code += &format!("    pub fn from_slice(_: &'a [u8], discriminant: &{}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{\n", type_path_by_name.get(&u.discriminant.root.name));
+    }
     let discriminant_path = get_discriminant_path(u);
     code += &format!("        let discriminant = discriminant.{};\n", discriminant_path);
     code += "        match discriminant {\n";
@@ -79,10 +83,14 @@ fn gen_union_from_slice_impl(u: &Union, type_path_by_name: &TypePathMap) -> Stri
 fn gen_union_write_to_impl(u: &Union, type_path_by_name: &TypePathMap) -> String {
     let generics = get_generics(u);
     let mut code = format!("impl<'a> {}{generics} {{\n", u.name);
-    code += &format!("    pub fn write_to<W: std::io::Write>(input: &Self, discriminant: &{}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{\n", type_path_by_name.get(&u.discriminant.root.name));
-    code += "        use bp3d_proto::message::WriteTo;\n";
-    let discriminant_path = get_discriminant_path(u);
-    code += &format!("        let discriminant = discriminant.{};\n", discriminant_path);
+    if generics != "" {
+        code += &format!("    pub fn write_to<W: std::io::Write>(input: &Self, discriminant: &{}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{\n", type_path_by_name.get(&u.discriminant.root.name));
+        code += "        use bp3d_proto::message::WriteTo;\n";
+        let discriminant_path = get_discriminant_path(u);
+        code += &format!("        let discriminant = discriminant.{};\n", discriminant_path);
+    } else {
+        code += &format!("    pub fn write_to<W: std::io::Write>(input: &Self, _: &{}<&'a [u8]>, _: W) -> bp3d_proto::message::Result<()> {{\n", type_path_by_name.get(&u.discriminant.root.name));
+    }
     code += "        match input {\n";
     for case in &u.cases {
         if let Some(item_type) = &case.item_type {
