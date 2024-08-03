@@ -34,3 +34,4 @@ mod size;
 pub use common::*;
 pub use string::*;
 pub use list::*;
+pub use size::size_of;

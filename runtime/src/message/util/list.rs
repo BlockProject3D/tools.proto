@@ -166,6 +166,7 @@ impl<'a, T: ReadBytes + ToUsize, Item: FromSlice<'a, Output = Item>> FromSlice<'
             let msg = Item::from_slice(&data[total_size..])?;
             total_size += msg.size();
         }
+        let data = &slice[control_size..control_size + total_size];
         Ok(Message::new(total_size + control_size, unsafe { List::from_parts(data, len) }))
     }
 }

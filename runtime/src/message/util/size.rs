@@ -52,3 +52,7 @@ impl<Msg: WriteTo<Input = Msg>> SizeOf<Msg> {
         Ok(counter.0)
     }
 }
+
+pub fn size_of<Msg: WriteTo<Input = Msg>>(msg: &Msg) -> crate::message::Result<usize> {
+    SizeOf::<Msg>::get(msg)
+}
