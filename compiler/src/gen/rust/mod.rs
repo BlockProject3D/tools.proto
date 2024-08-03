@@ -63,7 +63,7 @@ impl Generator for GeneratorRust {
         let impl_write_messages_code = proto.messages.iter().map(|v| gen_message_write_impl(v, &proto.type_path_by_name)).join("\n");
         let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(v, &proto.type_path_by_name)).join("\n");
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(v)).join("\n");
-        let decl_unions = proto.unions.iter().map(|v| gen_union_decl(v)).join("\n");
+        let decl_unions = proto.unions.iter().map(|v| gen_union_decl(v, &proto.type_path_by_name)).join("\n");
         Ok(vec![
             File::new(FileType::Message, "messages.rs", decl_messages_code),
             File::new(FileType::MessageReading, "messages_from_slice.rs", impl_from_slice_messages_code),
