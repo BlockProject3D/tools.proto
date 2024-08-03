@@ -30,6 +30,7 @@ use crate::compiler::structure::{Field, FieldView, FixedField, Structure};
 use crate::compiler::util::TypePathMap;
 use crate::gen::rust::util::gen_field_type;
 
+
 fn gen_structure_impl_new(s: &Structure) -> String {
     let mut code = format!("impl<T> {}<T> {{\n", s.name);
     code += "    pub fn new(data: T) -> Self {\n";
@@ -39,6 +40,11 @@ fn gen_structure_impl_new(s: &Structure) -> String {
     code += &format!("impl {}<[u8; {}]> {{\n", s.name, s.byte_size);
     code += "    pub fn new_on_stack() -> Self {\n";
     code += &format!("        Self {{ data: [0; {}] }}\n", s.byte_size);
+    code += "    }\n";
+    code += "}\n";
+    code += &format!("impl<T> From<T> for {}<T> {{\n", s.name);
+    code += "    fn from(data: T) -> Self {\n";
+    code += "        Self { data }\n";
     code += "    }\n";
     code += "}\n";
     code
