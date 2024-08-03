@@ -47,6 +47,16 @@ fn gen_structure_impl_new(s: &Structure) -> String {
     code += "        Self { data }\n";
     code += "    }\n";
     code += "}\n";
+    code += &format!("impl<'a, T: AsRef<[u8]>> {}<T> {{\n", s.name);
+    code += &format!("    pub fn as_ref(&'a self) -> {}<&'a [u8]> {{\n", s.name);
+    code += &format!("        {} {{ data: self.data.as_ref() }}\n", s.name);
+    code += "    }\n";
+    code += "}\n";
+    code += &format!("impl<'a, T: AsMut<[u8]>> {}<T> {{\n", s.name);
+    code += &format!("    pub fn as_mut(&'a mut self) -> {}<&'a mut [u8]> {{\n", s.name);
+    code += &format!("        {} {{ data: self.data.as_mut() }}\n", s.name);
+    code += "    }\n";
+    code += "}\n";
     code
 }
 
