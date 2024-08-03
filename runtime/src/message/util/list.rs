@@ -43,6 +43,14 @@ macro_rules! impl_list_base {
                     useless1: PhantomData::default()
                 }
             }
+
+            pub fn new(data: B) -> $t<B, T, Item> {
+                unsafe { $t::from_parts(data, 0) }
+            }
+
+            pub fn len(&self) -> usize {
+                self.len
+            }
         }
 
         impl<B: AsRef<[u8]>, T: ToUsize + WriteTo<Input = T>, Item> WriteTo for $t<B, T, Item> {
@@ -71,7 +79,7 @@ macro_rules! impl_list_base {
         }
 
         impl<B: AsRef<[u8]>, T, Item> $t<B, T, Item> {
-            pub fn as_ref(&self) -> $t<&[u8], T, Item> {
+            pub fn as_ref<Item1>(&self) -> $t<&[u8], T, Item1> {
                 unsafe { $t::from_parts(self.data.as_ref(), self.len) }
             }
         }
@@ -97,26 +105,26 @@ impl<B: AsRef<[u8]>, T, Item: FixedSize> Array<B, T, Item> {
 
 impl_list_base!(Array);
 
-impl<'a, B: AsRef<[u8]>, T, Item: FixedSize + From<&'a [u8]>> Array<B, T, Item> {
-    pub fn get(&'a self, index: usize) -> Item {
+impl<'a, B: AsRef<[u8]>, T, I> Array<B, T, I> {
+    pub fn get<Item: FixedSize + From<&'a [u8]>>(&'a self, index: usize) -> Item {
         let start = index * Item::SIZE;
         let end = start + Item::SIZE;
         Item::from(&self.data.as_ref()[start..end])
     }
 
-    pub fn iter(&'a self) -> impl Iterator<Item = Item> + 'a {
+    pub fn iter<Item: FixedSize + From<&'a [u8]>>(&'a self) -> impl Iterator<Item = Item> + 'a {
         self.data.as_ref().chunks(Item::SIZE).map(|v| Item::from(v))
     }
 }
 
-impl<'a, B: AsMut<[u8]>, T, Item: FixedSize + From<&'a mut [u8]>> Array<B, T, Item> {
-    pub fn get_mut(&'a mut self, index: usize) -> Item {
+impl<'a, B: AsMut<[u8]>, T, I> Array<B, T, I> {
+    pub fn get_mut<Item: FixedSize + From<&'a mut [u8]>>(&'a mut self, index: usize) -> Item {
         let start = index * Item::SIZE;
         let end = start + Item::SIZE;
         Item::from(&mut self.data.as_mut()[start..end])
     }
 
-    pub fn iter_mut(&'a mut self) -> impl Iterator<Item = Item> + 'a {
+    pub fn iter_mut<Item: FixedSize + From<&'a mut [u8]>>(&'a mut self) -> impl Iterator<Item = Item> + 'a {
         self.data.as_mut().chunks_mut(Item::SIZE).map(|v| Item::from(v))
     }
 }
