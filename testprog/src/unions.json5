@@ -1,0 +1,66 @@
+{
+    name: "unions",
+    imports: [
+        { protocol: "enums", type_name: "Header" },
+        { protocol: "enums", type_name: "Type" },
+        { protocol: "values", type_name: "ValueInt8" },
+        { protocol: "values", type_name: "ValueInt16" },
+        { protocol: "values", type_name: "ValueInt32" },
+        { protocol: "values", type_name: "ValueInt64" },
+        { protocol: "values", type_name: "ValueUInt8" },
+        { protocol: "values", type_name: "ValueUInt16" },
+        { protocol: "values", type_name: "ValueUInt32" },
+        { protocol: "values", type_name: "ValueUInt64" },
+        { protocol: "values", type_name: "ValueFloat" },
+        { protocol: "values", type_name: "ValueDouble" },
+        { protocol: "values", type_name: "ValueString" }
+    ],
+    unions: [
+        {
+            name: "Value",
+            discriminant: "Header.type",
+            cases: [
+                { name: "Null", case: "Null" },
+                { name: "String", case: "String", item_type: "ValueString" },
+                { name: "Int8", case: "Int8", item_type: "ValueInt8" },
+                { name: "Int16", case: "Int16", item_type: "ValueInt16" },
+                { name: "Int32", case: "Int32", item_type: "ValueInt32" },
+                { name: "Int64", case: "Int64", item_type: "ValueInt64" },
+                { name: "UInt8", case: "UInt8", item_type: "ValueUInt8" },
+                { name: "UInt16", case: "UInt16", item_type: "ValueUInt16" },
+                { name: "UInt32", case: "UInt32", item_type: "ValueUInt32" },
+                { name: "UInt64", case: "UInt64", item_type: "ValueUInt64" },
+                { name: "Float", case: "Float", item_type: "ValueFloat" },
+                { name: "Double", case: "Double", item_type: "ValueDouble" }
+            ]
+        }
+    ],
+    messages: [
+        {
+            name: "Item",
+            fields: [
+                {
+                    name: "header",
+                    info: {
+                        type: "item",
+                        item_type: "Header"
+                    }
+                },
+                {
+                    name: "name",
+                    info: {
+                        type: "string"
+                    }
+                },
+                {
+                    name: "value",
+                    info: {
+                        type: "union",
+                        on: "header",
+                        item_type: "Value"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    name: "values",
+    structs: [
+        { name: "ValueInt8", fields: [{name: "data", info: { type: "signed", bits: 8 } } ] },
+        { name: "ValueInt16", fields: [{name: "data", info: { type: "signed", bits: 16 } } ] },
+        { name: "ValueInt32", fields: [{name: "data", info: { type: "signed", bits: 32 } } ] },
+        { name: "ValueInt64", fields: [{name: "data", info: { type: "signed", bits: 64 } } ] },
+        { name: "ValueUInt8", fields: [{name: "data", info: { type: "unsigned", bits: 8 } } ] },
+        { name: "ValueUInt16", fields: [{name: "data", info: { type: "unsigned", bits: 16 } } ] },
+        { name: "ValueUInt32", fields: [{name: "data", info: { type: "unsigned", bits: 32 } } ] },
+        { name: "ValueUInt64", fields: [{name: "data", info: { type: "unsigned", bits: 64 } } ] },
+        { name: "ValueFloat", fields: [{name: "data", info: { type: "float", bits: 32 } } ] },
+        { name: "ValueDouble", fields: [{name: "data", info: { type: "float", bits: 64 } } ] }
+    ],
+    messages: [
+        { name: "ValueString", fields: [{name: "data", info: { type: "string" } } ] }
+    ]
+}
