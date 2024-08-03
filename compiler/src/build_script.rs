@@ -26,14 +26,39 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod model;
-pub mod compiler;
-pub mod gen;
-mod error;
-pub mod util;
-mod interface;
-mod build_script;
+use crate::{Error, Loader, Protoc};
+use crate::gen::GeneratorRust;
+use crate::util::SimpleImportSolver;
 
-pub use error::Error;
-pub use interface::*;
-pub use build_script::generate_rust;
+/// A simple function to quickly generate protocols in Rust for use with the Cargo build system.
+///
+/// # Arguments
+///
+/// * `load_fn`: a function which loads and imports all required protocols to compile and generate
+/// Rust code for.
+/// * `configure_fn`: a configuration function to configure the [Protoc](Protoc) for generating.
+///
+/// # Panics
+///
+/// This function panics in case the loader, compiler or generator failed and the protocol Rust code
+/// could not be generated.
+pub fn generate_rust<F: FnOnce(&mut Loader) -> Result<(), Error>, F1: FnOnce(Protoc) -> Protoc>(load_fn: F, configure_fn: F1) {
+    let mut loader = Loader::new();
+    let res = load_fn(&mut loader);
+    if let Err(e) = res {
+        panic!("Failed to load protocols: {}", e);
+    }
+    let protoc = match loader.compile(SimpleImportSolver::new("::")) {
+        Err(e) => panic!("Failed to compile protocols: {}", e),
+        Ok(v) => v
+    };
+    let protoc = configure_fn(protoc);
+    let out_dir = std::env::var("OUT_DIR").unwrap();
+    let generated = match protoc.generate::<GeneratorRust>(out_dir) {
+        Err(e) => panic!("Failed to generate Rust code: {}", e),
+        Ok(v) => v
+    };
+    for proto in generated {
+        println!("cargo::rustc-env=BP3D_PROTOC_{}={}", proto.name.to_ascii_uppercase(), proto.path.display());
+    }
+}

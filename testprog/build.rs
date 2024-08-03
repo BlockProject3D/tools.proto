@@ -26,24 +26,16 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::gen::GeneratorRust;
-use bp3d_protoc::Loader;
-use bp3d_protoc::util::SimpleImportSolver;
+use bp3d_protoc::generate_rust;
 
 fn main() {
-    let out_dir = std::env::var("OUT_DIR").unwrap();
-    let mut loader = Loader::new();
-    loader.load("./src/test.json5").unwrap();
-    loader.load("./src/structs.json5").unwrap();
-    loader.load("./src/bits.json5").unwrap();
-    loader.load("./src/views.json5").unwrap();
-    loader.load("./src/struct_arrays.json5").unwrap();
-    loader.load("./src/enums.json5").unwrap();
-    let generated = loader.compile(SimpleImportSolver::default()).unwrap()
-        .set_use_messages(true).set_use_structs(true).set_use_enums(true)
-        .set_reads_messages(true).set_writes_messages(true)
-        .generate::<GeneratorRust>(out_dir).unwrap();
-    for proto in generated {
-        println!("cargo::rustc-env=BP3D_PROTOC_{}={}", proto.name.to_ascii_uppercase(), proto.path.display());
-    }
+    generate_rust(|loader| {
+        loader.load("./src/test.json5")?;
+        loader.load("./src/structs.json5")?;
+        loader.load("./src/bits.json5")?;
+        loader.load("./src/views.json5")?;
+        loader.load("./src/struct_arrays.json5")?;
+        loader.load("./src/enums.json5")?;
+        Ok(())
+    }, |protoc| protoc.set_reads_messages(true).set_writes_messages(true));
 }
