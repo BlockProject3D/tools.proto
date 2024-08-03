@@ -45,7 +45,8 @@
                 {
                     name: "s2",
                     info: {
-                        type: "string"
+                        type: "string",
+                        max_len: 32
                     }
                 },
                 {
