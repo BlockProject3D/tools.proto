@@ -160,10 +160,7 @@ pub enum FieldView {
 
     /// Apply a unsigned > signed cast on a non T-aligned value,
     /// the maximum positive value is passed in.
-    SignedCast {
-        max_positive: usize,
-        max_value: usize
-    },
+    SignedCast(usize),
 
     /// Don't do anything special, just return the raw value.
     None
@@ -214,10 +211,7 @@ impl FieldView {
                 }
                 if ty == SimpleType::Signed && bit_size != 8 && bit_size != 16 && bit_size != 32 && bit_size != 64 {
                     let max_value = 1 << (bit_size - 1);
-                    Ok(FieldView::SignedCast{
-                        max_positive: max_value - 1,
-                        max_value
-                    })
+                    Ok(FieldView::SignedCast(max_value - 1))
                 } else if ty == SimpleType::Unsigned {
                     Ok(FieldView::None)
                 } else {

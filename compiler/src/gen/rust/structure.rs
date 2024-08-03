@@ -189,7 +189,7 @@ fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             code += "    }\n";
             code
         },
-        FieldView::SignedCast { max_positive, max_value} => {
+        FieldView::SignedCast(max_positive) => {
             let field_type = gen_field_type(field.ty);
             let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
             code += &format!("        let raw_value = self.get_raw_{}();\n", field.name);
