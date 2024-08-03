@@ -89,7 +89,7 @@ pub enum FieldType {
     Ref(Referenced),
     NullTerminatedString,
     VarcharString(VarcharStringField),
-    FixedList(FixedListField),
+    Array(FixedListField),
     Union(UnionField)
 }
 
@@ -154,7 +154,7 @@ impl AnyField {
                     Referenced::Struct(item_type) => {
                         Ok(Self::Field(Field {
                             name: value.name,
-                            ty: FieldType::FixedList(FixedListField {
+                            ty: FieldType::Array(FixedListField {
                                 item_type,
                                 ty
                             }),

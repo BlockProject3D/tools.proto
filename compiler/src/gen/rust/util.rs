@@ -39,7 +39,7 @@ impl Generics {
             FieldType::Ref(_) => true,
             FieldType::NullTerminatedString => true,
             FieldType::VarcharString(_) => true,
-            FieldType::FixedList(_) => true,
+            FieldType::Array(_) => true,
             FieldType::Union(_) => true,
             _ => false
         });
