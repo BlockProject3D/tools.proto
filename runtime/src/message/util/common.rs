@@ -74,7 +74,7 @@ impl<'a, T: ReadBytes> FromSlice<'a> for T {
         if slice.len() < size {
             Err(Error::Truncated)
         } else {
-            let value = T::read_bytes_be(slice);
+            let value = T::read_bytes_le(slice);
             Ok(Message::new(size, value))
         }
     }
@@ -84,7 +84,7 @@ impl<T: bytesutil::WriteTo> WriteTo for T {
     type Input = T;
 
     fn write_to<W: Write>(input: &Self::Input, out: W) -> Result<(), Error> {
-        input.write_to_be(out)?;
+        input.write_to_le(out)?;
         Ok(())
     }
 }
