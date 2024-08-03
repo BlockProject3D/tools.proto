@@ -32,6 +32,7 @@ use crate::model::structure::{SimpleType, StructFieldType};
 simple_error! {
     pub Error {
         MultiPayload => "message has more than 1 payload",
+        VarsizeAfterPayload => "message has 1 or more variable sized fields after the payload",
         UnsupportedBitSize(usize) => "unsupported bit size for fixed field ({}), maximum is 64",
         UnsupportedType(StructFieldType) => "unsupported field type in struct: {:?}",
         UnsupportedViewType(SimpleType) => "unsupported view for type: {:?}",
