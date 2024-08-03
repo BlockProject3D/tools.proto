@@ -1,0 +1,59 @@
+{
+    name: "unions2",
+    enums: [
+        {
+            name: "Test",
+            variants: {
+                "V1": 0,
+                "V2": 1
+            }
+        }
+    ],
+    unions: [
+        {
+            name: "NestedDiscriminant",
+            discriminant: "Header2.inner.test",
+            cases: [
+                { case: "V1", name: "V1" },
+                { case: "V2", name: "V2" }
+            ]
+        }
+    ],
+    structs: [
+        {
+            name: "Header",
+            fields: [
+                {
+                    name: "test",
+                    info: {
+                        type: "unsigned",
+                        bits: 1
+                    },
+                    view: {
+                        type: "enum",
+                        name: "Test"
+                    }
+                },
+                {
+                    name: "test2",
+                    info: {
+                        type: "signed",
+                        bits: 7
+                    }
+                }
+            ]
+        },
+        {
+            name: "Header2",
+            fields: [
+                {
+                    name: "inner",
+                    info: {
+                        type: "struct",
+                        item_type: "Header"
+                    }
+                }
+            ]
+        }
+    ]
+}

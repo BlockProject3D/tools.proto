@@ -31,6 +31,14 @@ use crate::compiler::message::Referenced;
 use crate::compiler::union::Union;
 use crate::compiler::util::TypePathMap;
 
+fn get_generics(u: &Union) -> &str {
+    if u.cases.iter().any(|v| v.item_type.is_some()) {
+        "<'a>"
+    } else {
+        ""
+    }
+}
+
 fn get_discriminant_path(u: &Union) -> String {
     u.discriminant.iter().map(|(f, is_leaf)| if is_leaf {
         format!("get_raw_{}()", f.name())
@@ -48,7 +56,8 @@ fn get_discriminant_path_mut(u: &Union) -> String {
 }
 
 fn gen_union_from_slice_impl(u: &Union, type_path_by_name: &TypePathMap) -> String {
-    let mut code = format!("impl<'a> {}<'a> {{\n", u.name);
+    let generics = get_generics(u);
+    let mut code = format!("impl<'a> {}{generics} {{\n", u.name);
     code += &format!("    pub fn from_slice(slice: &'a [u8], discriminant: &{}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{\n", type_path_by_name.get(&u.discriminant.root.name));
     code += "        use bp3d_proto::message::FromSlice;\n";
     let discriminant_path = get_discriminant_path(u);
@@ -68,7 +77,8 @@ fn gen_union_from_slice_impl(u: &Union, type_path_by_name: &TypePathMap) -> Stri
 }
 
 fn gen_union_write_to_impl(u: &Union, type_path_by_name: &TypePathMap) -> String {
-    let mut code = format!("impl<'a> {}<'a> {{\n", u.name);
+    let generics = get_generics(u);
+    let mut code = format!("impl<'a> {}{generics} {{\n", u.name);
     code += &format!("    pub fn write_to<W: std::io::Write>(input: &Self, discriminant: &{}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{\n", type_path_by_name.get(&u.discriminant.root.name));
     code += "        use bp3d_proto::message::WriteTo;\n";
     let discriminant_path = get_discriminant_path(u);
@@ -88,7 +98,8 @@ fn gen_union_write_to_impl(u: &Union, type_path_by_name: &TypePathMap) -> String
 }
 
 fn gen_union_set_discriminant(u: &Union, type_path_by_name: &TypePathMap) -> String {
-    let mut code = format!("impl<'a> {}<'a> {{\n", u.name);
+    let generics = get_generics(u);
+    let mut code = format!("impl{generics} {}{generics} {{\n", u.name);
     code += &format!("    pub fn set_discriminant<T: AsMut<[u8]>>(&self, discriminant: &mut {}<T>) {{\n", type_path_by_name.get(&u.discriminant.root.name));
     let discriminant_path = get_discriminant_path_mut(u);
     code += "        let discriminant_value = match self {\n";
@@ -106,7 +117,8 @@ fn gen_union_set_discriminant(u: &Union, type_path_by_name: &TypePathMap) -> Str
 }
 
 fn gen_union_as_getters(u: &Union, type_path_by_name: &TypePathMap) -> String {
-    let mut code = format!("impl<'a> {}<'a> {{\n", u.name);
+    let generics = get_generics(u);
+    let mut code = format!("impl{generics} {}{generics} {{\n", u.name);
     for case in &u.cases {
         match &case.item_type {
             Some(Referenced::Struct(v)) => code += &format!("    pub fn as_{}(&self) -> Option<&{}<&'a [u8]>> {{\n", case.name.to_ascii_lowercase(), type_path_by_name.get(&v.name)),
@@ -132,7 +144,8 @@ fn gen_union_as_getters(u: &Union, type_path_by_name: &TypePathMap) -> String {
 }
 
 pub fn gen_union_decl(u: &Union, type_path_by_name: &TypePathMap) -> String {
-    let mut code = format!("#[derive(Copy, Clone, Debug)]\npub enum {}<'a> {{\n", u.name);
+    let generics = get_generics(u);
+    let mut code = format!("#[derive(Copy, Clone, Debug)]\npub enum {}{generics} {{\n", u.name);
     for case in &u.cases {
         match &case.item_type {
             Some(Referenced::Struct(v)) => code += &format!("    {}({}<&'a [u8]>),\n", case.name, type_path_by_name.get(&v.name)),

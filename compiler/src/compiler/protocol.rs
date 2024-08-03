@@ -110,18 +110,18 @@ impl Protocol {
                 proto.enums.push(v);
             }
         }
-        if let Some(unions) = value.unions {
-            for v in unions {
-                let v = Rc::new(Union::from_model(&proto, v)?);
-                proto.unions_by_name.insert(v.name.clone(), v.clone());
-                proto.unions.push(v);
-            }
-        }
         if let Some(structs) = value.structs {
             for v in structs {
                 let v = Rc::new(Structure::from_model(&proto, v)?);
                 proto.structs_by_name.insert(v.name.clone(), v.clone());
                 proto.structs.push(v);
+            }
+        }
+        if let Some(unions) = value.unions {
+            for v in unions {
+                let v = Rc::new(Union::from_model(&proto, v)?);
+                proto.unions_by_name.insert(v.name.clone(), v.clone());
+                proto.unions.push(v);
             }
         }
         if let Some(messages) = value.messages {
