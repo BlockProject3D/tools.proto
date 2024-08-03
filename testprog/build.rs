@@ -38,6 +38,7 @@ fn main() {
     loader.load("./src/bits.json5").unwrap();
     loader.load("./src/views.json5").unwrap();
     loader.load("./src/struct_arrays.json5").unwrap();
+    loader.load("./src/enums.json5").unwrap();
     let generated = loader.compile(SimpleImportSolver::default()).unwrap()
         .set_use_messages(true).set_use_structs(true).set_use_enums(true)
         .set_reads_messages(true).set_writes_messages(true)

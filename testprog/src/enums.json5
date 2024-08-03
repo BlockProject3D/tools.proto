@@ -1,0 +1,40 @@
+{
+    name: "enums",
+    structs: [
+        {
+            name: "Header",
+            fields: [
+                {
+                    name: "type",
+                    info: {
+                        type: "unsigned",
+                        bits: 8
+                    },
+                    view: {
+                        type: "enum",
+                        name: "Type"
+                    }
+                }
+            ]
+        }
+    ],
+    enums: [
+        {
+            name: "Type",
+            variants: {
+                 "Null":  0,
+                 "String": 1,
+                 "Int8":  2,
+                 "Int16": 3,
+                 "Int32":  4,
+                 "Int64": 5,
+                 "UInt8":  6,
+                 "UInt16": 7,
+                 "UInt32":  8,
+                 "UInt64": 9,
+                 "Float":  10,
+                 "Double": 11,
+            }
+        }
+    ]
+}

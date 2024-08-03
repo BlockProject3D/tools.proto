@@ -172,7 +172,7 @@ fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             code += &format!("        if raw_value > {} {{\n", e.largest);
             code += "            None\n";
             code += "        } else {\n";
-            code += &format!("        unsafe {{ std::mem::transmute::<{}, {}>(raw_value) }}\n", raw_field_type, item_type);
+            code += &format!("            Some(unsafe {{ std::mem::transmute::<{}, {}>(raw_value) }})\n", raw_field_type, item_type);
             code += "        }\n";
             code += "    }\n";
             code

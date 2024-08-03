@@ -26,13 +26,16 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::r#enum::Enum;
+use testprog::enums::{Header, Type};
 
-pub fn gen_enum_decl(e: &Enum) -> String {
-    let mut code = format!("#[derive(Copy, Clone, Debug, Eq, PartialEq)]\npub enum {} {{\n", e.name);
-    for (k, v) in &e.variants {
-        code += &format!("    {} = {},\n", k, v);
-    }
-    code += "}\n";
-    code
+#[test]
+fn basic() {
+    let mut header = Header::new_on_stack();
+    assert_eq!(header.get_type().unwrap(), Type::Null);
+    header.set_type(Type::String);
+    assert_eq!(header.get_type().unwrap(), Type::String);
+    header.set_raw_type(0xFF);
+    assert!(header.get_type().is_none());
+    header.set_type(Type::Double);
+    assert_eq!(header.get_type().unwrap(), Type::Double);
 }

@@ -38,3 +38,4 @@ pub use protocol::Protocol;
 pub use error::Error;
 
 //TODO: Sanitizer check: forbid nested payloads in message fields.
+//TODO: Support statically sized fields after the payload.
