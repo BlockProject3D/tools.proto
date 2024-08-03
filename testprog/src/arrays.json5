@@ -1,0 +1,60 @@
+{
+    name: "arrays",
+    structs: [
+        {
+            name: "Item",
+            fields: [
+                {
+                    name: "id",
+                    info: {
+                        type: "unsigned",
+                        bits: 8
+                    }
+                },
+                {
+                    name: "count",
+                    info: {
+                        type: "unsigned",
+                        bits: 11
+                    }
+                },
+                {
+                    name: "slot",
+                    info: {
+                        type: "unsigned",
+                        bits: 5
+                    }
+                }
+            ]
+        }
+    ],
+    messages: [
+        {
+            name: "Msg",
+            fields: [
+                {
+                    name: "items",
+                    info: {
+                        type: "list",
+                        max_len: 255,
+                        item_type: "Item"
+                    }
+                }
+            ]
+        },
+        {
+            name: "Msg1",
+            fields: [
+                {
+                    name: "items",
+                    info: {
+                        type: "list",
+                        max_len: 255,
+                        item_type: "Item"
+                    },
+                    optional: true
+                }
+            ]
+        }
+    ]
+}

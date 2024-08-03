@@ -37,7 +37,7 @@ impl<'a, T: FromSlice<'a, Output = T>> FromSlice<'a> for Optional<T> {
     type Output = Option<T>;
 
     fn from_slice(slice: &'a [u8]) -> Result<Message<Option<T>>, Error> {
-        if slice.len() < 2 {
+        if slice.len() < 1 {
             Err(Error::Truncated)
         } else {
             let b = slice[0] > 0;

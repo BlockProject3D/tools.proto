@@ -38,6 +38,7 @@ fn main() {
         loader.load("./src/enums.json5")?;
         loader.load("./src/values.json5")?;
         loader.load("./src/unions2.json5")?;
+        loader.load("./src/arrays.json5")?;
         Ok(())
     }, |protoc| protoc.set_reads_messages(true).set_writes_messages(true));
     generate_rust(|loader| {

@@ -44,15 +44,47 @@ fn gen_field_decl(field: &Field, type_path_by_name: &TypePathMap) -> String {
         },
         FieldType::NullTerminatedString => code += "&'a str",
         FieldType::VarcharString(_) => code += "&'a str",
-        FieldType::Array(v) => code += &format!("bp3d_proto::message::util::Array<&'a [u8], {}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)),
+        FieldType::Array(v) => code += &format!("bp3d_proto::message::util::Array::<&'a [u8], {}, {}<&'a [u8]>>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)),
         FieldType::Union(v) => code += &format!("{}<'a>", type_path_by_name.get(&v.r.name)),
-        FieldType::List(v) => code += &format!("bp3d_proto::message::util::List<&'a [u8], {}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)),
+        FieldType::List(v) => code += &format!("bp3d_proto::message::util::List::<&'a [u8], {}, {}<&'a [u8]>>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)),
         FieldType::Payload => code += "&'a [u8]"
 
     }
     if field.optional {
         code += ">"
     }
+    code
+}
+
+fn capitalize(s: &str) -> String {
+    s[..1].to_ascii_uppercase() + &s[1..]
+}
+
+fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMap) -> String {
+    let flag = msg.fields.iter().any(|v| match v.ty {
+        FieldType::Array(_) | FieldType::List(_) => true,
+        _ => false
+    });
+    if !flag {
+        return String::new();
+    }
+    let mut code = format!("pub mod {} {{\n", msg.name.to_ascii_lowercase());
+    for field in &msg.fields {
+        match &field.ty {
+            FieldType::Array(v) => {
+                code += &format!("    pub type {}Type<'a, T> = bp3d_proto::message::util::Array<T, {}, {}<&'a [u8]>>;\n", capitalize(&field.name), gen_field_type(v.ty), type_path_by_name.get_with_default_prefix(&v.item_type.name, "super::"));
+                code += &format!("    pub type {}Ref<'a> = {}<&'a [u8]>;\n", capitalize(&field.name), type_path_by_name.get_with_default_prefix(&v.item_type.name, "super::"));
+                code += &format!("    pub type {}Mut<'a> = {}<&'a mut [u8]>;\n", capitalize(&field.name), type_path_by_name.get_with_default_prefix(&v.item_type.name, "super::"));
+            },
+            FieldType::List(v) => {
+                code += &format!("    pub type {}Type<'a, T> = bp3d_proto::message::util::List<T, {}, {}<&'a [u8]>>;\n", capitalize(&field.name), gen_field_type(v.ty), type_path_by_name.get_with_default_prefix(&v.item_type.name, "super::"));
+                code += &format!("    pub type {}Ref<'a> = {}<&'a [u8]>;\n", capitalize(&field.name), type_path_by_name.get_with_default_prefix(&v.item_type.name, "super::"));
+                code += &format!("    pub type {}Mut<'a> = {}<&'a mut [u8]>;\n", capitalize(&field.name), type_path_by_name.get_with_default_prefix(&v.item_type.name, "super::"));
+            },
+            _ => ()
+        }
+    }
+    code += "}\n";
     code
 }
 
@@ -65,6 +97,8 @@ pub fn gen_message_decl(msg: &Message, type_path_by_name: &TypePathMap) -> Strin
         .map(|v| gen_field_decl(v, type_path_by_name))
         .join(",\n");
     code += &fields;
-    code += "\n}";
+    code += "\n}\n\n";
+    code += &gen_message_array_type_decls(msg, type_path_by_name);
+    code += "\n";
     code
 }

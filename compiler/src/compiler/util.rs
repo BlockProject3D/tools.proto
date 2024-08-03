@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::borrow::Cow;
 use std::collections::HashMap;
 use crate::compiler::Protocol;
 
@@ -54,6 +55,13 @@ impl TypePathMap {
         match self.type_path_by_name.get(item_type) {
             None => item_type,
             Some(v) => &*v
+        }
+    }
+
+    pub fn get_with_default_prefix<'a>(&'a self, item_type: &'a str, default_prefix: &str) -> Cow<'a, str> {
+        match self.type_path_by_name.get(item_type) {
+            None => Cow::Owned(format!("{default_prefix}{item_type}")),
+            Some(v) => Cow::Borrowed(&*v)
         }
     }
 }

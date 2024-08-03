@@ -35,3 +35,4 @@ include!(env!("BP3D_PROTOC_ENUMS"));
 include!(env!("BP3D_PROTOC_VALUES"));
 include!(env!("BP3D_PROTOC_UNIONS"));
 include!(env!("BP3D_PROTOC_UNIONS2"));
+include!(env!("BP3D_PROTOC_ARRAYS"));

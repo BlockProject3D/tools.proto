@@ -39,9 +39,9 @@ fn gen_field_from_slice_impl(field: &Field, type_path_by_name: &TypePathMap) -> 
         }
         FieldType::NullTerminatedString => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::message::util::NullTerminatedString")),
         FieldType::VarcharString(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::VarcharString::<{}>", gen_field_type(v.ty)))),
-        FieldType::Array(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array<&'a [u8], {}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)))),
+        FieldType::Array(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array::<&'a [u8], {}, {}<&'a [u8]>>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)))),
         FieldType::Union(v) => format!("{}::from_slice(&slice[byte_offset..], &{})", gen_optional(field.optional, type_path_by_name.get(&v.r.name)), v.on_name),
-        FieldType::List(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::UnsizedList<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)))),
+        FieldType::List(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::UnsizedList::<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)))),
         FieldType::Payload => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::message::util::Buffer"))
     };
     let mut code = format!("        let {}_msg = {}?;\n", field.name, msg_code);
