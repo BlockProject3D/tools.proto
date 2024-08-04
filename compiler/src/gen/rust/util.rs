@@ -41,6 +41,8 @@ impl Generics {
             FieldType::VarcharString(_) => true,
             FieldType::Array(_) => true,
             FieldType::Union(_) => true,
+            FieldType::List(_) => true,
+            FieldType::Payload => true,
             _ => false
         });
         Generics {

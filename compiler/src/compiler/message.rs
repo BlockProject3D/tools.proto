@@ -279,14 +279,14 @@ impl Message {
             if field.size.is_dyn_sized {
                 is_dyn_sized = true;
             }
+            if dyn_sized_elem_count > 0 && (field.size.is_dyn_sized || field.size.is_element_dyn_sized) {
+                return Err(Error::VarsizeAfterPayload)
+            }
             if field.size.is_element_dyn_sized {
                 dyn_sized_elem_count += 1;
             }
             if dyn_sized_elem_count > 1 {
                 return Err(Error::MultiPayload)
-            }
-            if dyn_sized_elem_count > 0 && (field.size.is_dyn_sized || field.size.is_element_dyn_sized) {
-                return Err(Error::VarsizeAfterPayload)
             }
             fields.push(field);
         }
