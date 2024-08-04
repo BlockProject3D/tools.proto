@@ -1,19 +1,19 @@
 {
     name: "unions",
     imports: [
-        { protocol: "enums", type_name: "Header" },
-        { protocol: "enums", type_name: "Type" },
-        { protocol: "values", type_name: "ValueInt8" },
-        { protocol: "values", type_name: "ValueInt16" },
-        { protocol: "values", type_name: "ValueInt32" },
-        { protocol: "values", type_name: "ValueInt64" },
-        { protocol: "values", type_name: "ValueUInt8" },
-        { protocol: "values", type_name: "ValueUInt16" },
-        { protocol: "values", type_name: "ValueUInt32" },
-        { protocol: "values", type_name: "ValueUInt64" },
-        { protocol: "values", type_name: "ValueFloat" },
-        { protocol: "values", type_name: "ValueDouble" },
-        { protocol: "values", type_name: "ValueString" }
+        { protocol: "enums", type: "Header" },
+        { protocol: "enums", type: "Type" },
+        { protocol: "values", type: "ValueInt8" },
+        { protocol: "values", type: "ValueInt16" },
+        { protocol: "values", type: "ValueInt32" },
+        { protocol: "values", type: "ValueInt64" },
+        { protocol: "values", type: "ValueUInt8" },
+        { protocol: "values", type: "ValueUInt16" },
+        { protocol: "values", type: "ValueUInt32" },
+        { protocol: "values", type: "ValueUInt64" },
+        { protocol: "values", type: "ValueFloat" },
+        { protocol: "values", type: "ValueDouble" },
+        { protocol: "values", type: "ValueString" }
     ],
     unions: [
         {

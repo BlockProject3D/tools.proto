@@ -35,6 +35,7 @@ use crate::model::union::Union;
 #[derive(Clone, Debug, Deserialize)]
 pub struct Import {
     pub protocol: String,
+    #[serde(rename="type")]
     pub type_name: String
 }
 
