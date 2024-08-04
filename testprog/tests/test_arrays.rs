@@ -27,38 +27,45 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use bp3d_proto::message::{FromSlice, WriteTo};
-use testprog::arrays::{Msg, Msg1, msg, msg1};
+use testprog::arrays::{Msg, Msg1, MsgItems, Msg1Items};
 
 #[test]
 fn msg() {
     let mut msg_buffer = Vec::new();
     {
         let mut buffer: [u8; 3 * 4] = [0; 3 * 4];
-        let mut arr = msg::ItemsType::from_parts_checked(&mut buffer, 4).unwrap();
-        arr.get_mut::<msg::ItemsMut>(0).set_id(3).set_count(1024).set_slot(10);
-        arr.get_mut::<msg::ItemsMut>(1).set_id(2).set_count(1023).set_slot(9);
-        arr.get_mut::<msg::ItemsMut>(2).set_id(1).set_count(16).set_slot(8);
-        arr.get_mut::<msg::ItemsMut>(3).set_id(0).set_count(4).set_slot(7);
+        let mut arr = MsgItems::from_parts(&mut buffer, 4).unwrap();
+        arr.get_mut(0).set_id(3).set_count(1024).set_slot(10);
+        arr.get_mut(1).set_id(2).set_count(1023).set_slot(9);
+        arr.get_mut(2).set_id(1).set_count(16).set_slot(8);
+        arr.get_mut(3).set_id(0).set_count(4).set_slot(7);
+        let mut slot = 0;
+        for mut v in arr.iter_mut() {
+            v.set_slot(slot);
+            slot += 1;
+        }
         let msg = Msg {
-            items: arr.as_ref()
+            items: arr.to_ref()
         };
         Msg::write_to(&msg, &mut msg_buffer).unwrap();
     }
     {
         let msg = Msg::from_slice(&msg_buffer).unwrap().into_inner();
-        assert_eq!(msg.items.len(), 4);
-        assert_eq!(msg.items.get::<msg::ItemsRef>(0).get_id(), 3);
-        assert_eq!(msg.items.get::<msg::ItemsRef>(1).get_id(), 2);
-        assert_eq!(msg.items.get::<msg::ItemsRef>(2).get_id(), 1);
-        assert_eq!(msg.items.get::<msg::ItemsRef>(3).get_id(), 0);
-        assert_eq!(msg.items.get::<msg::ItemsRef>(0).get_count(), 1024);
-        assert_eq!(msg.items.get::<msg::ItemsRef>(1).get_count(), 1023);
-        assert_eq!(msg.items.get::<msg::ItemsRef>(2).get_count(), 16);
-        assert_eq!(msg.items.get::<msg::ItemsRef>(3).get_count(), 4);
-        assert_eq!(msg.items.get::<msg::ItemsRef>(0).get_slot(), 10);
-        assert_eq!(msg.items.get::<msg::ItemsRef>(1).get_slot(), 9);
-        assert_eq!(msg.items.get::<msg::ItemsRef>(2).get_slot(), 8);
-        assert_eq!(msg.items.get::<msg::ItemsRef>(3).get_slot(), 7);
+        let items = Msg1Items::from_array(msg.items);
+        assert_eq!(items.iter().count(), 4);
+        assert_eq!(items.len(), 4);
+        assert_eq!(items.get(0).get_id(), 3);
+        assert_eq!(items.get(1).get_id(), 2);
+        assert_eq!(items.get(2).get_id(), 1);
+        assert_eq!(items.get(3).get_id(), 0);
+        assert_eq!(items.get(0).get_count(), 1024);
+        assert_eq!(items.get(1).get_count(), 1023);
+        assert_eq!(items.get(2).get_count(), 16);
+        assert_eq!(items.get(3).get_count(), 4);
+        assert_eq!(items.get(0).get_slot(), 0);
+        assert_eq!(items.get(1).get_slot(), 1);
+        assert_eq!(items.get(2).get_slot(), 2);
+        assert_eq!(items.get(3).get_slot(), 3);
     }
 }
 
@@ -67,33 +74,33 @@ fn msg1_1() {
     let mut msg_buffer = Vec::new();
     {
         let mut buffer: [u8; 3 * 4] = [0; 3 * 4];
-        let mut arr = msg1::ItemsType::from_parts_checked(&mut buffer, 4).unwrap();
-        arr.get_mut::<msg1::ItemsMut>(0).set_id(3).set_count(1024).set_slot(10);
-        arr.get_mut::<msg1::ItemsMut>(1).set_id(2).set_count(1023).set_slot(9);
-        arr.get_mut::<msg1::ItemsMut>(2).set_id(1).set_count(16).set_slot(8);
-        arr.get_mut::<msg1::ItemsMut>(3).set_id(0).set_count(4).set_slot(7);
+        let mut arr = MsgItems::from_parts(&mut buffer, 4).unwrap();
+        arr.get_mut(0).set_id(3).set_count(1024).set_slot(10);
+        arr.get_mut(1).set_id(2).set_count(1023).set_slot(9);
+        arr.get_mut(2).set_id(1).set_count(16).set_slot(8);
+        arr.get_mut(3).set_id(0).set_count(4).set_slot(7);
         let msg = Msg1 {
-            items: Some(arr.as_ref())
+            items: Some(arr.to_ref())
         };
         Msg1::write_to(&msg, &mut msg_buffer).unwrap();
     }
     {
         let msg = Msg1::from_slice(&msg_buffer).unwrap().into_inner();
         assert!(msg.items.is_some());
-        let items = msg.items.unwrap();
+        let items = msg.items.map(Msg1Items::from_array).unwrap();
         assert_eq!(items.len(), 4);
-        assert_eq!(items.get::<msg::ItemsRef>(0).get_id(), 3);
-        assert_eq!(items.get::<msg::ItemsRef>(1).get_id(), 2);
-        assert_eq!(items.get::<msg::ItemsRef>(2).get_id(), 1);
-        assert_eq!(items.get::<msg::ItemsRef>(3).get_id(), 0);
-        assert_eq!(items.get::<msg::ItemsRef>(0).get_count(), 1024);
-        assert_eq!(items.get::<msg::ItemsRef>(1).get_count(), 1023);
-        assert_eq!(items.get::<msg::ItemsRef>(2).get_count(), 16);
-        assert_eq!(items.get::<msg::ItemsRef>(3).get_count(), 4);
-        assert_eq!(items.get::<msg::ItemsRef>(0).get_slot(), 10);
-        assert_eq!(items.get::<msg::ItemsRef>(1).get_slot(), 9);
-        assert_eq!(items.get::<msg::ItemsRef>(2).get_slot(), 8);
-        assert_eq!(items.get::<msg::ItemsRef>(3).get_slot(), 7);
+        assert_eq!(items.get(0).get_id(), 3);
+        assert_eq!(items.get(1).get_id(), 2);
+        assert_eq!(items.get(2).get_id(), 1);
+        assert_eq!(items.get(3).get_id(), 0);
+        assert_eq!(items.get(0).get_count(), 1024);
+        assert_eq!(items.get(1).get_count(), 1023);
+        assert_eq!(items.get(2).get_count(), 16);
+        assert_eq!(items.get(3).get_count(), 4);
+        assert_eq!(items.get(0).get_slot(), 10);
+        assert_eq!(items.get(1).get_slot(), 9);
+        assert_eq!(items.get(2).get_slot(), 8);
+        assert_eq!(items.get(3).get_slot(), 7);
     }
 }
 

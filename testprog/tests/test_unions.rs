@@ -36,7 +36,7 @@ fn write_message(value: Value, out: &mut impl Write) {
     let mut header = Header::new_on_stack();
     value.set_discriminant(&mut header);
     let item = Item {
-        header: header.as_ref(),
+        header: header.to_ref(),
         name: "test",
         value
     };
@@ -55,35 +55,35 @@ fn item_numbers() {
     let mut buf = Vec::with_capacity(256);
     let mut value_buffer: [u8; 8] = [0; 8];
 
-    write_message(Value::Int8(ValueInt8::from(&mut value_buffer).set_data(-42).as_ref()), &mut buf);
+    write_message(Value::Int8(ValueInt8::from(&mut value_buffer).set_data(-42).to_ref()), &mut buf);
     assert_eq!(read_message(&buf, Type::Int8).as_int8().unwrap().get_data(), -42);
 
     buf.clear();
-    write_message(Value::Int16(ValueInt16::from(&mut value_buffer).set_data(-4242).as_ref()), &mut buf);
+    write_message(Value::Int16(ValueInt16::from(&mut value_buffer).set_data(-4242).to_ref()), &mut buf);
     assert_eq!(read_message(&buf, Type::Int16).as_int16().unwrap().get_data(), -4242);
 
     buf.clear();
-    write_message(Value::Int32(ValueInt32::from(&mut value_buffer).set_data(-424242).as_ref()), &mut buf);
+    write_message(Value::Int32(ValueInt32::from(&mut value_buffer).set_data(-424242).to_ref()), &mut buf);
     assert_eq!(read_message(&buf, Type::Int32).as_int32().unwrap().get_data(), -424242);
 
     buf.clear();
-    write_message(Value::Int64(ValueInt64::from(&mut value_buffer).set_data(-42424242).as_ref()), &mut buf);
+    write_message(Value::Int64(ValueInt64::from(&mut value_buffer).set_data(-42424242).to_ref()), &mut buf);
     assert_eq!(read_message(&buf, Type::Int64).as_int64().unwrap().get_data(), -42424242);
 
     buf.clear();
-    write_message(Value::UInt8(ValueUInt8::from(&mut value_buffer).set_data(42).as_ref()), &mut buf);
+    write_message(Value::UInt8(ValueUInt8::from(&mut value_buffer).set_data(42).to_ref()), &mut buf);
     assert_eq!(read_message(&buf, Type::UInt8).as_uint8().unwrap().get_data(), 42);
 
     buf.clear();
-    write_message(Value::UInt16(ValueUInt16::from(&mut value_buffer).set_data(4242).as_ref()), &mut buf);
+    write_message(Value::UInt16(ValueUInt16::from(&mut value_buffer).set_data(4242).to_ref()), &mut buf);
     assert_eq!(read_message(&buf, Type::UInt16).as_uint16().unwrap().get_data(), 4242);
 
     buf.clear();
-    write_message(Value::UInt32(ValueUInt32::from(&mut value_buffer).set_data(424242).as_ref()), &mut buf);
+    write_message(Value::UInt32(ValueUInt32::from(&mut value_buffer).set_data(424242).to_ref()), &mut buf);
     assert_eq!(read_message(&buf, Type::UInt32).as_uint32().unwrap().get_data(), 424242);
 
     buf.clear();
-    write_message(Value::UInt64(ValueUInt64::from(&mut value_buffer).set_data(42424242).as_ref()), &mut buf);
+    write_message(Value::UInt64(ValueUInt64::from(&mut value_buffer).set_data(42424242).to_ref()), &mut buf);
     assert_eq!(read_message(&buf, Type::UInt64).as_uint64().unwrap().get_data(), 42424242);
 }
 
@@ -100,11 +100,11 @@ fn item_float() {
     let mut buf = Vec::with_capacity(256);
     let mut value_buffer: [u8; 8] = [0; 8];
 
-    write_message(Value::Float(ValueFloat::from(&mut value_buffer).set_data(42.42).as_ref()), &mut buf);
+    write_message(Value::Float(ValueFloat::from(&mut value_buffer).set_data(42.42).to_ref()), &mut buf);
     assert_eq!(read_message(&buf, Type::Float).as_float().unwrap().get_data(), 42.42);
 
     buf.clear();
-    write_message(Value::Double(ValueDouble::from(&mut value_buffer).set_data(42.4242).as_ref()), &mut buf);
+    write_message(Value::Double(ValueDouble::from(&mut value_buffer).set_data(42.4242).to_ref()), &mut buf);
     assert_eq!(read_message(&buf, Type::Double).as_double().unwrap().get_data(), 42.4242);
 }
 
