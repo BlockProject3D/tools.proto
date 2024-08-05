@@ -26,11 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto::message::{FromSlice, WriteTo};
+use std::io::Write;
+use bp3d_proto::message::{FromSlice, FromSliceWithOffsets, WriteTo};
 use testprog::test::{Test, Test1};
 
-#[test]
-fn test() {
+fn write_message<W: Write>(out: W) {
     let msg = Test {
         p1: Some(Test1 {
             s1: "this is a test",
@@ -39,12 +39,34 @@ fn test() {
         s1: "a test",
         s2: "hello world",
     };
+    Test::write_to(&msg, out).unwrap();
+}
+
+#[test]
+fn test() {
     let mut v = Vec::new();
-    Test::write_to(&msg, &mut v).unwrap();
+    write_message(&mut v);
     let msg = Test::from_slice(&v).unwrap().into_inner();
     assert_eq!(msg.p1.unwrap().p1, 42);
     assert_eq!(msg.p1.unwrap().s1, "this is a test");
     assert_eq!(msg.s1, "a test");
     assert_eq!(msg.s2, "hello world");
     println!("{:?}", msg);
+}
+
+#[test]
+fn test_offsets() {
+    let mut v = Vec::new();
+    write_message(&mut v);
+    let (msg, offsets) = Test::from_slice_with_offsets(&v).unwrap().into_inner();
+    assert_eq!(msg.p1.unwrap().p1, 42);
+    assert_eq!(msg.p1.unwrap().s1, "this is a test");
+    assert_eq!(msg.s1, "a test");
+    assert_eq!(msg.s2, "hello world");
+    assert_eq!(offsets.s1.start, 0);
+    assert_eq!(offsets.s1.size(), 7);
+    assert_eq!(offsets.s2.start, 7);
+    assert_eq!(offsets.s2.size(), 12);
+    assert_eq!(offsets.p1.start, 19);
+    assert_eq!(offsets.p1.size(), 20);
 }

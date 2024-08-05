@@ -39,6 +39,18 @@ simple_error! {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+#[derive(Default, Copy, Clone, Debug)]
+pub struct FieldOffset {
+    pub start: usize,
+    pub end: usize
+}
+
+impl FieldOffset {
+    pub fn size(&self) -> usize {
+        self.end - self.start
+    }
+}
+
 pub struct Message<T> {
     data: T,
     size: usize
@@ -70,6 +82,12 @@ pub trait FromSlice<'a> {
 
     fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>>;
     //fn copy_to_slice(&self, out_slice: &mut [u8]);
+}
+
+pub trait FromSliceWithOffsets<'a>: FromSlice<'a> {
+    type Offsets: Sized;
+
+    fn from_slice_with_offsets(slice: &'a [u8]) -> Result<Message<(Self::Output, Self::Offsets)>>;
 }
 
 pub trait WriteTo {
