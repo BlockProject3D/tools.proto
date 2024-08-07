@@ -40,7 +40,7 @@ fn gen_message_from_slice_offsets_impl(msg: &Message, type_path_by_name: &TypePa
     code += "        let mut offsets = Self::Offsets::default();\n";
     code += "        let mut byte_offset: usize = 0;\n";
     for field in &msg.fields {
-        code += &crate::gen::rust::message_from_slice::gen_field_from_slice_impl(field, type_path_by_name, true);
+        code += &crate::gen::rust::message_from_slice::gen_field_from_slice_impl(msg, field, type_path_by_name, true);
     }
     code += &format!("        let data = {} {{\n", msg.name);
     for field in &msg.fields {

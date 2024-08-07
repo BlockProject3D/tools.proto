@@ -73,7 +73,7 @@ impl<'a, Item: FromSlice<'a, Output = Item>> Iterator for Iter<'a, Item> {
         if self.len == 0 {
             return None;
         }
-        let msg = match Item::from_slice(&self.data[..]) {
+        let msg = match Item::from_slice(self.data) {
             Err(e) => return Some(Err(e)),
             Ok(v) => v
         };

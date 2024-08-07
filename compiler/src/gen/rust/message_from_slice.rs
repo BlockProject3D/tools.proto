@@ -30,7 +30,7 @@ use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
 use crate::gen::rust::util::{gen_field_type, gen_optional, Generics};
 
-pub fn gen_field_from_slice_impl(field: &Field, type_path_by_name: &TypePathMap, gen_offsets: bool) -> String {
+pub fn gen_field_from_slice_impl(msg: &Message, field: &Field, type_path_by_name: &TypePathMap, gen_offsets: bool) -> String {
     let msg_code = match &field.ty {
         FieldType::Fixed(ty) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, gen_field_type(ty.ty))),
         FieldType::Ref(v) => match v {
@@ -47,7 +47,12 @@ pub fn gen_field_from_slice_impl(field: &Field, type_path_by_name: &TypePathMap,
         FieldType::VarcharString(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::VarcharString::<{}>", gen_field_type(v.ty)))),
         FieldType::Array(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array::<&'a [u8], {}, {}<&'a [u8]>>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)))),
         FieldType::Union(v) => format!("{}::from_slice(&slice[byte_offset..], &{})", gen_optional(field.optional, type_path_by_name.get(&v.r.name)), v.on_name),
-        FieldType::List(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::list::Unsized::<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)))),
+        FieldType::List(v) => {
+            match msg.is_embedded() {
+                false => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::list::Unsized::<{}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)))),
+                true => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::List::<&'a [u8], {}, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name))))
+            }
+        },
         FieldType::Payload => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::message::util::Buffer"))
     };
     let mut code = format!("        let {}_msg = {}?;\n", field.name, msg_code);
@@ -74,7 +79,7 @@ pub fn gen_message_from_slice_impl(msg: &Message, type_path_by_name: &TypePathMa
     code += "    fn from_slice(slice: &'a [u8]) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {\n";
     code += "        let mut byte_offset: usize = 0;\n";
     for field in &msg.fields {
-        code += &gen_field_from_slice_impl(field, type_path_by_name, false);
+        code += &gen_field_from_slice_impl(msg, field, type_path_by_name, false);
     }
     code += &format!("        let data = {} {{\n", msg.name);
     for field in &msg.fields {

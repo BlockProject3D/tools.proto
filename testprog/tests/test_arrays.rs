@@ -50,8 +50,9 @@ fn msg() {
         Msg::write_to(&msg, &mut msg_buffer).unwrap();
     }
     {
-        let msg = Msg::from_slice(&msg_buffer).unwrap().into_inner();
-        let items = Msg1Items::from_array(msg.items);
+        let msg = Msg::from_slice(&msg_buffer).unwrap();
+        assert_eq!(msg_buffer.len(), msg.size());
+        let items = Msg1Items::from_array(msg.into_inner().items);
         assert_eq!(items.iter().count(), 4);
         assert_eq!(items.len(), 4);
         assert_eq!(items.get(0).get_id(), 3);

@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::cell::Cell;
 use std::rc::Rc;
 use crate::compiler::error::Error;
 use crate::compiler::Protocol;
@@ -68,7 +69,7 @@ pub struct VarcharStringField {
 #[derive(Clone, Debug)]
 pub struct ListField {
     pub ty: FixedFieldType,
-    pub item_type: Rc<Message>
+    pub item_type: Rc<Message>,
 }
 
 #[derive(Clone, Debug)]
@@ -184,11 +185,12 @@ impl Field {
                         })
                     },
                     Referenced::Message(item_type) => {
+                        item_type.embedded.set(true);
                         Ok(Field {
                             name: value.name,
                             ty: FieldType::List(ListField {
-                                item_type,
                                 ty,
+                                item_type
                             }),
                             optional: value.optional.unwrap_or_default(),
                             size: SizeInfo {
@@ -278,10 +280,15 @@ impl Field {
 pub struct Message {
     pub name: String,
     pub fields: Vec<Field>,
-    pub size: SizeInfo
+    pub size: SizeInfo,
+    embedded: Cell<bool>
 }
 
 impl Message {
+    pub fn is_embedded(&self) -> bool {
+        self.embedded.get()
+    }
+
     pub fn from_model(proto: &Protocol, value: crate::model::message::Message) -> Result<Message, Error> {
         let mut fields = Vec::with_capacity(value.fields.len());
         let mut dyn_sized_elem_count = 0;
@@ -308,7 +315,8 @@ impl Message {
             size: SizeInfo {
                 is_dyn_sized,
                 is_element_dyn_sized: dyn_sized_elem_count > 0
-            }
+            },
+            embedded: Cell::new(false)
         })
     }
 }

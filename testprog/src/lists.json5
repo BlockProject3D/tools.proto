@@ -1,0 +1,62 @@
+{
+    name: "lists",
+    imports: [
+        { protocol: "unions", type: "Item" }
+    ],
+    structs: [
+        {
+            name: "Times",
+            fields: [
+                {
+                    name: "start",
+                    info: {
+                        type: "unsigned",
+                        bits: 64
+                    }
+                },
+                {
+                    name: "end",
+                    info: {
+                        type: "unsigned",
+                        bits: 64
+                    }
+                }
+            ]
+        }
+    ],
+    messages: [
+        {
+            name: "SpanRun",
+            fields: [
+                {
+                    name: "times",
+                    info: {
+                        type: "item",
+                        item_type: "Times"
+                    }
+                },
+                {
+                    name: "vars",
+                    info: {
+                        type: "list",
+                        max_len: 255,
+                        item_type: "Item"
+                    }
+                }
+            ]
+        },
+        {
+            name: "Dataset",
+            fields: [
+                {
+                    name: "runs",
+                    info: {
+                        type: "list",
+                        max_len: 999999,
+                        item_type: "SpanRun"
+                    }
+                }
+            ]
+        }
+    ]
+}

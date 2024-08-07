@@ -47,4 +47,11 @@ fn main() {
         loader.load("./src/unions.json5")?;
         Ok(())
     }, |protoc| protoc.set_reads_messages(true).set_writes_messages(true));
+    generate_rust(|loader| {
+        loader.import("./src/enums.json5", "crate::enums")?;
+        loader.import("./src/values.json5", "crate::values")?;
+        loader.import("./src/unions.json5", "crate::unions")?;
+        loader.load("./src/lists.json5")?;
+        Ok(())
+    }, |protoc| protoc.set_reads_messages(true).set_writes_messages(true));
 }

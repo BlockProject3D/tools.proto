@@ -44,7 +44,9 @@ fn write_message(value: Value, out: &mut impl Write) {
 }
 
 fn read_message(slice: &[u8], ty: Type) -> Value {
-    let item = Item::from_slice(slice).unwrap().into_inner();
+    let msg = Item::from_slice(slice).unwrap();
+    assert_eq!(slice.len(), msg.size());
+    let item = msg.into_inner();
     assert_eq!(item.header.get_type().unwrap(), ty);
     assert_eq!(item.name, "test");
     item.value
