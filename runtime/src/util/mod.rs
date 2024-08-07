@@ -43,3 +43,19 @@ impl<T: FixedSize> Size for T {
         Self::SIZE
     }
 }
+
+pub trait MultiOptionExt {
+    type Output;
+
+    fn to_single(self) -> Option<Self::Output>;
+}
+
+impl<T, T1> MultiOptionExt for (Option<T>, Option<T1>) {
+    type Output = (T, T1);
+
+    fn to_single(self) -> Option<Self::Output> {
+        let t = self.0?;
+        let t1 = self.1?;
+        Some((t, t1))
+    }
+}

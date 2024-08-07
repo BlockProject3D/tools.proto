@@ -35,7 +35,13 @@ pub fn gen_field_from_slice_impl(field: &Field, type_path_by_name: &TypePathMap,
         FieldType::Fixed(ty) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, gen_field_type(ty.ty))),
         FieldType::Ref(v) => match v {
             Referenced::Struct(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, type_path_by_name.get(&v.name))),
-            Referenced::Message(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, type_path_by_name.get(&v.name))),
+            Referenced::Message(v) => {
+                if gen_offsets {
+                    format!("{}::from_slice_with_offsets(&slice[byte_offset..])", gen_optional(field.optional, type_path_by_name.get(&v.name)))
+                } else {
+                    format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, type_path_by_name.get(&v.name)))
+                }
+            },
         }
         FieldType::NullTerminatedString => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::message::util::NullTerminatedString")),
         FieldType::VarcharString(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::VarcharString::<{}>", gen_field_type(v.ty)))),
@@ -52,7 +58,12 @@ pub fn gen_field_from_slice_impl(field: &Field, type_path_by_name: &TypePathMap,
     if gen_offsets {
         code += &format!("        offsets.{}.end = byte_offset;\n", field.name);
     }
-    code += &format!("        let {} = {}_msg.into_inner();\n", field.name, field.name);
+    if gen_offsets && field.ty.is_message_reference() {
+        code += &format!("        let ({}, {}_offsets) = {}_msg.into_inner();\n", field.name, field.name, field.name);
+        code += &format!("        offsets.{}_offsets = {}_offsets;\n", field.name, field.name);
+    } else {
+        code += &format!("        let {} = {}_msg.into_inner();\n", field.name, field.name);
+    }
     code
 }
 

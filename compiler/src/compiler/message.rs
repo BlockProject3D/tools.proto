@@ -95,6 +95,18 @@ pub enum FieldType {
     Payload
 }
 
+impl FieldType {
+    pub fn is_message_reference(&self) -> bool {
+        match self {
+            FieldType::Ref(v) => match v {
+                Referenced::Struct(_) => false,
+                Referenced::Message(_) => true
+            },
+            _ => false
+        }
+    }
+}
+
 #[derive(Copy, Clone, Debug)]
 pub struct SizeInfo {
     pub is_dyn_sized: bool,

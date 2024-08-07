@@ -29,7 +29,7 @@
 use std::io::Write;
 use std::marker::PhantomData;
 use bytesutil::ReadBytes;
-use crate::message::{Error, FromSlice, Message, WriteTo};
+use crate::message::{Error, FromSlice, FromSliceWithOffsets, Message, WriteTo};
 
 pub struct Optional<T>(PhantomData<T>);
 
@@ -46,6 +46,26 @@ impl<'a, T: FromSlice<'a, Output = T>> FromSlice<'a> for Optional<T> {
                 Ok(Message::new(msg.size() + 1, Some(msg.into_inner())))
             } else {
                 Ok(Message::new(1, None))
+            }
+        }
+    }
+}
+
+impl<'a, T: FromSlice<'a, Output = T> + FromSliceWithOffsets<'a>> FromSliceWithOffsets<'a> for Optional<T> {
+    type Offsets = Option<T::Offsets>;
+
+    fn from_slice_with_offsets(slice: &'a [u8]) -> crate::message::Result<Message<(Self::Output, Self::Offsets)>> {
+        if slice.len() < 1 {
+            Err(Error::Truncated)
+        } else {
+            let b = slice[0] > 0;
+            if b {
+                let msg = T::from_slice_with_offsets(&slice[1..])?;
+                let size = msg.size();
+                let (msg, offsets) = msg.into_inner();
+                Ok(Message::new(size + 1, (Some(msg), Some(offsets))))
+            } else {
+                Ok(Message::new(1, (None, None)))
             }
         }
     }

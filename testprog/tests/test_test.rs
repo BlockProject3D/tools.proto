@@ -69,4 +69,8 @@ fn test_offsets() {
     assert_eq!(offsets.s2.size(), 12);
     assert_eq!(offsets.p1.start, 19);
     assert_eq!(offsets.p1.size(), 20);
+    assert_eq!(offsets.p1_offsets.unwrap().s1.start, 0);
+    assert_eq!(offsets.p1_offsets.unwrap().s1.size(), 15);
+    assert_eq!(offsets.p1_offsets.unwrap().p1.start, 15);
+    assert_eq!(offsets.p1_offsets.unwrap().p1.size(), 4);
 }

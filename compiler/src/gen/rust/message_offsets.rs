@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use itertools::Itertools;
-use crate::compiler::message::Message;
+use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
 use crate::gen::rust::util::Generics;
 
@@ -53,10 +53,24 @@ fn gen_message_from_slice_offsets_impl(msg: &Message, type_path_by_name: &TypePa
     code
 }
 
+fn gen_message_offset_field(field: &Field) -> String {
+    match &field.ty {
+        FieldType::Ref(v) => match v {
+            Referenced::Message(v) => if field.optional {
+                format!("    pub {}: bp3d_proto::message::FieldOffset,\n    pub {}_offsets: Option<{}Offsets>", field.name, field.name, v.name)
+            } else {
+                format!("    pub {}: bp3d_proto::message::FieldOffset,\n    pub {}_offsets: {}Offsets", field.name, field.name, v.name)
+            },
+            _ => format!("    pub {}: bp3d_proto::message::FieldOffset", field.name)
+        },
+        _ => format!("    pub {}: bp3d_proto::message::FieldOffset", field.name)
+    }
+}
+
 pub fn gen_message_offsets_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
     let mut code = format!("#[derive(Copy, Clone, Debug, Default)]\npub struct {}Offsets {{\n", msg.name);
     let fields = msg.fields.iter()
-        .map(|v| format!("    pub {}: bp3d_proto::message::FieldOffset", v.name))
+        .map(gen_message_offset_field)
         .join(",\n");
     code += &fields;
     code += "\n}\n";
