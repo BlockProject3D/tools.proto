@@ -28,7 +28,7 @@
 
 use std::marker::PhantomData;
 use bytesutil::ReadBytes;
-use crate::message::{Error, FromSlice, Message, WriteTo};
+use crate::message::{Error, FromSlice, FromSliceWithOffsets, Message, WriteTo};
 use crate::message::util::list_base::impl_list_base;
 use crate::util::ToUsize;
 
@@ -57,6 +57,70 @@ impl<'a, T: ReadBytes + ToUsize, Item: FromSlice<'a, Output = Item>> FromSlice<'
         }
         let data = &slice[control_size..control_size + total_size];
         Ok(Message::new(total_size + control_size, unsafe { List::from_raw_parts(data, len) }))
+    }
+}
+
+pub struct Iter<'a, Item> {
+    data: &'a [u8],
+    len: usize,
+    useless: PhantomData<Item>
+}
+
+impl<'a, Item: FromSlice<'a, Output = Item>> Iterator for Iter<'a, Item> {
+    type Item = crate::message::Result<Item>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.len == 0 {
+            return None;
+        }
+        let msg = match Item::from_slice(&self.data[..]) {
+            Err(e) => return Some(Err(e)),
+            Ok(v) => v
+        };
+        self.data = &self.data[msg.size()..];
+        self.len -= 1;
+        Some(Ok(msg.into_inner()))
+    }
+}
+
+pub struct IterOffsets<'a, Item> {
+    data: &'a [u8],
+    len: usize,
+    useless: PhantomData<Item>
+}
+
+impl<'a, Item: FromSlice<'a, Output = Item> + FromSliceWithOffsets<'a>> Iterator for IterOffsets<'a, Item> {
+    type Item = crate::message::Result<(Item, Item::Offsets)>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.len == 0 {
+            return None;
+        }
+        let msg = match Item::from_slice_with_offsets(&self.data[..]) {
+            Err(e) => return Some(Err(e)),
+            Ok(v) => v
+        };
+        self.data = &self.data[msg.size()..];
+        self.len -= 1;
+        Some(Ok(msg.into_inner()))
+    }
+}
+
+impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
+    pub fn iter(&self) -> Iter<Item> {
+        Iter {
+            data: self.data.as_ref(),
+            len: self.len,
+            useless: PhantomData::default()
+        }
+    }
+
+    pub fn iter_offsets(&self) -> IterOffsets<Item> {
+        IterOffsets {
+            data: self.data.as_ref(),
+            len: self.len,
+            useless: PhantomData::default()
+        }
     }
 }
 
