@@ -28,63 +28,72 @@
 
 use bytesutil::{ReadBytes, WriteBytes};
 
-pub struct ByteCodec<B>(B);
+pub trait ByteCodec {
+    unsafe fn read_aligned<T: ReadBytes>(buffer: &[u8]) -> T;
 
-impl<B> ByteCodec<B> {
-    pub fn new(slice: B) -> Self {
-        Self(slice)
-    }
-}
-
-impl<B: AsRef<[u8]>> ByteCodec<B> {
-    pub unsafe fn read_aligned<T: ReadBytes>(&self) -> T {
-        T::read_bytes_le(self.0.as_ref())
-    }
-
-    pub unsafe fn read_unaligned<T: ReadBytes>(&self) -> T {
+    unsafe fn read_unaligned<T: ReadBytes>(buffer: &[u8]) -> T {
         let mut data = [0; 8];
-        data[..self.0.as_ref().len()].copy_from_slice(self.0.as_ref());
-        ByteCodec::new(&data).read_aligned::<T>()
+        data[..buffer.len()].copy_from_slice(buffer);
+        Self::read_aligned::<T>(&data)
     }
 
-    pub fn read<T: ReadBytes>(&self) -> T {
-        if size_of::<T>() != self.0.as_ref().len() {
-            unsafe { self.read_unaligned::<T>() }
+    fn read<T: ReadBytes>(buffer: &[u8]) -> T {
+        if size_of::<T>() != buffer.len() {
+            unsafe { Self::read_unaligned::<T>(buffer) }
         } else {
-            unsafe { self.read_aligned::<T>() }
+            unsafe { Self::read_aligned::<T>(buffer) }
+        }
+    }
+
+    unsafe fn write_aligned<T: WriteBytes>(buffer: &mut [u8], value: T);
+
+    unsafe fn write_unaligned<T: WriteBytes>(buffer: &mut [u8], value: T) {
+        let mut data = [0; 8];
+        data[..buffer.len()].copy_from_slice(buffer);
+        Self::write_aligned::<T>(&mut data, value);
+        let motherfuckingrust = buffer.len();
+        buffer.copy_from_slice(&data[..motherfuckingrust]);
+    }
+
+    fn write<T: WriteBytes>(buffer: &mut [u8], value: T) {
+        if size_of::<T>() != buffer.len() {
+            unsafe { Self::write_unaligned::<T>(buffer, value); }
+        } else {
+            unsafe { Self::write_aligned::<T>(buffer, value); }
         }
     }
 }
 
-impl<B: AsMut<[u8]> + AsRef<[u8]>> ByteCodec<B> {
-    pub unsafe fn write_aligned<T: WriteBytes>(&mut self, value: T) {
-        value.write_bytes_le(self.0.as_mut());
+pub struct ByteCodecBE;
+pub struct ByteCodecLE;
+
+impl ByteCodec for ByteCodecLE {
+    unsafe fn read_aligned<T: ReadBytes>(buffer: &[u8]) -> T {
+        T::read_bytes_le(buffer)
     }
 
-    pub unsafe fn write_unaligned<T: WriteBytes>(&mut self, value: T) {
-        let mut data = [0; 8];
-        data[..self.0.as_ref().len()].copy_from_slice(self.0.as_ref());
-        ByteCodec::new(&mut data).write_aligned::<T>(value);
-        let motherfuckingrust = self.0.as_ref().len();
-        self.0.as_mut().copy_from_slice(&data[..motherfuckingrust]);
+    unsafe fn write_aligned<T: WriteBytes>(buffer: &mut [u8], value: T) {
+        value.write_bytes_le(buffer);
+    }
+}
+
+impl ByteCodec for ByteCodecBE {
+    unsafe fn read_aligned<T: ReadBytes>(buffer: &[u8]) -> T {
+        T::read_bytes_be(buffer)
     }
 
-    pub fn write<T: WriteBytes>(&mut self, value: T) {
-        if size_of::<T>() != self.0.as_ref().len() {
-            unsafe { self.write_unaligned::<T>(value); }
-        } else {
-            unsafe { self.write_aligned::<T>(value); }
-        }
+    unsafe fn write_aligned<T: WriteBytes>(buffer: &mut [u8], value: T) {
+        value.write_bytes_be(buffer);
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::codec::ByteCodec;
+    use crate::codec::{ByteCodec, ByteCodecLE};
 
     #[test]
     fn basic() {
         let buffer = [0xFF, 0xFF, 0xFF, 0xFF];
-        assert_eq!(ByteCodec::new(&buffer[0..4]).read::<u32>(), 0xFFFFFFFF);
+        assert_eq!(ByteCodecLE::read::<u32>(&buffer[0..4]), 0xFFFFFFFF);
     }
 }

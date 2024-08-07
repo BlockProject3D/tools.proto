@@ -31,5 +31,5 @@ mod bits;
 mod arrays;
 
 pub use arrays::ArrayCodec;
-pub use bits::BitCodec;
-pub use bytes::ByteCodec;
+pub use bits::*;
+pub use bytes::*;

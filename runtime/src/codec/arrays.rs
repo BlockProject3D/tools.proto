@@ -30,26 +30,28 @@ use std::marker::PhantomData;
 use bytesutil::{ReadBytes, WriteBytes};
 use crate::codec::ByteCodec;
 
-pub struct ArrayCodec<B, Item, const ITEM_BIT_SIZE: usize> {
+pub struct ArrayCodec<B, Item, C, const ITEM_BIT_SIZE: usize> {
     buffer: B,
-    useless: PhantomData<Item>
+    useless: PhantomData<Item>,
+    useless1: PhantomData<C>
 }
 
-impl<B, Item, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, ITEM_BIT_SIZE> {
+impl<B, Item, C, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, C, ITEM_BIT_SIZE> {
     pub fn new(buffer: B) -> Self {
         Self {
             buffer,
-            useless: PhantomData::default()
+            useless: PhantomData::default(),
+            useless1: PhantomData::default()
         }
     }
 }
 
-impl<B: AsRef<[u8]>, Item: ReadBytes, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, ITEM_BIT_SIZE> {
+impl<B: AsRef<[u8]>, Item: ReadBytes, C: ByteCodec, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, C, ITEM_BIT_SIZE> {
     pub fn get_raw(&self, index: usize) -> Item {
         let byte_size = ITEM_BIT_SIZE / 8;
         let pos = index * byte_size;
         let end = pos + byte_size;
-        ByteCodec::new(&self.buffer.as_ref()[pos..end]).read::<Item>()
+        C::read::<Item>(&self.buffer.as_ref()[pos..end])
     }
 
     pub fn len(&self) -> usize {
@@ -59,27 +61,27 @@ impl<B: AsRef<[u8]>, Item: ReadBytes, const ITEM_BIT_SIZE: usize> ArrayCodec<B, 
 
     pub fn iter_raw(&self) -> impl Iterator<Item = Item> + '_ {
         let byte_size = ITEM_BIT_SIZE / 8;
-        self.buffer.as_ref().chunks(byte_size).map(|v| ByteCodec::new(v).read::<Item>())
+        self.buffer.as_ref().chunks(byte_size).map(|v| C::read::<Item>(v))
     }
 }
 
-impl<B: AsMut<[u8]>, Item: WriteBytes, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, ITEM_BIT_SIZE> {
+impl<B: AsMut<[u8]>, Item: WriteBytes, C: ByteCodec, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, C, ITEM_BIT_SIZE> {
     pub fn set_raw(&mut self, index: usize, value: Item) -> &mut Self {
         let byte_size = ITEM_BIT_SIZE / 8;
         let pos = index * byte_size;
         let end = pos + byte_size;
-        ByteCodec::new(&mut self.buffer.as_mut()[pos..end]).write::<Item>(value);
+        C::write::<Item>(&mut self.buffer.as_mut()[pos..end], value);
         self
     }
 }
 
-impl<B: AsMut<[u8]>> AsMut<[u8]> for ArrayCodec<B, u8, 8> {
+impl<B: AsMut<[u8]>, C> AsMut<[u8]> for ArrayCodec<B, u8, C, 8> {
     fn as_mut(&mut self) -> &mut [u8] {
         self.buffer.as_mut()
     }
 }
 
-impl<B: AsRef<[u8]>> AsRef<[u8]> for ArrayCodec<B, u8, 8> {
+impl<B: AsRef<[u8]>, C> AsRef<[u8]> for ArrayCodec<B, u8, C, 8> {
     fn as_ref(&self) -> &[u8] {
         self.buffer.as_ref()
     }
