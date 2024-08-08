@@ -105,9 +105,9 @@ fn gen_field_getter(field: &Field, type_path_by_name: &TypePathMap) -> String {
             };
             let mut code = format!("    pub fn get_raw_{}(&self) -> {} {{\n", v.name, raw_field_type);
             if v.loc.bit_size % 8 != 0 {
-                code += &format!("        unsafe {{ <bp3d_proto::codec::BitCodecLE as bp3d_proto::codec::BitCodec>::{}::<{}, {}, {}>(&self.data.as_ref()[{}..{}]) }}\n", function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
+                code += &format!("        unsafe {{ <BitCodec as bp3d_proto::codec::BitCodec>::{}::<{}, {}, {}>(&self.data.as_ref()[{}..{}]) }}\n", function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             } else {
-                code += &format!("        unsafe {{ <bp3d_proto::codec::ByteCodecLE as bp3d_proto::codec::ByteCodec>::{}::<{}>(&self.data.as_ref()[{}..{}]) }}\n", function_name, raw_field_type, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
+                code += &format!("        unsafe {{ <ByteCodec as bp3d_proto::codec::ByteCodec>::{}::<{}>(&self.data.as_ref()[{}..{}]) }}\n", function_name, raw_field_type, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             }
             code += "    }\n";
             code += &gen_field_view_getter(v, type_path_by_name);
@@ -115,7 +115,7 @@ fn gen_field_getter(field: &Field, type_path_by_name: &TypePathMap) -> String {
         }
         Field::Array(v) => {
             let field_type = gen_field_type(v.ty);
-            let mut code = format!("    pub fn get_{}(&self) -> bp3d_proto::codec::ArrayCodec<&[u8], {}, bp3d_proto::codec::ByteCodecLE, {}> {{\n", v.name, field_type, v.item_bit_size());
+            let mut code = format!("    pub fn get_{}(&self) -> bp3d_proto::codec::ArrayCodec<&[u8], {}, ByteCodec, {}> {{\n", v.name, field_type, v.item_bit_size());
             code += &format!("        bp3d_proto::codec::ArrayCodec::new(&self.data.as_ref()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             code += "    }\n";
             code
@@ -141,9 +141,9 @@ fn gen_field_setter(field: &Field, type_path_by_name: &TypePathMap) -> String {
                 false => "write_aligned"
             };
             if v.loc.bit_size % 8 != 0 {
-                code += &format!("        unsafe {{ <bp3d_proto::codec::BitCodecLE as bp3d_proto::codec::BitCodec>::{}::<{}, {}, {}>(&mut self.data.as_mut()[{}..{}], value) }}\n", function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
+                code += &format!("        unsafe {{ <BitCodec as bp3d_proto::codec::BitCodec>::{}::<{}, {}, {}>(&mut self.data.as_mut()[{}..{}], value) }}\n", function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             } else {
-                code += &format!("        unsafe {{ <bp3d_proto::codec::ByteCodecLE as bp3d_proto::codec::ByteCodec>::{}::<{}>(&mut self.data.as_mut()[{}..{}], value) }}\n", function_name, raw_field_type, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
+                code += &format!("        unsafe {{ <ByteCodec as bp3d_proto::codec::ByteCodec>::{}::<{}>(&mut self.data.as_mut()[{}..{}], value) }}\n", function_name, raw_field_type, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             }
             code += "    }\n";
             code += &gen_field_view_setter(v, type_path_by_name);
@@ -151,7 +151,7 @@ fn gen_field_setter(field: &Field, type_path_by_name: &TypePathMap) -> String {
         }
         Field::Array(v) => {
             let field_type = gen_field_type(v.ty);
-            let mut code = format!("    pub fn get_{}_mut(&mut self) -> bp3d_proto::codec::ArrayCodec<&mut [u8], {}, bp3d_proto::codec::ByteCodecLE, {}> {{\n", v.name, field_type, v.item_bit_size());
+            let mut code = format!("    pub fn get_{}_mut(&mut self) -> bp3d_proto::codec::ArrayCodec<&mut [u8], {}, ByteCodec, {}> {{\n", v.name, field_type, v.item_bit_size());
             code += &format!("        bp3d_proto::codec::ArrayCodec::new(&mut self.data.as_mut()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             code += "    }\n";
             code
@@ -288,7 +288,7 @@ fn gen_structure_setters(s: &Structure, type_path_by_name: &TypePathMap) -> Stri
 pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap) -> String {
     let mut code = format!("#[derive(Copy, Clone, Default, Debug)]\npub struct {}<T> {{\n", s.name);
     code += "    data: T\n";
-    code += "}\n";
+    code += "}\n\n";
     code += &gen_structure_impl_new(s);
     code += &gen_structure_impl_fixed_size(s);
     code += &gen_structure_impl_write_to(s);

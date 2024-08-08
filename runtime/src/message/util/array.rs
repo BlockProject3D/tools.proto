@@ -29,7 +29,6 @@
 
 use std::marker::PhantomData;
 use std::slice::{Chunks, ChunksMut};
-use bytesutil::ReadBytes;
 use crate::message::{Error, FromSlice, Message};
 use crate::message::util::list_base::impl_list_base;
 use crate::util::{FixedSize, ToUsize};
@@ -110,7 +109,7 @@ impl<'a, B: AsMut<[u8]>, T, I> Array<B, T, I> {
     }
 }
 
-impl<'a, T: ReadBytes + ToUsize, Item: FixedSize + FromSlice<'a, Output = Item>> FromSlice<'a> for Array<&'a [u8], T, Item> {
+impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FixedSize + FromSlice<'a, Output = Item>> FromSlice<'a> for Array<&'a [u8], T, Item> {
     type Output = Array<&'a [u8], T, Item>;
 
     fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {

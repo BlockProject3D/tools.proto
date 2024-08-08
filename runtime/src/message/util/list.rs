@@ -27,7 +27,6 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::marker::PhantomData;
-use bytesutil::ReadBytes;
 use crate::message::{Error, FromSlice, FromSliceWithOffsets, Message, WriteTo};
 use crate::message::util::list_base::impl_list_base;
 use crate::util::ToUsize;
@@ -42,7 +41,7 @@ pub struct List<B, T, Item> {
 
 impl_list_base!(List);
 
-impl<'a, T: ReadBytes + ToUsize, Item: FromSlice<'a, Output = Item>> FromSlice<'a> for List<&'a [u8], T, Item> {
+impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FromSlice<'a, Output = Item>> FromSlice<'a> for List<&'a [u8], T, Item> {
     type Output = List<&'a [u8], T, Item>;
 
     fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
@@ -129,7 +128,7 @@ pub struct Unsized<T, Item> {
     useless1: PhantomData<Item>
 }
 
-impl<'a, T: ReadBytes + ToUsize, Item> FromSlice<'a> for Unsized<T, Item> {
+impl<'a, T: FromSlice<'a, Output: ToUsize>, Item> FromSlice<'a> for Unsized<T, Item> {
     type Output = List<&'a [u8], T, Item>;
 
     fn from_slice(slice: &'a [u8]) -> crate::message::Result<Message<Self::Output>> {

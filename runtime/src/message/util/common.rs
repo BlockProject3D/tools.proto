@@ -86,8 +86,13 @@ impl<T: WriteTo<Input = T>> WriteTo for Optional<T> {
     }
 }
 
-impl<'a, T: ReadBytes> FromSlice<'a> for T {
-    type Output = Self;
+#[derive(Debug, Copy, Clone)]
+pub struct ValueLE<T>(PhantomData<T>);
+#[derive(Debug, Copy, Clone)]
+pub struct ValueBE<T>(PhantomData<T>);
+
+impl<'a, T: ReadBytes> FromSlice<'a> for ValueLE<T> {
+    type Output = T;
 
     fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
         let size = size_of::<T>();
@@ -100,11 +105,34 @@ impl<'a, T: ReadBytes> FromSlice<'a> for T {
     }
 }
 
-impl<T: bytesutil::WriteTo> WriteTo for T {
+impl<T: bytesutil::WriteTo> WriteTo for ValueLE<T> {
     type Input = T;
 
     fn write_to<W: Write>(input: &Self::Input, out: W) -> Result<(), Error> {
         input.write_to_le(out)?;
+        Ok(())
+    }
+}
+
+impl<'a, T: ReadBytes> FromSlice<'a> for ValueBE<T> {
+    type Output = T;
+
+    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
+        let size = size_of::<T>();
+        if slice.len() < size {
+            Err(Error::Truncated)
+        } else {
+            let value = T::read_bytes_be(slice);
+            Ok(Message::new(size, value))
+        }
+    }
+}
+
+impl<T: bytesutil::WriteTo> WriteTo for ValueBE<T> {
+    type Input = T;
+
+    fn write_to<W: Write>(input: &Self::Input, out: W) -> Result<(), Error> {
+        input.write_to_be(out)?;
         Ok(())
     }
 }

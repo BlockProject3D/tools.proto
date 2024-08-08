@@ -28,7 +28,6 @@
 
 use std::io::Write;
 use std::marker::PhantomData;
-use bytesutil::ReadBytes;
 use crate::message::{Error, FromSlice, Message, WriteTo};
 use crate::util::ToUsize;
 
@@ -59,7 +58,7 @@ impl WriteTo for NullTerminatedString {
 
 pub struct VarcharString<T>(PhantomData<T>);
 
-impl<'a, T: ReadBytes + ToUsize> FromSlice<'a> for VarcharString<T> {
+impl<'a, T: FromSlice<'a, Output: ToUsize>> FromSlice<'a> for VarcharString<T> {
     type Output = &'a str;
 
     fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
@@ -71,11 +70,11 @@ impl<'a, T: ReadBytes + ToUsize> FromSlice<'a> for VarcharString<T> {
     }
 }
 
-impl<T: ToUsize + bytesutil::WriteTo> WriteTo for VarcharString<T> {
+impl<T: WriteTo<Input: ToUsize + Sized>> WriteTo for VarcharString<T> {
     type Input = str;
 
     fn write_to<W: Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {
-        T::from_usize(input.len()).write_to_be(&mut out)?;
+        T::write_to(&T::Input::from_usize(input.len()), &mut out)?;
         out.write_all(input.as_bytes())?;
         Ok(())
     }

@@ -67,7 +67,12 @@ impl Generator for GeneratorRust {
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(v)).join("\n");
         let decl_unions = proto.unions.iter().map(|v| gen_union_decl(v, &proto.type_path_by_name)).join("\n");
         let decl_messages_code_offsets = proto.messages.iter().map(|v| gen_message_offsets_decl(v, &proto.type_path_by_name)).join("\n");
+        let mut code = String::from("#[allow(unused)]\ntype BitCodec = bp3d_proto::codec::BitCodecLE;\n");
+        code += "#[allow(unused)]\ntype ByteCodec = bp3d_proto::codec::ByteCodecLE;\n";
+        let code2 = String::from("#[allow(unused)]\ntype ValueCodec<T> = bp3d_proto::message::util::ValueLE<T>;\n");
         Ok(vec![
+            File::new(FileType::Structure, "struct_codecs.rs", code),
+            File::new(FileType::Message, "msg_codec.rs", code2),
             File::new(FileType::Message, "messages.rs", decl_messages_code),
             File::new(FileType::MessageReading, "messages_from_slice.rs", impl_from_slice_messages_code),
             File::new(FileType::MessageWriting, "messages_write.rs", impl_write_messages_code),
