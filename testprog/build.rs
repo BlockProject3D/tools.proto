@@ -33,6 +33,7 @@ fn main() {
         loader.load("./src/test.json5")?;
         loader.load("./src/structs.json5")?;
         loader.load("./src/bits.json5")?;
+        loader.load("./src/bits2.json5")?;
         loader.load("./src/views.json5")?;
         loader.load("./src/struct_arrays.json5")?;
         loader.load("./src/enums.json5")?;

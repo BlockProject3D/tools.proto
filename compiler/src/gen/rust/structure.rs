@@ -28,7 +28,7 @@
 
 use crate::compiler::structure::{Field, FieldView, FixedField, Structure};
 use crate::compiler::util::TypePathMap;
-use crate::gen::rust::util::gen_field_type;
+use crate::gen::rust::util::{get_field_type, get_byte_codec, get_bit_codec_inline, get_byte_codec_inline};
 
 
 fn gen_structure_impl_new(s: &Structure) -> String {
@@ -98,24 +98,24 @@ fn gen_field_getter(field: &Field, type_path_by_name: &TypePathMap) -> String {
         Field::Fixed(v) => {
             let raw_field_type = v.loc.get_unsigned_integer_type();
             let raw_field_byte_size = raw_field_type.get_byte_size();
-            let raw_field_type = gen_field_type(raw_field_type);
+            let raw_field_type = get_field_type(raw_field_type);
             let function_name = match raw_field_byte_size != v.loc.byte_size {
                 true => "read_unaligned",
                 false => "read_aligned"
             };
             let mut code = format!("    pub fn get_raw_{}(&self) -> {} {{\n", v.name, raw_field_type);
             if v.loc.bit_size % 8 != 0 {
-                code += &format!("        unsafe {{ <BitCodec as bp3d_proto::codec::BitCodec>::{}::<{}, {}, {}>(&self.data.as_ref()[{}..{}]) }}\n", function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
+                code += &format!("        unsafe {{ {}::{}::<{}, {}, {}>(&self.data.as_ref()[{}..{}]) }}\n", get_bit_codec_inline(v.endianness), function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             } else {
-                code += &format!("        unsafe {{ <ByteCodec as bp3d_proto::codec::ByteCodec>::{}::<{}>(&self.data.as_ref()[{}..{}]) }}\n", function_name, raw_field_type, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
+                code += &format!("        unsafe {{ {}::{}::<{}>(&self.data.as_ref()[{}..{}]) }}\n", get_byte_codec_inline(v.endianness), function_name, raw_field_type, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             }
             code += "    }\n";
             code += &gen_field_view_getter(v, type_path_by_name);
             code
         }
         Field::Array(v) => {
-            let field_type = gen_field_type(v.ty);
-            let mut code = format!("    pub fn get_{}(&self) -> bp3d_proto::codec::ArrayCodec<&[u8], {}, ByteCodec, {}> {{\n", v.name, field_type, v.item_bit_size());
+            let field_type = get_field_type(v.ty);
+            let mut code = format!("    pub fn get_{}(&self) -> bp3d_proto::codec::ArrayCodec<&[u8], {}, {}, {}> {{\n", v.name, field_type, get_byte_codec(v.endianness), v.item_bit_size());
             code += &format!("        bp3d_proto::codec::ArrayCodec::new(&self.data.as_ref()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             code += "    }\n";
             code
@@ -134,24 +134,24 @@ fn gen_field_setter(field: &Field, type_path_by_name: &TypePathMap) -> String {
         Field::Fixed(v) => {
             let raw_field_type = v.loc.get_unsigned_integer_type();
             let raw_field_byte_size = raw_field_type.get_byte_size();
-            let raw_field_type = gen_field_type(raw_field_type);
+            let raw_field_type = get_field_type(raw_field_type);
             let mut code = format!("    pub fn set_raw_{}(&mut self, value: {}) {{\n", v.name, raw_field_type);
             let function_name = match raw_field_byte_size != v.loc.byte_size {
                 true => "write_unaligned",
                 false => "write_aligned"
             };
             if v.loc.bit_size % 8 != 0 {
-                code += &format!("        unsafe {{ <BitCodec as bp3d_proto::codec::BitCodec>::{}::<{}, {}, {}>(&mut self.data.as_mut()[{}..{}], value) }}\n", function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
+                code += &format!("        unsafe {{ {}::{}::<{}, {}, {}>(&mut self.data.as_mut()[{}..{}], value) }}\n", get_bit_codec_inline(v.endianness), function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             } else {
-                code += &format!("        unsafe {{ <ByteCodec as bp3d_proto::codec::ByteCodec>::{}::<{}>(&mut self.data.as_mut()[{}..{}], value) }}\n", function_name, raw_field_type, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
+                code += &format!("        unsafe {{ {}::{}::<{}>(&mut self.data.as_mut()[{}..{}], value) }}\n", get_byte_codec_inline(v.endianness), function_name, raw_field_type, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             }
             code += "    }\n";
             code += &gen_field_view_setter(v, type_path_by_name);
             code
         }
         Field::Array(v) => {
-            let field_type = gen_field_type(v.ty);
-            let mut code = format!("    pub fn get_{}_mut(&mut self) -> bp3d_proto::codec::ArrayCodec<&mut [u8], {}, ByteCodec, {}> {{\n", v.name, field_type, v.item_bit_size());
+            let field_type = get_field_type(v.ty);
+            let mut code = format!("    pub fn get_{}_mut(&mut self) -> bp3d_proto::codec::ArrayCodec<&mut [u8], {}, {}, {}> {{\n", v.name, field_type, get_byte_codec(v.endianness), v.item_bit_size());
             code += &format!("        bp3d_proto::codec::ArrayCodec::new(&mut self.data.as_mut()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
             code += "    }\n";
             code
@@ -168,7 +168,7 @@ fn gen_field_setter(field: &Field, type_path_by_name: &TypePathMap) -> String {
 fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) -> String {
     match &field.view {
         FieldView::Float { a, b, .. } => {
-            let field_type = gen_field_type(field.ty);
+            let field_type = get_field_type(field.ty);
             let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
             code += &format!("        let raw_value = self.get_raw_{}() as {};\n", field.name, field_type);
             code += &format!("        raw_value * {:?} + {:?}\n", a, b);
@@ -177,7 +177,7 @@ fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) ->
         },
         FieldView::Enum(e) => {
             let item_type = type_path_by_name.get(&e.name);
-            let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
+            let raw_field_type = get_field_type(field.loc.get_unsigned_integer_type());
             let mut code = format!("    pub fn get_{}(&self) -> Option<{}> {{\n", field.name, item_type);
             code += &format!("        let raw_value = self.get_raw_{}();\n", field.name);
             code += &format!("        if raw_value > {} {{\n", e.largest);
@@ -189,8 +189,8 @@ fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             code
         },
         FieldView::Transmute => {
-            let field_type = gen_field_type(field.ty);
-            let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
+            let field_type = get_field_type(field.ty);
+            let raw_field_type = get_field_type(field.loc.get_unsigned_integer_type());
             let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
             if field_type == "bool" {
                 code += &format!("        if self.get_raw_{}() != 0 {{ true }} else {{ false }}\n", field.name);
@@ -201,7 +201,7 @@ fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             code
         },
         FieldView::SignedCast(max_positive) => {
-            let field_type = gen_field_type(field.ty);
+            let field_type = get_field_type(field.ty);
             let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
             code += &format!("        let raw_value = self.get_raw_{}();\n", field.name);
             code += &format!("        if raw_value > {} {{\n", max_positive);
@@ -213,7 +213,7 @@ fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             code
         },
         FieldView::None => {
-            let field_type = gen_field_type(field.ty);
+            let field_type = get_field_type(field.ty);
             let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
             code += &format!("        self.get_raw_{}()\n", field.name);
             code += "    }\n";
@@ -225,8 +225,8 @@ fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) ->
 fn gen_field_view_setter(field: &FixedField, type_path_by_name: &TypePathMap) -> String {
     match &field.view {
         FieldView::Float { a_inv, b_inv, .. } => {
-            let field_type = gen_field_type(field.ty);
-            let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
+            let field_type = get_field_type(field.ty);
+            let raw_field_type = get_field_type(field.loc.get_unsigned_integer_type());
             let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, field_type);
             code += &format!("        let raw_value = value * {:?} + {:?};\n", a_inv, b_inv);
             code += &format!("        self.set_raw_{}(raw_value as {});\n", field.name, raw_field_type);
@@ -236,7 +236,7 @@ fn gen_field_view_setter(field: &FixedField, type_path_by_name: &TypePathMap) ->
         },
         FieldView::Enum(e) => {
             let item_type = type_path_by_name.get(&e.name);
-            let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
+            let raw_field_type = get_field_type(field.loc.get_unsigned_integer_type());
             let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, item_type);
             code += &format!("        self.set_raw_{}(value as {});\n", field.name, raw_field_type);
             code += "        self\n";
@@ -244,8 +244,8 @@ fn gen_field_view_setter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             code
         },
         FieldView::Transmute | FieldView::SignedCast { .. } => {
-            let field_type = gen_field_type(field.ty);
-            let raw_field_type = gen_field_type(field.loc.get_unsigned_integer_type());
+            let field_type = get_field_type(field.ty);
+            let raw_field_type = get_field_type(field.loc.get_unsigned_integer_type());
             let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, field_type);
             if field_type == "bool" {
                 code += &format!("        self.set_raw_{}(if value {{ 1 }} else {{ 0 }});\n", field.name);
@@ -257,7 +257,7 @@ fn gen_field_view_setter(field: &FixedField, type_path_by_name: &TypePathMap) ->
             code
         },
         FieldView::None => {
-            let field_type = gen_field_type(field.ty);
+            let field_type = get_field_type(field.ty);
             let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, field_type);
             code += &format!("        self.set_raw_{}(value);\n", field.name);
             code += "        self\n";

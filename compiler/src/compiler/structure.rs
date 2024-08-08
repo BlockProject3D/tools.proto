@@ -30,6 +30,7 @@ use std::rc::Rc;
 use crate::compiler::error::Error;
 use crate::compiler::Protocol;
 use crate::compiler::r#enum::Enum;
+use crate::model::protocol::Endianness;
 use crate::model::structure::{SimpleType, StructFieldType, StructFieldView};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -227,7 +228,8 @@ pub struct FixedField {
     pub name: String,
     pub ty: FixedFieldType,
     pub loc: Location,
-    pub view: FieldView
+    pub view: FieldView,
+    pub endianness: Endianness
 }
 
 #[derive(Clone, Debug)]
@@ -235,7 +237,8 @@ pub struct FixedArrayField {
     pub name: String,
     pub ty: FixedFieldType,
     pub array_len: usize,
-    pub loc: Location
+    pub loc: Location,
+    pub endianness: Endianness
 }
 
 impl FixedArrayField {
@@ -297,6 +300,7 @@ impl Field {
                     }
                     Ok((Self::Array(FixedArrayField {
                         name: value.name,
+                        endianness: proto.endianness,
                         array_len,
                         ty,
                         loc
@@ -304,6 +308,7 @@ impl Field {
                 } else {
                     Ok((Self::Fixed(FixedField {
                         name: value.name,
+                        endianness: proto.endianness,
                         ty,
                         loc,
                         view

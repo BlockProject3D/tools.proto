@@ -28,6 +28,7 @@
 
 use bp3d_proto::util::Size;
 use testprog::bits::Numbers;
+use testprog::bits2::Numbers as Numbers2;
 
 #[test]
 fn numbers() {
@@ -61,6 +62,59 @@ fn numbers() {
 #[test]
 fn numbers_raw() {
     let mut nums = Numbers::new_on_stack();
+    nums.set_raw_a(15);
+    nums.set_raw_b(15);
+    nums.set_raw_c(65536);
+    nums.set_raw_d(127);
+    nums.set_raw_c(65536);
+    assert_eq!(nums.get_raw_a(), 15);
+    assert_eq!(nums.get_a(), -1);
+    assert_eq!(nums.get_raw_b(), 15);
+    assert_eq!(nums.get_raw_c(), 65536);
+    assert_eq!(nums.get_raw_d(), 127);
+    let mut cur_a = 0;
+    for i in 0..15 {
+        nums.set_raw_a(i);
+        if i > 7 && cur_a > 0 {
+            cur_a = -8
+        }
+        assert_eq!(nums.get_a(), cur_a);
+        cur_a += 1;
+    }
+}
+
+#[test]
+fn numbers2() {
+    let mut nums = Numbers2::new_on_stack();
+    assert_eq!(nums.size(), 4);
+    nums.set_a(-8).set_b(15).set_c(-65536).set_d(127);
+    assert_eq!(nums.get_a(), -8);
+    assert_eq!(nums.get_b(), 15);
+    assert_eq!(nums.get_c(), -65536);
+    assert_eq!(nums.get_d(), 127);
+    nums.set_c(65535);
+    assert_eq!(nums.get_c(), 65535);
+    nums.set_a(-7);
+    assert_eq!(nums.get_a(), -7);
+    assert_eq!(nums.get_raw_a(), 9);
+    nums.set_a(-6);
+    assert_eq!(nums.get_a(), -6);
+    assert_eq!(nums.get_raw_a(), 10);
+    nums.set_a(-5);
+    assert_eq!(nums.get_a(), -5);
+    assert_eq!(nums.get_raw_a(), 11);
+    nums.set_a(1);
+    assert_eq!(nums.get_a(), 1);
+    assert_eq!(nums.get_raw_a(), 1);
+    nums.set_a(4);
+    assert_eq!(nums.get_a(), 4);
+    assert_eq!(nums.get_raw_a(), 4);
+
+}
+
+#[test]
+fn numbers_raw2() {
+    let mut nums = Numbers2::new_on_stack();
     nums.set_raw_a(15);
     nums.set_raw_b(15);
     nums.set_raw_c(65536);

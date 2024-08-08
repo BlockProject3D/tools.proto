@@ -29,7 +29,7 @@
 use itertools::Itertools;
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
-use crate::gen::rust::util::{gen_field_type, Generics};
+use crate::gen::rust::util::{get_field_type, Generics, get_value_type};
 
 fn gen_field_decl(field: &Field, type_path_by_name: &TypePathMap) -> String {
     let mut code = format!("    pub {}: ", field.name);
@@ -37,16 +37,16 @@ fn gen_field_decl(field: &Field, type_path_by_name: &TypePathMap) -> String {
         code += "Option<"
     }
     match &field.ty {
-        FieldType::Fixed(ty) => code += gen_field_type(ty.ty),
+        FieldType::Fixed(ty) => code += get_field_type(ty.ty),
         FieldType::Ref(v) => match v {
             Referenced::Struct(v) => code += &format!("{}<&'a [u8]>", type_path_by_name.get(&v.name)),
             Referenced::Message(v) => code += &format!("{}<'a>", type_path_by_name.get(&v.name)),
         },
         FieldType::NullTerminatedString => code += "&'a str",
         FieldType::VarcharString(_) => code += "&'a str",
-        FieldType::Array(v) => code += &format!("bp3d_proto::message::util::Array::<&'a [u8], ValueCodec<{}>, {}<&'a [u8]>>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)),
+        FieldType::Array(v) => code += &format!("bp3d_proto::message::util::Array::<&'a [u8], {}, {}<&'a [u8]>>", get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name)),
         FieldType::Union(v) => code += &format!("{}<'a>", type_path_by_name.get(&v.r.name)),
-        FieldType::List(v) => code += &format!("bp3d_proto::message::util::List::<&'a [u8], ValueCodec<{}>, {}<'a>>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name)),
+        FieldType::List(v) => code += &format!("bp3d_proto::message::util::List::<&'a [u8], {}, {}<'a>>", get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name)),
         FieldType::Payload => code += "&'a [u8]"
 
     }
@@ -72,10 +72,10 @@ fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMap) 
     for field in &msg.fields {
         match &field.ty {
             FieldType::Array(v) => {
-                code += &format!("    bp3d_proto::generate_array_wrapper!({}{}, {}, ValueCodec<{}>);\n", msg.name, capitalize(&field.name), type_path_by_name.get(&v.item_type.name), gen_field_type(v.ty));
+                code += &format!("    bp3d_proto::generate_array_wrapper!({}{}, {}, {});\n", msg.name, capitalize(&field.name), type_path_by_name.get(&v.item_type.name), get_value_type(field.endianness, v.ty));
             },
             FieldType::List(v) => {
-                code += &format!("    pub type {}{}<'a, T> = bp3d_proto::message::util::List<T, ValueCodec<{}>, {}<'a>>;\n", msg.name, capitalize(&field.name), gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name));
+                code += &format!("    pub type {}{}<'a, T> = bp3d_proto::message::util::List<T, {}, {}<'a>>;\n", msg.name, capitalize(&field.name), get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name));
             },
             _ => ()
         }

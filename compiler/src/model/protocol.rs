@@ -32,6 +32,13 @@ use crate::model::message::Message;
 use crate::model::structure::Structure;
 use crate::model::union::Union;
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all="kebab-case")]
+pub enum Endianness {
+    Little,
+    Big
+}
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct Import {
     pub protocol: String,
@@ -48,6 +55,7 @@ pub struct Enum {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Protocol {
     pub name: String,
+    pub endianness: Option<Endianness>,
     pub imports: Option<Vec<Import>>,
     pub structs: Option<Vec<Structure>>,
     pub messages: Option<Vec<Message>>,

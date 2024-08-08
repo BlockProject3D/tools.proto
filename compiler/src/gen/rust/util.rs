@@ -28,6 +28,7 @@
 
 use crate::compiler::message::{FieldType, Message};
 use crate::compiler::structure::FixedFieldType;
+use crate::model::protocol::Endianness;
 
 pub struct Generics {
     pub has_lifetime: bool
@@ -68,19 +69,60 @@ impl Generics {
     }
 }
 
-pub fn gen_field_type(ty: FixedFieldType) -> &'static str {
-    match ty {
-        FixedFieldType::Int8 => "i8",
-        FixedFieldType::Int16 => "i16",
-        FixedFieldType::Int32 => "i32",
-        FixedFieldType::Int64 => "i64",
-        FixedFieldType::UInt8 => "u8",
-        FixedFieldType::UInt16 => "u16",
-        FixedFieldType::UInt32 => "u32",
-        FixedFieldType::UInt64 => "u64",
-        FixedFieldType::Float32 => "f32",
-        FixedFieldType::Float64 => "f64",
-        FixedFieldType::Bool => "bool"
+macro_rules! gen_value_type {
+    ($prefix: literal, $ty: expr, $suffix: literal) => {
+        match $ty {
+            FixedFieldType::Int8 => concat!($prefix, "i8", $suffix),
+            FixedFieldType::Int16 => concat!($prefix, "i16", $suffix),
+            FixedFieldType::Int32 => concat!($prefix, "i32", $suffix),
+            FixedFieldType::Int64 => concat!($prefix, "i64", $suffix),
+            FixedFieldType::UInt8 => concat!($prefix, "u8", $suffix),
+            FixedFieldType::UInt16 => concat!($prefix, "u16", $suffix),
+            FixedFieldType::UInt32 => concat!($prefix, "u32", $suffix),
+            FixedFieldType::UInt64 => concat!($prefix, "u64", $suffix),
+            FixedFieldType::Float32 => concat!($prefix, "f32", $suffix),
+            FixedFieldType::Float64 => concat!($prefix, "f64", $suffix),
+            FixedFieldType::Bool => concat!($prefix, "bool", $suffix)
+        }
+    };
+}
+
+pub fn get_field_type(ty: FixedFieldType) -> &'static str {
+    gen_value_type!("", ty, "")
+}
+
+pub fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str {
+    match endianness {
+        Endianness::Little => gen_value_type!("bp3d_proto::message::util::ValueLE<", ty, ">"),
+        Endianness::Big => gen_value_type!("bp3d_proto::message::util::ValueBE<", ty, ">"),
+    }
+}
+
+pub fn get_value_type_inline(endianness: Endianness, ty: FixedFieldType) -> &'static str {
+    match endianness {
+        Endianness::Little => gen_value_type!("bp3d_proto::message::util::ValueLE::<", ty, ">"),
+        Endianness::Big => gen_value_type!("bp3d_proto::message::util::ValueBE::<", ty, ">"),
+    }
+}
+
+pub fn get_byte_codec(endianness: Endianness) -> &'static str {
+    match endianness {
+        Endianness::Little => "bp3d_proto::codec::ByteCodecLE",
+        Endianness::Big => "bp3d_proto::codec::ByteCodecBE"
+    }
+}
+
+pub fn get_bit_codec_inline(endianness: Endianness) -> &'static str {
+    match endianness {
+        Endianness::Little => "<bp3d_proto::codec::BitCodecLE as bp3d_proto::codec::BitCodec>",
+        Endianness::Big => "<bp3d_proto::codec::BitCodecBE as bp3d_proto::codec::BitCodec>"
+    }
+}
+
+pub fn get_byte_codec_inline(endianness: Endianness) -> &'static str {
+    match endianness {
+        Endianness::Little => "<bp3d_proto::codec::ByteCodecLE as bp3d_proto::codec::ByteCodec>",
+        Endianness::Big => "<bp3d_proto::codec::ByteCodecBE as bp3d_proto::codec::ByteCodec>"
     }
 }
 

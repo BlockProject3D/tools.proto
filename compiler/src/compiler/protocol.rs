@@ -34,10 +34,12 @@ use crate::compiler::r#enum::Enum;
 use crate::compiler::structure::Structure;
 use crate::compiler::union::Union;
 use crate::compiler::util::{ImportResolver, TypePathMap};
+use crate::model::protocol::Endianness;
 
 #[derive(Clone, Debug)]
 pub struct Protocol {
     pub name: String,
+    pub endianness: Endianness,
     pub type_path_by_name: TypePathMap,
     pub structs_by_name: HashMap<String, Rc<Structure>>,
     pub messages_by_name: HashMap<String, Rc<Message>>,
@@ -53,6 +55,7 @@ impl Protocol {
     pub fn from_model<T: ImportResolver>(value: crate::model::Protocol, solver: &T) -> Result<Self, Error> {
         let mut proto = Protocol {
             name: value.name,
+            endianness: Endianness::Little,
             type_path_by_name: TypePathMap::new(),
             structs_by_name: HashMap::new(),
             messages_by_name: HashMap::new(),

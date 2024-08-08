@@ -28,20 +28,20 @@
 
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
-use crate::gen::rust::util::{gen_field_type, gen_optional, Generics};
+use crate::gen::rust::util::{gen_optional, Generics, get_value_type, get_value_type_inline};
 
 fn gen_field_write_impl(field: &Field, type_path_by_name: &TypePathMap) -> String {
     match &field.ty {
-        FieldType::Fixed(ty) => format!("        ValueCodec::<{}>::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, gen_field_type(ty.ty)), field.name),
+        FieldType::Fixed(ty) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, get_value_type_inline(field.endianness, ty.ty)), field.name),
         FieldType::Ref(v) => match v {
             Referenced::Struct(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, type_path_by_name.get(&v.name)), field.name),
             Referenced::Message(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, type_path_by_name.get(&v.name)), field.name),
         }
         FieldType::NullTerminatedString => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, "bp3d_proto::message::util::NullTerminatedString"), field.name),
-        FieldType::VarcharString(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::VarcharString::<ValueCodec<{}>>", gen_field_type(v.ty))), field.name),
-        FieldType::Array(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array::<&'a [u8], ValueCodec<{}>, {}<&'a [u8]>>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name))), field.name),
+        FieldType::VarcharString(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::VarcharString::<{}>", get_value_type(field.endianness, v.ty))), field.name),
+        FieldType::Array(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array::<&'a [u8], {}, {}<&'a [u8]>>", get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name))), field.name),
         FieldType::Union(v) => format!("        {}::write_to(&input.{}, &input.{}, &mut out)?;\n", type_path_by_name.get(&v.r.name), field.name, v.on_name),
-        FieldType::List(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::List::<&'a [u8], ValueCodec<{}>, {}>", gen_field_type(v.ty), type_path_by_name.get(&v.item_type.name))), field.name),
+        FieldType::List(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::List::<&'a [u8], {}, {}>", get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name))), field.name),
         FieldType::Payload => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, "bp3d_proto::message::util::Buffer"), field.name)
     }
 }

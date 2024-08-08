@@ -33,6 +33,7 @@ use crate::compiler::Protocol;
 use crate::compiler::structure::{FixedFieldType, Structure};
 use crate::compiler::union::Union;
 use crate::model::message::MessageFieldType;
+use crate::model::protocol::Endianness;
 
 #[derive(Clone, Debug)]
 pub enum Referenced {
@@ -119,7 +120,8 @@ pub struct Field {
     pub name: String,
     pub ty: FieldType,
     pub optional: bool,
-    pub size: SizeInfo
+    pub size: SizeInfo,
+    pub endianness: Endianness
 }
 
 impl Field {
@@ -142,7 +144,8 @@ impl Field {
                                 size: SizeInfo {
                                     is_dyn_sized: false,
                                     is_element_dyn_sized: false
-                                }
+                                },
+                                endianness: proto.endianness
                             })
                         } else {
                             Ok(Field {
@@ -152,7 +155,8 @@ impl Field {
                                 size: SizeInfo {
                                     is_dyn_sized: false,
                                     is_element_dyn_sized: false
-                                }
+                                },
+                                endianness: proto.endianness
                             })
                         }
                     },
@@ -161,7 +165,8 @@ impl Field {
                             name: value.name,
                             optional: value.optional.unwrap_or_default(),
                             size: r.size,
-                            ty: FieldType::Ref(Referenced::Message(r))
+                            ty: FieldType::Ref(Referenced::Message(r)),
+                            endianness: proto.endianness
                         })
                     }
                 }
@@ -181,7 +186,8 @@ impl Field {
                             size: SizeInfo {
                                 is_element_dyn_sized: false,
                                 is_dyn_sized: true
-                            }
+                            },
+                            endianness: proto.endianness
                         })
                     },
                     Referenced::Message(item_type) => {
@@ -196,7 +202,8 @@ impl Field {
                             size: SizeInfo {
                                 is_element_dyn_sized: true,
                                 is_dyn_sized: true
-                            }
+                            },
+                            endianness: proto.endianness
                         })
                     }
                 }
@@ -211,7 +218,8 @@ impl Field {
                             size: SizeInfo {
                                 is_element_dyn_sized: false,
                                 is_dyn_sized: true
-                            }
+                            },
+                            endianness: proto.endianness
                         })
                     },
                     Some(max_len) => {
@@ -225,7 +233,8 @@ impl Field {
                             size: SizeInfo {
                                 is_element_dyn_sized: false,
                                 is_dyn_sized: true
-                            }
+                            },
+                            endianness: proto.endianness
                         })
                     }
                 }
@@ -260,9 +269,10 @@ impl Field {
                         on_index
                     }),
                     optional: false,
-                    size: r.size
+                    size: r.size,
+                    endianness: proto.endianness
                 })
-            }
+            },
             MessageFieldType::Payload => Ok(Field {
                 name: value.name,
                 ty: FieldType::Payload,
@@ -270,8 +280,9 @@ impl Field {
                 size: SizeInfo {
                     is_dyn_sized: true,
                     is_element_dyn_sized: true
-                }
-            }),
+                },
+                endianness: proto.endianness
+            })
         }
     }
 }
