@@ -1,0 +1,60 @@
+//
+//  BP3DProtoTests.swift
+//  BP3DProtoTests
+//
+//  Created by Yuri Edward on 8/9/24.
+//
+
+import XCTest
+import BP3DProto
+
+final class BP3DProtoTests: XCTestCase {
+
+    override func setUpWithError() throws {
+        // Put setup code here. This method is called before the invocation of each test method in the class.
+    }
+
+    override func tearDownWithError() throws {
+        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    }
+
+    func testValueLE() throws {
+        let data = Data([0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x67, 0x89]);
+        let value8 = try ValueLE<UInt8>.from(slice: data).data;
+        let value16 = try ValueLE<UInt16>.from(slice: data).data;
+        let value32 = try ValueLE<UInt32>.from(slice: data).data;
+        let value64 = try ValueLE<UInt64>.from(slice: data).data;
+        XCTAssertEqual(value8, 0xAB);
+        XCTAssertEqual(value16, 0xCDAB);
+        XCTAssertEqual(value32, 0x12EFCDAB);
+        XCTAssertEqual(value64, 0x8967563412EFCDAB);
+    }
+
+    func testValueBE() throws {
+        let data = Data([0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x67, 0x89]);
+        let value8 = try ValueBE<UInt8>.from(slice: data).data;
+        let value16 = try ValueBE<UInt16>.from(slice: data).data;
+        let value32 = try ValueBE<UInt32>.from(slice: data).data;
+        let value64 = try ValueBE<UInt64>.from(slice: data).data;
+        XCTAssertEqual(value8, 0xAB);
+        XCTAssertEqual(value16, 0xABCD);
+        XCTAssertEqual(value32, 0xABCDEF12);
+        XCTAssertEqual(value64, 0xABCDEF1234566789);
+    }
+
+    func testValueLEWrite() throws {
+        var data = Data();
+        try ValueLE<UInt64>.write(input: 0xABCDEF1234566789, to: &data);
+        XCTAssertEqual(data, Data([0x89, 0x67, 0x56, 0x34, 0x12, 0xEF, 0xCD, 0xAB]));
+        let value64 = try ValueLE<UInt64>.from(slice: data).data;
+        XCTAssertEqual(value64, 0xABCDEF1234566789);
+    }
+
+    func testValueBEWrite() throws {
+        var data = Data();
+        try ValueBE<UInt64>.write(input: 0xABCDEF1234566789, to: &data);
+        XCTAssertEqual(data, Data([0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x67, 0x89]));
+        let value64 = try ValueBE<UInt64>.from(slice: data).data;
+        XCTAssertEqual(value64, 0xABCDEF1234566789);
+    }
+}
