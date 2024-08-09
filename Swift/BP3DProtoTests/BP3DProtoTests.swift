@@ -124,8 +124,25 @@ final class BP3DProtoTests: XCTestCase {
     func testBitCodecBE() throws {
         let buffer = DataBuffer(bytes: [0xAB, 0xF0]);
         XCTAssertEqual(BitCodecBE.read(UInt16.self, buffer[0...2], bitOffset: 0, bitSize: 12), 0xABF);
-        var buffer1 = DataBuffer(bytes: [0x0, 0x0]);
-        BitCodecBE.write(UInt16.self, &buffer1, bitOffset: 0, bitSize: 12, value: 0xABF);
-        XCTAssertEqual(BitCodecBE.read(UInt16.self, buffer[0...2], bitOffset: 0, bitSize: 12), 0xABF);
+        let buffer1 = DataBuffer(bytes: [0x0, 0x0]);
+        var b = buffer1[...2]
+        BitCodecBE.write(UInt16.self, &b, bitOffset: 0, bitSize: 12, value: 0xABF);
+        XCTAssertEqual(BitCodecBE.read(UInt16.self, buffer1[0...2], bitOffset: 0, bitSize: 12), 0xABF);
+    }
+
+    func testArrayCodec() throws {
+        var buffer = DataBuffer(bytes: Data(count: UInt32.size * 4));
+        var codec = ArrayCodec<DataBuffer, ByteCodecBE, UInt32>(buffer: &buffer, itemBitSize: 32);
+        XCTAssertEqual(codec.count, 4);
+        codec[0] = 0xAB;
+        codec[1] = 0xCD;
+        codec[2] = 0xEF;
+        codec[3] = 0x12;
+        XCTAssertEqual(codec[0], 0xAB);
+        XCTAssertEqual(codec[1], 0xCD);
+        XCTAssertEqual(codec[2], 0xEF);
+        XCTAssertEqual(codec[3], 0x12);
+        codec[3] = 0x42424242;
+        XCTAssertEqual(codec[3], 0x42424242);
     }
 }

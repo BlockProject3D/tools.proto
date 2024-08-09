@@ -70,44 +70,67 @@ public protocol WritableBuffer {
 }
 
 public struct DataBuffer: Buffer, WritableBuffer {
-    private var data: Data;
+    private let data: NSData;
+    private var dataMut: NSMutableData?;
     private let start: Int;
     private var end: Int;
     private var cursor: Int;
 
+    private func get() -> NSData {
+        if let dataMut = self.dataMut {
+            return dataMut;
+        }
+        return self.data;
+    }
+
+    private mutating func getMut() -> NSMutableData {
+        if self.dataMut == nil {
+            self.dataMut = self.data.mutableCopy() as? NSMutableData;
+        }
+        return self.dataMut!;
+    }
+
+    private init(from: DataBuffer, start: Int, end: Int) {
+        self.start = start;
+        self.end = end;
+        self.cursor = start;
+        self.data = from.data;
+        self.dataMut = from.dataMut;
+    }
+
     public init() {
-        self.init(bytes: Data());
+        self.data = NSData();
+        self.start = 0;
+        self.end = 0;
+        self.cursor = 0;
+        self.dataMut = nil;
     }
 
-    public func copyTo(ptr: UnsafeMutableRawBufferPointer, size: Int) {
-        assert(size <= self.size);
-        self.data.copyBytes(to: ptr, from: self.start...self.start + size)
-    }
-
-    public func findFirst(_ value: UInt8) -> Int? {
-        return self.data[self.start...].firstIndex(of: value);
+    public init(bytes: Data) {
+        self.data = Data(bytes) as NSData;
+        self.start = 0;
+        self.end = self.data.count;
+        self.cursor = 0;
+        self.dataMut = self.data.mutableCopy() as? NSMutableData;
     }
 
     public init(bytes: any Sequence<UInt8>) {
         self.init(bytes: Data(bytes));
     }
 
-    public init(bytes data: Data) {
-        self.init(bytes: data, start: 0, end: data.count);
-    }
-
     public init(bytes ptr: UnsafeMutableRawBufferPointer) {
-        self.init(bytes: Data(ptr));
+        self.data = NSData(bytes: ptr.baseAddress!, length: ptr.count);
+        self.dataMut = NSMutableData(bytes: ptr.baseAddress!, length: ptr.count);
+        self.start = 0;
+        self.end = ptr.count;
+        self.cursor = start;
     }
 
     public init(bytes ptr: UnsafeRawBufferPointer) {
-        self.init(bytes: Data(ptr));
-    }
-
-    public init(bytes data: Data, start: Int, end: Int) {
-        self.data = data;
-        self.start = start;
-        self.end = end;
+        self.data = NSData(bytes: ptr.baseAddress!, length: ptr.count);
+        self.dataMut = nil;
+        self.start = 0;
+        self.end = ptr.count;
         self.cursor = start;
     }
 
@@ -120,6 +143,15 @@ public struct DataBuffer: Buffer, WritableBuffer {
         self.end = self.start;
     }
 
+    public func copyTo(ptr: UnsafeMutableRawBufferPointer, size: Int) {
+        assert(size <= self.size);
+        self.get().copyBytes(to: ptr, from: self.start...self.start + size)
+    }
+
+    public func findFirst(_ value: UInt8) -> Int? {
+        return self.get()[self.start...].firstIndex(of: value);
+    }
+
     public subscript(index: ClosedRange<Int>) -> DataBuffer {
         let start = index.lowerBound;
         let end = index.upperBound;
@@ -128,37 +160,47 @@ public struct DataBuffer: Buffer, WritableBuffer {
         assert(end <= size);
         assert(start >= 0);
         assert(end >= 0);
-        return DataBuffer(bytes: self.data, start: self.start + start, end: self.start + end);
+        return DataBuffer(from: self, start: self.start + start, end: self.start + end);
     }
 
     public subscript(index: PartialRangeFrom<Int>) -> DataBuffer {
         assert(index.lowerBound <= size);
         assert(index.lowerBound > 0);
-        return DataBuffer(bytes: self.data, start: self.start + index.lowerBound, end: self.end);
+        return DataBuffer(from: self, start: self.start + index.lowerBound, end: self.end);
     }
 
     public subscript(index: PartialRangeThrough<Int>) -> DataBuffer {
         assert(index.upperBound <= size);
         assert(index.upperBound > 0);
-        return DataBuffer(bytes: self.data, start: self.start, end: self.start + index.upperBound);
+        return DataBuffer(from: self, start: self.start, end: self.start + index.upperBound);
     }
 
     public subscript(index: Int) -> UInt8 {
         assert(index < size);
-        return self.data[self.start + index];
+        return self.get()[self.start + index];
     }
 
     public mutating func write(bytes: Data) {
-        if self.cursor + bytes.count < self.data.count {
-            self.data.replaceSubrange(self.cursor...self.cursor + bytes.count - 1, with: bytes);
+        let data = self.getMut();
+        if self.cursor + bytes.count < data.count {
+            bytes.withUnsafeBytes { ptr in
+                data.replaceBytes(in: NSRange(location: self.cursor, length: bytes.count), withBytes: ptr);
+            }
+            //data.replaceSubrange(self.cursor...self.cursor + bytes.count - 1, with: bytes);
         } else {
-            let maxLen = self.data.count - self.cursor;
+            let maxLen = data.count - self.cursor;
             if maxLen > 0 {
-                self.data.replaceSubrange(self.cursor...self.cursor + maxLen - 1, with: bytes[0...maxLen - 1]);
+                bytes.withUnsafeBytes { ptr in
+                    data.replaceBytes(in: NSRange(location: self.cursor, length: maxLen), withBytes: ptr);
+                }
+                //data.replaceSubrange(self.cursor...self.cursor + maxLen - 1, with: bytes[0...maxLen - 1]);
             }
             let remaining = bytes.count - maxLen;
             if remaining > 0 {
-                self.data.append(contentsOf: bytes[maxLen...maxLen + remaining - 1]);
+                bytes[maxLen...].withUnsafeBytes { ptr in
+                    data.append(ptr, length: remaining);
+                }
+                //data.append(contentsOf: bytes[maxLen...maxLen + remaining - 1]);
             }
         }
         self.cursor += bytes.count;
@@ -170,16 +212,23 @@ public struct DataBuffer: Buffer, WritableBuffer {
     }
 
     public mutating func write(byte: UInt8) {
-        if self.cursor + 1 < self.data.count {
-            self.data[self.cursor] = byte;
+        let data = self.getMut();
+        if self.cursor + 1 < data.count {
+            withUnsafeBytes(of: byte, { ptr in
+                data.replaceBytes(in: NSRange(location: self.cursor, length: 1), withBytes: ptr.baseAddress!);
+            });
+            //data[self.cursor] = byte;
         } else {
-            self.data.append(byte);
+            //data.append(byte);
+            withUnsafeBytes(of: byte, { ptr in
+                data.append(ptr.baseAddress!, length: 1);
+            });
         }
         self.cursor += 1;
         self.end = self.cursor;
     }
 
     public func toData() -> Data {
-        return Data(self.data[self.start...self.end - 1]);
+        return Data(self.get()[self.start...self.end - 1]);
     }
 }
