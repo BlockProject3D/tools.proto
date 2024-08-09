@@ -14,6 +14,7 @@
 		DA76590D2C666A8F0036DDED /* list.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA76590C2C666A8F0036DDED /* list.swift */; };
 		DA76590F2C6679000036DDED /* size.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA76590E2C6679000036DDED /* size.swift */; };
 		DA7659122C667AB90036DDED /* bit.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7659112C667AB90036DDED /* bit.swift */; };
+		DA7659142C66A7620036DDED /* byte.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7659132C66A7620036DDED /* byte.swift */; };
 		DA8EBD672C63D48E00075FDE /* BP3DProto.h in Headers */ = {isa = PBXBuildFile; fileRef = DA8EBD662C63D48E00075FDE /* BP3DProto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DA8EBD6C2C63D49800075FDE /* BP3DProto.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA8EBD642C63D48E00075FDE /* BP3DProto.framework */; };
 		DA8EBD6D2C63D49800075FDE /* BP3DProto.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DA8EBD642C63D48E00075FDE /* BP3DProto.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -71,6 +72,7 @@
 		DA76590C2C666A8F0036DDED /* list.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = list.swift; sourceTree = "<group>"; };
 		DA76590E2C6679000036DDED /* size.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = size.swift; sourceTree = "<group>"; };
 		DA7659112C667AB90036DDED /* bit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bit.swift; sourceTree = "<group>"; };
+		DA7659132C66A7620036DDED /* byte.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = byte.swift; sourceTree = "<group>"; };
 		DA8EBD642C63D48E00075FDE /* BP3DProto.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BP3DProto.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA8EBD662C63D48E00075FDE /* BP3DProto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BP3DProto.h; sourceTree = "<group>"; };
 		DACACEBA2C63D7C20076A026 /* message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = message.swift; sourceTree = "<group>"; };
@@ -140,6 +142,7 @@
 			isa = PBXGroup;
 			children = (
 				DA7659112C667AB90036DDED /* bit.swift */,
+				DA7659132C66A7620036DDED /* byte.swift */,
 			);
 			path = codec;
 			sourceTree = "<group>";
@@ -332,6 +335,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA7659142C66A7620036DDED /* byte.swift in Sources */,
 				DA76590F2C6679000036DDED /* size.swift in Sources */,
 				DACACEBF2C6530B80076A026 /* bytesutil.swift in Sources */,
 				DACACEBD2C63DBDC0076A026 /* common.swift in Sources */,
