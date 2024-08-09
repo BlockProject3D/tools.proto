@@ -13,6 +13,7 @@
 		DA76590B2C664C390036DDED /* buffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA76590A2C664C390036DDED /* buffer.swift */; };
 		DA76590D2C666A8F0036DDED /* list.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA76590C2C666A8F0036DDED /* list.swift */; };
 		DA76590F2C6679000036DDED /* size.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA76590E2C6679000036DDED /* size.swift */; };
+		DA7659122C667AB90036DDED /* bit.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7659112C667AB90036DDED /* bit.swift */; };
 		DA8EBD672C63D48E00075FDE /* BP3DProto.h in Headers */ = {isa = PBXBuildFile; fileRef = DA8EBD662C63D48E00075FDE /* BP3DProto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DA8EBD6C2C63D49800075FDE /* BP3DProto.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA8EBD642C63D48E00075FDE /* BP3DProto.framework */; };
 		DA8EBD6D2C63D49800075FDE /* BP3DProto.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DA8EBD642C63D48E00075FDE /* BP3DProto.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -69,6 +70,7 @@
 		DA76590A2C664C390036DDED /* buffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = buffer.swift; sourceTree = "<group>"; };
 		DA76590C2C666A8F0036DDED /* list.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = list.swift; sourceTree = "<group>"; };
 		DA76590E2C6679000036DDED /* size.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = size.swift; sourceTree = "<group>"; };
+		DA7659112C667AB90036DDED /* bit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bit.swift; sourceTree = "<group>"; };
 		DA8EBD642C63D48E00075FDE /* BP3DProto.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BP3DProto.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA8EBD662C63D48E00075FDE /* BP3DProto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BP3DProto.h; sourceTree = "<group>"; };
 		DACACEBA2C63D7C20076A026 /* message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = message.swift; sourceTree = "<group>"; };
@@ -134,9 +136,18 @@
 			path = util;
 			sourceTree = "<group>";
 		};
+		DA7659102C667AA70036DDED /* codec */ = {
+			isa = PBXGroup;
+			children = (
+				DA7659112C667AB90036DDED /* bit.swift */,
+			);
+			path = codec;
+			sourceTree = "<group>";
+		};
 		DA8EBD652C63D48E00075FDE /* BP3DProto */ = {
 			isa = PBXGroup;
 			children = (
+				DA7659102C667AA70036DDED /* codec */,
 				DA7659092C664BCB0036DDED /* util */,
 				DA7659082C664BB50036DDED /* message */,
 				DA8EBD662C63D48E00075FDE /* BP3DProto.h */,
@@ -324,6 +335,7 @@
 				DA76590F2C6679000036DDED /* size.swift in Sources */,
 				DACACEBF2C6530B80076A026 /* bytesutil.swift in Sources */,
 				DACACEBD2C63DBDC0076A026 /* common.swift in Sources */,
+				DA7659122C667AB90036DDED /* bit.swift in Sources */,
 				DA7658F92C655DD60036DDED /* string.swift in Sources */,
 				DACACEBB2C63D7C20076A026 /* message.swift in Sources */,
 				DA76590B2C664C390036DDED /* buffer.swift in Sources */,

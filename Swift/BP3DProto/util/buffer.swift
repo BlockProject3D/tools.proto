@@ -37,13 +37,14 @@ public protocol Buffer {
     var size: Int { get }
     var isEmpty: Bool { get }
     func toData() -> Data;
+    func copyTo(ptr: UnsafeMutableRawBufferPointer, size: Int);
 }
 
 extension Buffer {
     public var isEmpty: Bool {
         return size == 0;
     }
-
+    
     public func findFirst(_ value: UInt8) -> Int? {
         var i = 0;
         while i < self.size {
@@ -53,6 +54,12 @@ extension Buffer {
             i += 1;
         }
         return nil;
+    }
+
+    public func copyTo(ptr: UnsafeMutableRawBufferPointer, size: Int) {
+        for i in 0...size - 1 {
+            ptr.storeBytes(of: self[i], toByteOffset: i, as: UInt8.self);
+        }
     }
 }
 
@@ -72,6 +79,11 @@ public struct DataBuffer: Buffer, WritableBuffer {
         self.init(bytes: Data());
     }
 
+    public func copyTo(ptr: UnsafeMutableRawBufferPointer, size: Int) {
+        assert(size <= self.size);
+        self.data.copyBytes(to: ptr, from: self.start...self.start + size)
+    }
+
     public func findFirst(_ value: UInt8) -> Int? {
         return self.data[self.start...].firstIndex(of: value);
     }
@@ -82,6 +94,14 @@ public struct DataBuffer: Buffer, WritableBuffer {
 
     public init(bytes data: Data) {
         self.init(bytes: data, start: 0, end: data.count);
+    }
+
+    public init(bytes ptr: UnsafeMutableRawBufferPointer) {
+        self.init(bytes: Data(ptr));
+    }
+
+    public init(bytes ptr: UnsafeRawBufferPointer) {
+        self.init(bytes: Data(ptr));
     }
 
     public init(bytes data: Data, start: Int, end: Int) {
@@ -103,22 +123,22 @@ public struct DataBuffer: Buffer, WritableBuffer {
     public subscript(index: ClosedRange<Int>) -> DataBuffer {
         let start = index.lowerBound;
         let end = index.upperBound;
-        assert(end - start > 0);
-        assert(start < size);
+        assert(end - start >= 0);
+        assert(start <= size);
         assert(end <= size);
-        assert(start > 0);
-        assert(end > 0);
+        assert(start >= 0);
+        assert(end >= 0);
         return DataBuffer(bytes: self.data, start: self.start + start, end: self.start + end);
     }
 
     public subscript(index: PartialRangeFrom<Int>) -> DataBuffer {
-        assert(index.lowerBound < size);
+        assert(index.lowerBound <= size);
         assert(index.lowerBound > 0);
         return DataBuffer(bytes: self.data, start: self.start + index.lowerBound, end: self.end);
     }
 
     public subscript(index: PartialRangeThrough<Int>) -> DataBuffer {
-        assert(index.upperBound < size);
+        assert(index.upperBound <= size);
         assert(index.upperBound > 0);
         return DataBuffer(bytes: self.data, start: self.start, end: self.start + index.upperBound);
     }

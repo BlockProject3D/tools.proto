@@ -112,4 +112,20 @@ final class BP3DProtoTests: XCTestCase {
         let str2 = try Optional<VarcharString<ValueBE<UInt32>>>.from(slice: data).data;
         XCTAssertNil(str2);
     }
+
+    func testBitCodecLE() throws {
+        let buffer = DataBuffer(bytes: [0xFF, 0xFF, 0xFF, 0xFF]);
+        XCTAssertEqual(BitCodecLE.read(UInt32.self, buffer[...4], bitOffset: 0, bitSize: 32), 0xFFFFFFFF);
+        XCTAssertEqual(BitCodecLE.read(UInt8.self, buffer[0...1], bitOffset: 0, bitSize: 1), 1);
+        XCTAssertEqual(BitCodecLE.read(UInt8.self, buffer[0...1], bitOffset: 0, bitSize: 4), 0xF);
+        XCTAssertEqual(BitCodecLE.read(UInt8.self, buffer[0...1], bitOffset: 4, bitSize: 4), 0xF);
+    }
+
+    func testBitCodecBE() throws {
+        let buffer = DataBuffer(bytes: [0xAB, 0xF0]);
+        XCTAssertEqual(BitCodecBE.read(UInt16.self, buffer[0...2], bitOffset: 0, bitSize: 12), 0xABF);
+        var buffer1 = DataBuffer(bytes: [0x0, 0x0]);
+        BitCodecBE.write(UInt16.self, &buffer1, bitOffset: 0, bitSize: 12, value: 0xABF);
+        XCTAssertEqual(BitCodecBE.read(UInt16.self, buffer[0...2], bitOffset: 0, bitSize: 12), 0xABF);
+    }
 }

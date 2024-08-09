@@ -28,7 +28,7 @@
 
 import Foundation
 
-public protocol Scalar {
+public protocol Scalar: BinaryInteger {
     static var size: Int {get};
 
     init<B: Buffer>(fromBytesLE slice: B);
@@ -137,7 +137,7 @@ extension UInt32: Scalar {
 
 extension UInt16: Scalar {
     public init(fromUInt value: UInt) {
-        self = UInt16(value);
+        self = UInt16(truncatingIfNeeded: value);
     }
 
     public func toUInt() -> UInt {
