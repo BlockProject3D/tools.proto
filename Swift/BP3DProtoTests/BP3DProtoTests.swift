@@ -9,7 +9,6 @@ import XCTest
 import BP3DProto
 
 final class BP3DProtoTests: XCTestCase {
-
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
@@ -56,5 +55,42 @@ final class BP3DProtoTests: XCTestCase {
         XCTAssertEqual(data.toData(), Data([0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x67, 0x89]));
         let value64 = try ValueBE<UInt64>.from(slice: data).data;
         XCTAssertEqual(value64, 0xABCDEF1234566789);
+    }
+
+    func testNullTerminatedString() throws {
+        var data = DataBuffer();
+        try NullTerminatedString.write(input: "test", to: &data);
+        let str = try NullTerminatedString.from(slice: data).data;
+        XCTAssertEqual(str, "test");
+        data.clear();
+        try NullTerminatedString.write(input: "toto", to: &data);
+        let str1 = try NullTerminatedString.from(slice: data).data;
+        XCTAssertEqual(str1, "toto");
+    }
+
+    func testVarcharString() throws {
+        var data = DataBuffer();
+        try VarcharString<ValueLE<UInt8>>.write(input: "test", to: &data);
+        let str = try VarcharString<ValueLE<UInt8>>.from(slice: data).data;
+        XCTAssertEqual(str, "test");
+        data.clear();
+        try VarcharString<ValueBE<UInt32>>.write(input: "toto", to: &data);
+        let str1 = try VarcharString<ValueBE<UInt32>>.from(slice: data).data;
+        XCTAssertEqual(str1, "toto");
+    }
+
+    func testOptionals() throws {
+        var data = DataBuffer();
+        try Optional<VarcharString<ValueBE<UInt32>>>.write(input: "toto", to: &data);
+        let str = try Optional<VarcharString<ValueBE<UInt32>>>.from(slice: data).data;
+        XCTAssertEqual(str, "toto");
+        data.clear();
+        try Optional<VarcharString<ValueBE<UInt32>>>.write(input: "test", to: &data);
+        let str1 = try Optional<VarcharString<ValueBE<UInt32>>>.from(slice: data).data;
+        XCTAssertEqual(str1, "test");
+        data.clear();
+        try Optional<VarcharString<ValueBE<UInt32>>>.write(input: nil, to: &data);
+        let str2 = try Optional<VarcharString<ValueBE<UInt32>>>.from(slice: data).data;
+        XCTAssertNil(str2);
     }
 }

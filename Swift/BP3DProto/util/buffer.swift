@@ -92,20 +92,23 @@ public struct DataBuffer: Buffer, WritableBuffer {
     }
 
     public var size: Int {
-        return end - start;
+        return (end - start) + 1;
     }
 
     public mutating func clear() {
-        self.cursor = 0;
+        self.cursor = self.start;
+        self.end = self.start;
     }
 
     public subscript(index: ClosedRange<Int>) -> DataBuffer {
-        assert(index.upperBound - index.lowerBound > 0);
-        assert(index.lowerBound < size);
-        assert(index.upperBound < size);
-        assert(index.lowerBound > 0);
-        assert(index.upperBound > 0);
-        return DataBuffer(bytes: self.data, start: self.start + index.lowerBound, end: self.start + index.upperBound);
+        let start = index.lowerBound;
+        let end = index.upperBound - 1;
+        assert(end - start > 0);
+        assert(start < size);
+        assert(end < size);
+        assert(start > 0);
+        assert(end > 0);
+        return DataBuffer(bytes: self.data, start: self.start + start, end: self.start + end);
     }
 
     public subscript(index: PartialRangeFrom<Int>) -> DataBuffer {
@@ -115,9 +118,9 @@ public struct DataBuffer: Buffer, WritableBuffer {
     }
 
     public subscript(index: PartialRangeThrough<Int>) -> DataBuffer {
-        assert(index.upperBound < size);
-        assert(index.upperBound > 0);
-        return DataBuffer(bytes: self.data, start: self.start, end: self.start + index.upperBound);
+        assert(index.upperBound - 1 < size);
+        assert(index.upperBound - 1 > 0);
+        return DataBuffer(bytes: self.data, start: self.start, end: self.start + index.upperBound - 1);
     }
 
     public subscript(index: Int) -> UInt8 {
@@ -134,10 +137,12 @@ public struct DataBuffer: Buffer, WritableBuffer {
                 self.data.replaceSubrange(self.cursor...self.cursor + maxLen - 1, with: bytes[0...maxLen - 1]);
             }
             let remaining = bytes.count - maxLen;
-            self.data.append(contentsOf: bytes[maxLen...maxLen + remaining - 1]);
+            if remaining > 0 {
+                self.data.append(contentsOf: bytes[maxLen...maxLen + remaining - 1]);
+            }
         }
         self.cursor += bytes.count;
-        self.end = self.cursor;
+        self.end = self.cursor - 1;
     }
 
     public mutating func write<S: Sequence<UInt8>>(bytes: S) throws {
@@ -151,10 +156,10 @@ public struct DataBuffer: Buffer, WritableBuffer {
             self.data.append(byte);
         }
         self.cursor += 1;
-        self.end = self.cursor;
+        self.end = self.cursor - 1;
     }
 
     public func toData() -> Data {
-        return Data(self.data[self.start...self.end - 1]);
+        return Data(self.data[self.start...self.end]);
     }
 }
