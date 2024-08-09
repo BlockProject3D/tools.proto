@@ -92,7 +92,7 @@ public struct DataBuffer: Buffer, WritableBuffer {
     }
 
     public var size: Int {
-        return (end - start) + 1;
+        return end - start;
     }
 
     public mutating func clear() {
@@ -102,10 +102,10 @@ public struct DataBuffer: Buffer, WritableBuffer {
 
     public subscript(index: ClosedRange<Int>) -> DataBuffer {
         let start = index.lowerBound;
-        let end = index.upperBound - 1;
+        let end = index.upperBound;
         assert(end - start > 0);
         assert(start < size);
-        assert(end < size);
+        assert(end <= size);
         assert(start > 0);
         assert(end > 0);
         return DataBuffer(bytes: self.data, start: self.start + start, end: self.start + end);
@@ -118,9 +118,9 @@ public struct DataBuffer: Buffer, WritableBuffer {
     }
 
     public subscript(index: PartialRangeThrough<Int>) -> DataBuffer {
-        assert(index.upperBound - 1 < size);
-        assert(index.upperBound - 1 > 0);
-        return DataBuffer(bytes: self.data, start: self.start, end: self.start + index.upperBound - 1);
+        assert(index.upperBound < size);
+        assert(index.upperBound > 0);
+        return DataBuffer(bytes: self.data, start: self.start, end: self.start + index.upperBound);
     }
 
     public subscript(index: Int) -> UInt8 {
@@ -142,7 +142,7 @@ public struct DataBuffer: Buffer, WritableBuffer {
             }
         }
         self.cursor += bytes.count;
-        self.end = self.cursor - 1;
+        self.end = self.cursor;
     }
 
     public mutating func write<S: Sequence<UInt8>>(bytes: S) throws {
@@ -156,10 +156,10 @@ public struct DataBuffer: Buffer, WritableBuffer {
             self.data.append(byte);
         }
         self.cursor += 1;
-        self.end = self.cursor - 1;
+        self.end = self.cursor;
     }
 
     public func toData() -> Data {
-        return Data(self.data[self.start...self.end]);
+        return Data(self.data[self.start...self.end - 1]);
     }
 }
