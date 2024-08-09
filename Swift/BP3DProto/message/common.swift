@@ -50,7 +50,7 @@ extension Optional: WriteTo where T: WriteTo {
 
     public static func write<B: WritableBuffer>(input: T.Input?, to out: inout B) throws {
         let b = input != nil ? 1 : 0;
-        try out.write(byte: UInt8(b));
+        out.write(byte: UInt8(b));
         if let input = input {
             try T.write(input: input, to: &out);
         }
@@ -69,7 +69,7 @@ public struct ValueLE<T: Scalar>: FromSlice, WriteTo {
     }
 
     public static func write<B: WritableBuffer>(input: T, to out: inout B) throws {
-        try out.write(bytes: input.toBytesLE());
+        out.write(bytes: input.toBytesLE());
     }
 }
 
@@ -85,6 +85,6 @@ public struct ValueBE<T: Scalar>: FromSlice, WriteTo {
     }
 
     public static func write<B: WritableBuffer>(input: T, to out: inout B) throws {
-        try out.write(bytes: input.toBytesBE());
+        out.write(bytes: input.toBytesBE());
     }
 }

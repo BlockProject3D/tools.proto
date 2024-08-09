@@ -57,9 +57,9 @@ extension Buffer {
 }
 
 public protocol WritableBuffer {
-    mutating func write(bytes: Data) throws;
-    mutating func write<S: Sequence<UInt8>>(bytes: S) throws;
-    mutating func write(byte: UInt8) throws;
+    mutating func write(bytes: Data);
+    mutating func write<S: Sequence<UInt8>>(bytes: S);
+    mutating func write(byte: UInt8);
 }
 
 public struct DataBuffer: Buffer, WritableBuffer {
@@ -128,7 +128,7 @@ public struct DataBuffer: Buffer, WritableBuffer {
         return self.data[self.start + index];
     }
 
-    public mutating func write(bytes: Data) throws {
+    public mutating func write(bytes: Data) {
         if self.cursor + bytes.count < self.data.count {
             self.data.replaceSubrange(self.cursor...self.cursor + bytes.count - 1, with: bytes);
         } else {
@@ -145,11 +145,11 @@ public struct DataBuffer: Buffer, WritableBuffer {
         self.end = self.cursor;
     }
 
-    public mutating func write<S: Sequence<UInt8>>(bytes: S) throws {
-        try self.write(bytes: Data(bytes));
+    public mutating func write<S: Sequence<UInt8>>(bytes: S) {
+        self.write(bytes: Data(bytes));
     }
 
-    public mutating func write(byte: UInt8) throws {
+    public mutating func write(byte: UInt8) {
         if self.cursor + 1 < self.data.count {
             self.data[self.cursor] = byte;
         } else {

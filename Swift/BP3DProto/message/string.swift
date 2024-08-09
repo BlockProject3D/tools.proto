@@ -40,8 +40,8 @@ public struct NullTerminatedString: FromSlice, WriteTo {
 
     public static func write<B: WritableBuffer>(input: String, to out: inout B) throws {
         let str = input.utf8;
-        try out.write(bytes: str);
-        try out.write(byte: UInt8(0x0));
+        out.write(bytes: str);
+        out.write(byte: UInt8(0x0));
     }
 }
 
@@ -64,6 +64,6 @@ extension VarcharString: WriteTo where T: WriteTo, T.Input: Scalar {
         let str = input.utf8;
         let length = T.Input(fromUInt: UInt(str.count));
         try T.write(input: length, to: &out);
-        try out.write(bytes: str);
+        out.write(bytes: str);
     }
 }
