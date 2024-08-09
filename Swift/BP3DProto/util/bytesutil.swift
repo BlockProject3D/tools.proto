@@ -31,11 +31,11 @@ import Foundation
 public protocol Scalar {
     static var size: Int {get};
 
-    init(fromBytesLE slice: Data);
-    init(fromBytesBE slice: Data);
+    init<B: Buffer>(fromBytesLE slice: B);
+    init<B: Buffer>(fromBytesBE slice: B);
     init(fromUInt value: UInt);
-    func toBytesLE(_ slice: inout Data);
-    func toBytesBE(_ slice: inout Data);
+    func toBytesLE() -> Data;
+    func toBytesBE() -> Data;
     func toUInt() -> UInt;
 }
 
@@ -48,13 +48,13 @@ extension UInt64: Scalar {
         return UInt(self);
     }
 
-    public init(fromBytesBE slice: Data) {
-        let motherfuckingswift = UInt64(UInt32(fromBytesBE: slice)) << 32 | UInt64(UInt32(fromBytesBE: Data(slice[4...])));
+    public init<B: Buffer>(fromBytesBE slice: B) {
+        let motherfuckingswift = UInt64(UInt32(fromBytesBE: slice)) << 32 | UInt64(UInt32(fromBytesBE: slice[4...]));
         self = motherfuckingswift;
     }
 
-    public init(fromBytesLE slice: Data) {
-        let motherfuckingswift = UInt64(UInt32(fromBytesBE: slice)) << 32 | UInt64(UInt32(fromBytesBE: Data(slice[4...])));
+    public init<B: Buffer>(fromBytesLE slice: B) {
+        let motherfuckingswift = UInt64(UInt32(fromBytesBE: slice)) << 32 | UInt64(UInt32(fromBytesBE: slice[4...]));
         self = motherfuckingswift.byteSwapped;
     }
 
@@ -62,28 +62,32 @@ extension UInt64: Scalar {
         8
     }
 
-    public func toBytesLE(_ slice: inout Data) {
+    public func toBytesLE() -> Data {
         let value = self.littleEndian;
-        slice.append(UInt8(truncatingIfNeeded: value));
-        slice.append(UInt8(truncatingIfNeeded: value >> 8));
-        slice.append(UInt8(truncatingIfNeeded: value >> 16));
-        slice.append(UInt8(truncatingIfNeeded: value >> 24));
-        slice.append(UInt8(truncatingIfNeeded: value >> 32));
-        slice.append(UInt8(truncatingIfNeeded: value >> 40));
-        slice.append(UInt8(truncatingIfNeeded: value >> 48));
-        slice.append(UInt8(truncatingIfNeeded: value >> 56));
+        return Data([
+            UInt8(truncatingIfNeeded: value),
+            UInt8(truncatingIfNeeded: value >> 8),
+            UInt8(truncatingIfNeeded: value >> 16),
+            UInt8(truncatingIfNeeded: value >> 24),
+            UInt8(truncatingIfNeeded: value >> 32),
+            UInt8(truncatingIfNeeded: value >> 40),
+            UInt8(truncatingIfNeeded: value >> 48),
+            UInt8(truncatingIfNeeded: value >> 56)
+        ]);
     }
 
-    public func toBytesBE(_ slice: inout Data) {
+    public func toBytesBE() -> Data {
         let value = self.bigEndian;
-        slice.append(UInt8(truncatingIfNeeded: value));
-        slice.append(UInt8(truncatingIfNeeded: value >> 8));
-        slice.append(UInt8(truncatingIfNeeded: value >> 16));
-        slice.append(UInt8(truncatingIfNeeded: value >> 24));
-        slice.append(UInt8(truncatingIfNeeded: value >> 32));
-        slice.append(UInt8(truncatingIfNeeded: value >> 40));
-        slice.append(UInt8(truncatingIfNeeded: value >> 48));
-        slice.append(UInt8(truncatingIfNeeded: value >> 56));
+        return Data([
+            UInt8(truncatingIfNeeded: value),
+            UInt8(truncatingIfNeeded: value >> 8),
+            UInt8(truncatingIfNeeded: value >> 16),
+            UInt8(truncatingIfNeeded: value >> 24),
+            UInt8(truncatingIfNeeded: value >> 32),
+            UInt8(truncatingIfNeeded: value >> 40),
+            UInt8(truncatingIfNeeded: value >> 48),
+            UInt8(truncatingIfNeeded: value >> 56)
+        ]);
     }
 }
 
@@ -96,12 +100,12 @@ extension UInt32: Scalar {
         return UInt(self);
     }
 
-    public init(fromBytesBE slice: Data) {
+    public init<B: Buffer>(fromBytesBE slice: B) {
         let value = UInt32(slice[0]) << 24 | UInt32(slice[1]) << 16 | UInt32(slice[2]) << 8 | UInt32(slice[3]);
         self = value;
     }
 
-    public init(fromBytesLE slice: Data) {
+    public init<B: Buffer>(fromBytesLE slice: B) {
         let value = UInt32(slice[3]) << 24 | UInt32(slice[2]) << 16 | UInt32(slice[1]) << 8 | UInt32(slice[0]);
         self = value;
     }
@@ -110,20 +114,24 @@ extension UInt32: Scalar {
         4
     }
 
-    public func toBytesLE(_ slice: inout Data) {
+    public func toBytesLE() -> Data {
         let value = self.littleEndian;
-        slice.append(UInt8(truncatingIfNeeded: value));
-        slice.append(UInt8(truncatingIfNeeded: value >> 8));
-        slice.append(UInt8(truncatingIfNeeded: value >> 16));
-        slice.append(UInt8(truncatingIfNeeded: value >> 24));
+        return Data([
+            UInt8(truncatingIfNeeded: value),
+            UInt8(truncatingIfNeeded: value >> 8),
+            UInt8(truncatingIfNeeded: value >> 16),
+            UInt8(truncatingIfNeeded: value >> 24)
+        ]);
     }
 
-    public func toBytesBE(_ slice: inout Data) {
+    public func toBytesBE() -> Data {
         let value = self.bigEndian;
-        slice.append(UInt8(truncatingIfNeeded: value));
-        slice.append(UInt8(truncatingIfNeeded: value >> 8));
-        slice.append(UInt8(truncatingIfNeeded: value >> 16));
-        slice.append(UInt8(truncatingIfNeeded: value >> 24));
+        return Data([
+            UInt8(truncatingIfNeeded: value),
+            UInt8(truncatingIfNeeded: value >> 8),
+            UInt8(truncatingIfNeeded: value >> 16),
+            UInt8(truncatingIfNeeded: value >> 24)
+        ]);
     }
 }
 
@@ -136,12 +144,12 @@ extension UInt16: Scalar {
         return UInt(self);
     }
 
-    public init(fromBytesBE slice: Data) {
+    public init<B: Buffer>(fromBytesBE slice: B) {
         let value = UInt16(slice[0]) << 8 | UInt16(slice[1]);
         self = value;
     }
 
-    public init(fromBytesLE slice: Data) {
+    public init<B: Buffer>(fromBytesLE slice: B) {
         let value = UInt16(slice[1]) << 8 | UInt16(slice[0]);
         self = value;
     }
@@ -150,16 +158,20 @@ extension UInt16: Scalar {
         2
     }
 
-    public func toBytesLE(_ slice: inout Data) {
+    public func toBytesLE() -> Data {
         let value = self.littleEndian;
-        slice.append(UInt8(truncatingIfNeeded: value));
-        slice.append(UInt8(truncatingIfNeeded: value >> 8));
+        return Data([
+            UInt8(truncatingIfNeeded: value),
+            UInt8(truncatingIfNeeded: value >> 8)
+        ]);
     }
 
-    public func toBytesBE(_ slice: inout Data) {
+    public func toBytesBE() -> Data {
         let value = self.bigEndian;
-        slice.append(UInt8(truncatingIfNeeded: value));
-        slice.append(UInt8(truncatingIfNeeded: value >> 8));
+        return Data([
+            UInt8(truncatingIfNeeded: value),
+            UInt8(truncatingIfNeeded: value >> 8)
+        ]);
     }
 }
 
@@ -172,11 +184,11 @@ extension UInt8: Scalar {
         return UInt(self);
     }
 
-    public init(fromBytesBE slice: Data) {
+    public init<B: Buffer>(fromBytesBE slice: B) {
         self = slice[0]
     }
 
-    public init(fromBytesLE slice: Data) {
+    public init<B: Buffer>(fromBytesLE slice: B) {
         self = slice[0]
     }
 
@@ -184,11 +196,11 @@ extension UInt8: Scalar {
         1
     }
 
-    public func toBytesLE(_ slice: inout Data) {
-        slice.append(self);
+    public func toBytesLE() -> Data {
+        return Data([self]);
     }
 
-    public func toBytesBE(_ slice: inout Data) {
-        slice.append(self);
+    public func toBytesBE() -> Data {
+        return Data([self]);
     }
 }

@@ -10,6 +10,7 @@
 		DA7658F92C655DD60036DDED /* string.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7658F82C655DD60036DDED /* string.swift */; };
 		DA7659012C65FE1B0036DDED /* BP3DProtoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7659002C65FE1B0036DDED /* BP3DProtoTests.swift */; };
 		DA7659022C65FE1B0036DDED /* BP3DProto.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA8EBD642C63D48E00075FDE /* BP3DProto.framework */; };
+		DA76590B2C664C390036DDED /* buffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA76590A2C664C390036DDED /* buffer.swift */; };
 		DA8EBD672C63D48E00075FDE /* BP3DProto.h in Headers */ = {isa = PBXBuildFile; fileRef = DA8EBD662C63D48E00075FDE /* BP3DProto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DA8EBD6C2C63D49800075FDE /* BP3DProto.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA8EBD642C63D48E00075FDE /* BP3DProto.framework */; };
 		DA8EBD6D2C63D49800075FDE /* BP3DProto.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DA8EBD642C63D48E00075FDE /* BP3DProto.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -63,6 +64,7 @@
 		DA7658F82C655DD60036DDED /* string.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = string.swift; sourceTree = "<group>"; };
 		DA7658FE2C65FE1B0036DDED /* BP3DProtoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BP3DProtoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA7659002C65FE1B0036DDED /* BP3DProtoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BP3DProtoTests.swift; sourceTree = "<group>"; };
+		DA76590A2C664C390036DDED /* buffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = buffer.swift; sourceTree = "<group>"; };
 		DA8EBD642C63D48E00075FDE /* BP3DProto.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BP3DProto.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA8EBD662C63D48E00075FDE /* BP3DProto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BP3DProto.h; sourceTree = "<group>"; };
 		DACACEBA2C63D7C20076A026 /* message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = message.swift; sourceTree = "<group>"; };
@@ -121,6 +123,7 @@
 			isa = PBXGroup;
 			children = (
 				DACACEBE2C6530B80076A026 /* bytesutil.swift */,
+				DA76590A2C664C390036DDED /* buffer.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -316,6 +319,7 @@
 				DACACEBD2C63DBDC0076A026 /* common.swift in Sources */,
 				DA7658F92C655DD60036DDED /* string.swift in Sources */,
 				DACACEBB2C63D7C20076A026 /* message.swift in Sources */,
+				DA76590B2C664C390036DDED /* buffer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

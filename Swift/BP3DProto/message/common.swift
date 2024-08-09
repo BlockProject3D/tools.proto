@@ -31,7 +31,7 @@ import Foundation
 public struct Optional<T: FromSlice>: FromSlice {
     public typealias Output = T.Output?;
 
-    public static func from(slice: Data) throws -> Message<T.Output?> {
+    public static func from<B: Buffer>(slice: B) throws -> Message<T.Output?> {
         if slice.isEmpty {
             throw Error.truncated;
         }
@@ -48,9 +48,9 @@ public struct Optional<T: FromSlice>: FromSlice {
 extension Optional: WriteTo where T: WriteTo {
     public typealias Input = T.Input?
 
-    public static func write(input: T.Input?, to out: inout Data) throws {
+    public static func write<B: WritableBuffer>(input: T.Input?, to out: inout B) throws {
         let b = input != nil ? 1 : 0;
-        out.append(UInt8(b));
+        try out.write(byte: UInt8(b));
         if let input = input {
             try T.write(input: input, to: &out);
         }
@@ -61,15 +61,15 @@ public struct ValueLE<T: Scalar>: FromSlice, WriteTo {
     public typealias Input = T;
     public typealias Output = T;
 
-    public static func from(slice: Data) throws -> Message<T> {
-        if slice.count < T.size {
+    public static func from<B: Buffer>(slice: B) throws -> Message<T> {
+        if slice.size < T.size {
             throw Error.truncated;
         }
         return Message(size: T.size, data: T(fromBytesLE: slice));
     }
 
-    public static func write(input: T, to out: inout Data) throws {
-        input.toBytesLE(&out);
+    public static func write<B: WritableBuffer>(input: T, to out: inout B) throws {
+        try out.write(bytes: input.toBytesLE());
     }
 }
 
@@ -77,14 +77,14 @@ public struct ValueBE<T: Scalar>: FromSlice, WriteTo {
     public typealias Input = T;
     public typealias Output = T;
 
-    public static func from(slice: Data) throws -> Message<T> {
-        if slice.count < T.size {
+    public static func from<B: Buffer>(slice: B) throws -> Message<T> {
+        if slice.size < T.size {
             throw Error.truncated;
         }
         return Message(size: T.size, data: T(fromBytesBE: slice));
     }
 
-    public static func write(input: T, to out: inout Data) throws {
-        input.toBytesBE(&out);
+    public static func write<B: WritableBuffer>(input: T, to out: inout B) throws {
+        try out.write(bytes: input.toBytesBE());
     }
 }

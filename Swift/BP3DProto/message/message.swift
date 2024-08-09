@@ -59,11 +59,11 @@ public struct Message<T> {
 public protocol FromSlice {
     associatedtype Output;
 
-    static func from(slice: Data) throws -> Message<Output>;
+    static func from<B: Buffer>(slice: B) throws -> Message<Output>;
 }
 
 public protocol WriteTo {
     associatedtype Input;
 
-    static func write(input: Input, to out: inout Data) throws;
+    static func write<B: WritableBuffer>(input: Input, to out: inout B) throws;
 }

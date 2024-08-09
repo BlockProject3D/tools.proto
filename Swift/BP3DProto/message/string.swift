@@ -32,26 +32,26 @@ public struct NullTerminatedString: FromSlice, WriteTo {
     public typealias Output = String;
     public typealias Input = String;
 
-    public static func from(slice: Data) throws -> Message<String> {
-        guard let index = slice.firstIndex(of: 0x0) else { throw Error.truncated };
-        let str = String(decoding: Data(slice[0...index - 1]), as: UTF8.self);
+    public static func from<B: Buffer>(slice: B) throws -> Message<String> {
+        guard let index = slice.findFirst(0x0) else { throw Error.truncated };
+        let str = String(decoding: slice[...index].toData(), as: UTF8.self);
         return Message(size: index + 1, data: str);
     }
 
-    public static func write(input: String, to out: inout Data) throws {
+    public static func write<B: WritableBuffer>(input: String, to out: inout B) throws {
         let str = input.utf8;
-        out.append(contentsOf: str);
-        out.append(UInt8(0x0));
+        try out.write(bytes: str);
+        try out.write(byte: UInt8(0x0));
     }
 }
 
 public struct VarcharString<T: FromSlice>: FromSlice where T.Output: Scalar {
     public typealias Output = String;
 
-    public static func from(slice: Data) throws -> Message<String> {
+    public static func from<B: Buffer>(slice: B) throws -> Message<String> {
         let size = try T.from(slice: slice);
         let length = size.data.toUInt();
-        let data = slice[size.size...size.size + Int(length - 1)];
+        let data = slice[size.size...size.size + Int(length)].toData();
         let str = String(decoding: data, as: UTF8.self);
         return Message(size: Int(length) + size.size, data: str);
     }
@@ -60,10 +60,10 @@ public struct VarcharString<T: FromSlice>: FromSlice where T.Output: Scalar {
 extension VarcharString: WriteTo where T: WriteTo, T.Input: Scalar {
     public typealias Input = String;
 
-    public static func write(input: String, to out: inout Data) throws {
+    public static func write<B: WritableBuffer>(input: String, to out: inout B) throws {
         let str = input.utf8;
         let length = T.Input(fromUInt: UInt(str.count));
         try T.write(input: length, to: &out);
-        out.append(contentsOf: str);
+        try out.write(bytes: str);
     }
 }
