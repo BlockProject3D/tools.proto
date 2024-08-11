@@ -1,0 +1,122 @@
+#fragment push decl
+#[derive(Copy, Clone, Debug)]
+pub enum {union_name}{generics} {{
+{cases}
+#fragment push struct
+    {name}({type_name}<&'a [u8]>),
+#fragment pop
+#fragment push message
+    {name}({type_name}<'a>),
+#fragment pop
+#fragment push none
+    {name},
+#fragment pop
+}}
+#fragment pop
+
+#fragment push getters
+impl{generics} {union_name}{generics} {{
+{cases}
+#fragment push struct
+    pub fn as_{name_lower}(&self) -> Option<&{type_name}<&'a [u8]>> {{
+        match self {{
+            Self::{name}(v) => Some(v),
+            _ => None
+        }}
+    }}
+#fragment pop
+#fragment push message
+    pub fn as_{name_lower}(&self) -> Option<&{type_name}<'a>> {{
+        match self {{
+            Self::{name}(v) => Some(v),
+            _ => None
+        }}
+    }}
+#fragment pop
+#fragment push none
+    pub fn is_{name_lower}(&self) -> bool {{
+        match self {{
+            Self::{name} => true,
+            _ => false
+        }}
+    }}
+#fragment pop
+}}
+#fragment pop
+
+#fragment push setter
+impl{generics} {union_name}{generics} {{
+    pub fn set_discriminant<T: AsMut<[u8]>>(&self, discriminant: &mut {discriminant_type}<T>) {{
+        let discriminant_value = match self {{
+{cases}
+#fragment push none
+            Self::{name} => {case},
+#fragment pop
+#fragment push ref
+            Self::{name}(_) => {case},
+#fragment pop
+        }};
+        discriminant.{discriminant_path_mut}(discriminant_value);
+    }}
+}}
+#fragment pop
+
+#fragment push write_to
+impl<'a> {union_name}{generics} {{
+{fragment}
+#fragment push generics
+    pub fn write_to<W: std::io::Write>(input: &Self, discriminant: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
+        use bp3d_proto::message::WriteTo;
+        let discriminant = discriminant.{discriminant_path};
+        match input {{
+{cases}
+#fragment push case
+            Self::{name}(v) => if discriminant == {case} {{
+                {type_name}::write_to(v, &mut out)?
+            }} else {{
+                return Err(bp3d_proto::message::Error::InvalidUnionDiscriminant(discriminant as _))
+            }},
+#fragment pop
+            _ => ()
+        }};
+        Ok(())
+    }}
+#fragment pop
+#fragment push none
+    pub fn write_to<W: std::io::Write>(_: &Self, _: &{discriminant_type}<&'a [u8]>, _: W) -> bp3d_proto::message::Result<()> {{
+        Ok(())
+    }}
+#fragment pop
+}}
+#fragment pop
+
+#fragment push from_slice
+impl<'a> {union_name}{generics} {{
+{fragment}
+#fragment push generics
+    pub fn from_slice(slice: &'a [u8], discriminant: &{discriminant_type}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
+        use bp3d_proto::message::FromSlice;
+        let discriminant = discriminant.{discriminant_path};
+        match discriminant {{
+{cases}
+#fragment push case
+            {case} => {type_name}::from_slice(slice).map(|v| v.map(Self::{name})),
+#fragment pop
+            _ => Err(bp3d_proto::message::Error::InvalidUnionDiscriminant(discriminant as _))
+        }}
+    }}
+#fragment pop
+#fragment push none
+    pub fn from_slice(_: &'a [u8], discriminant: &{discriminant_type}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
+        let discriminant = discriminant.{discriminant_path};
+        match discriminant {{
+{cases}
+#fragment push case
+            {case} => Ok(bp3d_proto::message::Message::new(0, Self::{name})),
+#fragment pop
+            _ => Err(bp3d_proto::message::Error::InvalidUnionDiscriminant(discriminant as _))
+        }}
+    }}
+#fragment pop
+}}
+#fragment pop

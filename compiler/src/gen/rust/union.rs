@@ -30,6 +30,9 @@ use itertools::Itertools;
 use crate::compiler::message::Referenced;
 use crate::compiler::union::Union;
 use crate::compiler::util::TypePathMap;
+use crate::gen::template::Template;
+
+const TEMPLATE: &[u8] = include_bytes!("./union.template");
 
 fn get_generics(u: &Union) -> &str {
     if u.cases.iter().any(|v| v.item_type.is_some()) {
@@ -55,116 +58,94 @@ fn get_discriminant_path_mut(u: &Union) -> String {
     }).join(".")
 }
 
-fn gen_union_from_slice_impl(u: &Union, type_path_by_name: &TypePathMap) -> String {
+fn gen_union_from_slice_impl(u: &Union, template: &Template, type_path_by_name: &TypePathMap) -> String {
+    let cases = u.cases.iter().map(|case| {
+        let mut scope = template.scope();
+        scope.var("name", &case.name).var_d("case", case.case);
+        match &case.item_type {
+            None => scope.render("from_slice.none", &["case"]).unwrap(),
+            Some(item_type) => scope.var("type_name", type_path_by_name.get(item_type.name()))
+                .render("from_slice.generics", &["case"]).unwrap()
+        }
+    }).join("");
+    let mut scope = template.scope();
+    scope.var("cases", cases);
     let generics = get_generics(u);
-    let mut code = format!("impl<'a> {}{generics} {{\n", u.name);
     if generics != "" {
-        code += &format!("    pub fn from_slice(slice: &'a [u8], discriminant: &{}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{\n", type_path_by_name.get(&u.discriminant.root.name));
-        code += "        use bp3d_proto::message::FromSlice;\n";
+        scope.render_to_var("from_slice", &["generics"], "fragment").unwrap();
     } else {
-        code += &format!("    pub fn from_slice(_: &'a [u8], discriminant: &{}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{\n", type_path_by_name.get(&u.discriminant.root.name));
+        scope.render_to_var("from_slice", &["none"], "fragment").unwrap();
     }
-    let discriminant_path = get_discriminant_path(u);
-    code += &format!("        let discriminant = discriminant.{};\n", discriminant_path);
-    code += "        match discriminant {\n";
-    for case in &u.cases {
-        match &case.item_type {
-            Some(item_type) => code += &format!("            {} => {}::from_slice(slice).map(|v| v.map(Self::{})),\n", case.case, type_path_by_name.get(item_type.name()), case.name),
-            None => code += &format!("            {} => Ok(bp3d_proto::message::Message::new(0, Self::{})),\n", case.case, case.name)
-        }
-    }
-    code += "            _ => Err(bp3d_proto::message::Error::InvalidUnionDiscriminant(discriminant as _))\n";
-    code += "        }\n";
-    code += "    }\n";
-    code += "}\n";
-    code
+    scope.render("", &["from_slice"]).unwrap()
 }
 
-fn gen_union_write_to_impl(u: &Union, type_path_by_name: &TypePathMap) -> String {
+fn gen_union_write_to_impl(u: &Union, template: &Template, type_path_by_name: &TypePathMap) -> String {
     let generics = get_generics(u);
-    let mut code = format!("impl<'a> {}{generics} {{\n", u.name);
+    let mut scope = template.scope();
     if generics != "" {
-        code += &format!("    pub fn write_to<W: std::io::Write>(input: &Self, discriminant: &{}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{\n", type_path_by_name.get(&u.discriminant.root.name));
-        code += "        use bp3d_proto::message::WriteTo;\n";
-        let discriminant_path = get_discriminant_path(u);
-        code += &format!("        let discriminant = discriminant.{};\n", discriminant_path);
-    } else {
-        code += &format!("    pub fn write_to<W: std::io::Write>(input: &Self, _: &{}<&'a [u8]>, _: W) -> bp3d_proto::message::Result<()> {{\n", type_path_by_name.get(&u.discriminant.root.name));
-    }
-    code += "        match input {\n";
-    for case in &u.cases {
-        if let Some(item_type) = &case.item_type {
-            code += &format!("            Self::{}(v) => if discriminant == {} {{ {}::write_to(v, &mut out)? }} else {{ return Err(bp3d_proto::message::Error::InvalidUnionDiscriminant(discriminant as _)) }},\n", case.name, case.case, type_path_by_name.get(item_type.name()));
-        }
-    }
-    code += "            _ => ()\n";
-    code += "        };\n";
-    code += "        Ok(())\n";
-    code += "    }\n";
-    code += "}\n";
-    code
-}
-
-fn gen_union_set_discriminant(u: &Union, type_path_by_name: &TypePathMap) -> String {
-    let generics = get_generics(u);
-    let mut code = format!("impl{generics} {}{generics} {{\n", u.name);
-    code += &format!("    pub fn set_discriminant<T: AsMut<[u8]>>(&self, discriminant: &mut {}<T>) {{\n", type_path_by_name.get(&u.discriminant.root.name));
-    let discriminant_path = get_discriminant_path_mut(u);
-    code += "        let discriminant_value = match self {\n";
-    for case in &u.cases {
-        match case.item_type {
-            None => code += &format!("            Self::{} => {},\n", case.name, case.case),
-            Some(_) => code += &format!("            Self::{}(_) => {},\n", case.name, case.case)
-        }
-    }
-    code += "        };\n";
-    code += &format!("        discriminant.{}(discriminant_value);\n", discriminant_path);
-    code += "    }\n";
-    code += "}\n";
-    code
-}
-
-fn gen_union_as_getters(u: &Union, type_path_by_name: &TypePathMap) -> String {
-    let generics = get_generics(u);
-    let mut code = format!("impl{generics} {}{generics} {{\n", u.name);
-    for case in &u.cases {
-        match &case.item_type {
-            Some(Referenced::Struct(v)) => code += &format!("    pub fn as_{}(&self) -> Option<&{}<&'a [u8]>> {{\n", case.name.to_ascii_lowercase(), type_path_by_name.get(&v.name)),
-            Some(Referenced::Message(v)) => code += &format!("    pub fn as_{}(&self) -> Option<&{}<'a>> {{\n", case.name.to_ascii_lowercase(), type_path_by_name.get(&v.name)),
-            _ => code += &format!("    pub fn is_{}(&self) -> bool {{\n", case.name.to_ascii_lowercase()),
-        }
-        code += "        match self {\n";
-        match &case.item_type {
-            None => {
-                code += &format!("            Self::{} => true,\n", case.name);
-                code += "            _ => false\n";
-            },
-            Some(_) => {
-                code += &format!("            Self::{}(v) => Some(v),\n", case.name);
-                code += "            _ => None\n";
+        let cases = u.cases.iter().filter_map(|case| {
+            let mut scope = template.scope();
+            scope.var("name", &case.name).var_d("case", case.case);
+            match &case.item_type {
+                None => None,
+                Some(item_type) => Some(scope.var("type_name", type_path_by_name.get(item_type.name()))
+                    .render("write_to.generics", &["case"]).unwrap())
             }
-        }
-        code += "        }\n";
-        code += "    }\n";
+        }).join("");
+        scope.var("cases", cases).render_to_var("write_to", &["generics"], "fragment").unwrap();
+    } else {
+        scope.render_to_var("write_to", &["none"], "fragment").unwrap();
     }
-    code += "}\n";
-    code
+    scope.render("", &["write_to"]).unwrap()
+}
+
+fn gen_union_set_discriminant(u: &Union, template: &Template) -> String {
+    let cases = u.cases.iter().map(|case| {
+        let mut scope = template.scope();
+        scope.var("name", &case.name).var_d("case", case.case);
+        match &case.item_type {
+            Some(_) => scope.render("setter", &["ref"]).unwrap(),
+            None => scope.render("setter", &["none"]).unwrap()
+        }
+    }).join("");
+    template.scope().var("cases", cases).render("", &["setter"]).unwrap()
+}
+
+fn gen_union_as_getters(u: &Union, template: &Template, type_path_by_name: &TypePathMap) -> String {
+    let cases = u.cases.iter().map(|case| {
+        let mut scope = template.scope();
+        scope.var("name_lower", case.name.to_ascii_lowercase()).var("name", &case.name);
+        match &case.item_type {
+            Some(Referenced::Struct(v)) => scope.var("type_name", type_path_by_name.get(&v.name))
+                .render("getters", &["struct"]).unwrap(),
+            Some(Referenced::Message(v)) => scope.var("type_name", type_path_by_name.get(&v.name))
+                .render("getters", &["message"]).unwrap(),
+            None => scope.render("getters", &["none"]).unwrap()
+        }
+    }).join("");
+    template.scope().var("cases", cases).render("", &["getters"]).unwrap()
 }
 
 pub fn gen_union_decl(u: &Union, type_path_by_name: &TypePathMap) -> String {
+    let mut template = Template::compile(TEMPLATE).unwrap();
     let generics = get_generics(u);
-    let mut code = format!("#[derive(Copy, Clone, Debug)]\npub enum {}{generics} {{\n", u.name);
-    for case in &u.cases {
-        match &case.item_type {
-            Some(Referenced::Struct(v)) => code += &format!("    {}({}<&'a [u8]>),\n", case.name, type_path_by_name.get(&v.name)),
-            Some(Referenced::Message(v)) => code += &format!("    {}({}<'a>),\n", case.name, type_path_by_name.get(&v.name)),
-            None => code += &format!("    {},\n", case.name)
-        }
-    }
-    code += "}\n";
-    code += &gen_union_from_slice_impl(u, type_path_by_name);
-    code += &gen_union_write_to_impl(u, type_path_by_name);
-    code += &gen_union_set_discriminant(u, type_path_by_name);
-    code += &gen_union_as_getters(u, type_path_by_name);
+    template.var("union_name", &u.name).var("generics", generics)
+        .var("discriminant_path_mut", get_discriminant_path_mut(u))
+        .var("discriminant_path", get_discriminant_path(u))
+        .var("discriminant_type", type_path_by_name.get(&u.discriminant.root.name));
+    let cases = u.cases.iter().map(|case| match &case.item_type {
+        None => template.scope().var("name", &case.name).render("decl", &["none"]).unwrap(),
+        Some(Referenced::Struct(v)) => template.scope()
+            .var("name", &case.name).var("type_name", type_path_by_name.get(&v.name))
+            .render("decl", &["struct"]).unwrap(),
+        Some(Referenced::Message(v)) => template.scope()
+            .var("name", &case.name).var("type_name", type_path_by_name.get(&v.name))
+            .render("decl", &["message"]).unwrap()
+    }).join("");
+    let mut code = template.scope().var("cases", cases).render("", &["decl"]).unwrap();
+    code += &gen_union_from_slice_impl(u, &template, type_path_by_name);
+    code += &gen_union_write_to_impl(u, &template, type_path_by_name);
+    code += &gen_union_set_discriminant(u, &template);
+    code += &gen_union_as_getters(u, &template, type_path_by_name);
     code
 }
