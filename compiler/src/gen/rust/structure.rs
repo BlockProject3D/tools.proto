@@ -168,16 +168,20 @@ fn gen_structure_setters(s: &Structure, template: &Template, type_path_by_name: 
     code
 }
 
+pub fn render_structure_template(s: &Structure, template: &Template, field_template: &Template, type_path_by_name: &TypePathMap) -> String {
+    let mut code = template.render("", &["decl", "new", "fixed_size", "write_to", "from_slice"]).unwrap();
+    code += &gen_structure_getters(s, &field_template, type_path_by_name);
+    code += &gen_structure_setters(s, &field_template, type_path_by_name);
+    code
+}
+
 pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap) -> String {
     let mut template = Template::compile(STRUCT_TEMPLATE).unwrap();
     let mut field_template = Template::compile(STRUCT_FIELD_TEMPLATE).unwrap();
     field_template.var("struct_name", &s.name);
     template.var("name", &s.name).var_d("byte_size", s.byte_size)
         .var("name_upper", s.name.to_ascii_uppercase());
-    let mut code = template.render("", &["decl", "new", "fixed_size", "write_to", "from_slice"]).unwrap();
-    code += &gen_structure_getters(s, &field_template, type_path_by_name);
-    code += &gen_structure_setters(s, &field_template, type_path_by_name);
-    code
+    render_structure_template(s, &template, &field_template, type_path_by_name)
 }
 
 #[cfg(test)]

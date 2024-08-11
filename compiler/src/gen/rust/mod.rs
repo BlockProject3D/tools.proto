@@ -30,7 +30,7 @@ mod message;
 mod message_from_slice;
 mod util;
 mod message_write;
-mod structure;
+pub mod structure;
 mod r#enum;
 mod union;
 mod message_offsets;
