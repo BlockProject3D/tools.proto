@@ -1,0 +1,9 @@
+#fragment push enum
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum {name} {{
+{variants}
+#fragment push variant
+    {key} = {value},
+#fragment pop
+}}
+#fragment pop

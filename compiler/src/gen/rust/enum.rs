@@ -26,13 +26,17 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use itertools::Itertools;
 use crate::compiler::r#enum::Enum;
+use crate::gen::template::Template;
+
+const TEMPLATE: &[u8] = include_bytes!("./enum.template");
 
 pub fn gen_enum_decl(e: &Enum) -> String {
-    let mut code = format!("#[derive(Copy, Clone, Debug, Eq, PartialEq)]\npub enum {} {{\n", e.name);
-    for (k, v) in &e.variants {
-        code += &format!("    {} = {},\n", k, v);
-    }
-    code += "}\n";
-    code
+    let mut template = Template::compile(TEMPLATE).unwrap();
+    template.var("name", &e.name);
+    let mut code = e.variants.iter().map(|(k, v)|
+        template.scope().var("key", k).var_d("value", v)
+            .render("enum", &["variant"]).unwrap());
+    template.var("variants", code.join("")).render("", &["enum"]).unwrap()
 }
