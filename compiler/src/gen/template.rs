@@ -41,6 +41,7 @@ simple_error! {
     }
 }
 
+#[derive(Eq, PartialEq)]
 pub enum Component<'a> {
     Constant(&'a str),
     Variable(&'a str),
@@ -124,7 +125,10 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                 }
                 let combined_name = frag_stack.iter().map(|v| v.name).join(".");
                 //SAFETY: this is fine because the fragment stack must not be empty at this point.
-                let fragment = unsafe { frag_stack.pop().unwrap_unchecked() };
+                let mut fragment = unsafe { frag_stack.pop().unwrap_unchecked() };
+                if fragment.content.last().map(|v| v == &Component::NewLine).unwrap_or(false) {
+                    fragment.content.pop();
+                }
                 fragments.insert(combined_name, fragment);
             } else if !line.is_empty() {
                 let cur_fragment = frag_stack.last_mut().ok_or(Error::NoFragment)?;

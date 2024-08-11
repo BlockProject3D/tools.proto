@@ -193,7 +193,6 @@ mod tests {
         assert_eq!(&*code, "#[derive(Copy, Clone, Default, Debug)]
 pub struct Test<T> {
     data: T
-}
-")
+}")
     }
 }
