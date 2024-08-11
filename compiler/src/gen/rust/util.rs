@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::message::{FieldType, Message};
-use crate::compiler::structure::FixedFieldType;
+use crate::compiler::structure::{FixedField, FixedFieldType};
 use crate::model::protocol::Endianness;
 
 pub struct Generics {
@@ -87,10 +87,6 @@ macro_rules! gen_value_type {
     };
 }
 
-pub fn get_field_type(ty: FixedFieldType) -> &'static str {
-    gen_value_type!("", ty, "")
-}
-
 pub fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str {
     match endianness {
         Endianness::Little => gen_value_type!("bp3d_proto::message::util::ValueLE<", ty, ">"),
@@ -105,31 +101,57 @@ pub fn get_value_type_inline(endianness: Endianness, ty: FixedFieldType) -> &'st
     }
 }
 
-pub fn get_byte_codec(endianness: Endianness) -> &'static str {
-    match endianness {
-        Endianness::Little => "bp3d_proto::codec::ByteCodecLE",
-        Endianness::Big => "bp3d_proto::codec::ByteCodecBE"
-    }
-}
-
-pub fn get_bit_codec_inline(endianness: Endianness) -> &'static str {
-    match endianness {
-        Endianness::Little => "<bp3d_proto::codec::BitCodecLE as bp3d_proto::codec::BitCodec>",
-        Endianness::Big => "<bp3d_proto::codec::BitCodecBE as bp3d_proto::codec::BitCodec>"
-    }
-}
-
-pub fn get_byte_codec_inline(endianness: Endianness) -> &'static str {
-    match endianness {
-        Endianness::Little => "<bp3d_proto::codec::ByteCodecLE as bp3d_proto::codec::ByteCodec>",
-        Endianness::Big => "<bp3d_proto::codec::ByteCodecBE as bp3d_proto::codec::ByteCodec>"
-    }
-}
-
 pub fn gen_optional(optional: bool, type_name: &str) -> String {
     if optional {
         format!("bp3d_proto::message::util::Optional::<{}>", type_name)
     } else {
         type_name.into()
+    }
+}
+
+pub struct RustUtils;
+
+impl crate::gen::base::Utilities for RustUtils {
+    fn get_field_type(field_type: FixedFieldType) -> &'static str {
+        gen_value_type!("", field_type, "")
+    }
+
+    fn get_function_name(field: &FixedField) -> &'static str {
+        let raw_field_type = field.loc.get_unsigned_integer_type();
+        let raw_field_byte_size = raw_field_type.get_byte_size();
+        match raw_field_byte_size != field.loc.byte_size {
+            true => "read_unaligned",
+            false => "read_aligned"
+        }
+    }
+
+    fn get_function_name_mut(field: &FixedField) -> &'static str {
+        let raw_field_type = field.loc.get_unsigned_integer_type();
+        let raw_field_byte_size = raw_field_type.get_byte_size();
+        match raw_field_byte_size != field.loc.byte_size {
+            true => "write_unaligned",
+            false => "write_aligned"
+        }
+    }
+
+    fn get_bit_codec_inline(endianness: Endianness) -> &'static str {
+        match endianness {
+            Endianness::Little => "<bp3d_proto::codec::BitCodecLE as bp3d_proto::codec::BitCodec>",
+            Endianness::Big => "<bp3d_proto::codec::BitCodecBE as bp3d_proto::codec::BitCodec>"
+        }
+    }
+
+    fn get_byte_codec_inline(endianness: Endianness) -> &'static str {
+        match endianness {
+            Endianness::Little => "<bp3d_proto::codec::ByteCodecLE as bp3d_proto::codec::ByteCodec>",
+            Endianness::Big => "<bp3d_proto::codec::ByteCodecBE as bp3d_proto::codec::ByteCodec>"
+        }
+    }
+
+    fn get_byte_codec(endianness: Endianness) -> &'static str {
+        match endianness {
+            Endianness::Little => "bp3d_proto::codec::ByteCodecLE",
+            Endianness::Big => "bp3d_proto::codec::ByteCodecBE"
+        }
     }
 }

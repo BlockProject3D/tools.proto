@@ -29,7 +29,8 @@
 use itertools::Itertools;
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
-use crate::gen::rust::util::{get_field_type, Generics, get_value_type};
+use crate::gen::base::Utilities;
+use crate::gen::rust::util::{RustUtils, Generics, get_value_type};
 use crate::gen::template::Template;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
@@ -40,7 +41,7 @@ fn gen_field_decl(field: &Field, template: &Template, type_path_by_name: &TypePa
         code += "Option<"
     }
     match &field.ty {
-        FieldType::Fixed(ty) => code += get_field_type(ty.ty),
+        FieldType::Fixed(ty) => code += RustUtils::get_field_type(ty.ty),
         FieldType::Ref(v) => match v {
             Referenced::Struct(v) => code += &format!("{}<&'a [u8]>", type_path_by_name.get(&v.name)),
             Referenced::Message(v) => code += &format!("{}<'a>", type_path_by_name.get(&v.name)),

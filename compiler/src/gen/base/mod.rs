@@ -26,36 +26,16 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::structure::Structure;
-use crate::compiler::util::TypePathMap;
-use crate::gen::base::structure::{generate, Templates};
-use crate::gen::rust::util::RustUtils;
+use crate::compiler::structure::{FixedField, FixedFieldType};
+use crate::model::protocol::Endianness;
 
-const STRUCT_TEMPLATE: &[u8] = include_bytes!("./structure.template");
-const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("./structure.field.template");
+pub mod structure;
 
-pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap) -> String {
-    let templates = Templates {
-        template: STRUCT_TEMPLATE,
-        field_template: STRUCT_FIELD_TEMPLATE
-    };
-    generate::<RustUtils>(templates, s, type_path_by_name)
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::gen::rust::structure::STRUCT_TEMPLATE;
-    use crate::gen::template::Template;
-
-    #[test]
-    fn test_template_render() {
-        let mut template = Template::compile(STRUCT_TEMPLATE).unwrap();
-        template.var("name", "Test");
-        let code = template.render("", &["decl"]).unwrap();
-        assert_eq!(&*code, "#[derive(Copy, Clone, Default, Debug)]
-pub struct Test<T> {
-    data: T
-}
-")
-    }
+pub trait Utilities {
+    fn get_field_type(field_type: FixedFieldType) -> &'static str;
+    fn get_function_name(field: &FixedField) -> &'static str;
+    fn get_function_name_mut(field: &FixedField) -> &'static str;
+    fn get_bit_codec_inline(endianness: Endianness) -> &'static str;
+    fn get_byte_codec_inline(endianness: Endianness) -> &'static str;
+    fn get_byte_codec(endianness: Endianness) -> &'static str;
 }
