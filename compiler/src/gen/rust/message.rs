@@ -30,8 +30,11 @@ use itertools::Itertools;
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
 use crate::gen::rust::util::{get_field_type, Generics, get_value_type};
+use crate::gen::template::Template;
 
-fn gen_field_decl(field: &Field, type_path_by_name: &TypePathMap) -> String {
+const TEMPLATE: &[u8] = include_bytes!("./message.template");
+
+fn gen_field_decl(field: &Field, template: &Template, type_path_by_name: &TypePathMap) -> String {
     let mut code = format!("    pub {}: ", field.name);
     if field.optional {
         code += "Option<"
@@ -44,11 +47,16 @@ fn gen_field_decl(field: &Field, type_path_by_name: &TypePathMap) -> String {
         },
         FieldType::NullTerminatedString => code += "&'a str",
         FieldType::VarcharString(_) => code += "&'a str",
-        FieldType::Array(v) => code += &format!("bp3d_proto::message::util::Array::<&'a [u8], {}, {}<&'a [u8]>>", get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name)),
+        FieldType::Array(v) => code += &template.scope()
+            .var("codec", get_value_type(field.endianness, v.ty))
+            .var("type_name", type_path_by_name.get(&v.item_type.name))
+            .render("", &["array"]).unwrap(),
         FieldType::Union(v) => code += &format!("{}<'a>", type_path_by_name.get(&v.r.name)),
-        FieldType::List(v) => code += &format!("bp3d_proto::message::util::List::<&'a [u8], {}, {}<'a>>", get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name)),
+        FieldType::List(v) => code += &template.scope()
+            .var("codec", get_value_type(field.endianness, v.ty))
+            .var("type_name", type_path_by_name.get(&v.item_type.name))
+            .render("", &["list"]).unwrap(),
         FieldType::Payload => code += "&'a [u8]"
-
     }
     if field.optional {
         code += ">"
@@ -84,15 +92,13 @@ fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMap) 
 }
 
 pub fn gen_message_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    let generics = Generics::from_message(msg).to_code();
-    let mut code = format!("#[derive(Copy, Clone, Debug)]\npub struct {}", msg.name);
-    code += &generics;
-    code += " {\n";
+    let mut template = Template::compile(TEMPLATE).unwrap();
+    template.var("msg_name", &msg.name).var("generics", Generics::from_message(msg).to_code());
     let fields = msg.fields.iter()
-        .map(|v| gen_field_decl(v, type_path_by_name))
+        .map(|v| gen_field_decl(v, &template, type_path_by_name))
         .join(",\n");
-    code += &fields;
-    code += "\n}\n\n";
+    let mut code = template.scope().var("fields", fields).render("", &["decl"]).unwrap();
+    code += "\n\n";
     code += &gen_message_array_type_decls(msg, type_path_by_name);
     code += "\n";
     code
