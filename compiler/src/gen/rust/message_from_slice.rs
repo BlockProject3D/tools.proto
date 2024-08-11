@@ -34,10 +34,8 @@ use crate::gen::template::Template;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.from_slice.template");
 
-fn gen_field_from_slice_impl(msg: &Message, field: &Field, template: &Template, type_path_by_name: &TypePathMap) -> String {
-    let mut scope = template.scope();
-    let mut is_union = false;
-    scope.var("name", &field.name);
+pub fn gen_field_msg_type<'a>(msg: &Message, field: &'a Field, template: &Template, type_path_by_name: &TypePathMap) -> (String, Option<&'a str>) {
+    let mut union = None;
     let msg_type = match &field.ty {
         FieldType::Fixed(ty) => gen_optional(field.optional, get_value_type_inline(field.endianness, ty.ty)),
         FieldType::Ref(v) => match v {
@@ -52,8 +50,7 @@ fn gen_field_from_slice_impl(msg: &Message, field: &Field, template: &Template, 
             .var("type_name", type_path_by_name.get(&v.item_type.name))
             .render("", &["array"]).unwrap()),
         FieldType::Union(v) => {
-            is_union = true;
-            scope.var("on_name", &v.on_name);
+            union = Some(&*v.on_name);
             gen_optional(field.optional, type_path_by_name.get(&v.r.name))
         },
         FieldType::List(v) => {
@@ -70,8 +67,18 @@ fn gen_field_from_slice_impl(msg: &Message, field: &Field, template: &Template, 
         },
         FieldType::Payload => gen_optional(field.optional, "bp3d_proto::message::util::Buffer")
     };
+    (msg_type, union)
+}
+
+fn gen_field_from_slice_impl(msg: &Message, field: &Field, template: &Template, type_path_by_name: &TypePathMap) -> String {
+    let mut scope = template.scope();
+    scope.var("name", &field.name);
+    let (msg_type, union) = gen_field_msg_type(msg, field, template, type_path_by_name);
+    if let Some(on_name) = union {
+        scope.var("on_name", on_name);
+    }
     scope.var("type", msg_type);
-    if is_union {
+    if union.is_some() {
         scope.render("impl", &["field_union"]).unwrap()
     } else if field.ty.is_message_reference() {
         scope.render("impl", &["field_msg"]).unwrap()

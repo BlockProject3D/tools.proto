@@ -26,36 +26,33 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::{Field, FieldType, Message, Referenced};
+use itertools::Itertools;
+use crate::compiler::message::{Field, Message};
 use crate::compiler::util::TypePathMap;
-use crate::gen::rust::util::{gen_optional, Generics, get_value_type, get_value_type_inline};
+use crate::gen::rust::message_from_slice::gen_field_msg_type;
+use crate::gen::rust::util::Generics;
+use crate::gen::template::Template;
 
-fn gen_field_write_impl(field: &Field, type_path_by_name: &TypePathMap) -> String {
-    match &field.ty {
-        FieldType::Fixed(ty) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, get_value_type_inline(field.endianness, ty.ty)), field.name),
-        FieldType::Ref(v) => match v {
-            Referenced::Struct(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, type_path_by_name.get(&v.name)), field.name),
-            Referenced::Message(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, type_path_by_name.get(&v.name)), field.name),
-        }
-        FieldType::NullTerminatedString => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, "bp3d_proto::message::util::NullTerminatedString"), field.name),
-        FieldType::VarcharString(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::VarcharString::<{}>", get_value_type(field.endianness, v.ty))), field.name),
-        FieldType::Array(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array::<&'a [u8], {}, {}<&'a [u8]>>", get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name))), field.name),
-        FieldType::Union(v) => format!("        {}::write_to(&input.{}, &input.{}, &mut out)?;\n", type_path_by_name.get(&v.r.name), field.name, v.on_name),
-        FieldType::List(v) => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, &format!("bp3d_proto::message::util::List::<&'a [u8], {}, {}>", get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name))), field.name),
-        FieldType::Payload => format!("        {}::write_to(&input.{}, &mut out)?;\n", gen_optional(field.optional, "bp3d_proto::message::util::Buffer"), field.name)
+const TEMPLATE: &[u8] = include_bytes!("./message.write.template");
+
+fn gen_field_write_impl(msg: &Message, field: &Field, template: &Template, type_path_by_name: &TypePathMap) -> String {
+    let mut scope = template.scope();
+    scope.var("name", &field.name);
+    let (msg_type, union) = gen_field_msg_type(msg, field, template, type_path_by_name);
+    if let Some(on_name) = union {
+        scope.var("on_name", on_name);
+    }
+    scope.var("type", msg_type);
+    if union.is_some() {
+        scope.render("impl", &["field_union"]).unwrap()
+    } else {
+        scope.render("impl", &["field"]).unwrap()
     }
 }
 
 pub fn gen_message_write_impl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    let generics = Generics::from_message(msg).to_code();
-    let mut code = format!("impl{} bp3d_proto::message::WriteTo for {}{} {{\n", generics, msg.name, generics);
-    code += "    type Input = Self;\n\n";
-    code += "    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {\n";
-    for field in &msg.fields {
-        code += &gen_field_write_impl(field, type_path_by_name);
-    }
-    code += "        Ok(())\n";
-    code += "    }";
-    code += "\n}";
-    code
+    let mut template = Template::compile(TEMPLATE).unwrap();
+    template.var("msg_name", &msg.name).var("generics", Generics::from_message(msg).to_code());
+    let fields = msg.fields.iter().map(|field| gen_field_write_impl(msg, field, &template, type_path_by_name)).join("");
+    template.var("fields", fields).render("", &["impl"]).unwrap()
 }
