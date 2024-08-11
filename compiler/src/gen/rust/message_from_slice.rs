@@ -26,68 +26,71 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use itertools::Itertools;
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
 use crate::gen::rust::util::{gen_optional, Generics, get_value_type_inline, get_value_type};
+use crate::gen::template::Template;
 
-pub fn gen_field_from_slice_impl(msg: &Message, field: &Field, type_path_by_name: &TypePathMap, gen_offsets: bool) -> String {
-    let msg_code = match &field.ty {
-        FieldType::Fixed(ty) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, get_value_type_inline(field.endianness, ty.ty))),
+const TEMPLATE: &[u8] = include_bytes!("./message.from_slice.template");
+
+fn gen_field_from_slice_impl(msg: &Message, field: &Field, template: &Template, type_path_by_name: &TypePathMap) -> String {
+    let mut scope = template.scope();
+    let mut is_union = false;
+    scope.var("name", &field.name);
+    let msg_type = match &field.ty {
+        FieldType::Fixed(ty) => gen_optional(field.optional, get_value_type_inline(field.endianness, ty.ty)),
         FieldType::Ref(v) => match v {
-            Referenced::Struct(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, type_path_by_name.get(&v.name))),
-            Referenced::Message(v) => {
-                if gen_offsets {
-                    format!("{}::from_slice_with_offsets(&slice[byte_offset..])", gen_optional(field.optional, type_path_by_name.get(&v.name)))
-                } else {
-                    format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, type_path_by_name.get(&v.name)))
-                }
-            },
+            Referenced::Struct(v) => gen_optional(field.optional, type_path_by_name.get(&v.name)),
+            Referenced::Message(v) => gen_optional(field.optional, type_path_by_name.get(&v.name))
         }
-        FieldType::NullTerminatedString => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::message::util::NullTerminatedString")),
-        FieldType::VarcharString(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::VarcharString::<{}>", get_value_type(field.endianness, v.ty)))),
-        FieldType::Array(v) => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::Array::<&'a [u8], {}, {}<&'a [u8]>>", get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name)))),
-        FieldType::Union(v) => format!("{}::from_slice(&slice[byte_offset..], &{})", gen_optional(field.optional, type_path_by_name.get(&v.r.name)), v.on_name),
+        FieldType::NullTerminatedString => gen_optional(field.optional, "bp3d_proto::message::util::NullTerminatedString"),
+        FieldType::VarcharString(v) => gen_optional(field.optional, &template.scope()
+            .var("codec", get_value_type(field.endianness, v.ty)).render("", &["varchar"]).unwrap()),
+        FieldType::Array(v) => gen_optional(field.optional, &template.scope()
+            .var("codec", get_value_type(field.endianness, v.ty))
+            .var("type_name", type_path_by_name.get(&v.item_type.name))
+            .render("", &["array"]).unwrap()),
+        FieldType::Union(v) => {
+            is_union = true;
+            scope.var("on_name", &v.on_name);
+            gen_optional(field.optional, type_path_by_name.get(&v.r.name))
+        },
         FieldType::List(v) => {
             match msg.is_embedded() {
-                false => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::list::Unsized::<{}, {}>", get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name)))),
-                true => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, &format!("bp3d_proto::message::util::List::<&'a [u8], {}, {}>", get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name))))
+                false => gen_optional(field.optional, &template.scope()
+                    .var("codec", get_value_type(field.endianness, v.ty))
+                    .var("type_name", type_path_by_name.get(&v.item_type.name))
+                    .render("", &["unsized"]).unwrap()),
+                true => gen_optional(field.optional, &template.scope()
+                    .var("codec", get_value_type(field.endianness, v.ty))
+                    .var("type_name", type_path_by_name.get(&v.item_type.name))
+                    .render("", &["list"]).unwrap()),
             }
         },
-        FieldType::Payload => format!("{}::from_slice(&slice[byte_offset..])", gen_optional(field.optional, "bp3d_proto::message::util::Buffer"))
+        FieldType::Payload => gen_optional(field.optional, "bp3d_proto::message::util::Buffer")
     };
-    let mut code = format!("        let {}_msg = {}?;\n", field.name, msg_code);
-    if gen_offsets {
-        code += &format!("        offsets.{}.start = byte_offset;\n", field.name);
-    }
-    code += &format!("        byte_offset += {}_msg.size();\n", field.name);
-    if gen_offsets {
-        code += &format!("        offsets.{}.end = byte_offset;\n", field.name);
-    }
-    if gen_offsets && field.ty.is_message_reference() {
-        code += &format!("        let ({}, {}_offsets) = {}_msg.into_inner();\n", field.name, field.name, field.name);
-        code += &format!("        offsets.{}_offsets = {}_offsets;\n", field.name, field.name);
+    scope.var("type", msg_type);
+    if is_union {
+        scope.render("impl", &["field_union"]).unwrap()
+    } else if field.ty.is_message_reference() {
+        scope.render("impl", &["field_msg"]).unwrap()
     } else {
-        code += &format!("        let {} = {}_msg.into_inner();\n", field.name, field.name);
+        scope.render("impl", &["field"]).unwrap()
     }
-    code
+}
+
+pub fn render_message_from_slice_impl(msg: &Message, template: &Template, type_path_by_name: &TypePathMap) -> String {
+    let fields = msg.fields.iter().map(|field|
+        gen_field_from_slice_impl(msg, field, &template, type_path_by_name)).join("");
+    let field_names = msg.fields.iter().map(|field| template.scope()
+        .var("name", &field.name).render("impl", &["field_name"]).unwrap()).join("");
+    template.scope().var("fields", fields).var("field_names", field_names)
+        .render("", &["impl"]).unwrap()
 }
 
 pub fn gen_message_from_slice_impl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    let generics = Generics::from_message(msg).to_code();
-    let mut code = format!("impl<'a> bp3d_proto::message::FromSlice<'a> for {}{} {{\n", msg.name, generics);
-    code += "    type Output = Self;\n\n";
-    code += "    fn from_slice(slice: &'a [u8]) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {\n";
-    code += "        let mut byte_offset: usize = 0;\n";
-    for field in &msg.fields {
-        code += &gen_field_from_slice_impl(msg, field, type_path_by_name, false);
-    }
-    code += &format!("        let data = {} {{\n", msg.name);
-    for field in &msg.fields {
-        code += &format!("            {},\n", field.name);
-    }
-    code += "        };\n";
-    code += "        Ok(bp3d_proto::message::Message::new(byte_offset, data))\n";
-    code += "    }";
-    code += "\n}";
-    code
+    let mut template = Template::compile(TEMPLATE).unwrap();
+    template.var("msg_name", &msg.name).var("generics", Generics::from_message(msg).to_code());
+    render_message_from_slice_impl(msg, &template, type_path_by_name)
 }

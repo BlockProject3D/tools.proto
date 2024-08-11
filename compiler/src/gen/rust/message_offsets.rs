@@ -29,51 +29,35 @@
 use itertools::Itertools;
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
+use crate::gen::rust::message_from_slice::render_message_from_slice_impl;
 use crate::gen::rust::util::Generics;
+use crate::gen::template::Template;
 
-fn gen_message_from_slice_offsets_impl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    let generics = Generics::from_message(msg).to_code();
-    let mut code = format!("impl<'a> bp3d_proto::message::FromSliceWithOffsets<'a> for {}{} {{\n", msg.name, generics);
-    code += &format!("    type Offsets = {}Offsets;\n\n", msg.name);
-    code += "    fn from_slice_with_offsets(slice: &'a [u8]) -> bp3d_proto::message::Result<bp3d_proto::message::Message<(Self, Self::Offsets)>> {\n";
-    code += "        use bp3d_proto::message::FromSlice;\n";
-    code += "        let mut offsets = Self::Offsets::default();\n";
-    code += "        let mut byte_offset: usize = 0;\n";
-    for field in &msg.fields {
-        code += &crate::gen::rust::message_from_slice::gen_field_from_slice_impl(msg, field, type_path_by_name, true);
-    }
-    code += &format!("        let data = {} {{\n", msg.name);
-    for field in &msg.fields {
-        code += &format!("            {},\n", field.name);
-    }
-    code += "        };\n";
-    code += "        Ok(bp3d_proto::message::Message::new(byte_offset, (data, offsets)))\n";
-    code += "    }";
-    code += "\n}";
-    code
-}
+const TEMPLATE: &[u8] = include_bytes!("./message.offsets.template");
 
-fn gen_message_offset_field(field: &Field) -> String {
+fn gen_message_offset_field(field: &Field, template: &Template, type_path_by_name: &TypePathMap) -> String {
+    let mut scope = template.scope();
+    scope.var("name", &field.name);
     match &field.ty {
-        FieldType::Ref(v) => match v {
-            Referenced::Message(v) => if field.optional {
-                format!("    pub {}: bp3d_proto::message::FieldOffset,\n    pub {}_offsets: Option<{}Offsets>", field.name, field.name, v.name)
-            } else {
-                format!("    pub {}: bp3d_proto::message::FieldOffset,\n    pub {}_offsets: {}Offsets", field.name, field.name, v.name)
-            },
-            _ => format!("    pub {}: bp3d_proto::message::FieldOffset", field.name)
+        FieldType::Ref(Referenced::Message(v)) => {
+            scope.var("type_name", type_path_by_name.get(&v.name));
+            match field.optional {
+                true => scope.render("decl", &["field", "msg_optional"]).unwrap(),
+                false => scope.render("decl", &["field", "msg"]).unwrap(),
+            }
         },
-        _ => format!("    pub {}: bp3d_proto::message::FieldOffset", field.name)
+        _ => scope.render("decl", &["field"]).unwrap()
     }
 }
 
 pub fn gen_message_offsets_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    let mut code = format!("#[derive(Copy, Clone, Debug, Default)]\npub struct {}Offsets {{\n", msg.name);
+    let mut template = Template::compile(TEMPLATE).unwrap();
+    template.var("msg_name", &msg.name).var("generics", Generics::from_message(msg).to_code());
     let fields = msg.fields.iter()
-        .map(gen_message_offset_field)
-        .join(",\n");
-    code += &fields;
-    code += "\n}\n";
-    code += &gen_message_from_slice_offsets_impl(msg, type_path_by_name);
+        .map(|field| gen_message_offset_field(field, &template, type_path_by_name))
+        .join("");
+    let mut code = template.var("fields", fields).render("", &["decl"]).unwrap();
+    code += "\n";
+    code += &render_message_from_slice_impl(msg, &template, type_path_by_name);
     code
 }

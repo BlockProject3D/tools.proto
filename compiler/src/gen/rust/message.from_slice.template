@@ -1,0 +1,48 @@
+#fragment push impl
+impl<'a> bp3d_proto::message::FromSlice<'a> for {msg_name}{generics} {{
+    type Output = Self;
+
+    fn from_slice(slice: &'a [u8]) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
+        let mut byte_offset: usize = 0;
+{fields}
+#fragment push field
+        let {name}_msg = {type}::from_slice(&slice[byte_offset..])?;
+        byte_offset += {name}_msg.size();
+        let {name} = {name}_msg.into_inner();
+#fragment pop
+#fragment push field_msg
+        let {name}_msg = {type}::from_slice(&slice[byte_offset..])?;
+        byte_offset += {name}_msg.size();
+        let {name} = {name}_msg.into_inner();
+#fragment pop
+#fragment push field_union
+        let {name}_msg = {type}::from_slice(&slice[byte_offset..], &{on_name})?;
+        byte_offset += {name}_msg.size();
+        let {name} = {name}_msg.into_inner();
+#fragment pop
+        let data = {msg_name} {{
+{field_names}
+#fragment push field_name
+            {name},
+#fragment pop
+        }};
+        Ok(bp3d_proto::message::Message::new(byte_offset, data))
+    }}
+}}
+#fragment pop
+
+#fragment push varchar
+bp3d_proto::message::util::VarcharString::<{codec}>
+#fragment pop
+
+#fragment push array
+bp3d_proto::message::util::Array::<&'a [u8], {codec}, {type_name}<&'a [u8]>>
+#fragment pop
+
+#fragment push list
+bp3d_proto::message::util::List::<&'a [u8], {codec}, {type_name}>
+#fragment pop
+
+#fragment push unsized
+bp3d_proto::message::util::list::Unsized::<{codec}, {type_name}>
+#fragment pop
