@@ -26,74 +26,20 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use itertools::Itertools;
 use crate::compiler::structure::{Field, FieldView, FixedField, Structure};
 use crate::compiler::util::TypePathMap;
 use crate::gen::rust::util::{get_field_type, get_byte_codec, get_bit_codec_inline, get_byte_codec_inline};
+use crate::gen::template::{Scope, Template};
 
+const STRUCT_TEMPLATE: &[u8] = include_bytes!("./structure.template");
+const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("./structure.field.template");
 
-fn gen_structure_impl_new(s: &Structure) -> String {
-    let mut code = format!("impl<T> {}<T> {{\n", s.name);
-    code += "    pub fn new(data: T) -> Self {\n";
-    code += "        Self { data }\n";
-    code += "    }\n";
-    code += "}\n";
-    code += &format!("impl {}<[u8; {}]> {{\n", s.name, s.byte_size);
-    code += "    pub fn new_on_stack() -> Self {\n";
-    code += &format!("        Self {{ data: [0; {}] }}\n", s.byte_size);
-    code += "    }\n";
-    code += "}\n";
-    code += &format!("impl<T> From<T> for {}<T> {{\n", s.name);
-    code += "    fn from(data: T) -> Self {\n";
-    code += "        Self { data }\n";
-    code += "    }\n";
-    code += "}\n";
-    code += &format!("impl<'a, T: AsRef<[u8]>> {}<T> {{\n", s.name);
-    code += &format!("    pub fn to_ref(&'a self) -> {}<&'a [u8]> {{\n", s.name);
-    code += &format!("        {} {{ data: self.data.as_ref() }}\n", s.name);
-    code += "    }\n";
-    code += "}\n";
-    code += &format!("impl<'a, T: AsMut<[u8]>> {}<T> {{\n", s.name);
-    code += &format!("    pub fn to_mut(&'a mut self) -> {}<&'a mut [u8]> {{\n", s.name);
-    code += &format!("        {} {{ data: self.data.as_mut() }}\n", s.name);
-    code += "    }\n";
-    code += "}\n";
-    code += &format!("pub const SIZE_{}: usize = {};\n", s.name.to_ascii_uppercase(), s.byte_size);
-    code
-}
-
-fn gen_structure_impl_fixed_size(s: &Structure) -> String {
-    let mut code = format!("impl<T> bp3d_proto::util::FixedSize for {}<T> {{\n", s.name);
-    code += &format!("    const SIZE: usize = {};\n", s.byte_size);
-    code += "}\n";
-    code
-}
-
-fn gen_structure_impl_from_slice(s: &Structure) -> String {
-    let mut code = format!("impl<'a> bp3d_proto::message::FromSlice<'a> for {}<&'a [u8]> {{\n", s.name);
-    code += "    type Output = Self;\n\n";
-    code += "    fn from_slice(slice: &'a [u8]) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {\n";
-    code += "        if slice.len() < <Self as bp3d_proto::util::FixedSize>::SIZE {\n";
-    code += "            Err(bp3d_proto::message::Error::Truncated)\n";
-    code += "        } else {\n";
-    code += "            Ok(bp3d_proto::message::Message::new(<Self as bp3d_proto::util::FixedSize>::SIZE, Self::new(&slice[..<Self as bp3d_proto::util::FixedSize>::SIZE])))\n";
-    code += "        }\n";
-    code += "    }\n";
-    code += "}\n";
-    code
-}
-
-fn gen_structure_impl_write_to(s: &Structure) -> String {
-    let mut code = format!("impl<'a> bp3d_proto::message::WriteTo for {}<&'a [u8]> {{\n", s.name);
-    code += "    type Input = Self;\n\n";
-    code += "    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {\n";
-    code += "        out.write_all(&input.data[..<Self as bp3d_proto::util::FixedSize>::SIZE])?;\n";
-    code += "        Ok(())\n";
-    code += "    }\n";
-    code += "}\n";
-    code
-}
-
-fn gen_field_getter(field: &Field, type_path_by_name: &TypePathMap) -> String {
+fn gen_field_getter(field: &Field, template: &Template, type_path_by_name: &TypePathMap) -> String {
+    let mut scope = template.scope();
+    scope.var_d("start", field.loc().byte_offset)
+        .var_d("end", field.loc().byte_offset + field.loc().byte_size)
+        .var("name", field.name());
     match field {
         Field::Fixed(v) => {
             let raw_field_type = v.loc.get_unsigned_integer_type();
@@ -103,197 +49,151 @@ fn gen_field_getter(field: &Field, type_path_by_name: &TypePathMap) -> String {
                 true => "read_unaligned",
                 false => "read_aligned"
             };
-            let mut code = format!("    pub fn get_raw_{}(&self) -> {} {{\n", v.name, raw_field_type);
+            scope.var("raw_type", raw_field_type).var("function_name", function_name);
             if v.loc.bit_size % 8 != 0 {
-                code += &format!("        unsafe {{ {}::{}::<{}, {}, {}>(&self.data.as_ref()[{}..{}]) }}\n", get_bit_codec_inline(v.endianness), function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
+                scope.var("codec", get_bit_codec_inline(v.endianness))
+                    .var_d("bit_offset", v.loc.bit_offset)
+                    .var_d("bit_size", v.loc.bit_size)
+                    .render_to_var("getters.fixed", &["bit"], "fragment").unwrap();
             } else {
-                code += &format!("        unsafe {{ {}::{}::<{}>(&self.data.as_ref()[{}..{}]) }}\n", get_byte_codec_inline(v.endianness), function_name, raw_field_type, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
+                scope.var("codec", get_byte_codec_inline(v.endianness))
+                    .render_to_var("getters.fixed", &["byte"], "fragment").unwrap();
             }
-            code += "    }\n";
-            code += &gen_field_view_getter(v, type_path_by_name);
+            let mut code = scope.render("getters", &["fixed"]).unwrap();
+            code += &gen_field_view_getter(v, scope, type_path_by_name);
             code
         }
-        Field::Array(v) => {
-            let field_type = get_field_type(v.ty);
-            let mut code = format!("    pub fn get_{}(&self) -> bp3d_proto::codec::ArrayCodec<&[u8], {}, {}, {}> {{\n", v.name, field_type, get_byte_codec(v.endianness), v.item_bit_size());
-            code += &format!("        bp3d_proto::codec::ArrayCodec::new(&self.data.as_ref()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
-            code += "    }\n";
-            code
-        },
-        Field::Struct(v) => {
-            let mut code = format!("    pub fn get_{}(&self) -> {}<&[u8]> {{\n", v.name, type_path_by_name.get(&v.r.name));
-            code += &format!("        {}::new(&self.data.as_ref()[{}..{}])\n", v.r.name, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
-            code += "    }\n";
-            code
-        }
+        Field::Array(v) => scope.var("raw_type", get_field_type(v.ty))
+            .var("codec", get_byte_codec(v.endianness)).var_d("bit_size", v.item_bit_size())
+            .render("getters", &["array"]).unwrap(),
+        Field::Struct(v) => scope.var("type_name", type_path_by_name.get(&v.r.name))
+            .render("getters", &["struct"]).unwrap()
     }
 }
 
-fn gen_field_setter(field: &Field, type_path_by_name: &TypePathMap) -> String {
+fn gen_field_setter(field: &Field, template: &Template, type_path_by_name: &TypePathMap) -> String {
+    let mut scope = template.scope();
+    scope.var_d("start", field.loc().byte_offset)
+        .var_d("end", field.loc().byte_offset + field.loc().byte_size)
+        .var("name", field.name());
     match field {
         Field::Fixed(v) => {
             let raw_field_type = v.loc.get_unsigned_integer_type();
             let raw_field_byte_size = raw_field_type.get_byte_size();
             let raw_field_type = get_field_type(raw_field_type);
-            let mut code = format!("    pub fn set_raw_{}(&mut self, value: {}) {{\n", v.name, raw_field_type);
             let function_name = match raw_field_byte_size != v.loc.byte_size {
                 true => "write_unaligned",
                 false => "write_aligned"
             };
+            scope.var("raw_type", raw_field_type).var("function_name", function_name);
             if v.loc.bit_size % 8 != 0 {
-                code += &format!("        unsafe {{ {}::{}::<{}, {}, {}>(&mut self.data.as_mut()[{}..{}], value) }}\n", get_bit_codec_inline(v.endianness), function_name, raw_field_type, v.loc.bit_offset, v.loc.bit_size, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
+                scope.var("codec", get_bit_codec_inline(v.endianness))
+                    .var_d("bit_offset", v.loc.bit_offset)
+                    .var_d("bit_size", v.loc.bit_size)
+                    .render_to_var("setters.fixed", &["bit"], "fragment").unwrap();
             } else {
-                code += &format!("        unsafe {{ {}::{}::<{}>(&mut self.data.as_mut()[{}..{}], value) }}\n", get_byte_codec_inline(v.endianness), function_name, raw_field_type, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
+                scope.var("codec", get_byte_codec_inline(v.endianness))
+                    .render_to_var("setters.fixed", &["byte"], "fragment").unwrap();
             }
-            code += "    }\n";
-            code += &gen_field_view_setter(v, type_path_by_name);
+            let mut code = scope.render("setters", &["fixed"]).unwrap();
+            code += &gen_field_view_setter(v, scope, type_path_by_name);
             code
         }
-        Field::Array(v) => {
-            let field_type = get_field_type(v.ty);
-            let mut code = format!("    pub fn get_{}_mut(&mut self) -> bp3d_proto::codec::ArrayCodec<&mut [u8], {}, {}, {}> {{\n", v.name, field_type, get_byte_codec(v.endianness), v.item_bit_size());
-            code += &format!("        bp3d_proto::codec::ArrayCodec::new(&mut self.data.as_mut()[{}..{}])\n", v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
-            code += "    }\n";
-            code
-        }
-        Field::Struct(v) => {
-            let mut code = format!("    pub fn get_{}_mut(&mut self) -> {}<&mut [u8]> {{\n", v.name, type_path_by_name.get(&v.r.name));
-            code += &format!("        {}::new(&mut self.data.as_mut()[{}..{}])\n", v.r.name, v.loc.byte_offset, v.loc.byte_offset + v.loc.byte_size);
-            code += "    }\n";
-            code
-        }
+        Field::Array(v) => scope.var("raw_type", get_field_type(v.ty))
+            .var("codec", get_byte_codec(v.endianness)).var_d("bit_size", v.item_bit_size())
+            .render("setters", &["array"]).unwrap(),
+        Field::Struct(v) => scope.var("type_name", type_path_by_name.get(&v.r.name))
+            .render("setters", &["struct"]).unwrap()
     }
 }
 
-fn gen_field_view_getter(field: &FixedField, type_path_by_name: &TypePathMap) -> String {
+fn gen_field_view_getter(field: &FixedField, mut scope: Scope, type_path_by_name: &TypePathMap) -> String {
     match &field.view {
-        FieldView::Float { a, b, .. } => {
-            let field_type = get_field_type(field.ty);
-            let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
-            code += &format!("        let raw_value = self.get_raw_{}() as {};\n", field.name, field_type);
-            code += &format!("        raw_value * {:?} + {:?}\n", a, b);
-            code += "    }\n";
-            code
-        },
-        FieldView::Enum(e) => {
-            let item_type = type_path_by_name.get(&e.name);
-            let raw_field_type = get_field_type(field.loc.get_unsigned_integer_type());
-            let mut code = format!("    pub fn get_{}(&self) -> Option<{}> {{\n", field.name, item_type);
-            code += &format!("        let raw_value = self.get_raw_{}();\n", field.name);
-            code += &format!("        if raw_value > {} {{\n", e.largest);
-            code += "            None\n";
-            code += "        } else {\n";
-            code += &format!("            Some(unsafe {{ std::mem::transmute::<{}, {}>(raw_value) }})\n", raw_field_type, item_type);
-            code += "        }\n";
-            code += "    }\n";
-            code
-        },
+        FieldView::Float { a, b, .. } => scope.var("view_type", get_field_type(field.ty))
+            .var("a", format!("{:?}", a)).var("b", format!("{:?}", b))
+            .render("getters", &["view_float"]).unwrap(),
+        //Rust absolutely wants to allocate as randomly the lifetime does not match
+        FieldView::Enum(e) => scope.var("view_type", String::from(type_path_by_name.get(&e.name)))
+                .var_d("enum_largest", e.largest).render("getters", &["view_enum"]).unwrap(),
         FieldView::Transmute => {
             let field_type = get_field_type(field.ty);
-            let raw_field_type = get_field_type(field.loc.get_unsigned_integer_type());
-            let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
+            scope.var("view_type", field_type);
             if field_type == "bool" {
-                code += &format!("        if self.get_raw_{}() != 0 {{ true }} else {{ false }}\n", field.name);
+                scope.render_to_var("getters.view_transmute", &["bool"], "fragment").unwrap();
             } else {
-                code += &format!("        unsafe {{ std::mem::transmute::<{}, {}>(self.get_raw_{}()) }}\n", raw_field_type, field_type, field.name);
+                scope.render_to_var("getters.view_transmute", &["other"], "fragment").unwrap();
             }
-            code += "    }\n";
-            code
+            scope.render("getters", &["view_transmute"]).unwrap()
         },
-        FieldView::SignedCast(max_positive) => {
-            let field_type = get_field_type(field.ty);
-            let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
-            code += &format!("        let raw_value = self.get_raw_{}();\n", field.name);
-            code += &format!("        if raw_value > {} {{\n", max_positive);
-            code += &format!("            -((((!raw_value) & {max_positive}) + 1) as {})\n", field_type);
-            code += "        } else {\n";
-            code += &format!("            (raw_value & {}) as {}\n", max_positive, field_type);
-            code += "        }\n";
-            code += "    }\n";
-            code
-        },
-        FieldView::None => {
-            let field_type = get_field_type(field.ty);
-            let mut code = format!("    pub fn get_{}(&self) -> {} {{\n", field.name, field_type);
-            code += &format!("        self.get_raw_{}()\n", field.name);
-            code += "    }\n";
-            code
-        }
+        FieldView::SignedCast(max_positive) => scope.var("view_type", get_field_type(field.ty))
+            .var_d("max_positive", max_positive).render("getters", &["view_signed"]).unwrap(),
+        FieldView::None => scope.var("view_type", get_field_type(field.ty)).render("getters", &["view_none"]).unwrap()
     }
 }
 
-fn gen_field_view_setter(field: &FixedField, type_path_by_name: &TypePathMap) -> String {
+fn gen_field_view_setter(field: &FixedField, mut scope: Scope, type_path_by_name: &TypePathMap) -> String {
     match &field.view {
-        FieldView::Float { a_inv, b_inv, .. } => {
-            let field_type = get_field_type(field.ty);
-            let raw_field_type = get_field_type(field.loc.get_unsigned_integer_type());
-            let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, field_type);
-            code += &format!("        let raw_value = value * {:?} + {:?};\n", a_inv, b_inv);
-            code += &format!("        self.set_raw_{}(raw_value as {});\n", field.name, raw_field_type);
-            code += "        self\n";
-            code += "    }\n";
-            code
-        },
-        FieldView::Enum(e) => {
-            let item_type = type_path_by_name.get(&e.name);
-            let raw_field_type = get_field_type(field.loc.get_unsigned_integer_type());
-            let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, item_type);
-            code += &format!("        self.set_raw_{}(value as {});\n", field.name, raw_field_type);
-            code += "        self\n";
-            code += "    }\n";
-            code
-        },
+        FieldView::Float { a_inv, b_inv, .. } => scope.var("view_type", get_field_type(field.ty))
+            .var("a_inv", format!("{:?}", a_inv)).var("b_inv", format!("{:?}", b_inv))
+            .render("setters", &["view_float"]).unwrap(),
+        //Rust absolutely wants to allocate as randomly the lifetime does not match
+        FieldView::Enum(e) => scope.var("view_type", String::from(type_path_by_name.get(&e.name)))
+            .var_d("enum_largest", e.largest).render("setters", &["view_enum"]).unwrap(),
         FieldView::Transmute | FieldView::SignedCast { .. } => {
             let field_type = get_field_type(field.ty);
-            let raw_field_type = get_field_type(field.loc.get_unsigned_integer_type());
-            let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, field_type);
+            scope.var("view_type", field_type);
             if field_type == "bool" {
-                code += &format!("        self.set_raw_{}(if value {{ 1 }} else {{ 0 }});\n", field.name);
+                scope.render_to_var("setters.view_transmute", &["bool"], "fragment").unwrap();
             } else {
-                code += &format!("        self.set_raw_{}(unsafe {{ std::mem::transmute::<{}, {}>(value) }});\n", field.name, field_type, raw_field_type);
+                scope.render_to_var("setters.view_transmute", &["other"], "fragment").unwrap();
             }
-            code += "        self\n";
-            code += "    }\n";
-            code
+            scope.render("setters", &["view_transmute"]).unwrap()
         },
-        FieldView::None => {
-            let field_type = get_field_type(field.ty);
-            let mut code = format!("    pub fn set_{}(&mut self, value: {}) -> &mut Self {{\n", field.name, field_type);
-            code += &format!("        self.set_raw_{}(value);\n", field.name);
-            code += "        self\n";
-            code += "    }\n";
-            code
-        }
+        FieldView::None => scope.var("view_type", get_field_type(field.ty)).render("setters", &["view_none"]).unwrap()
     }
 }
 
-fn gen_structure_getters(s: &Structure, type_path_by_name: &TypePathMap) -> String {
-    let mut code = format!("impl<T: AsRef<[u8]>> {}<T> {{\n", s.name);
-    for v in &s.fields {
-        code += &gen_field_getter(v, type_path_by_name);
-    }
-    code += "}\n";
-    code
+fn gen_structure_getters(s: &Structure, template: &Template, type_path_by_name: &TypePathMap) -> String {
+    let mut scope = template.scope();
+    let fields = s.fields.iter().map(|v| gen_field_getter(v, template, type_path_by_name)).join("");
+    scope.var("fields", fields).render("", &["getters"]).unwrap()
 }
 
-fn gen_structure_setters(s: &Structure, type_path_by_name: &TypePathMap) -> String {
+fn gen_structure_setters(s: &Structure, template: &Template, type_path_by_name: &TypePathMap) -> String {
     let mut code = format!("impl<T: AsMut<[u8]>> {}<T> {{\n", s.name);
     for v in &s.fields {
-        code += &gen_field_setter(v, type_path_by_name);
+        code += &gen_field_setter(v, template, type_path_by_name);
     }
     code += "}\n";
     code
 }
 
 pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap) -> String {
-    let mut code = format!("#[derive(Copy, Clone, Default, Debug)]\npub struct {}<T> {{\n", s.name);
-    code += "    data: T\n";
-    code += "}\n\n";
-    code += &gen_structure_impl_new(s);
-    code += &gen_structure_impl_fixed_size(s);
-    code += &gen_structure_impl_write_to(s);
-    code += &gen_structure_impl_from_slice(s);
-    code += &gen_structure_getters(s, type_path_by_name);
-    code += &gen_structure_setters(s, type_path_by_name);
+    let mut template = Template::compile(STRUCT_TEMPLATE).unwrap();
+    let mut field_template = Template::compile(STRUCT_FIELD_TEMPLATE).unwrap();
+    field_template.var("struct_name", &s.name);
+    template.var("name", &s.name).var_d("byte_size", s.byte_size)
+        .var("name_upper", s.name.to_ascii_uppercase());
+    let mut code = template.render("", &["decl", "new", "fixed_size", "write_to", "from_slice"]).unwrap();
+    code += &gen_structure_getters(s, &field_template, type_path_by_name);
+    code += &gen_structure_setters(s, &field_template, type_path_by_name);
     code
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::gen::rust::structure::STRUCT_TEMPLATE;
+    use crate::gen::template::Template;
+
+    #[test]
+    fn test_template_render() {
+        let mut template = Template::compile(STRUCT_TEMPLATE).unwrap();
+        template.var("name", "Test");
+        let code = template.render("", &["decl"]).unwrap();
+        assert_eq!(&*code, "#[derive(Copy, Clone, Default, Debug)]
+pub struct Test<T> {
+    data: T
+}
+")
+    }
 }

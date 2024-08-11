@@ -31,6 +31,7 @@ use std::path::{Path, PathBuf};
 use crate::compiler::Protocol;
 
 mod rust;
+pub mod template;
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub enum FileType {

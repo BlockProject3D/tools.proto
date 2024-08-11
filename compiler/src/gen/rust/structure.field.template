@@ -1,0 +1,134 @@
+#fragment push getters
+impl<T: AsRef<[u8]>> {struct_name}<T> {{
+{fields}
+#fragment push fixed
+    pub fn get_raw_{name}(&self) -> {raw_type} {{
+{fragment}
+#fragment push bit
+        unsafe {{ {codec}::{function_name}::<{raw_type}, {bit_offset}, {bit_size}>(&self.data.as_ref()[{start}..{end}]) }}
+#fragment pop
+#fragment push byte
+        unsafe {{ {codec}::{function_name}::<{raw_type}>(&self.data.as_ref()[{start}..{end}]) }}
+#fragment pop
+    }}
+#fragment pop
+#fragment push array
+    pub fn get_{name}(&self) -> bp3d_proto::codec::ArrayCodec<&[u8], {raw_type}, {codec}, {bit_size}> {{
+        bp3d_proto::codec::ArrayCodec::new(&self.data.as_ref()[{start}..{end}])
+    }}
+#fragment pop
+#fragment push struct
+    pub fn get_{name}(&self) -> {type_name}<&[u8]> {{
+        {type_name}::new(&self.data.as_ref()[{start}..{end}])
+    }}
+#fragment pop
+#fragment push view_float
+    pub fn get_{name}(&self) -> {view_type} {{
+        let raw_value = self.get_raw_{name}() as {view_type};
+        raw_value * {a} + {b}
+    }}
+#fragment pop
+#fragment push view_enum
+    pub fn get_{name}(&self) -> Option<{view_type}> {{
+        let raw_value = self.get_raw_{name}();
+        if raw_value > {enum_largest} {{
+            None
+        }} else {{
+            Some(unsafe {{ std::mem::transmute::<{raw_type}, {view_type}>(raw_value) }})
+        }}
+    }}
+#fragment pop
+#fragment push view_transmute
+    pub fn get_{name}(&self) -> {view_type} {{
+{fragment}
+#fragment push bool
+        if self.get_raw_{name}() != 0 {{
+            true
+        }} else {{
+            false
+        }}
+#fragment pop
+#fragment push other
+        unsafe {{ std::mem::transmute::<{raw_type}, {view_type}>(self.get_raw_{name}()) }}
+#fragment pop
+    }}
+#fragment pop
+#fragment push view_signed
+    pub fn get_{name}(&self) -> {view_type} {{
+        let raw_value = self.get_raw_{name}();
+        if raw_value > {max_positive} {{
+            -((((!raw_value) & {max_positive}) + 1) as {view_type})
+        }} else {{
+            (raw_value & {max_positive}) as {view_type}
+        }}
+    }}
+#fragment pop
+#fragment push view_none
+    pub fn get_{name}(&self) -> {view_type} {{
+        self.get_raw_{name}()
+    }}
+#fragment pop
+}}
+#fragment pop
+
+#fragment push setters
+impl<T: AsMut<[u8]>> {struct_name}<T> {{
+{fields}
+#fragment push fixed
+    pub fn set_raw_{name}(&mut self, value: {raw_type}) {{
+{fragment}
+#fragment push bit
+        unsafe {{ {codec}::{function_name}::<{raw_type}, {bit_offset}, {bit_size}>(&mut self.data.as_mut()[{start}..{end}], value) }}
+#fragment pop
+#fragment push byte
+        unsafe {{ {codec}::{function_name}::<{raw_type}>(&mut self.data.as_mut()[{start}..{end}], value) }}
+#fragment pop
+    }}
+#fragment pop
+#fragment push array
+    pub fn get_{name}_mut(&mut self) -> bp3d_proto::codec::ArrayCodec<&mut [u8], {raw_type}, {codec}, {bit_size}> {{
+        bp3d_proto::codec::ArrayCodec::new(&mut self.data.as_mut()[{start}..{end}])
+    }}
+#fragment pop
+#fragment push struct
+    pub fn get_{name}_mut(&mut self) -> {type_name}<&mut [u8]> {{
+        {type_name}::new(&mut self.data.as_mut()[{start}..{end}])
+    }}
+#fragment pop
+#fragment push view_float
+    pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
+        let raw_value = value * {a_inv} + {b_inv};
+        self.set_raw_{name}(raw_value as {raw_type});
+        self
+    }}
+#fragment pop
+#fragment push view_enum
+    pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
+        self.set_raw_{name}(value as {raw_type});
+        self
+    }}
+#fragment pop
+#fragment push view_transmute
+    pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
+{fragment}
+#fragment push bool
+        if value {{
+            self.set_raw_{name}(1);
+        }} else {{
+            self.set_raw_{name}(0);
+        }}
+#fragment pop
+#fragment push other
+        self.set_raw_{name}(unsafe {{ std::mem::transmute::<{view_type}, {raw_type}>(value) }});
+#fragment pop
+        self
+    }}
+#fragment pop
+#fragment push view_none
+    pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
+        self.set_raw_{name}(value);
+        self
+    }}
+#fragment pop
+}}
+#fragment pop

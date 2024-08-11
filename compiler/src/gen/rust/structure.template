@@ -1,0 +1,71 @@
+#fragment push new
+impl<T> {name}<T> {{
+    pub fn new(data: T) -> Self {{
+        Self {{ data }}
+    }}
+}}
+
+impl {name}<[u8; {byte_size}]> {{
+    pub fn new_on_stack() -> Self {{
+        Self {{ data: [0; {byte_size}] }}
+    }}
+}}
+
+impl<T> From<T> for {name}<T> {{
+    fn from(data: T) -> Self {{
+        Self {{ data }}
+    }}
+}}
+
+impl<'a, T: AsRef<[u8]>> {name}<T> {{
+    pub fn to_ref(&'a self) -> {name}<&'a [u8]> {{
+        {name} {{ data: self.data.as_ref() }}
+    }}
+}}
+
+impl<'a, T: AsMut<[u8]>> {name}<T> {{
+    pub fn to_mut(&'a mut self) -> {name}<&'a mut [u8]> {{
+        {name} {{ data: self.data.as_mut() }}
+    }}
+}}
+
+pub const SIZE_{name_upper}: usize = {byte_size};
+#fragment pop
+
+#fragment push decl
+#[derive(Copy, Clone, Default, Debug)]
+pub struct {name}<T> {{
+    data: T
+}}
+#fragment pop
+
+#fragment push fixed_size
+impl<T> bp3d_proto::util::FixedSize for {name}<T> {{
+    const SIZE: usize = {byte_size};
+}}
+#fragment pop
+
+#fragment push write_to
+impl<'a> bp3d_proto::message::WriteTo for {name}<&'a [u8]> {{
+    type Input = Self;
+
+    fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {{
+        out.write_all(&input.data[..<Self as bp3d_proto::util::FixedSize>::SIZE])?;
+        Ok(())
+    }}
+}}
+#fragment pop
+
+#fragment push from_slice
+impl<'a> bp3d_proto::message::FromSlice<'a> for {name}<&'a [u8]> {{
+    type Output = Self;
+
+    fn from_slice(slice: &'a [u8]) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
+        if slice.len() < <Self as bp3d_proto::util::FixedSize>::SIZE {{
+            Err(bp3d_proto::message::Error::Truncated)
+        }} else {{
+            Ok(bp3d_proto::message::Message::new(<Self as bp3d_proto::util::FixedSize>::SIZE, Self::new(&slice[..<Self as bp3d_proto::util::FixedSize>::SIZE])))
+        }}
+    }}
+}}
+#fragment pop

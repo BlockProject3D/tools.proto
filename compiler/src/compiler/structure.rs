@@ -269,6 +269,14 @@ impl Field {
         }
     }
 
+    pub fn loc(&self) -> &Location {
+        match self {
+            Field::Fixed(v) => &v.loc,
+            Field::Array(v) => &v.loc,
+            Field::Struct(v) => &v.loc
+        }
+    }
+
     pub fn name(&self) -> &str {
         match self {
             Field::Fixed(v) => &v.name,
