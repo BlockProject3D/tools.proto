@@ -112,6 +112,14 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
         let mut frag_stack = Vec::new();
         let lines = data.split(|v| *v == b'\n');
         for line in lines {
+            if line.is_empty() {
+                continue;
+            }
+            let line = if line[line.len() - 1] == b'\r' {
+                &line[..line.len() - 1]
+            } else {
+                line
+            };
             if line.starts_with(b"#fragment push ") {
                 let name = std::str::from_utf8(&line[15..]).map_err(|_| Error::InvalidUTF8)?;
                 frag_stack.push(Fragment {
@@ -126,7 +134,7 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                 //SAFETY: this is fine because the fragment stack must not be empty at this point.
                 let fragment = unsafe { frag_stack.pop().unwrap_unchecked() };
                 fragments.insert(combined_name, fragment);
-            } else if !line.is_empty() {
+            } else {
                 let cur_fragment = frag_stack.last_mut().ok_or(Error::NoFragment)?;
                 let mut token = Token::new(line);
                 while token.has_next() {
