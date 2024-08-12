@@ -26,11 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::gen::template::parse_tree::{Component, Fragment, Token};
+use crate::gen::template::{Error, FunctionMap};
+use itertools::Itertools;
 use std::borrow::Cow;
 use std::collections::HashMap;
-use itertools::Itertools;
-use crate::gen::template::{Error, FunctionMap};
-use crate::gen::template::parse_tree::{Component, Fragment, Token};
 
 pub struct Template<'fragment, 'variable> {
     fragments: HashMap<String, Fragment<'fragment>>,

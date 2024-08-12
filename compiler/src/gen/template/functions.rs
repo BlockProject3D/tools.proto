@@ -26,9 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::gen::template::util::CaseConversion;
 use std::borrow::Cow;
 use std::collections::HashMap;
-use crate::gen::template::util::CaseConversion;
 
 pub struct FunctionMap<'fragment> {
     map: HashMap<&'fragment str, fn(&str) -> Cow<str>>,
