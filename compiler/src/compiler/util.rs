@@ -26,9 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::compiler::Protocol;
 use std::borrow::Cow;
 use std::collections::HashMap;
-use crate::compiler::Protocol;
 
 pub trait ImportResolver {
     fn get_protocol_by_name(&self, name: &str) -> Option<&Protocol>;
@@ -37,13 +37,13 @@ pub trait ImportResolver {
 
 #[derive(Clone, Debug)]
 pub struct TypePathMap {
-    type_path_by_name: HashMap<String, String>
+    type_path_by_name: HashMap<String, String>,
 }
 
 impl TypePathMap {
     pub fn new() -> Self {
         Self {
-            type_path_by_name: HashMap::new()
+            type_path_by_name: HashMap::new(),
         }
     }
 
@@ -54,14 +54,18 @@ impl TypePathMap {
     pub fn get<'a>(&'a self, item_type: &'a str) -> &'a str {
         match self.type_path_by_name.get(item_type) {
             None => item_type,
-            Some(v) => &*v
+            Some(v) => &*v,
         }
     }
 
-    pub fn get_with_default_prefix<'a>(&'a self, item_type: &'a str, default_prefix: &str) -> Cow<'a, str> {
+    pub fn get_with_default_prefix<'a>(
+        &'a self,
+        item_type: &'a str,
+        default_prefix: &str,
+    ) -> Cow<'a, str> {
         match self.type_path_by_name.get(item_type) {
             None => Cow::Owned(format!("{default_prefix}{item_type}")),
-            Some(v) => Cow::Borrowed(&*v)
+            Some(v) => Cow::Borrowed(&*v),
         }
     }
 }

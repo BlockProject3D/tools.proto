@@ -26,30 +26,30 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::collections::HashMap;
-use serde::Deserialize;
 use crate::model::message::Message;
 use crate::model::structure::Structure;
 use crate::model::union::Union;
+use serde::Deserialize;
+use std::collections::HashMap;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Deserialize)]
-#[serde(rename_all="kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub enum Endianness {
     Little,
-    Big
+    Big,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Import {
     pub protocol: String,
-    #[serde(rename="type")]
-    pub type_name: String
+    #[serde(rename = "type")]
+    pub type_name: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Enum {
     pub name: String,
-    pub variants: HashMap<String, usize>
+    pub variants: HashMap<String, usize>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -60,5 +60,5 @@ pub struct Protocol {
     pub structs: Option<Vec<Structure>>,
     pub messages: Option<Vec<Message>>,
     pub enums: Option<Vec<Enum>>,
-    pub unions: Option<Vec<Union>>
+    pub unions: Option<Vec<Union>>,
 }

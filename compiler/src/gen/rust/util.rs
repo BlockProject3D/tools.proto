@@ -32,7 +32,7 @@ use crate::gen::base::message::StringType;
 use crate::model::protocol::Endianness;
 
 pub struct Generics {
-    pub has_lifetime: bool
+    pub has_lifetime: bool,
 }
 
 impl Generics {
@@ -45,11 +45,9 @@ impl Generics {
             FieldType::Union(_) => true,
             FieldType::List(_) => true,
             FieldType::Payload => true,
-            _ => false
+            _ => false,
         });
-        Generics {
-            has_lifetime
-        }
+        Generics { has_lifetime }
     }
 
     pub fn to_vec(&self) -> Vec<&'static str> {
@@ -83,7 +81,7 @@ macro_rules! gen_value_type {
             FixedFieldType::UInt64 => concat!($prefix, "u64", $suffix),
             FixedFieldType::Float32 => concat!($prefix, "f32", $suffix),
             FixedFieldType::Float64 => concat!($prefix, "f64", $suffix),
-            FixedFieldType::Bool => concat!($prefix, "bool", $suffix)
+            FixedFieldType::Bool => concat!($prefix, "bool", $suffix),
         }
     };
 }
@@ -100,7 +98,7 @@ impl crate::gen::base::structure::Utilities for RustUtils {
         let raw_field_byte_size = raw_field_type.get_byte_size();
         match raw_field_byte_size != field.loc.byte_size {
             true => "read_unaligned",
-            false => "read_aligned"
+            false => "read_aligned",
         }
     }
 
@@ -109,28 +107,30 @@ impl crate::gen::base::structure::Utilities for RustUtils {
         let raw_field_byte_size = raw_field_type.get_byte_size();
         match raw_field_byte_size != field.loc.byte_size {
             true => "write_unaligned",
-            false => "write_aligned"
+            false => "write_aligned",
         }
     }
 
     fn get_bit_codec_inline(endianness: Endianness) -> &'static str {
         match endianness {
             Endianness::Little => "<bp3d_proto::codec::BitCodecLE as bp3d_proto::codec::BitCodec>",
-            Endianness::Big => "<bp3d_proto::codec::BitCodecBE as bp3d_proto::codec::BitCodec>"
+            Endianness::Big => "<bp3d_proto::codec::BitCodecBE as bp3d_proto::codec::BitCodec>",
         }
     }
 
     fn get_byte_codec_inline(endianness: Endianness) -> &'static str {
         match endianness {
-            Endianness::Little => "<bp3d_proto::codec::ByteCodecLE as bp3d_proto::codec::ByteCodec>",
-            Endianness::Big => "<bp3d_proto::codec::ByteCodecBE as bp3d_proto::codec::ByteCodec>"
+            Endianness::Little => {
+                "<bp3d_proto::codec::ByteCodecLE as bp3d_proto::codec::ByteCodec>"
+            }
+            Endianness::Big => "<bp3d_proto::codec::ByteCodecBE as bp3d_proto::codec::ByteCodec>",
         }
     }
 
     fn get_byte_codec(endianness: Endianness) -> &'static str {
         match endianness {
             Endianness::Little => "bp3d_proto::codec::ByteCodecLE",
-            Endianness::Big => "bp3d_proto::codec::ByteCodecBE"
+            Endianness::Big => "bp3d_proto::codec::ByteCodecBE",
         }
     }
 }
@@ -169,7 +169,7 @@ impl crate::gen::base::message::Utilities for RustUtils {
     fn get_string_type_inline(ty: StringType) -> &'static str {
         match ty {
             StringType::Varchar => "bp3d_proto::message::util::VarcharString",
-            StringType::NullTerminated => "bp3d_proto::message::util::NullTerminatedString"
+            StringType::NullTerminated => "bp3d_proto::message::util::NullTerminatedString",
         }
     }
 

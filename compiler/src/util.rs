@@ -26,19 +26,20 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::collections::HashMap;
-use crate::compiler::Protocol;
 use crate::compiler::util::ImportResolver;
+use crate::compiler::Protocol;
 use crate::ImportSolver;
+use std::collections::HashMap;
 
 pub struct SimpleImportSolver<'a> {
     import_map: HashMap<String, (String, Protocol)>,
-    separator: &'a str
+    separator: &'a str,
 }
 
 impl<'a> ImportSolver for SimpleImportSolver<'a> {
     fn register(&mut self, base_import_path: String, protocol: Protocol) {
-        self.import_map.insert(protocol.name.clone(), (base_import_path, protocol));
+        self.import_map
+            .insert(protocol.name.clone(), (base_import_path, protocol));
     }
 }
 
@@ -46,7 +47,7 @@ impl<'a> SimpleImportSolver<'a> {
     pub fn new(separator: &'a str) -> Self {
         Self {
             import_map: HashMap::new(),
-            separator
+            separator,
         }
     }
 }

@@ -37,7 +37,7 @@ const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("./structure.field.template"
 pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap) -> String {
     let templates = Templates {
         template: STRUCT_TEMPLATE,
-        field_template: STRUCT_FIELD_TEMPLATE
+        field_template: STRUCT_FIELD_TEMPLATE,
     };
     generate::<RustUtils>(templates, s, type_path_by_name)
 }
@@ -52,10 +52,13 @@ mod tests {
         let mut template = Template::compile(STRUCT_TEMPLATE).unwrap();
         template.var("name", "Test");
         let code = template.render("", &["decl"]).unwrap();
-        assert_eq!(&*code, "#[derive(Copy, Clone, Default, Debug)]
+        assert_eq!(
+            &*code,
+            "#[derive(Copy, Clone, Default, Debug)]
 pub struct Test<T> {
     data: T
 }
-")
+"
+        )
     }
 }

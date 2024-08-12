@@ -26,15 +26,15 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod string;
+pub mod array;
 mod common;
 pub mod list;
-mod size;
-pub mod array;
 mod list_base;
+mod size;
+mod string;
 
-pub use common::*;
-pub use string::*;
-pub use list::List;
 pub use array::Array;
+pub use common::*;
+pub use list::List;
 pub use size::size_of;
+pub use string::*;

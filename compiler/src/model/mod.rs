@@ -29,8 +29,8 @@
 //TODO: Support for static sized unions in structures
 
 pub mod message;
-pub mod structure;
 pub mod protocol;
+pub mod structure;
 pub mod union;
 
 pub use protocol::Protocol;

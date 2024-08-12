@@ -26,10 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::borrow::Cow;
-use std::collections::HashMap;
 use bp3d_util::simple_error;
 use itertools::Itertools;
+use std::borrow::Cow;
+use std::collections::HashMap;
 
 simple_error! {
     pub Error {
@@ -44,29 +44,34 @@ simple_error! {
 
 pub struct Variable<'a> {
     pub name: &'a str,
-    pub function: Option<fn(&str) -> Cow<str>>
+    pub function: Option<fn(&str) -> Cow<str>>,
 }
 
 pub enum Component<'a> {
     Constant(&'a str),
     Variable(Variable<'a>),
-    NewLine
+    NewLine,
 }
 
 impl<'a> Component<'a> {
-    pub fn parse_variable(function_map: &FunctionMap, variable: &'a str) -> Result<Component<'a>, Error> {
+    pub fn parse_variable(
+        function_map: &FunctionMap,
+        variable: &'a str,
+    ) -> Result<Component<'a>, Error> {
         match variable.find(":") {
             None => Ok(Component::Variable(Variable {
                 name: variable,
-                function: None
+                function: None,
             })),
             Some(id) => {
                 let name = &variable[..id];
                 let function_name = &variable[id + 1..];
-                let function = function_map.get(function_name).ok_or_else(|| Error::FunctionNotFound(function_name.into()))?;
+                let function = function_map
+                    .get(function_name)
+                    .ok_or_else(|| Error::FunctionNotFound(function_name.into()))?;
                 Ok(Component::Variable(Variable {
                     name,
-                    function: Some(function)
+                    function: Some(function),
                 }))
             }
         }
@@ -75,13 +80,13 @@ impl<'a> Component<'a> {
 
 pub struct Fragment<'a> {
     name: &'a str,
-    content: Vec<Component<'a>>
+    content: Vec<Component<'a>>,
 }
 
 struct Token<'a> {
     start: usize,
     end: usize,
-    data: &'a [u8]
+    data: &'a [u8],
 }
 
 impl<'a> Token<'a> {
@@ -89,7 +94,7 @@ impl<'a> Token<'a> {
         Self {
             data,
             start: 0,
-            end: 0
+            end: 0,
         }
     }
 
@@ -115,7 +120,8 @@ impl<'a> Token<'a> {
         self.start = end + 1;
         self.end = end;
         if end > start && end - start > 0 {
-            let data = std::str::from_utf8(&self.data[start..end]).map_err(|_| Error::InvalidUTF8)?;
+            let data =
+                std::str::from_utf8(&self.data[start..end]).map_err(|_| Error::InvalidUTF8)?;
             Ok(Some(data))
         } else {
             Ok(None)
@@ -128,7 +134,7 @@ impl<'a> Token<'a> {
 }
 
 pub struct FunctionMap<'fragment> {
-    map: HashMap<&'fragment str, fn(&str) -> Cow<str>>
+    map: HashMap<&'fragment str, fn(&str) -> Cow<str>>,
 }
 
 fn capitalize(value: &str) -> Cow<str> {
@@ -153,7 +159,7 @@ impl<'fragment> Default for FunctionMap<'fragment> {
 impl<'fragment> FunctionMap<'fragment> {
     pub fn new() -> Self {
         Self {
-            map: HashMap::new()
+            map: HashMap::new(),
         }
     }
 
@@ -183,7 +189,10 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
         Self::compile_with_function_map(data, FunctionMap::default())
     }
 
-    pub fn compile_with_function_map(data: &'fragment [u8], function_map: FunctionMap) -> Result<Self, Error> {
+    pub fn compile_with_function_map(
+        data: &'fragment [u8],
+        function_map: FunctionMap,
+    ) -> Result<Self, Error> {
         let mut fragments = HashMap::new();
         let mut frag_stack = Vec::new();
         let lines = data.split(|v| *v == b'\n');
@@ -203,7 +212,7 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                 let name = std::str::from_utf8(&line[15..]).map_err(|_| Error::InvalidUTF8)?;
                 frag_stack.push(Fragment {
                     name,
-                    content: Vec::new()
+                    content: Vec::new(),
                 });
             } else if line.starts_with(b"#fragment pop") {
                 if frag_stack.is_empty() {
@@ -231,7 +240,10 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                                 cur_fragment.content.push(component);
                             }
                         } else {
-                            if let Some(component) = token.pop()?.map(|v| Component::parse_variable(&function_map, v)) {
+                            if let Some(component) = token
+                                .pop()?
+                                .map(|v| Component::parse_variable(&function_map, v))
+                            {
                                 cur_fragment.content.push(component?);
                             }
                         }
@@ -246,7 +258,7 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
         }
         Ok(Template {
             fragments,
-            variables: HashMap::new()
+            variables: HashMap::new(),
         })
     }
 
@@ -260,27 +272,42 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
         self
     }
 
-    fn render_internal(&self, variables: &HashMap<&str, Cow<str>>, path: &str, fragments: &[&str]) -> Result<String, Error> {
+    fn render_internal(
+        &self,
+        variables: &HashMap<&str, Cow<str>>,
+        path: &str,
+        fragments: &[&str],
+    ) -> Result<String, Error> {
         let mut rendered = Vec::new();
         for name in fragments {
             let name: Cow<str> = match path.is_empty() {
                 false => Cow::Owned(format!("{}.{}", path, name)),
-                true => Cow::Borrowed(name)
+                true => Cow::Borrowed(name),
             };
-            let fragment = self.fragments.get(&*name).ok_or_else(|| Error::FragmentNotFound(String::from(&*name)))?;
-            let sub_rendered = fragment.content.iter().map(|v| match v {
-                Component::Constant(v) => Ok(Cow::Borrowed(*v)),
-                Component::Variable(v) => {
-                    let variable = variables.get(v.name).ok_or_else(|| Error::VariableNotFound(String::from(&*v.name)))?;
-                    if let Some(function) = v.function {
-                        let variable = function(variable);
-                        Ok(variable)
-                    } else {
-                        Ok(Cow::Borrowed(&**variable))
+            let fragment = self
+                .fragments
+                .get(&*name)
+                .ok_or_else(|| Error::FragmentNotFound(String::from(&*name)))?;
+            let sub_rendered = fragment
+                .content
+                .iter()
+                .map(|v| match v {
+                    Component::Constant(v) => Ok(Cow::Borrowed(*v)),
+                    Component::Variable(v) => {
+                        let variable = variables
+                            .get(v.name)
+                            .ok_or_else(|| Error::VariableNotFound(String::from(&*v.name)))?;
+                        if let Some(function) = v.function {
+                            let variable = function(variable);
+                            Ok(variable)
+                        } else {
+                            Ok(Cow::Borrowed(&**variable))
+                        }
                     }
-                },
-                Component::NewLine => Ok(Cow::Borrowed("\n"))
-            }).collect::<Result<Vec<Cow<str>>, Error>>()?.join("");
+                    Component::NewLine => Ok(Cow::Borrowed("\n")),
+                })
+                .collect::<Result<Vec<Cow<str>>, Error>>()?
+                .join("");
             rendered.push(sub_rendered);
         }
         Ok(rendered.join(""))
@@ -289,7 +316,7 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
     pub fn scope(&self) -> Scope {
         Scope {
             template: self,
-            variables: self.variables.clone()
+            variables: self.variables.clone(),
         }
     }
 
@@ -301,7 +328,7 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
 #[derive(Clone)]
 pub struct Scope<'a, 'fragment, 'variable> {
     template: &'a Template<'fragment, 'variable>,
-    variables: HashMap<&'variable str, Cow<'variable, str>>
+    variables: HashMap<&'variable str, Cow<'variable, str>>,
 }
 
 impl<'a, 'fragment, 'variable> Scope<'a, 'fragment, 'variable> {
@@ -315,13 +342,21 @@ impl<'a, 'fragment, 'variable> Scope<'a, 'fragment, 'variable> {
         self
     }
 
-    pub fn render_to_var(&mut self, path: &str, fragments: &[&str], key: &'variable str) -> Result<&mut Self, Error> {
-        let str = self.template.render_internal(&self.variables, path, fragments)?;
+    pub fn render_to_var(
+        &mut self,
+        path: &str,
+        fragments: &[&str],
+        key: &'variable str,
+    ) -> Result<&mut Self, Error> {
+        let str = self
+            .template
+            .render_internal(&self.variables, path, fragments)?;
         self.variables.insert(key, str.into());
         Ok(self)
     }
 
     pub fn render(&self, path: &str, fragments: &[&str]) -> Result<String, Error> {
-        self.template.render_internal(&self.variables, path, fragments)
+        self.template
+            .render_internal(&self.variables, path, fragments)
     }
 }

@@ -28,7 +28,7 @@
 
 use bp3d_proto::message::{FromSlice, WriteTo};
 use testprog::enums::{Header, Type};
-use testprog::lists::{Times, SIZE_TIMES, SpanRunVars, SpanRun, DatasetRuns, Dataset};
+use testprog::lists::{Dataset, DatasetRuns, SpanRun, SpanRunVars, Times, SIZE_TIMES};
 use testprog::unions::{Item, Value};
 use testprog::values::{ValueInt16, ValueString, SIZE_VALUEUINT64};
 
@@ -42,13 +42,17 @@ fn write_span_run<F: FnOnce(SpanRun) -> bp3d_proto::message::Result<()>>(f: F) {
     list.write_item(&Item {
         header: header.set_type(Type::String).to_ref(),
         name: "test",
-        value: Value::String(ValueString { data: "this is a test" })
-    }).unwrap();
+        value: Value::String(ValueString {
+            data: "this is a test",
+        }),
+    })
+    .unwrap();
     list.write_item(&Item {
         header: header.set_type(Type::Int16).to_ref(),
         name: "test1",
-        value: Value::Int16(ValueInt16::from(&mut value).set_data(-4242).to_ref())
-    }).unwrap();
+        value: Value::Int16(ValueInt16::from(&mut value).set_data(-4242).to_ref()),
+    })
+    .unwrap();
     let msg = SpanRun {
         times: times.to_ref(),
         vars: list.to_ref(),
@@ -93,7 +97,7 @@ fn dataset() {
         write_span_run(|msg| list.write_item(&msg));
         write_span_run(|msg| list.write_item(&msg));
         let msg = Dataset {
-            runs: list.to_ref()
+            runs: list.to_ref(),
         };
         Dataset::write_to(&msg, &mut msg_buffer).unwrap();
     }

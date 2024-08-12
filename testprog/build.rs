@@ -29,30 +29,39 @@
 use bp3d_protoc::generate_rust;
 
 fn main() {
-    generate_rust(|loader| {
-        loader.load("./src/test.json5")?;
-        loader.load("./src/structs.json5")?;
-        loader.load("./src/bits.json5")?;
-        loader.load("./src/bits2.json5")?;
-        loader.load("./src/views.json5")?;
-        loader.load("./src/struct_arrays.json5")?;
-        loader.load("./src/enums.json5")?;
-        loader.load("./src/values.json5")?;
-        loader.load("./src/unions2.json5")?;
-        loader.load("./src/arrays.json5")?;
-        Ok(())
-    }, |protoc| protoc.set_reads_messages(true).set_writes_messages(true));
-    generate_rust(|loader| {
-        loader.import("./src/enums.json5", "crate::enums")?;
-        loader.import("./src/values.json5", "crate::values")?;
-        loader.load("./src/unions.json5")?;
-        Ok(())
-    }, |protoc| protoc.set_reads_messages(true).set_writes_messages(true));
-    generate_rust(|loader| {
-        loader.import("./src/enums.json5", "crate::enums")?;
-        loader.import("./src/values.json5", "crate::values")?;
-        loader.import("./src/unions.json5", "crate::unions")?;
-        loader.load("./src/lists.json5")?;
-        Ok(())
-    }, |protoc| protoc.set_reads_messages(true).set_writes_messages(true));
+    generate_rust(
+        |loader| {
+            loader.load("./src/test.json5")?;
+            loader.load("./src/structs.json5")?;
+            loader.load("./src/bits.json5")?;
+            loader.load("./src/bits2.json5")?;
+            loader.load("./src/views.json5")?;
+            loader.load("./src/struct_arrays.json5")?;
+            loader.load("./src/enums.json5")?;
+            loader.load("./src/values.json5")?;
+            loader.load("./src/unions2.json5")?;
+            loader.load("./src/arrays.json5")?;
+            Ok(())
+        },
+        |protoc| protoc.set_reads_messages(true).set_writes_messages(true),
+    );
+    generate_rust(
+        |loader| {
+            loader.import("./src/enums.json5", "crate::enums")?;
+            loader.import("./src/values.json5", "crate::values")?;
+            loader.load("./src/unions.json5")?;
+            Ok(())
+        },
+        |protoc| protoc.set_reads_messages(true).set_writes_messages(true),
+    );
+    generate_rust(
+        |loader| {
+            loader.import("./src/enums.json5", "crate::enums")?;
+            loader.import("./src/values.json5", "crate::values")?;
+            loader.import("./src/unions.json5", "crate::unions")?;
+            loader.load("./src/lists.json5")?;
+            Ok(())
+        },
+        |protoc| protoc.set_reads_messages(true).set_writes_messages(true),
+    );
 }

@@ -26,15 +26,15 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::collections::HashMap;
 use crate::compiler::Error;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub struct Enum {
     pub name: String,
     pub largest: usize,
     pub variants: Vec<(String, usize)>,
-    pub variants_map: HashMap<String, usize>
+    pub variants_map: HashMap<String, usize>,
 }
 
 impl Enum {
@@ -50,7 +50,7 @@ impl Enum {
             name: value.name,
             variants,
             variants_map,
-            largest
+            largest,
         })
     }
 }

@@ -56,7 +56,6 @@ fn numbers() {
     nums.set_a(4);
     assert_eq!(nums.get_a(), 4);
     assert_eq!(nums.get_raw_a(), 4);
-
 }
 
 #[test]
@@ -109,7 +108,6 @@ fn numbers2() {
     nums.set_a(4);
     assert_eq!(nums.get_a(), 4);
     assert_eq!(nums.get_raw_a(), 4);
-
 }
 
 #[test]

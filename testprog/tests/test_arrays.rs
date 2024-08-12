@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use bp3d_proto::message::{FromSlice, WriteTo};
-use testprog::arrays::{Msg, Msg1, MsgItems, Msg1Items};
+use testprog::arrays::{Msg, Msg1, Msg1Items, MsgItems};
 
 #[test]
 fn msg() {
@@ -45,7 +45,7 @@ fn msg() {
             slot += 1;
         }
         let msg = Msg {
-            items: arr.to_ref()
+            items: arr.to_ref(),
         };
         Msg::write_to(&msg, &mut msg_buffer).unwrap();
     }
@@ -81,7 +81,7 @@ fn msg1_1() {
         arr.get_mut(2).set_id(1).set_count(16).set_slot(8);
         arr.get_mut(3).set_id(0).set_count(4).set_slot(7);
         let msg = Msg1 {
-            items: Some(arr.to_ref())
+            items: Some(arr.to_ref()),
         };
         Msg1::write_to(&msg, &mut msg_buffer).unwrap();
     }
@@ -109,9 +109,7 @@ fn msg1_1() {
 fn msg1_2() {
     let mut msg_buffer = Vec::new();
     {
-        let msg = Msg1 {
-            items: None
-        };
+        let msg = Msg1 { items: None };
         Msg1::write_to(&msg, &mut msg_buffer).unwrap();
     }
     {

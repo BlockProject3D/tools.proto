@@ -26,9 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::{Error, Loader, Protoc};
 use crate::gen::GeneratorRust;
 use crate::util::SimpleImportSolver;
+use crate::{Error, Loader, Protoc};
 
 /// A simple function to quickly generate protocols in Rust for use with the Cargo build system.
 ///
@@ -42,7 +42,10 @@ use crate::util::SimpleImportSolver;
 ///
 /// This function panics in case the loader, compiler or generator failed and the protocol Rust code
 /// could not be generated.
-pub fn generate_rust<F: FnOnce(&mut Loader) -> Result<(), Error>, F1: FnOnce(Protoc) -> Protoc>(load_fn: F, configure_fn: F1) {
+pub fn generate_rust<F: FnOnce(&mut Loader) -> Result<(), Error>, F1: FnOnce(Protoc) -> Protoc>(
+    load_fn: F,
+    configure_fn: F1,
+) {
     let mut loader = Loader::new();
     let res = load_fn(&mut loader);
     if let Err(e) = res {
@@ -50,15 +53,19 @@ pub fn generate_rust<F: FnOnce(&mut Loader) -> Result<(), Error>, F1: FnOnce(Pro
     }
     let protoc = match loader.compile(SimpleImportSolver::new("::")) {
         Err(e) => panic!("Failed to compile protocols: {}", e),
-        Ok(v) => v
+        Ok(v) => v,
     };
     let protoc = configure_fn(protoc);
     let out_dir = std::env::var("OUT_DIR").unwrap();
     let generated = match protoc.generate::<GeneratorRust>(out_dir) {
         Err(e) => panic!("Failed to generate Rust code: {}", e),
-        Ok(v) => v
+        Ok(v) => v,
     };
     for proto in generated {
-        println!("cargo::rustc-env=BP3D_PROTOC_{}={}", proto.name.to_ascii_uppercase(), proto.path.display());
+        println!(
+            "cargo::rustc-env=BP3D_PROTOC_{}={}",
+            proto.name.to_ascii_uppercase(),
+            proto.path.display()
+        );
     }
 }

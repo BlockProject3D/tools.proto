@@ -26,14 +26,14 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::marker::PhantomData;
-use bytesutil::{ReadBytes, WriteBytes};
 use crate::codec::ByteCodec;
+use bytesutil::{ReadBytes, WriteBytes};
+use std::marker::PhantomData;
 
 pub struct ArrayCodec<B, Item, C, const ITEM_BIT_SIZE: usize> {
     buffer: B,
     useless: PhantomData<Item>,
-    useless1: PhantomData<C>
+    useless1: PhantomData<C>,
 }
 
 impl<B, Item, C, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, C, ITEM_BIT_SIZE> {
@@ -41,12 +41,14 @@ impl<B, Item, C, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, C, ITEM_BIT_SIZ
         Self {
             buffer,
             useless: PhantomData::default(),
-            useless1: PhantomData::default()
+            useless1: PhantomData::default(),
         }
     }
 }
 
-impl<B: AsRef<[u8]>, Item: ReadBytes, C: ByteCodec, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, C, ITEM_BIT_SIZE> {
+impl<B: AsRef<[u8]>, Item: ReadBytes, C: ByteCodec, const ITEM_BIT_SIZE: usize>
+    ArrayCodec<B, Item, C, ITEM_BIT_SIZE>
+{
     pub fn get_raw(&self, index: usize) -> Item {
         let byte_size = ITEM_BIT_SIZE / 8;
         let pos = index * byte_size;
@@ -61,11 +63,16 @@ impl<B: AsRef<[u8]>, Item: ReadBytes, C: ByteCodec, const ITEM_BIT_SIZE: usize> 
 
     pub fn iter_raw(&self) -> impl Iterator<Item = Item> + '_ {
         let byte_size = ITEM_BIT_SIZE / 8;
-        self.buffer.as_ref().chunks(byte_size).map(|v| C::read::<Item>(v))
+        self.buffer
+            .as_ref()
+            .chunks(byte_size)
+            .map(|v| C::read::<Item>(v))
     }
 }
 
-impl<B: AsMut<[u8]>, Item: WriteBytes, C: ByteCodec, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, C, ITEM_BIT_SIZE> {
+impl<B: AsMut<[u8]>, Item: WriteBytes, C: ByteCodec, const ITEM_BIT_SIZE: usize>
+    ArrayCodec<B, Item, C, ITEM_BIT_SIZE>
+{
     pub fn set_raw(&mut self, index: usize, value: Item) -> &mut Self {
         let byte_size = ITEM_BIT_SIZE / 8;
         let pos = index * byte_size;

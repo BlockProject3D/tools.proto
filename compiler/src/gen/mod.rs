@@ -26,14 +26,14 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::compiler::Protocol;
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
-use crate::compiler::Protocol;
 
-mod rust;
-pub mod template;
-mod swift;
 mod base;
+mod rust;
+mod swift;
+pub mod template;
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub enum FileType {
@@ -42,13 +42,13 @@ pub enum FileType {
     Message,
     Structure,
     Enum,
-    Union
+    Union,
 }
 
 pub struct File {
     name: Cow<'static, str>,
     data: String,
-    ty: FileType
+    ty: FileType,
 }
 
 impl File {
@@ -56,7 +56,7 @@ impl File {
         Self {
             name: name.into(),
             ty,
-            data: data.into()
+            data: data.into(),
         }
     }
 
@@ -83,7 +83,10 @@ pub trait Generator {
     type Error: std::error::Error;
 
     fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error>;
-    fn generate_umbrella<'a>(_: &str, _: impl Iterator<Item=&'a Path>) -> Result<String, Self::Error> {
+    fn generate_umbrella<'a>(
+        _: &str,
+        _: impl Iterator<Item = &'a Path>,
+    ) -> Result<String, Self::Error> {
         Ok(String::new())
     }
 }

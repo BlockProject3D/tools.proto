@@ -42,7 +42,7 @@ macro_rules! gen_value_type {
             FixedFieldType::UInt64 => concat!($prefix, "UInt64", $suffix),
             FixedFieldType::Float32 => concat!($prefix, "Float32", $suffix),
             FixedFieldType::Float64 => concat!($prefix, "Float64", $suffix),
-            FixedFieldType::Bool => concat!($prefix, "Bool", $suffix)
+            FixedFieldType::Bool => concat!($prefix, "Bool", $suffix),
         }
     };
 }
@@ -59,7 +59,7 @@ impl crate::gen::base::structure::Utilities for SwiftUtils {
         let raw_field_byte_size = raw_field_type.get_byte_size();
         match raw_field_byte_size != field.loc.byte_size {
             true => "readUnaligned",
-            false => "readAligned"
+            false => "readAligned",
         }
     }
 
@@ -68,28 +68,28 @@ impl crate::gen::base::structure::Utilities for SwiftUtils {
         let raw_field_byte_size = raw_field_type.get_byte_size();
         match raw_field_byte_size != field.loc.byte_size {
             true => "writeUnaligned",
-            false => "writeAligned"
+            false => "writeAligned",
         }
     }
 
     fn get_bit_codec_inline(endianness: Endianness) -> &'static str {
         match endianness {
             Endianness::Little => "BP3DProto.BitCodecLE",
-            Endianness::Big => "BP3DProto.BitCodecBE"
+            Endianness::Big => "BP3DProto.BitCodecBE",
         }
     }
 
     fn get_byte_codec_inline(endianness: Endianness) -> &'static str {
         match endianness {
             Endianness::Little => "BP3DProto.ByteCodecLE",
-            Endianness::Big => "BP3DProto.ByteCodecBE"
+            Endianness::Big => "BP3DProto.ByteCodecBE",
         }
     }
 
     fn get_byte_codec(endianness: Endianness) -> &'static str {
         match endianness {
             Endianness::Little => "BP3DProto.ByteCodecLE",
-            Endianness::Big => "BP3DProto.ByteCodecBE"
+            Endianness::Big => "BP3DProto.ByteCodecBE",
         }
     }
 }

@@ -26,16 +26,16 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use itertools::Itertools;
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::structure::FixedFieldType;
 use crate::compiler::util::TypePathMap;
 use crate::gen::template::Template;
 use crate::model::protocol::Endianness;
+use itertools::Itertools;
 
 pub enum StringType {
     Varchar,
-    NullTerminated
+    NullTerminated,
 }
 
 pub trait Utilities: crate::gen::base::structure::Utilities {
@@ -53,7 +53,11 @@ pub trait Utilities: crate::gen::base::structure::Utilities {
     fn gen_union_ref_type(type_name: &str) -> String;
 }
 
-fn gen_field_decl<U: Utilities>(field: &Field, template: &Template, type_path_by_name: &TypePathMap) -> String {
+fn gen_field_decl<U: Utilities>(
+    field: &Field,
+    template: &Template,
+    type_path_by_name: &TypePathMap,
+) -> String {
     let msg_type = match &field.ty {
         FieldType::Fixed(ty) => U::get_field_type(ty.ty).into(),
         FieldType::Ref(v) => match v {
@@ -62,30 +66,50 @@ fn gen_field_decl<U: Utilities>(field: &Field, template: &Template, type_path_by
         },
         FieldType::NullTerminatedString => U::get_string_type(StringType::NullTerminated).into(),
         FieldType::VarcharString(_) => U::get_string_type(StringType::Varchar).into(),
-        FieldType::Array(v) => template.scope()
+        FieldType::Array(v) => template
+            .scope()
             .var("codec", U::get_value_type(field.endianness, v.ty))
             .var("type_name", type_path_by_name.get(&v.item_type.name))
-            .render("", &["array"]).unwrap(),
+            .render("", &["array"])
+            .unwrap(),
         FieldType::Union(v) => U::gen_union_ref_type(type_path_by_name.get(&v.r.name)),
-        FieldType::List(v) => template.scope()
+        FieldType::List(v) => template
+            .scope()
             .var("codec", U::get_value_type(field.endianness, v.ty))
             .var("type_name", type_path_by_name.get(&v.item_type.name))
-            .render("", &["list"]).unwrap(),
-        FieldType::Payload => U::get_payload_type().into()
+            .render("", &["list"])
+            .unwrap(),
+        FieldType::Payload => U::get_payload_type().into(),
     };
     let msg_type = match field.optional {
         true => U::gen_option_type(&msg_type),
-        false => msg_type
+        false => msg_type,
     };
-    template.scope().var("name", &field.name).var("type", msg_type)
-        .render("decl", &["field"]).unwrap()
+    template
+        .scope()
+        .var("name", &field.name)
+        .var("type", msg_type)
+        .render("decl", &["field"])
+        .unwrap()
 }
 
-pub fn generate<U: Utilities>(template: &[u8], msg: &Message, type_path_by_name: &TypePathMap) -> String {
+pub fn generate<U: Utilities>(
+    template: &[u8],
+    msg: &Message,
+    type_path_by_name: &TypePathMap,
+) -> String {
     let mut template = Template::compile(template).unwrap();
-    template.var("msg_name", &msg.name).var("generics", U::gen_generics(msg));
-    let fields = msg.fields.iter()
+    template
+        .var("msg_name", &msg.name)
+        .var("generics", U::gen_generics(msg));
+    let fields = msg
+        .fields
+        .iter()
         .map(|v| gen_field_decl::<U>(v, &template, type_path_by_name))
         .join("");
-    template.scope().var("fields", fields).render("", &["decl"]).unwrap()
+    template
+        .scope()
+        .var("fields", fields)
+        .render("", &["decl"])
+        .unwrap()
 }

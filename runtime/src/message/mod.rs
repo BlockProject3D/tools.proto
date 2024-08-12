@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 mod interface;
-pub mod util;
 mod macros;
+pub mod util;
 
 pub use interface::*;

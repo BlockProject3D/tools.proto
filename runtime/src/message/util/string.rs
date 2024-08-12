@@ -26,10 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::io::Write;
-use std::marker::PhantomData;
 use crate::message::{Error, FromSlice, Message, WriteTo};
 use crate::util::ToUsize;
+use std::io::Write;
+use std::marker::PhantomData;
 
 pub struct NullTerminatedString;
 
@@ -37,11 +37,16 @@ impl<'a> FromSlice<'a> for NullTerminatedString {
     type Output = &'a str;
 
     fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
-        let string = slice.iter().enumerate().find_map(|(id, v)| match *v == 0x0 {
-            true => Some(id),
-            false => None
-        }).map(|pos| std::str::from_utf8(&slice[0..pos]))
-            .ok_or(Error::Truncated)?.map_err(|_| Error::InvalidUtf8)?;
+        let string = slice
+            .iter()
+            .enumerate()
+            .find_map(|(id, v)| match *v == 0x0 {
+                true => Some(id),
+                false => None,
+            })
+            .map(|pos| std::str::from_utf8(&slice[0..pos]))
+            .ok_or(Error::Truncated)?
+            .map_err(|_| Error::InvalidUtf8)?;
         Ok(Message::new(string.len() + 1, string))
     }
 }

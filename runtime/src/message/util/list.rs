@@ -26,22 +26,24 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::marker::PhantomData;
-use crate::message::{Error, FromSlice, FromSliceWithOffsets, Message, WriteTo};
 use crate::message::util::list_base::impl_list_base;
+use crate::message::{Error, FromSlice, FromSliceWithOffsets, Message, WriteTo};
 use crate::util::ToUsize;
+use std::marker::PhantomData;
 
 #[derive(Copy, Clone, Debug)]
 pub struct List<B, T, Item> {
     data: B,
     len: usize,
     useless: PhantomData<T>,
-    useless1: PhantomData<Item>
+    useless1: PhantomData<Item>,
 }
 
 impl_list_base!(List);
 
-impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FromSlice<'a, Output = Item>> FromSlice<'a> for List<&'a [u8], T, Item> {
+impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FromSlice<'a, Output = Item>> FromSlice<'a>
+    for List<&'a [u8], T, Item>
+{
     type Output = List<&'a [u8], T, Item>;
 
     fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
@@ -55,14 +57,16 @@ impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FromSlice<'a, Output = Item>> 
             total_size += msg.size();
         }
         let data = &slice[control_size..control_size + total_size];
-        Ok(Message::new(total_size + control_size, unsafe { List::from_raw_parts(data, len) }))
+        Ok(Message::new(total_size + control_size, unsafe {
+            List::from_raw_parts(data, len)
+        }))
     }
 }
 
 pub struct Iter<'a, Item> {
     data: &'a [u8],
     len: usize,
-    useless: PhantomData<Item>
+    useless: PhantomData<Item>,
 }
 
 impl<'a, Item: FromSlice<'a, Output = Item>> Iterator for Iter<'a, Item> {
@@ -74,7 +78,7 @@ impl<'a, Item: FromSlice<'a, Output = Item>> Iterator for Iter<'a, Item> {
         }
         let msg = match Item::from_slice(self.data) {
             Err(e) => return Some(Err(e)),
-            Ok(v) => v
+            Ok(v) => v,
         };
         self.data = &self.data[msg.size()..];
         self.len -= 1;
@@ -85,10 +89,12 @@ impl<'a, Item: FromSlice<'a, Output = Item>> Iterator for Iter<'a, Item> {
 pub struct IterOffsets<'a, Item> {
     data: &'a [u8],
     len: usize,
-    useless: PhantomData<Item>
+    useless: PhantomData<Item>,
 }
 
-impl<'a, Item: FromSlice<'a, Output = Item> + FromSliceWithOffsets<'a>> Iterator for IterOffsets<'a, Item> {
+impl<'a, Item: FromSlice<'a, Output = Item> + FromSliceWithOffsets<'a>> Iterator
+    for IterOffsets<'a, Item>
+{
     type Item = crate::message::Result<(Item, Item::Offsets)>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -97,7 +103,7 @@ impl<'a, Item: FromSlice<'a, Output = Item> + FromSliceWithOffsets<'a>> Iterator
         }
         let msg = match Item::from_slice_with_offsets(&self.data[..]) {
             Err(e) => return Some(Err(e)),
-            Ok(v) => v
+            Ok(v) => v,
         };
         self.data = &self.data[msg.size()..];
         self.len -= 1;
@@ -110,7 +116,7 @@ impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
         Iter {
             data: self.data.as_ref(),
             len: self.len,
-            useless: PhantomData::default()
+            useless: PhantomData::default(),
         }
     }
 
@@ -118,14 +124,14 @@ impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
         IterOffsets {
             data: self.data.as_ref(),
             len: self.len,
-            useless: PhantomData::default()
+            useless: PhantomData::default(),
         }
     }
 }
 
 pub struct Unsized<T, Item> {
     useless: PhantomData<T>,
-    useless1: PhantomData<Item>
+    useless1: PhantomData<Item>,
 }
 
 impl<'a, T: FromSlice<'a, Output: ToUsize>, Item> FromSlice<'a> for Unsized<T, Item> {
@@ -136,6 +142,8 @@ impl<'a, T: FromSlice<'a, Output: ToUsize>, Item> FromSlice<'a> for Unsized<T, I
         let control_size = msg.size();
         let len = msg.into_inner().to_usize();
         let data = &slice[control_size..];
-        Ok(Message::new(slice.len(), unsafe { List::from_raw_parts(data, len) }))
+        Ok(Message::new(slice.len(), unsafe {
+            List::from_raw_parts(data, len)
+        }))
     }
 }

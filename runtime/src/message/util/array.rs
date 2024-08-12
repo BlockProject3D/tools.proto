@@ -26,27 +26,26 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
+use crate::message::util::list_base::impl_list_base;
+use crate::message::WriteTo;
+use crate::message::{Error, FromSlice, Message};
+use crate::util::{FixedSize, ToUsize};
 use std::marker::PhantomData;
 use std::slice::{Chunks, ChunksMut};
-use crate::message::{Error, FromSlice, Message};
-use crate::message::util::list_base::impl_list_base;
-use crate::util::{FixedSize, ToUsize};
-use crate::message::WriteTo;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Array<B, T, Item> {
     data: B,
     len: usize,
     useless: PhantomData<T>,
-    useless1: PhantomData<Item>
+    useless1: PhantomData<Item>,
 }
 
 impl_list_base!(Array);
 
 pub struct IterMut<'a, Item> {
     data: ChunksMut<'a, u8>,
-    useless: PhantomData<Item>
+    useless: PhantomData<Item>,
 }
 
 impl<'a, Item: From<&'a mut [u8]>> Iterator for IterMut<'a, Item> {
@@ -59,7 +58,7 @@ impl<'a, Item: From<&'a mut [u8]>> Iterator for IterMut<'a, Item> {
 
 pub struct Iter<'a, Item> {
     data: Chunks<'a, u8>,
-    useless: PhantomData<Item>
+    useless: PhantomData<Item>,
 }
 
 impl<'a, Item: From<&'a [u8]>> Iterator for Iter<'a, Item> {
@@ -74,7 +73,7 @@ impl<B: AsRef<[u8]>, T, Item: FixedSize> Array<B, T, Item> {
     pub fn from_parts(data: B, len: usize) -> Option<Array<B, T, Item>> {
         match data.as_ref().len() == len * Item::SIZE {
             true => Some(unsafe { Array::from_raw_parts(data, len) }),
-            false => None
+            false => None,
         }
     }
 }
@@ -89,7 +88,7 @@ impl<'a, B: AsRef<[u8]>, T, I> Array<B, T, I> {
     pub fn iter<Item: FixedSize + From<&'a [u8]>>(&'a self) -> Iter<'a, Item> {
         Iter {
             data: self.data.as_ref().chunks(Item::SIZE),
-            useless: PhantomData::default()
+            useless: PhantomData::default(),
         }
     }
 }
@@ -104,12 +103,14 @@ impl<'a, B: AsMut<[u8]>, T, I> Array<B, T, I> {
     pub fn iter_mut<Item: FixedSize + From<&'a mut [u8]>>(&'a mut self) -> IterMut<'a, Item> {
         IterMut {
             data: self.data.as_mut().chunks_mut(Item::SIZE),
-            useless: PhantomData::default()
+            useless: PhantomData::default(),
         }
     }
 }
 
-impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FixedSize + FromSlice<'a, Output = Item>> FromSlice<'a> for Array<&'a [u8], T, Item> {
+impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FixedSize + FromSlice<'a, Output = Item>>
+    FromSlice<'a> for Array<&'a [u8], T, Item>
+{
     type Output = Array<&'a [u8], T, Item>;
 
     fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
@@ -121,12 +122,15 @@ impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FixedSize + FromSlice<'a, Outp
             Err(Error::Truncated)
         } else {
             let data = &slice[control_size..total_size];
-            Ok(Message::new(total_size, Array {
-                data,
-                len,
-                useless: PhantomData::default(),
-                useless1: PhantomData::default()
-            }))
+            Ok(Message::new(
+                total_size,
+                Array {
+                    data,
+                    len,
+                    useless: PhantomData::default(),
+                    useless1: PhantomData::default(),
+                },
+            ))
         }
     }
 }

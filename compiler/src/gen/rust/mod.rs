@@ -26,20 +26,16 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+mod r#enum;
 mod message;
 mod message_from_slice;
-mod util;
+mod message_offsets;
 mod message_write;
 pub mod structure;
-mod r#enum;
 mod union;
-mod message_offsets;
+mod util;
 
-use std::path::Path;
-use bp3d_util::simple_error;
-use itertools::Itertools;
 use crate::compiler::Protocol;
-use crate::gen::{File, FileType, Generator};
 use crate::gen::rust::message::gen_message_decl;
 use crate::gen::rust::message_from_slice::gen_message_from_slice_impl;
 use crate::gen::rust::message_offsets::gen_message_offsets_decl;
@@ -47,6 +43,10 @@ use crate::gen::rust::message_write::gen_message_write_impl;
 use crate::gen::rust::r#enum::gen_enum_decl;
 use crate::gen::rust::structure::gen_structure_decl;
 use crate::gen::rust::union::gen_union_decl;
+use crate::gen::{File, FileType, Generator};
+use bp3d_util::simple_error;
+use itertools::Itertools;
+use std::path::Path;
 
 simple_error! {
     pub Error {
@@ -60,25 +60,64 @@ impl Generator for GeneratorRust {
     type Error = Error;
 
     fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error> {
-        let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(v, &proto.type_path_by_name)).join("\n");
-        let impl_from_slice_messages_code = proto.messages.iter().map(|v| gen_message_from_slice_impl(v, &proto.type_path_by_name)).join("\n");
-        let impl_write_messages_code = proto.messages.iter().map(|v| gen_message_write_impl(v, &proto.type_path_by_name)).join("\n");
-        let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(v, &proto.type_path_by_name)).join("\n");
+        let decl_messages_code = proto
+            .messages
+            .iter()
+            .map(|v| gen_message_decl(v, &proto.type_path_by_name))
+            .join("\n");
+        let impl_from_slice_messages_code = proto
+            .messages
+            .iter()
+            .map(|v| gen_message_from_slice_impl(v, &proto.type_path_by_name))
+            .join("\n");
+        let impl_write_messages_code = proto
+            .messages
+            .iter()
+            .map(|v| gen_message_write_impl(v, &proto.type_path_by_name))
+            .join("\n");
+        let decl_structures = proto
+            .structs
+            .iter()
+            .map(|v| gen_structure_decl(v, &proto.type_path_by_name))
+            .join("\n");
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(v)).join("\n");
-        let decl_unions = proto.unions.iter().map(|v| gen_union_decl(v, &proto.type_path_by_name)).join("\n");
-        let decl_messages_code_offsets = proto.messages.iter().map(|v| gen_message_offsets_decl(v, &proto.type_path_by_name)).join("\n");
+        let decl_unions = proto
+            .unions
+            .iter()
+            .map(|v| gen_union_decl(v, &proto.type_path_by_name))
+            .join("\n");
+        let decl_messages_code_offsets = proto
+            .messages
+            .iter()
+            .map(|v| gen_message_offsets_decl(v, &proto.type_path_by_name))
+            .join("\n");
         Ok(vec![
             File::new(FileType::Message, "messages.rs", decl_messages_code),
-            File::new(FileType::MessageReading, "messages_from_slice.rs", impl_from_slice_messages_code),
-            File::new(FileType::MessageWriting, "messages_write.rs", impl_write_messages_code),
-            File::new(FileType::MessageReading, "messages_offsets.rs", decl_messages_code_offsets),
+            File::new(
+                FileType::MessageReading,
+                "messages_from_slice.rs",
+                impl_from_slice_messages_code,
+            ),
+            File::new(
+                FileType::MessageWriting,
+                "messages_write.rs",
+                impl_write_messages_code,
+            ),
+            File::new(
+                FileType::MessageReading,
+                "messages_offsets.rs",
+                decl_messages_code_offsets,
+            ),
             File::new(FileType::Structure, "structures.rs", decl_structures),
             File::new(FileType::Enum, "enums.rs", decl_enums),
-            File::new(FileType::Union, "unions.rs", decl_unions)
+            File::new(FileType::Union, "unions.rs", decl_unions),
         ])
     }
 
-    fn generate_umbrella<'a>(proto_name: &str, files: impl Iterator<Item=&'a Path>) -> Result<String, Self::Error> {
+    fn generate_umbrella<'a>(
+        proto_name: &str,
+        files: impl Iterator<Item = &'a Path>,
+    ) -> Result<String, Self::Error> {
         let mut code = format!("pub mod {} {{\n", proto_name);
         for file in files {
             code += &format!("include!({:?});\n", file);

@@ -26,10 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::path::{Path, PathBuf};
-use crate::{compiler, Error, model};
 use crate::compiler::util::ImportResolver;
 use crate::gen::{FileType, Generator};
+use crate::{compiler, model, Error};
+use std::path::{Path, PathBuf};
 
 pub trait ImportSolver {
     fn register(&mut self, base_import_path: String, protocol: compiler::Protocol);
@@ -37,14 +37,14 @@ pub trait ImportSolver {
 
 pub struct Loader {
     models: Vec<model::Protocol>,
-    imported_models: Vec<(String, model::Protocol)>
+    imported_models: Vec<(String, model::Protocol)>,
 }
 
 impl Loader {
     pub fn new() -> Self {
         Self {
             models: Vec::new(),
-            imported_models: Vec::new()
+            imported_models: Vec::new(),
         }
     }
 
@@ -55,7 +55,11 @@ impl Loader {
         Ok(())
     }
 
-    pub fn import(&mut self, path: impl AsRef<Path>, import_path: impl Into<String>) -> Result<(), Error> {
+    pub fn import(
+        &mut self,
+        path: impl AsRef<Path>,
+        import_path: impl Into<String>,
+    ) -> Result<(), Error> {
         let content = std::fs::read_to_string(path).map_err(Error::Io)?;
         let model: model::Protocol = json5::from_str(&content).map_err(Error::Model)?;
         self.imported_models.push((import_path.into(), model));
@@ -64,19 +68,23 @@ impl Loader {
 
     pub fn compile<T: ImportResolver + ImportSolver>(self, mut solver: T) -> Result<Protoc, Error> {
         for (base_import_path, model) in self.imported_models {
-            let compiled = compiler::Protocol::from_model(model, &solver).map_err(Error::Compiler)?;
+            let compiled =
+                compiler::Protocol::from_model(model, &solver).map_err(Error::Compiler)?;
             solver.register(base_import_path, compiled);
         }
-        let models = self.models.into_iter()
+        let models = self
+            .models
+            .into_iter()
             .map(|model| compiler::Protocol::from_model(model, &solver))
-            .collect::<Result<Vec<compiler::Protocol>, compiler::Error>>().map_err(Error::Compiler)?;
+            .collect::<Result<Vec<compiler::Protocol>, compiler::Error>>()
+            .map_err(Error::Compiler)?;
         Ok(Protoc::new(models))
     }
 }
 
 pub struct Proto {
     pub name: String,
-    pub path: PathBuf
+    pub path: PathBuf,
 }
 
 pub struct Protoc {
@@ -86,7 +94,7 @@ pub struct Protoc {
     use_enums: bool,
     use_structs: bool,
     use_messages: bool,
-    use_unions: bool
+    use_unions: bool,
 }
 
 impl Protoc {
@@ -98,7 +106,7 @@ impl Protoc {
             use_enums: true,
             use_structs: true,
             use_messages: true,
-            use_unions: true
+            use_unions: true,
         }
     }
 
@@ -132,7 +140,10 @@ impl Protoc {
         self
     }
 
-    pub fn generate<T: Generator>(self, out_directory: impl AsRef<Path>) -> Result<Vec<Proto>, Error> {
+    pub fn generate<T: Generator>(
+        self,
+        out_directory: impl AsRef<Path>,
+    ) -> Result<Vec<Proto>, Error> {
         let mut generated_protocols = Vec::new();
         for proto in self.protocols {
             let name = proto.name.clone();
@@ -141,26 +152,28 @@ impl Protoc {
             if !out_path.exists() {
                 std::fs::create_dir(&out_path).map_err(Error::Io)?;
             }
-            let files_iter = files.into_iter().filter(|v| {
-                match v.ty() {
-                    FileType::MessageWriting => self.write_messages,
-                    FileType::MessageReading => self.read_messages,
-                    FileType::Message => self.use_messages,
-                    FileType::Structure => self.use_structs,
-                    FileType::Enum => self.use_enums,
-                    FileType::Union => self.use_unions
-                }
+            let files_iter = files.into_iter().filter(|v| match v.ty() {
+                FileType::MessageWriting => self.write_messages,
+                FileType::MessageReading => self.read_messages,
+                FileType::Message => self.use_messages,
+                FileType::Structure => self.use_structs,
+                FileType::Enum => self.use_enums,
+                FileType::Union => self.use_unions,
             });
-            let iter = files_iter.into_iter().map(|v| v.write(&out_path))
+            let iter = files_iter
+                .into_iter()
+                .map(|v| v.write(&out_path))
                 .filter_map(|v| match v {
                     Ok(o) => match o {
                         Some(o) => Some(Ok(o)),
-                        None => None
+                        None => None,
                     },
-                    Err(e) => Some(Err(e))
+                    Err(e) => Some(Err(e)),
                 })
-                .collect::<std::io::Result<Vec<PathBuf>>>().map_err(Error::Io)?;
-            let umbrella = T::generate_umbrella(&name, iter.iter().map(|v| &**v)).map_err(|e| Error::Generator(e.to_string()))?;
+                .collect::<std::io::Result<Vec<PathBuf>>>()
+                .map_err(Error::Io)?;
+            let umbrella = T::generate_umbrella(&name, iter.iter().map(|v| &**v))
+                .map_err(|e| Error::Generator(e.to_string()))?;
             let proto_path;
             if umbrella.len() > 1 {
                 let umbrella_path = out_path.join("umbrella.rs");
@@ -171,7 +184,7 @@ impl Protoc {
             }
             generated_protocols.push(Proto {
                 name,
-                path: proto_path
+                path: proto_path,
             })
         }
         Ok(generated_protocols)

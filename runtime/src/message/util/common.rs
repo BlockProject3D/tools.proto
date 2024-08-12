@@ -26,10 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::message::{Error, FromSlice, FromSliceWithOffsets, Message, WriteTo};
+use bytesutil::ReadBytes;
 use std::io::Write;
 use std::marker::PhantomData;
-use bytesutil::ReadBytes;
-use crate::message::{Error, FromSlice, FromSliceWithOffsets, Message, WriteTo};
 
 pub struct Optional<T>(PhantomData<T>);
 
@@ -51,10 +51,14 @@ impl<'a, T: FromSlice<'a, Output = T>> FromSlice<'a> for Optional<T> {
     }
 }
 
-impl<'a, T: FromSlice<'a, Output = T> + FromSliceWithOffsets<'a>> FromSliceWithOffsets<'a> for Optional<T> {
+impl<'a, T: FromSlice<'a, Output = T> + FromSliceWithOffsets<'a>> FromSliceWithOffsets<'a>
+    for Optional<T>
+{
     type Offsets = Option<T::Offsets>;
 
-    fn from_slice_with_offsets(slice: &'a [u8]) -> crate::message::Result<Message<(Self::Output, Self::Offsets)>> {
+    fn from_slice_with_offsets(
+        slice: &'a [u8],
+    ) -> crate::message::Result<Message<(Self::Output, Self::Offsets)>> {
         if slice.len() < 1 {
             Err(Error::Truncated)
         } else {

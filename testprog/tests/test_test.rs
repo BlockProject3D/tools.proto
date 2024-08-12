@@ -26,15 +26,15 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::io::Write;
 use bp3d_proto::message::{FromSlice, FromSliceWithOffsets, WriteTo};
+use std::io::Write;
 use testprog::test::{Test, Test1};
 
 fn write_message<W: Write>(out: W) {
     let msg = Test {
         p1: Some(Test1 {
             s1: "this is a test",
-            p1: 42
+            p1: 42,
         }),
         s1: "a test",
         s2: "hello world",

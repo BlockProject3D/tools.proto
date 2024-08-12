@@ -26,16 +26,20 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use itertools::Itertools;
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
 use crate::gen::base::message_from_slice::generate_from_slice_impl;
 use crate::gen::rust::util::{Generics, RustUtils};
 use crate::gen::template::Template;
+use itertools::Itertools;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.offsets.template");
 
-fn gen_message_offset_field(field: &Field, template: &Template, type_path_by_name: &TypePathMap) -> String {
+fn gen_message_offset_field(
+    field: &Field,
+    template: &Template,
+    type_path_by_name: &TypePathMap,
+) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
     match &field.ty {
@@ -45,18 +49,25 @@ fn gen_message_offset_field(field: &Field, template: &Template, type_path_by_nam
                 true => scope.render("decl", &["field", "msg_optional"]).unwrap(),
                 false => scope.render("decl", &["field", "msg"]).unwrap(),
             }
-        },
-        _ => scope.render("decl", &["field"]).unwrap()
+        }
+        _ => scope.render("decl", &["field"]).unwrap(),
     }
 }
 
 pub fn gen_message_offsets_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
     let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("msg_name", &msg.name).var("generics", Generics::from_message(msg).to_code());
-    let fields = msg.fields.iter()
+    template
+        .var("msg_name", &msg.name)
+        .var("generics", Generics::from_message(msg).to_code());
+    let fields = msg
+        .fields
+        .iter()
         .map(|field| gen_message_offset_field(field, &template, type_path_by_name))
         .join("");
-    let mut code = template.var("fields", fields).render("", &["decl"]).unwrap();
+    let mut code = template
+        .var("fields", fields)
+        .render("", &["decl"])
+        .unwrap();
     code += "\n";
     code += &generate_from_slice_impl::<RustUtils>(msg, &template, type_path_by_name);
     code

@@ -26,8 +26,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::collections::HashMap;
-use std::rc::Rc;
 use crate::compiler::error::Error;
 use crate::compiler::message::Message;
 use crate::compiler::r#enum::Enum;
@@ -35,6 +33,8 @@ use crate::compiler::structure::Structure;
 use crate::compiler::union::Union;
 use crate::compiler::util::{ImportResolver, TypePathMap};
 use crate::model::protocol::Endianness;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 #[derive(Clone, Debug)]
 pub struct Protocol {
@@ -48,11 +48,14 @@ pub struct Protocol {
     pub structs: Vec<Rc<Structure>>,
     pub messages: Vec<Rc<Message>>,
     pub enums: Vec<Rc<Enum>>,
-    pub unions: Vec<Rc<Union>>
+    pub unions: Vec<Rc<Union>>,
 }
 
 impl Protocol {
-    pub fn from_model<T: ImportResolver>(value: crate::model::Protocol, solver: &T) -> Result<Self, Error> {
+    pub fn from_model<T: ImportResolver>(
+        value: crate::model::Protocol,
+        solver: &T,
+    ) -> Result<Self, Error> {
         let mut proto = Protocol {
             name: value.name,
             endianness: Endianness::Little,
@@ -64,42 +67,51 @@ impl Protocol {
             structs: Vec::new(),
             messages: Vec::new(),
             enums: Vec::new(),
-            unions: Vec::new()
+            unions: Vec::new(),
         };
         if let Some(imports) = value.imports {
             for v in imports {
                 let r = solver.get_protocol_by_name(&v.protocol);
                 let r = match r {
                     Some(r) => r,
-                    None => return Err(Error::UndefinedReference(v.protocol))
+                    None => return Err(Error::UndefinedReference(v.protocol)),
                 };
                 match r.structs_by_name.get(&v.type_name) {
-                    None => {
-                        match r.enums_by_name.get(&v.type_name) {
-                            None => {
-                                match r.unions_by_name.get(&v.type_name) {
-                                    Some(vv) => {
-                                        let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
-                                        proto.unions_by_name.insert(v.type_name, vv.clone());
-                                        proto.type_path_by_name.add(vv.name.clone(), type_path);
-                                    },
-                                    None => {
-                                        let msg = r.messages_by_name.get(&v.type_name).ok_or(Error::UndefinedReference(format!("{}::{}", v.protocol, v.type_name)))?;
-                                        let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
-                                        proto.messages_by_name.insert(v.type_name, msg.clone());
-                                        proto.type_path_by_name.add(msg.name.clone(), type_path);
-                                    }
-                                }
-                            },
+                    None => match r.enums_by_name.get(&v.type_name) {
+                        None => match r.unions_by_name.get(&v.type_name) {
                             Some(vv) => {
-                                let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
-                                proto.enums_by_name.insert(v.type_name, vv.clone());
+                                let type_path = solver
+                                    .get_full_type_path(&v.protocol, &v.type_name)
+                                    .ok_or(Error::SolverError)?;
+                                proto.unions_by_name.insert(v.type_name, vv.clone());
                                 proto.type_path_by_name.add(vv.name.clone(), type_path);
                             }
+                            None => {
+                                let msg = r.messages_by_name.get(&v.type_name).ok_or(
+                                    Error::UndefinedReference(format!(
+                                        "{}::{}",
+                                        v.protocol, v.type_name
+                                    )),
+                                )?;
+                                let type_path = solver
+                                    .get_full_type_path(&v.protocol, &v.type_name)
+                                    .ok_or(Error::SolverError)?;
+                                proto.messages_by_name.insert(v.type_name, msg.clone());
+                                proto.type_path_by_name.add(msg.name.clone(), type_path);
+                            }
+                        },
+                        Some(vv) => {
+                            let type_path = solver
+                                .get_full_type_path(&v.protocol, &v.type_name)
+                                .ok_or(Error::SolverError)?;
+                            proto.enums_by_name.insert(v.type_name, vv.clone());
+                            proto.type_path_by_name.add(vv.name.clone(), type_path);
                         }
                     },
                     Some(vv) => {
-                        let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
+                        let type_path = solver
+                            .get_full_type_path(&v.protocol, &v.type_name)
+                            .ok_or(Error::SolverError)?;
                         proto.structs_by_name.insert(v.type_name, vv.clone());
                         proto.type_path_by_name.add(vv.name.clone(), type_path);
                     }

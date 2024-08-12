@@ -57,9 +57,13 @@ pub trait ByteCodec {
 
     fn write<T: WriteBytes>(buffer: &mut [u8], value: T) {
         if size_of::<T>() != buffer.len() {
-            unsafe { Self::write_unaligned::<T>(buffer, value); }
+            unsafe {
+                Self::write_unaligned::<T>(buffer, value);
+            }
         } else {
-            unsafe { Self::write_aligned::<T>(buffer, value); }
+            unsafe {
+                Self::write_aligned::<T>(buffer, value);
+            }
         }
     }
 }

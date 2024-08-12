@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_util::simple_error;
 use crate::model::structure::{SimpleType, StructFieldType};
+use bp3d_util::simple_error;
 
 simple_error! {
     pub Error {
@@ -44,6 +44,6 @@ simple_error! {
         InvalidUnionDiscriminant => "invalid union discriminant path",
         FloatInUnionDiscriminant => "floats are not allowed as union discriminants",
         InvalidUnionCase(String) => "invalid union case {}",
-        UnionTypeMismatch => "mismatch with union discriminant types" 
+        UnionTypeMismatch => "mismatch with union discriminant types"
     }
 }

@@ -26,9 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::message::WriteTo;
 use std::io::Write;
 use std::marker::PhantomData;
-use crate::message::WriteTo;
 
 struct Counter(usize);
 

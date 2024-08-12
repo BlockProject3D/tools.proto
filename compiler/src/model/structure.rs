@@ -32,37 +32,20 @@ use serde::Deserialize;
 #[serde(rename_all = "kebab-case")]
 #[serde(tag = "type")]
 pub enum StructFieldView {
-    Enum {
-        name: String
-    },
-    FloatRange {
-        min: f64,
-        max: f64
-    },
-    FloatMultiplier {
-        multiplier: f64
-    }
+    Enum { name: String },
+    FloatRange { min: f64, max: f64 },
+    FloatMultiplier { multiplier: f64 },
 }
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 #[serde(tag = "type")]
 pub enum StructFieldType {
-    Signed {
-        bits: usize
-    },
-    Unsigned {
-        bits: usize
-    },
-    Float {
-        bits: usize
-    },
-    Boolean {
-        bits: usize
-    },
-    Struct {
-        item_type: String
-    }
+    Signed { bits: usize },
+    Unsigned { bits: usize },
+    Float { bits: usize },
+    Boolean { bits: usize },
+    Struct { item_type: String },
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -71,7 +54,7 @@ pub enum SimpleType {
     Unsigned,
     Float,
     Boolean,
-    Struct
+    Struct,
 }
 
 impl StructFieldType {
@@ -81,7 +64,7 @@ impl StructFieldType {
             StructFieldType::Unsigned { .. } => SimpleType::Unsigned,
             StructFieldType::Float { .. } => SimpleType::Float,
             StructFieldType::Boolean { .. } => SimpleType::Boolean,
-            StructFieldType::Struct { .. } => SimpleType::Struct
+            StructFieldType::Struct { .. } => SimpleType::Struct,
         }
     }
 
@@ -91,7 +74,7 @@ impl StructFieldType {
             StructFieldType::Unsigned { bits } => Some(*bits),
             StructFieldType::Float { bits } => Some(*bits),
             StructFieldType::Boolean { bits } => Some(*bits),
-            StructFieldType::Struct { .. } => None
+            StructFieldType::Struct { .. } => None,
         }
     }
 }
@@ -101,11 +84,11 @@ pub struct StructField {
     pub name: String,
     pub info: StructFieldType,
     pub view: Option<StructFieldView>,
-    pub array_len: Option<usize>
+    pub array_len: Option<usize>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Structure {
     pub name: String,
-    pub fields: Vec<StructField>
+    pub fields: Vec<StructField>,
 }

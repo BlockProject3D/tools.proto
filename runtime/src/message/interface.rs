@@ -42,7 +42,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Default, Copy, Clone, Debug)]
 pub struct FieldOffset {
     pub start: usize,
-    pub end: usize
+    pub end: usize,
 }
 
 impl FieldOffset {
@@ -53,15 +53,12 @@ impl FieldOffset {
 
 pub struct Message<T> {
     data: T,
-    size: usize
+    size: usize,
 }
 
 impl<T> Message<T> {
     pub fn new(size: usize, data: T) -> Self {
-        Self {
-            data,
-            size
-        }
+        Self { data, size }
     }
 
     pub fn into_inner(self) -> T {

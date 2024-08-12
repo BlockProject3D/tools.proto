@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use bp3d_proto::util::Size;
-use testprog::structs::{Flags, Floats, Numbers, Master};
+use testprog::structs::{Flags, Floats, Master, Numbers};
 
 fn check_numbers<T: AsRef<[u8]>>(nums: &Numbers<T>) {
     assert_eq!(nums.get_u_a(), 0x123456AB);
@@ -54,7 +54,12 @@ fn check_floats<T: AsRef<[u8]>>(floats: &Floats<T>) {
 fn numbers() {
     let mut nums = Numbers::new_on_stack();
     assert_eq!(nums.size(), 14);
-    nums.set_u_a(0x123456AB).set_a(-424242).set_u_b(0x1234).set_b(-4242).set_u_c(0x12).set_c(-42);
+    nums.set_u_a(0x123456AB)
+        .set_a(-424242)
+        .set_u_b(0x1234)
+        .set_b(-4242)
+        .set_u_c(0x12)
+        .set_c(-42);
     check_numbers(&nums);
 }
 
@@ -78,8 +83,20 @@ fn floats() {
 fn master() {
     let mut master = Master::new_on_stack();
     assert_eq!(master.size(), 14 + 15 + 12);
-    master.get_nums_mut().set_u_a(0x123456AB).set_a(-424242).set_u_b(0x1234).set_b(-4242).set_u_c(0x12).set_c(-42);
-    master.get_flags_mut().set_a(true).set_b(true).set_c(true).set_d(true);
+    master
+        .get_nums_mut()
+        .set_u_a(0x123456AB)
+        .set_a(-424242)
+        .set_u_b(0x1234)
+        .set_b(-4242)
+        .set_u_c(0x12)
+        .set_c(-42);
+    master
+        .get_flags_mut()
+        .set_a(true)
+        .set_b(true)
+        .set_c(true)
+        .set_d(true);
     master.get_floats_mut().set_a(4242.0).set_b(4242.4242);
     check_numbers(&master.get_nums());
     check_flags(&master.get_flags());

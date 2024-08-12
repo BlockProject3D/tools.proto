@@ -26,11 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::compiler::Protocol;
+use crate::gen::swift::structure::gen_structure_decl;
+use crate::gen::{File, FileType, Generator};
 use bp3d_util::simple_error;
 use itertools::Itertools;
-use crate::compiler::Protocol;
-use crate::gen::{File, FileType, Generator};
-use crate::gen::swift::structure::gen_structure_decl;
 
 mod structure;
 mod util;
@@ -47,9 +47,15 @@ impl Generator for GeneratorSwift {
     type Error = Error;
 
     fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error> {
-        let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(v, &proto.type_path_by_name)).join("\n");
-        Ok(vec![
-            File::new(FileType::Structure, "structures.rs", decl_structures)
-        ])
+        let decl_structures = proto
+            .structs
+            .iter()
+            .map(|v| gen_structure_decl(v, &proto.type_path_by_name))
+            .join("\n");
+        Ok(vec![File::new(
+            FileType::Structure,
+            "structures.rs",
+            decl_structures,
+        )])
     }
 }

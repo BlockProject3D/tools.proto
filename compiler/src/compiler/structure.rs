@@ -26,12 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::rc::Rc;
 use crate::compiler::error::Error;
-use crate::compiler::Protocol;
 use crate::compiler::r#enum::Enum;
+use crate::compiler::Protocol;
 use crate::model::protocol::Endianness;
 use crate::model::structure::{SimpleType, StructFieldType, StructFieldView};
+use std::rc::Rc;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FixedFieldType {
@@ -45,15 +45,20 @@ pub enum FixedFieldType {
     UInt64,
     Float32,
     Float64,
-    Bool
+    Bool,
 }
 
-fn map_numeric(ty: SimpleType, signed: FixedFieldType, unsigned: FixedFieldType, float: FixedFieldType) -> Option<FixedFieldType> {
+fn map_numeric(
+    ty: SimpleType,
+    signed: FixedFieldType,
+    unsigned: FixedFieldType,
+    float: FixedFieldType,
+) -> Option<FixedFieldType> {
     match ty {
         SimpleType::Signed => Some(signed),
         SimpleType::Unsigned => Some(unsigned),
         SimpleType::Float => Some(float),
-        _ => None
+        _ => None,
     }
 }
 
@@ -70,7 +75,7 @@ impl FixedFieldType {
             FixedFieldType::UInt64 => 8,
             FixedFieldType::Float32 => 4,
             FixedFieldType::Float64 => 8,
-            FixedFieldType::Bool => 1
+            FixedFieldType::Bool => 1,
         }
     }
 
@@ -120,7 +125,7 @@ pub struct Location {
     pub byte_offset: usize,
     pub bit_offset: usize,
     pub byte_size: usize,
-    pub bit_size: usize
+    pub bit_size: usize,
 }
 
 impl Location {
@@ -134,12 +139,15 @@ impl Location {
                 (bit_size / 8) + 1
             } else {
                 bit_size / 8
-            }
+            },
         }
     }
 
     pub fn get_unsigned_integer_type(&self) -> FixedFieldType {
-        FixedFieldType::from_model(StructFieldType::Unsigned { bits: self.bit_size }).unwrap()
+        FixedFieldType::from_model(StructFieldType::Unsigned {
+            bits: self.bit_size,
+        })
+        .unwrap()
     }
 }
 
@@ -150,7 +158,7 @@ pub enum FieldView {
         a: f64,
         b: f64,
         a_inv: f64,
-        b_inv: f64
+        b_inv: f64,
     },
 
     /// Apply an enum view.
@@ -164,7 +172,7 @@ pub enum FieldView {
     SignedCast(usize),
 
     /// Don't do anything special, just return the raw value.
-    None
+    None,
 }
 
 impl FieldView {
@@ -172,17 +180,25 @@ impl FieldView {
         match self {
             FieldView::Transmute => true,
             FieldView::None => true,
-            _ => false
+            _ => false,
         }
     }
 
-    fn from_model(proto: &Protocol, ty: SimpleType, bit_size: usize, value: Option<StructFieldView>) -> Result<Self, Error> {
+    fn from_model(
+        proto: &Protocol,
+        ty: SimpleType,
+        bit_size: usize,
+        value: Option<StructFieldView>,
+    ) -> Result<Self, Error> {
         match value {
             Some(StructFieldView::Enum { name }) => {
                 if ty != SimpleType::Unsigned {
                     return Err(Error::UnsupportedViewType(ty));
                 }
-                let r = proto.enums_by_name.get(&name).ok_or_else(|| Error::UndefinedReference(name))?;
+                let r = proto
+                    .enums_by_name
+                    .get(&name)
+                    .ok_or_else(|| Error::UndefinedReference(name))?;
                 Ok(FieldView::Enum(r.clone()))
             }
             Some(StructFieldView::FloatRange { min, max }) => {
@@ -210,7 +226,12 @@ impl FieldView {
                 if ty == SimpleType::Float && bit_size != 32 && bit_size != 64 {
                     return Err(Error::UnsupportedViewType(ty));
                 }
-                if ty == SimpleType::Signed && bit_size != 8 && bit_size != 16 && bit_size != 32 && bit_size != 64 {
+                if ty == SimpleType::Signed
+                    && bit_size != 8
+                    && bit_size != 16
+                    && bit_size != 32
+                    && bit_size != 64
+                {
                     let max_value = 1 << (bit_size - 1);
                     Ok(FieldView::SignedCast(max_value - 1))
                 } else if ty == SimpleType::Unsigned {
@@ -229,7 +250,7 @@ pub struct FixedField {
     pub ty: FixedFieldType,
     pub loc: Location,
     pub view: FieldView,
-    pub endianness: Endianness
+    pub endianness: Endianness,
 }
 
 #[derive(Clone, Debug)]
@@ -238,7 +259,7 @@ pub struct FixedArrayField {
     pub ty: FixedFieldType,
     pub array_len: usize,
     pub loc: Location,
-    pub endianness: Endianness
+    pub endianness: Endianness,
 }
 
 impl FixedArrayField {
@@ -251,21 +272,21 @@ impl FixedArrayField {
 pub struct StructField {
     pub name: String,
     pub r: Rc<Structure>,
-    pub loc: Location
+    pub loc: Location,
 }
 
 #[derive(Clone, Debug)]
 pub enum Field {
     Fixed(FixedField),
     Array(FixedArrayField),
-    Struct(StructField)
+    Struct(StructField),
 }
 
 impl Field {
     pub fn as_fixed(&self) -> Option<&FixedField> {
         match self {
             Field::Fixed(v) => Some(v),
-            _ => None
+            _ => None,
         }
     }
 
@@ -273,7 +294,7 @@ impl Field {
         match self {
             Field::Fixed(v) => &v.loc,
             Field::Array(v) => &v.loc,
-            Field::Struct(v) => &v.loc
+            Field::Struct(v) => &v.loc,
         }
     }
 
@@ -281,24 +302,39 @@ impl Field {
         match self {
             Field::Fixed(v) => &v.name,
             Field::Array(v) => &v.name,
-            Field::Struct(v) => &v.name
+            Field::Struct(v) => &v.name,
         }
     }
 
-    fn from_model(proto: &Protocol, last_bit_offset: usize, value: crate::model::structure::StructField) -> Result<(Self, usize), Error> {
+    fn from_model(
+        proto: &Protocol,
+        last_bit_offset: usize,
+        value: crate::model::structure::StructField,
+    ) -> Result<(Self, usize), Error> {
         match value.info {
             StructFieldType::Struct { item_type } => {
-                let r = proto.structs_by_name.get(&item_type).ok_or_else(|| Error::UndefinedReference(item_type))?;
-                Ok((Self::Struct(StructField {
-                    name: value.name,
-                    r: r.clone(),
-                    loc: Location::from_model(r.bit_size, last_bit_offset)
-                }), last_bit_offset + r.bit_size))
-            },
+                let r = proto
+                    .structs_by_name
+                    .get(&item_type)
+                    .ok_or_else(|| Error::UndefinedReference(item_type))?;
+                Ok((
+                    Self::Struct(StructField {
+                        name: value.name,
+                        r: r.clone(),
+                        loc: Location::from_model(r.bit_size, last_bit_offset),
+                    }),
+                    last_bit_offset + r.bit_size,
+                ))
+            }
             _ => {
                 let array_len = value.array_len.unwrap_or(1);
                 let mut bit_size = value.info.get_bit_size().ok_or(Error::MissingBitSize)?;
-                let view = FieldView::from_model(proto, value.info.get_simple_type(), bit_size, value.view)?;
+                let view = FieldView::from_model(
+                    proto,
+                    value.info.get_simple_type(),
+                    bit_size,
+                    value.view,
+                )?;
                 bit_size *= array_len;
                 let ty = FixedFieldType::from_model(value.info)?;
                 let loc = Location::from_model(bit_size, last_bit_offset);
@@ -306,21 +342,27 @@ impl Field {
                     if bit_size % 8 != 0 {
                         return Err(Error::UnalignedArrayCodec);
                     }
-                    Ok((Self::Array(FixedArrayField {
-                        name: value.name,
-                        endianness: proto.endianness,
-                        array_len,
-                        ty,
-                        loc
-                    }), last_bit_offset + bit_size))
+                    Ok((
+                        Self::Array(FixedArrayField {
+                            name: value.name,
+                            endianness: proto.endianness,
+                            array_len,
+                            ty,
+                            loc,
+                        }),
+                        last_bit_offset + bit_size,
+                    ))
                 } else {
-                    Ok((Self::Fixed(FixedField {
-                        name: value.name,
-                        endianness: proto.endianness,
-                        ty,
-                        loc,
-                        view
-                    }), last_bit_offset + bit_size))
+                    Ok((
+                        Self::Fixed(FixedField {
+                            name: value.name,
+                            endianness: proto.endianness,
+                            ty,
+                            loc,
+                            view,
+                        }),
+                        last_bit_offset + bit_size,
+                    ))
                 }
             }
         }
@@ -332,11 +374,14 @@ pub struct Structure {
     pub name: String,
     pub fields: Vec<Field>,
     pub byte_size: usize,
-    pub bit_size: usize
+    pub bit_size: usize,
 }
 
 impl Structure {
-    pub fn from_model(proto: &Protocol, value: crate::model::structure::Structure) -> Result<Structure, Error> {
+    pub fn from_model(
+        proto: &Protocol,
+        value: crate::model::structure::Structure,
+    ) -> Result<Structure, Error> {
         let mut last_bit_offset = 0;
         let fields = value.fields.into_iter().map(|v| {
             let res = Field::from_model(proto, last_bit_offset, v);
@@ -353,7 +398,7 @@ impl Structure {
                 (last_bit_offset / 8) + 1
             } else {
                 last_bit_offset / 8
-            }
+            },
         })
     }
 }

@@ -26,16 +26,16 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod message;
-pub mod structure;
-mod error;
-mod protocol;
-pub mod util;
 pub mod r#enum;
+mod error;
+pub mod message;
+mod protocol;
+pub mod structure;
 pub mod union;
+pub mod util;
 
-pub use protocol::Protocol;
 pub use error::Error;
+pub use protocol::Protocol;
 
 //TODO: Sanitizer check: forbid nested payloads in message fields.
 //TODO: Support statically sized fields after the payload.

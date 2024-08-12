@@ -34,7 +34,7 @@ macro_rules! impl_list_base {
                     data,
                     len,
                     useless: PhantomData::default(),
-                    useless1: PhantomData::default()
+                    useless1: PhantomData::default(),
                 }
             }
 
@@ -58,13 +58,19 @@ macro_rules! impl_list_base {
         }
 
         impl<B: std::io::Write, T, I> $t<B, T, I> {
-            pub fn write_item<Item: WriteTo<Input = Item>>(&mut self, item: &Item) -> Result<(), Error> {
+            pub fn write_item<Item: WriteTo<Input = Item>>(
+                &mut self,
+                item: &Item,
+            ) -> Result<(), Error> {
                 Item::write_to(item, &mut self.data)?;
                 self.len += 1;
                 Ok(())
             }
 
-            pub fn write_items<Item: WriteTo<Input = Item>>(&mut self, items: &[Item]) -> Result<(), Error> {
+            pub fn write_items<Item: WriteTo<Input = Item>>(
+                &mut self,
+                items: &[Item],
+            ) -> Result<(), Error> {
                 for item in items {
                     self.write_item(item)?;
                 }
