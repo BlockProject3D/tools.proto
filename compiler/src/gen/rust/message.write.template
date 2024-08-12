@@ -7,6 +7,9 @@ impl{generics} bp3d_proto::message::WriteTo for {msg_name}{generics} {{
 #fragment push field
         {type}::write_to(&input.{name}, &mut out)?;
 #fragment pop
+#fragment push field_string
+        {type}::write_to(input.{name}, &mut out)?;
+#fragment pop
 #fragment push field_union
         {type}::write_to(&input.{name}, &input.{on_name}, &mut out)?;
 #fragment pop

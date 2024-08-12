@@ -107,6 +107,20 @@ impl FieldType {
             _ => false,
         }
     }
+
+    pub fn as_union(&self) -> Option<&UnionField> {
+        match self {
+            FieldType::Union(v) => Some(v),
+            _ => None
+        }
+    }
+
+    pub fn is_string(&self) -> bool {
+        match self {
+            FieldType::VarcharString(_) | FieldType::NullTerminatedString => true,
+            _ => false
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug)]

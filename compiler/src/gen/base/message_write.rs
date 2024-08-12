@@ -41,14 +41,17 @@ fn gen_field_write_impl<U: Utilities>(
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
-    let (msg_type, union) =
+    let msg_type =
         generate_field_type_inline::<U>(msg, field, template, type_path_by_name);
-    if let Some(on_name) = union {
-        scope.var("on_name", on_name);
+    let union = field.ty.as_union();
+    if let Some(v) = union {
+        scope.var("on_name", &v.on_name);
     }
     scope.var("type", msg_type);
     if union.is_some() {
         scope.render("impl", &["field_union"]).unwrap()
+    } else if field.ty.is_string() {
+        scope.render("impl", &["field_string"]).unwrap()
     } else {
         scope.render("impl", &["field"]).unwrap()
     }

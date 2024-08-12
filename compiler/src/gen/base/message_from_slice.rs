@@ -49,8 +49,7 @@ pub fn generate_field_type_inline<'a, U: Utilities>(
     field: &'a Field,
     template: &Template,
     type_path_by_name: &'a TypePathMap,
-) -> (Cow<'a, str>, Option<&'a str>) {
-    let mut union = None;
+) -> Cow<'a, str> {
     let msg_type = match &field.ty {
         FieldType::Fixed(ty) => gen_optional::<U>(
             field.optional,
@@ -85,10 +84,7 @@ pub fn generate_field_type_inline<'a, U: Utilities>(
                 .render("", &["array"])
                 .unwrap(),
         ),
-        FieldType::Union(v) => {
-            union = Some(&*v.on_name);
-            gen_optional::<U>(field.optional, type_path_by_name.get(&v.r.name))
-        }
+        FieldType::Union(v) => gen_optional::<U>(field.optional, type_path_by_name.get(&v.r.name)),
         FieldType::List(v) => match msg.is_embedded() {
             false => gen_optional::<U>(
                 field.optional,
@@ -111,7 +107,7 @@ pub fn generate_field_type_inline<'a, U: Utilities>(
         },
         FieldType::Payload => gen_optional::<U>(field.optional, U::get_payload_type_inline()),
     };
-    (msg_type, union)
+    msg_type
 }
 
 fn gen_field_from_slice_impl<U: Utilities>(
@@ -122,10 +118,11 @@ fn gen_field_from_slice_impl<U: Utilities>(
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
-    let (msg_type, union) =
+    let msg_type =
         generate_field_type_inline::<U>(msg, field, template, type_path_by_name);
-    if let Some(on_name) = union {
-        scope.var("on_name", on_name);
+    let union = field.ty.as_union();
+    if let Some(v) = union {
+        scope.var("on_name", &v.on_name);
     }
     scope.var("type", msg_type);
     if union.is_some() {
