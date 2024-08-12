@@ -28,6 +28,7 @@
 
 use crate::compiler::message::{FieldType, Message};
 use crate::compiler::structure::{FixedField, FixedFieldType};
+use crate::gen::base::message::StringType;
 use crate::model::protocol::Endianness;
 
 pub struct Generics {
@@ -87,28 +88,6 @@ macro_rules! gen_value_type {
     };
 }
 
-pub fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str {
-    match endianness {
-        Endianness::Little => gen_value_type!("bp3d_proto::message::util::ValueLE<", ty, ">"),
-        Endianness::Big => gen_value_type!("bp3d_proto::message::util::ValueBE<", ty, ">"),
-    }
-}
-
-pub fn get_value_type_inline(endianness: Endianness, ty: FixedFieldType) -> &'static str {
-    match endianness {
-        Endianness::Little => gen_value_type!("bp3d_proto::message::util::ValueLE::<", ty, ">"),
-        Endianness::Big => gen_value_type!("bp3d_proto::message::util::ValueBE::<", ty, ">"),
-    }
-}
-
-pub fn gen_optional(optional: bool, type_name: &str) -> String {
-    if optional {
-        format!("bp3d_proto::message::util::Optional::<{}>", type_name)
-    } else {
-        type_name.into()
-    }
-}
-
 pub struct RustUtils;
 
 impl crate::gen::base::structure::Utilities for RustUtils {
@@ -153,5 +132,64 @@ impl crate::gen::base::structure::Utilities for RustUtils {
             Endianness::Little => "bp3d_proto::codec::ByteCodecLE",
             Endianness::Big => "bp3d_proto::codec::ByteCodecBE"
         }
+    }
+}
+
+impl crate::gen::base::message::Utilities for RustUtils {
+    fn gen_generics(msg: &Message) -> String {
+        Generics::from_message(msg).to_code()
+    }
+
+    fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str {
+        match endianness {
+            Endianness::Little => gen_value_type!("bp3d_proto::message::util::ValueLE<", ty, ">"),
+            Endianness::Big => gen_value_type!("bp3d_proto::message::util::ValueBE<", ty, ">"),
+        }
+    }
+
+    fn get_value_type_inline(endianness: Endianness, ty: FixedFieldType) -> &'static str {
+        match endianness {
+            Endianness::Little => gen_value_type!("bp3d_proto::message::util::ValueLE::<", ty, ">"),
+            Endianness::Big => gen_value_type!("bp3d_proto::message::util::ValueBE::<", ty, ">"),
+        }
+    }
+
+    fn gen_option_type(ty: &str) -> String {
+        format!("Option<{}>", ty)
+    }
+
+    fn gen_option_type_inline(ty: &str) -> String {
+        format!("bp3d_proto::message::util::Optional::<{}>", ty)
+    }
+
+    fn get_string_type(_: StringType) -> &'static str {
+        "&'a str"
+    }
+
+    fn get_string_type_inline(ty: StringType) -> &'static str {
+        match ty {
+            StringType::Varchar => "bp3d_proto::message::util::VarcharString",
+            StringType::NullTerminated => "bp3d_proto::message::util::NullTerminatedString"
+        }
+    }
+
+    fn get_payload_type() -> &'static str {
+        "&'a [u8]"
+    }
+
+    fn get_payload_type_inline() -> &'static str {
+        "bp3d_proto::message::util::Buffer"
+    }
+
+    fn gen_struct_ref_type(type_name: &str) -> String {
+        format!("{}<&'a [u8]>", type_name)
+    }
+
+    fn gen_message_ref_type(type_name: &str) -> String {
+        format!("{}<'a>", type_name)
+    }
+
+    fn gen_union_ref_type(type_name: &str) -> String {
+        format!("{}<'a>", type_name)
     }
 }

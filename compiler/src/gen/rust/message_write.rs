@@ -26,33 +26,13 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use itertools::Itertools;
-use crate::compiler::message::{Field, Message};
+use crate::compiler::message::Message;
 use crate::compiler::util::TypePathMap;
-use crate::gen::rust::message_from_slice::gen_field_msg_type;
-use crate::gen::rust::util::Generics;
-use crate::gen::template::Template;
+use crate::gen::base::message_write::generate;
+use crate::gen::rust::util::RustUtils;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.write.template");
 
-fn gen_field_write_impl(msg: &Message, field: &Field, template: &Template, type_path_by_name: &TypePathMap) -> String {
-    let mut scope = template.scope();
-    scope.var("name", &field.name);
-    let (msg_type, union) = gen_field_msg_type(msg, field, template, type_path_by_name);
-    if let Some(on_name) = union {
-        scope.var("on_name", on_name);
-    }
-    scope.var("type", msg_type);
-    if union.is_some() {
-        scope.render("impl", &["field_union"]).unwrap()
-    } else {
-        scope.render("impl", &["field"]).unwrap()
-    }
-}
-
 pub fn gen_message_write_impl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("msg_name", &msg.name).var("generics", Generics::from_message(msg).to_code());
-    let fields = msg.fields.iter().map(|field| gen_field_write_impl(msg, field, &template, type_path_by_name)).join("");
-    template.var("fields", fields).render("", &["impl"]).unwrap()
+    generate::<RustUtils>(TEMPLATE, msg, type_path_by_name)
 }

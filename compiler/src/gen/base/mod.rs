@@ -26,16 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::structure::{FixedField, FixedFieldType};
-use crate::model::protocol::Endianness;
-
 pub mod structure;
-
-pub trait Utilities {
-    fn get_field_type(field_type: FixedFieldType) -> &'static str;
-    fn get_function_name(field: &FixedField) -> &'static str;
-    fn get_function_name_mut(field: &FixedField) -> &'static str;
-    fn get_bit_codec_inline(endianness: Endianness) -> &'static str;
-    fn get_byte_codec_inline(endianness: Endianness) -> &'static str;
-    fn get_byte_codec(endianness: Endianness) -> &'static str;
-}
+pub mod message;
+pub mod message_from_slice;
+pub mod message_write;

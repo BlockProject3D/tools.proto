@@ -26,44 +26,31 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::{FieldType, Message};
+use itertools::Itertools;
+use crate::compiler::message::{Field, Message};
 use crate::compiler::util::TypePathMap;
-use crate::gen::base::message::{generate, Utilities};
-use crate::gen::rust::util::RustUtils;
+use crate::gen::base::message::Utilities;
+use crate::gen::base::message_from_slice::generate_field_type_inline;
+use crate::gen::template::Template;
 
-const TEMPLATE: &[u8] = include_bytes!("./message.template");
-
-fn capitalize(s: &str) -> String {
-    s[..1].to_ascii_uppercase() + &s[1..]
+fn gen_field_write_impl<U: Utilities>(msg: &Message, field: &Field, template: &Template, type_path_by_name: &TypePathMap) -> String {
+    let mut scope = template.scope();
+    scope.var("name", &field.name);
+    let (msg_type, union) = generate_field_type_inline::<U>(msg, field, template, type_path_by_name);
+    if let Some(on_name) = union {
+        scope.var("on_name", on_name);
+    }
+    scope.var("type", msg_type);
+    if union.is_some() {
+        scope.render("impl", &["field_union"]).unwrap()
+    } else {
+        scope.render("impl", &["field"]).unwrap()
+    }
 }
 
-fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    let flag = msg.fields.iter().any(|v| match v.ty {
-        FieldType::Array(_) | FieldType::List(_) => true,
-        _ => false
-    });
-    if !flag {
-        return String::new();
-    }
-    let mut code = String::new();
-    for field in &msg.fields {
-        match &field.ty {
-            FieldType::Array(v) => {
-                code += &format!("    bp3d_proto::generate_array_wrapper!({}{}, {}, {});\n", msg.name, capitalize(&field.name), type_path_by_name.get(&v.item_type.name), RustUtils::get_value_type(field.endianness, v.ty));
-            },
-            FieldType::List(v) => {
-                code += &format!("    pub type {}{}<'a, T> = bp3d_proto::message::util::List<T, {}, {}<'a>>;\n", msg.name, capitalize(&field.name), RustUtils::get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name));
-            },
-            _ => ()
-        }
-    }
-    code
-}
-
-pub fn gen_message_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    let mut code = generate::<RustUtils>(TEMPLATE, msg, type_path_by_name);
-    code += "\n\n";
-    code += &gen_message_array_type_decls(msg, type_path_by_name);
-    code += "\n";
-    code
+pub fn generate<U: Utilities>(template: &[u8], msg: &Message, type_path_by_name: &TypePathMap) -> String {
+    let mut template = Template::compile(template).unwrap();
+    template.var("msg_name", &msg.name).var("generics", U::gen_generics(msg));
+    let fields = msg.fields.iter().map(|field| gen_field_write_impl::<U>(msg, field, &template, type_path_by_name)).join("");
+    template.var("fields", fields).render("", &["impl"]).unwrap()
 }
