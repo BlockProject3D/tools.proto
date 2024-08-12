@@ -9,9 +9,9 @@ pub struct {msg_name}{generics} {{
 #fragment pop
 
 #fragment push array
-bp3d_proto::message::util::Array::<&'a [u8], {codec}, {type_name}<&'a [u8]>>
+{msg_name}{name:to_pascal_case}Type<'a>
 #fragment pop
 
 #fragment push list
-bp3d_proto::message::util::List::<&'a [u8], {codec}, {type_name}<'a>>
+{msg_name}{name:to_pascal_case}Type<'a>
 #fragment pop

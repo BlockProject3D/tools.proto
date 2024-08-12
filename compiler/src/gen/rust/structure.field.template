@@ -42,11 +42,7 @@ impl<T: AsRef<[u8]>> {struct_name}<T> {{
     pub fn get_{name}(&self) -> {view_type} {{
 {fragment}
 #fragment push bool
-        if self.get_raw_{name}() != 0 {{
-            true
-        }} else {{
-            false
-        }}
+        self.get_raw_{name}() != 0
 #fragment pop
 #fragment push other
         unsafe {{ std::mem::transmute::<{raw_type}, {view_type}>(self.get_raw_{name}()) }}

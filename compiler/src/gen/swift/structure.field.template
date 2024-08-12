@@ -2,7 +2,7 @@
 extension {struct_name} where T: BP3DProto.Buffer {{
 {fields}
 #fragment push fixed
-    public raw_{name}: {raw_type} {{
+    public raw{name:to_pascal_case}: {raw_type} {{
 {fragment}
 #fragment push bit
         BP3DProto.{codec}.{function_name}({raw_type}.self, self.data[{start}...{end}], bitOffset: {bit_offset}, bitSize: {bit_size})
@@ -13,55 +13,55 @@ extension {struct_name} where T: BP3DProto.Buffer {{
     }}
 #fragment pop
 #fragment push array
-    public {name}: BP3DProto.ArrayCodec<T, {codec}, {raw_type}> {{
+    public {name:to_camel_case}: BP3DProto.ArrayCodec<T, {codec}, {raw_type}> {{
         BP3DProto.ArrayCodec(buffer: self.data[{start}...{end}], itemBitSize: {bit_size})
     }}
 #fragment pop
 #fragment push struct
-    public {name}: {type_name}<T> {{
+    public {name:to_camel_case}: {type_name}<T> {{
         {type_name}(self.data[{start}...{end}])
     }}
 #fragment pop
 #fragment push view_float
-    public {name}: {view_type} {{
-        let raw_value = self.raw_{name} as {view_type};
-        return raw_value * {a} + {b};
+    public {name:to_camel_case}: {view_type} {{
+        let rawValue = self.raw{name:to_pascal_case} as {view_type};
+        return rawValue * {a} + {b};
     }}
 #fragment pop
 #fragment push view_enum
-    public {name}: {view_type}? {{
-        let raw_value = self.raw_{name};
-        return {view_type}(raw: raw_value);
+    public {name:to_camel_case}: {view_type}? {{
+        let rawValue = self.raw{name:to_pascal_case};
+        return {view_type}(raw: rawValue);
     }}
 #fragment pop
 #fragment push view_transmute
-    public {name}: {view_type} {{
+    public {name:to_camel_case}: {view_type} {{
 {fragment}
 #fragment push bool
-        if self.raw_{name} != 0 {{
+        if self.raw{name:to_pascal_case} != 0 {{
             return true;
         }} else {{
             return false;
         }}
 #fragment pop
 #fragment push other
-        {view_type}(bitPattern: self.raw_{name})
+        {view_type}(bitPattern: self.raw{name:to_pascal_case})
 #fragment pop
     }}
 #fragment pop
 #fragment push view_signed
-    public {name}: {view_type} {{
-        let raw_value = self.raw_{name};
-        if raw_value > {max_positive} {{
-            return -((((~raw_value) & {max_positive}) + 1) as {view_type});
+    public {name:to_camel_case}: {view_type} {{
+        let rawValue = self.raw{name:to_pascal_case};
+        if rawValue > {max_positive} {{
+            return -((((~rawValue) & {max_positive}) + 1) as {view_type});
         }} else {{
-            return (raw_value & {max_positive}) as {view_type};
+            return (rawValue & {max_positive}) as {view_type};
         }}
     }}
 #fragment pop
 #fragment push view_none
-    public {name}: {view_type} {{
-        self.raw_{name}
+    public {name:to_camel_case}: {view_type} {{
+        self.raw{name:to_pascal_case}
     }}
 #fragment pop
 }}
@@ -86,14 +86,14 @@ impl<T: AsMut<[u8]>> {struct_name}<T> {{
 #fragment push struct
 #fragment pop
 #fragment push view_float
-    pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
+    pub fn set{name:to_pascal_case}(&mut self, value: {view_type}) -> &mut Self {{
         let raw_value = value * {a_inv} + {b_inv};
         self.set_raw_{name}(raw_value as {raw_type});
         self
     }}
 #fragment pop
 #fragment push view_enum
-    pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
+    pub fn set_{name:to_pascal_case}(&mut self, value: {view_type}) -> &mut Self {{
         self.set_raw_{name}(value as {raw_type});
         self
     }}

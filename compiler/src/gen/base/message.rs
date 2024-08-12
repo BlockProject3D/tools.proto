@@ -58,6 +58,8 @@ fn gen_field_decl<U: Utilities>(
     template: &Template,
     type_path_by_name: &TypePathMap,
 ) -> String {
+    let mut scope = template.scope();
+    scope.var("name", &field.name);
     let msg_type = match &field.ty {
         FieldType::Fixed(ty) => U::get_field_type(ty.ty).into(),
         FieldType::Ref(v) => match v {
@@ -66,15 +68,13 @@ fn gen_field_decl<U: Utilities>(
         },
         FieldType::NullTerminatedString => U::get_string_type(StringType::NullTerminated).into(),
         FieldType::VarcharString(_) => U::get_string_type(StringType::Varchar).into(),
-        FieldType::Array(v) => template
-            .scope()
+        FieldType::Array(v) => scope
             .var("codec", U::get_value_type(field.endianness, v.ty))
             .var("type_name", type_path_by_name.get(&v.item_type.name))
             .render("", &["array"])
             .unwrap(),
         FieldType::Union(v) => U::gen_union_ref_type(type_path_by_name.get(&v.r.name)),
-        FieldType::List(v) => template
-            .scope()
+        FieldType::List(v) => scope
             .var("codec", U::get_value_type(field.endianness, v.ty))
             .var("type_name", type_path_by_name.get(&v.item_type.name))
             .render("", &["list"])
@@ -85,12 +85,7 @@ fn gen_field_decl<U: Utilities>(
         true => U::gen_option_type(&msg_type),
         false => msg_type,
     };
-    template
-        .scope()
-        .var("name", &field.name)
-        .var("type", msg_type)
-        .render("decl", &["field"])
-        .unwrap()
+    scope.var("type", msg_type).render("decl", &["field"]).unwrap()
 }
 
 pub fn generate<U: Utilities>(

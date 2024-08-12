@@ -35,10 +35,7 @@ impl{generics} {union_name}{generics} {{
 #fragment pop
 #fragment push none
     pub fn is_{name_lower}(&self) -> bool {{
-        match self {{
-            Self::{name} => true,
-            _ => false
-        }}
+        matches!(self, Self::{name})
     }}
 #fragment pop
 }}
