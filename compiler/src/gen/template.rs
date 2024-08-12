@@ -196,6 +196,9 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
             } else {
                 line
             };
+            if line.is_empty() {
+                continue;
+            }
             if line.starts_with(b"#fragment push ") {
                 let name = std::str::from_utf8(&line[15..]).map_err(|_| Error::InvalidUTF8)?;
                 frag_stack.push(Fragment {
