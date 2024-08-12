@@ -2,6 +2,9 @@
 #[derive(Copy, Clone, Debug)]
 pub struct {msg_name}{generics} {{
 {fields}
+#fragment push field
+    pub {name}: {type},
+#fragment pop
 }}
 #fragment pop
 

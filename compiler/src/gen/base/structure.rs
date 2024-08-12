@@ -29,8 +29,17 @@
 use itertools::Itertools;
 use crate::compiler::structure::{Field, FieldView, FixedField, FixedFieldType, Structure};
 use crate::compiler::util::TypePathMap;
-use crate::gen::base::Utilities;
 use crate::gen::template::{Scope, Template};
+use crate::model::protocol::Endianness;
+
+pub trait Utilities {
+    fn get_field_type(field_type: FixedFieldType) -> &'static str;
+    fn get_function_name(field: &FixedField) -> &'static str;
+    fn get_function_name_mut(field: &FixedField) -> &'static str;
+    fn get_bit_codec_inline(endianness: Endianness) -> &'static str;
+    fn get_byte_codec_inline(endianness: Endianness) -> &'static str;
+    fn get_byte_codec(endianness: Endianness) -> &'static str;
+}
 
 fn gen_field_getter<U: Utilities>(field: &Field, template: &Template, type_path_by_name: &TypePathMap) -> String {
     let mut scope = template.scope();

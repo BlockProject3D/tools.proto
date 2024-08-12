@@ -111,7 +111,7 @@ pub fn gen_optional(optional: bool, type_name: &str) -> String {
 
 pub struct RustUtils;
 
-impl crate::gen::base::Utilities for RustUtils {
+impl crate::gen::base::structure::Utilities for RustUtils {
     fn get_field_type(field_type: FixedFieldType) -> &'static str {
         gen_value_type!("", field_type, "")
     }

@@ -29,7 +29,7 @@
 use itertools::Itertools;
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
-use crate::gen::base::Utilities;
+use crate::gen::base::structure::Utilities;
 use crate::gen::rust::util::{RustUtils, Generics, get_value_type};
 use crate::gen::template::Template;
 
