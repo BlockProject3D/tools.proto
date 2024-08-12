@@ -16,3 +16,9 @@ jobs:
     uses: BlockProject3D/workflows/.github/workflows/CodeCov.yml@main
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  Release:
+    uses: BlockProject3D/workflows/.github/workflows/Release.yml@main
+    needs: Test
+    secrets:
+      RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}

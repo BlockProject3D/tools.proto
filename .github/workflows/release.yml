@@ -1,0 +1,12 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  Publish:
+    uses: BlockProject3D/workflows/.github/workflows/Publish.yml@main
+    secrets:
+      RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
