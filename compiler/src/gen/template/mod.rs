@@ -28,11 +28,11 @@
 
 mod core;
 mod error;
-mod parse_tree;
 mod functions;
+mod parse_tree;
 mod util;
 
-pub use core::Template;
 pub use core::Scope;
+pub use core::Template;
 pub use error::Error;
 pub use functions::FunctionMap;
