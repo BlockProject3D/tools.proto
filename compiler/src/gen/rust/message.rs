@@ -26,38 +26,31 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use itertools::Itertools;
 use crate::compiler::message::{FieldType, Message};
 use crate::compiler::util::TypePathMap;
 use crate::gen::base::message::{generate, Utilities};
 use crate::gen::rust::util::RustUtils;
+use crate::gen::template::Template;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
-
-fn capitalize(s: &str) -> String {
-    s[..1].to_ascii_uppercase() + &s[1..]
-}
+const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
 
 fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    let flag = msg.fields.iter().any(|v| match v.ty {
-        FieldType::Array(_) | FieldType::List(_) => true,
-        _ => false
-    });
-    if !flag {
-        return String::new();
-    }
-    let mut code = String::new();
-    for field in &msg.fields {
+    let mut template = Template::compile(TEMPLATE_EXT).unwrap();
+    template.var("msg_name", &msg.name);
+    msg.fields.iter().filter_map(|field| {
+        template.var("name", &field.name);
         match &field.ty {
-            FieldType::Array(v) => {
-                code += &format!("    bp3d_proto::generate_array_wrapper!({}{}, {}, {});\n", msg.name, capitalize(&field.name), type_path_by_name.get(&v.item_type.name), RustUtils::get_value_type(field.endianness, v.ty));
-            },
-            FieldType::List(v) => {
-                code += &format!("    pub type {}{}<'a, T> = bp3d_proto::message::util::List<T, {}, {}<'a>>;\n", msg.name, capitalize(&field.name), RustUtils::get_value_type(field.endianness, v.ty), type_path_by_name.get(&v.item_type.name));
-            },
-            _ => ()
+            FieldType::Array(v) => Some(template.var("item_type", type_path_by_name.get(&v.item_type.name))
+                .var("codec", RustUtils::get_value_type(field.endianness, v.ty))
+                .render("", &["decl_array"]).unwrap()),
+            FieldType::List(v) => Some(template.var("item_type", type_path_by_name.get(&v.item_type.name))
+                .var("codec", RustUtils::get_value_type(field.endianness, v.ty))
+                .render("", &["decl_list"]).unwrap()),
+            _ => None
         }
-    }
-    code
+    }).join("")
 }
 
 pub fn gen_message_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {

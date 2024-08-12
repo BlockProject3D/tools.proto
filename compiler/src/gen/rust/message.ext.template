@@ -1,0 +1,7 @@
+#fragment push decl_array
+bp3d_proto::generate_array_wrapper!({msg_name}{name:capitalize}, {item_type}, {codec});
+#fragment pop
+
+#fragment push decl_list
+pub type {msg_name}{name:capitalize}<'a, T> = bp3d_proto::message::util::List<T, {codec}, {item_type}<'a>>;
+#fragment pop
