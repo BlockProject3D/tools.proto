@@ -30,11 +30,11 @@ use bp3d_proto::message::{FromSlice, WriteTo};
 use testprog::enums::{Header, Type};
 use testprog::lists::{Dataset, DatasetRuns, SpanRun, SpanRunVars, Times, SIZE_TIMES};
 use testprog::unions::{Item, Value};
-use testprog::values::{ValueInt16, ValueString, SIZE_VALUEUINT64};
+use testprog::values::{ValueInt16, ValueString, SIZE_VALUE_U_INT64};
 
 fn write_span_run<F: FnOnce(SpanRun) -> bp3d_proto::message::Result<()>>(f: F) {
     let data: Vec<u8> = Vec::new();
-    let mut value: [u8; SIZE_VALUEUINT64] = [0; SIZE_VALUEUINT64];
+    let mut value: [u8; SIZE_VALUE_U_INT64] = [0; SIZE_VALUE_U_INT64];
     let mut header = Header::new_on_stack();
     let mut times = Times::new_on_stack();
     times.set_start(42424242).set_end(42424242);

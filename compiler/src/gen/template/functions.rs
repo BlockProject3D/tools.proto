@@ -28,17 +28,7 @@
 
 use std::borrow::Cow;
 use std::collections::HashMap;
-
-fn capitalize(value: &str) -> Cow<str> {
-    if value.len() == 0 {
-        return value.into();
-    }
-    if value.as_bytes()[0] >= b'A' && value.as_bytes()[0] <= b'Z' {
-        value.into()
-    } else {
-        (value[..1].to_ascii_uppercase() + &value[1..]).into()
-    }
-}
+use crate::gen::template::util::CaseConversion;
 
 pub struct FunctionMap<'fragment> {
     map: HashMap<&'fragment str, fn(&str) -> Cow<str>>,
@@ -62,7 +52,10 @@ impl<'fragment> FunctionMap<'fragment> {
     pub fn add_defaults(&mut self) {
         self.add("upper", |v| v.to_uppercase().into())
             .add("lower", |v| v.to_lowercase().into())
-            .add("capitalize", capitalize);
+            .add("to_pascal_case", |v| v.to_pascal_case())
+            .add("to_camel_case", |v| v.to_camel_case())
+            .add("to_screaming_case", |v| v.to_screaming_case())
+            .add("to_snake_case", |v| v.to_snake_case());
     }
 
     pub fn add(&mut self, name: &'fragment str, f: fn(&str) -> Cow<str>) -> &mut Self {

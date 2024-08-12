@@ -15,3 +15,4 @@ serde = { version = "1.0.204", features = ["derive"] }
 json5 = "0.4.1"
 bp3d-util = { version = "1.0.0", features = ["simple-error"] }
 itertools = "0.13.0"
+regex = "1.10.5"
