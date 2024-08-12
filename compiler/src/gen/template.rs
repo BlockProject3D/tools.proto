@@ -37,14 +37,40 @@ simple_error! {
         InvalidPop => "invalid when no fragment is on the stack",
         NoFragment => "cannot push code: no fragment is on the stack",
         FragmentNotFound(String) => "fragment not found: {}",
-        VariableNotFound(String) => "variable not found: {}"
+        VariableNotFound(String) => "variable not found: {}",
+        FunctionNotFound(String) => "function not found: {}"
     }
+}
+
+pub struct Variable<'a> {
+    pub name: &'a str,
+    pub function: Option<fn(&str) -> Cow<str>>
 }
 
 pub enum Component<'a> {
     Constant(&'a str),
-    Variable(&'a str),
+    Variable(Variable<'a>),
     NewLine
+}
+
+impl<'a> Component<'a> {
+    pub fn parse_variable(function_map: &FunctionMap, variable: &'a str) -> Result<Component<'a>, Error> {
+        match variable.find(":") {
+            None => Ok(Component::Variable(Variable {
+                name: variable,
+                function: None
+            })),
+            Some(id) => {
+                let name = &variable[..id];
+                let function_name = &variable[id + 1..];
+                let function = function_map.get(function_name).ok_or_else(|| Error::FunctionNotFound(function_name.into()))?;
+                Ok(Component::Variable(Variable {
+                    name,
+                    function: Some(function)
+                }))
+            }
+        }
+    }
 }
 
 pub struct Fragment<'a> {
@@ -101,13 +127,63 @@ impl<'a> Token<'a> {
     }
 }
 
+pub struct FunctionMap<'fragment> {
+    map: HashMap<&'fragment str, fn(&str) -> Cow<str>>
+}
+
+fn capitalize(value: &str) -> Cow<str> {
+    if value.len() == 0 {
+        return value.into();
+    }
+    if value.as_bytes()[0] >= b'A' && value.as_bytes()[0] <= b'Z' {
+        value.into()
+    } else {
+        (value[..1].to_ascii_uppercase() + &value[1..]).into()
+    }
+}
+
+impl<'fragment> Default for FunctionMap<'fragment> {
+    fn default() -> Self {
+        let mut map = Self::new();
+        map.add_defaults();
+        map
+    }
+}
+
+impl<'fragment> FunctionMap<'fragment> {
+    pub fn new() -> Self {
+        Self {
+            map: HashMap::new()
+        }
+    }
+
+    pub fn add_defaults(&mut self) {
+        self.add("upper", |v| v.to_uppercase().into())
+            .add("lower", |v| v.to_lowercase().into())
+            .add("capitalize", capitalize);
+    }
+
+    pub fn add(&mut self, name: &'fragment str, f: fn(&str) -> Cow<str>) -> &mut Self {
+        self.map.insert(name, f);
+        self
+    }
+
+    fn get(&self, name: &str) -> Option<fn(&str) -> Cow<str>> {
+        self.map.get(name).map(|v| *v)
+    }
+}
+
 pub struct Template<'fragment, 'variable> {
     fragments: HashMap<String, Fragment<'fragment>>,
-    variables: HashMap<&'variable str, Cow<'variable, str>>
+    variables: HashMap<&'variable str, Cow<'variable, str>>,
 }
 
 impl<'fragment, 'variable> Template<'fragment, 'variable> {
     pub fn compile(data: &'fragment [u8]) -> Result<Self, Error> {
+        Self::compile_with_function_map(data, FunctionMap::default())
+    }
+
+    pub fn compile_with_function_map(data: &'fragment [u8], function_map: FunctionMap) -> Result<Self, Error> {
         let mut fragments = HashMap::new();
         let mut frag_stack = Vec::new();
         let lines = data.split(|v| *v == b'\n');
@@ -152,8 +228,8 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                                 cur_fragment.content.push(component);
                             }
                         } else {
-                            if let Some(component) = token.pop()?.map(Component::Variable) {
-                                cur_fragment.content.push(component);
+                            if let Some(component) = token.pop()?.map(|v| Component::parse_variable(&function_map, v)) {
+                                cur_fragment.content.push(component?);
                             }
                         }
                     }
@@ -190,10 +266,18 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
             };
             let fragment = self.fragments.get(&*name).ok_or_else(|| Error::FragmentNotFound(String::from(&*name)))?;
             let sub_rendered = fragment.content.iter().map(|v| match v {
-                Component::Constant(v) => Ok(*v),
-                Component::Variable(v) => variables.get(v).map(|v| &**v).ok_or_else(|| Error::VariableNotFound(String::from(*v))),
-                Component::NewLine => Ok("\n")
-            }).collect::<Result<Vec<&str>, Error>>()?.join("");
+                Component::Constant(v) => Ok(Cow::Borrowed(*v)),
+                Component::Variable(v) => {
+                    let variable = variables.get(v.name).ok_or_else(|| Error::VariableNotFound(String::from(&*v.name)))?;
+                    if let Some(function) = v.function {
+                        let variable = function(variable);
+                        Ok(variable)
+                    } else {
+                        Ok(Cow::Borrowed(&**variable))
+                    }
+                },
+                Component::NewLine => Ok(Cow::Borrowed("\n"))
+            }).collect::<Result<Vec<Cow<str>>, Error>>()?.join("");
             rendered.push(sub_rendered);
         }
         Ok(rendered.join(""))

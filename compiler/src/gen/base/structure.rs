@@ -172,8 +172,7 @@ pub fn generate<U: Utilities>(templates: Templates, s: &Structure, type_path_by_
     let mut template = Template::compile(templates.template).unwrap();
     let mut field_template = Template::compile(templates.field_template).unwrap();
     field_template.var("struct_name", &s.name);
-    template.var("name", &s.name).var_d("byte_size", s.byte_size)
-        .var("name_upper", s.name.to_ascii_uppercase());
+    template.var("name", &s.name).var_d("byte_size", s.byte_size);
     let mut code = template.render("", &["decl", "new", "fixed_size", "write_to", "from_slice"]).unwrap();
     code += &gen_structure_getters::<U>(s, &field_template, type_path_by_name);
     code += &gen_structure_setters::<U>(s, &field_template, type_path_by_name);
