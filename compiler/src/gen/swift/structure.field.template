@@ -1,0 +1,124 @@
+#fragment push getters
+extension {struct_name} where T: BP3DProto.Buffer {{
+{fields}
+#fragment push fixed
+    public raw_{name}: {raw_type} {{
+{fragment}
+#fragment push bit
+        BP3DProto.{codec}.{function_name}({raw_type}.self, self.data[{start}...{end}], bitOffset: {bit_offset}, bitSize: {bit_size})
+#fragment pop
+#fragment push byte
+        BP3DProto.{codec}.{function_name}({raw_type}.self, self.data[{start}...{end}])
+#fragment pop
+    }}
+#fragment pop
+#fragment push array
+    public {name}: BP3DProto.ArrayCodec<T, {codec}, {raw_type}> {{
+        BP3DProto.ArrayCodec(buffer: self.data[{start}...{end}], itemBitSize: {bit_size})
+    }}
+#fragment pop
+#fragment push struct
+    public {name}: {type_name}<T> {{
+        {type_name}(self.data[{start}...{end}])
+    }}
+#fragment pop
+#fragment push view_float
+    public {name}: {view_type} {{
+        let raw_value = self.raw_{name} as {view_type};
+        return raw_value * {a} + {b};
+    }}
+#fragment pop
+#fragment push view_enum
+    public {name}: {view_type}? {{
+        let raw_value = self.raw_{name};
+        return {view_type}(raw: raw_value);
+    }}
+#fragment pop
+#fragment push view_transmute
+    public {name}: {view_type} {{
+{fragment}
+#fragment push bool
+        if self.raw_{name} != 0 {{
+            return true;
+        }} else {{
+            return false;
+        }}
+#fragment pop
+#fragment push other
+        {view_type}(bitPattern: self.raw_{name})
+#fragment pop
+    }}
+#fragment pop
+#fragment push view_signed
+    public {name}: {view_type} {{
+        let raw_value = self.raw_{name};
+        if raw_value > {max_positive} {{
+            return -((((~raw_value) & {max_positive}) + 1) as {view_type});
+        }} else {{
+            return (raw_value & {max_positive}) as {view_type};
+        }}
+    }}
+#fragment pop
+#fragment push view_none
+    public {name}: {view_type} {{
+        self.raw_{name}
+    }}
+#fragment pop
+}}
+#fragment pop
+
+#fragment push setters
+impl<T: AsMut<[u8]>> {struct_name}<T> {{
+{fields}
+#fragment push fixed
+    pub fn set_raw_{name}(&mut self, value: {raw_type}) {{
+{fragment}
+#fragment push bit
+        unsafe {{ {codec}::{function_name}::<{raw_type}, {bit_offset}, {bit_size}>(&mut self.data.as_mut()[{start}..{end}], value) }}
+#fragment pop
+#fragment push byte
+        unsafe {{ {codec}::{function_name}::<{raw_type}>(&mut self.data.as_mut()[{start}..{end}], value) }}
+#fragment pop
+    }}
+#fragment pop
+#fragment push array
+#fragment pop
+#fragment push struct
+#fragment pop
+#fragment push view_float
+    pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
+        let raw_value = value * {a_inv} + {b_inv};
+        self.set_raw_{name}(raw_value as {raw_type});
+        self
+    }}
+#fragment pop
+#fragment push view_enum
+    pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
+        self.set_raw_{name}(value as {raw_type});
+        self
+    }}
+#fragment pop
+#fragment push view_transmute
+    pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
+{fragment}
+#fragment push bool
+        if value {{
+            self.set_raw_{name}(1);
+        }} else {{
+            self.set_raw_{name}(0);
+        }}
+#fragment pop
+#fragment push other
+        self.set_raw_{name}(unsafe {{ std::mem::transmute::<{view_type}, {raw_type}>(value) }});
+#fragment pop
+        self
+    }}
+#fragment pop
+#fragment push view_none
+    pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
+        self.set_raw_{name}(value);
+        self
+    }}
+#fragment pop
+}}
+#fragment pop

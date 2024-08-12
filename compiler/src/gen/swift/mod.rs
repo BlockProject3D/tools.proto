@@ -26,66 +26,30 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::borrow::Cow;
-use std::path::{Path, PathBuf};
+use bp3d_util::simple_error;
+use itertools::Itertools;
 use crate::compiler::Protocol;
+use crate::gen::{File, FileType, Generator};
+use crate::gen::swift::structure::gen_structure_decl;
 
-mod rust;
-pub mod template;
-mod swift;
-mod base;
+mod structure;
+mod util;
 
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
-pub enum FileType {
-    MessageWriting,
-    MessageReading,
-    Message,
-    Structure,
-    Enum,
-    Union
-}
-
-pub struct File {
-    name: Cow<'static, str>,
-    data: String,
-    ty: FileType
-}
-
-impl File {
-    pub fn new(ty: FileType, name: impl Into<Cow<'static, str>>, data: impl Into<String>) -> Self {
-        Self {
-            name: name.into(),
-            ty,
-            data: data.into()
-        }
-    }
-
-    pub fn ty(&self) -> FileType {
-        self.ty
-    }
-
-    pub fn write(self, out_directory: &Path) -> std::io::Result<Option<PathBuf>> {
-        if self.data.len() > 1 {
-            let sub_folder = self.name.find("/").map(|id| &self.name[..id]);
-            if let Some(sub_folder) = sub_folder {
-                std::fs::create_dir(out_directory.join(sub_folder))?;
-            }
-            let path = out_directory.join(&*self.name);
-            std::fs::write(&path, self.data)?;
-            Ok(Some(path))
-        } else {
-            Ok(None)
-        }
+simple_error! {
+    pub Error {
+        Unknown => "unknown"
     }
 }
 
-pub trait Generator {
-    type Error: std::error::Error;
+pub struct GeneratorSwift;
 
-    fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error>;
-    fn generate_umbrella<'a>(_: &str, _: impl Iterator<Item=&'a Path>) -> Result<String, Self::Error> {
-        Ok(String::new())
+impl Generator for GeneratorSwift {
+    type Error = Error;
+
+    fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error> {
+        let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(v, &proto.type_path_by_name)).join("\n");
+        Ok(vec![
+            File::new(FileType::Structure, "structures.rs", decl_structures)
+        ])
     }
 }
-
-pub use rust::GeneratorRust;

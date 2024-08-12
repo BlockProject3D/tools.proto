@@ -1,0 +1,41 @@
+#fragment push new
+#fragment pop
+
+#fragment push decl
+#[derive(Copy, Clone, Default, Debug)]
+public struct {name}<T>: BP3DProto.FixedSize {{
+    data: T
+
+    public static var size: Int {{ {byte_size} }}
+
+    public init(_ data: T) {{
+        self.data = data;
+    }}
+}}
+#fragment pop
+
+#fragment push fixed_size
+#fragment pop
+
+#fragment push write_to
+extension {name}: BP3DProto.WriteTo where T: BP3DProto.Buffer {{
+    public associatedtype Input = {name};
+
+    public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {{
+        out.write(bytes: input.data.toData());
+    }}
+}}
+#fragment pop
+
+#fragment push from_slice
+extension {name}: BP3DProto.FromSlice where T: BP3DProto.Buffer {{
+    public associatedtype Output = {name};
+
+    public static func from<B: BP3DProto.Buffer>(slice: B) throws -> BP3DProto.Message<Output> {{
+        if slice.size < {byte_size} {{
+            throw BP3DProto.Error.truncated;
+        }}
+        return BP3DProto.Message(size: {byte_size}, data: {name}(slice[...{byte_size}]));
+    }}
+}}
+#fragment pop
