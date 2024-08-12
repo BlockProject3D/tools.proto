@@ -35,7 +35,7 @@ use crate::{Error, Loader, Protoc};
 /// # Arguments
 ///
 /// * `load_fn`: a function which loads and imports all required protocols to compile and generate
-/// Rust code for.
+///              Rust code for.
 /// * `configure_fn`: a configuration function to configure the [Protoc](Protoc) for generating.
 ///
 /// # Panics
