@@ -56,9 +56,7 @@ fn gen_field_getter<U: Utilities>(
             let raw_field_type = v.loc.get_unsigned_integer_type();
             let raw_field_type = U::get_field_type(raw_field_type);
             let function_name = U::get_function_name(v);
-            scope
-                .var("raw_type", raw_field_type)
-                .var("function_name", function_name);
+            scope.var("raw_type", raw_field_type).var("function_name", function_name);
             if v.loc.bit_size % 8 != 0 {
                 scope
                     .var("codec", U::get_bit_codec_inline(v.endianness))
@@ -104,9 +102,7 @@ fn gen_field_setter<U: Utilities>(
             let raw_field_type = v.loc.get_unsigned_integer_type();
             let raw_field_type = U::get_field_type(raw_field_type);
             let function_name = U::get_function_name_mut(v);
-            scope
-                .var("raw_type", raw_field_type)
-                .var("function_name", function_name);
+            scope.var("raw_type", raw_field_type).var("function_name", function_name);
             if v.loc.bit_size % 8 != 0 {
                 scope
                     .var("codec", U::get_bit_codec_inline(v.endianness))
@@ -159,13 +155,9 @@ fn gen_field_view_getter<U: Utilities>(
             let field_type = U::get_field_type(field.ty);
             scope.var("view_type", field_type);
             if field.ty == FixedFieldType::Bool {
-                scope
-                    .render_to_var("getters.view_transmute", &["bool"], "fragment")
-                    .unwrap();
+                scope.render_to_var("getters.view_transmute", &["bool"], "fragment").unwrap();
             } else {
-                scope
-                    .render_to_var("getters.view_transmute", &["other"], "fragment")
-                    .unwrap();
+                scope.render_to_var("getters.view_transmute", &["other"], "fragment").unwrap();
             }
             scope.render("getters", &["view_transmute"]).unwrap()
         }
@@ -203,13 +195,9 @@ fn gen_field_view_setter<U: Utilities>(
             let field_type = U::get_field_type(field.ty);
             scope.var("view_type", field_type);
             if field.ty == FixedFieldType::Bool {
-                scope
-                    .render_to_var("setters.view_transmute", &["bool"], "fragment")
-                    .unwrap();
+                scope.render_to_var("setters.view_transmute", &["bool"], "fragment").unwrap();
             } else {
-                scope
-                    .render_to_var("setters.view_transmute", &["other"], "fragment")
-                    .unwrap();
+                scope.render_to_var("setters.view_transmute", &["other"], "fragment").unwrap();
             }
             scope.render("setters", &["view_transmute"]).unwrap()
         }
@@ -226,15 +214,9 @@ fn gen_structure_getters<U: Utilities>(
     type_path_by_name: &TypePathMap,
 ) -> String {
     let mut scope = template.scope();
-    let fields = s
-        .fields
-        .iter()
-        .map(|v| gen_field_getter::<U>(v, template, type_path_by_name))
-        .join("");
-    scope
-        .var("fields", fields)
-        .render("", &["getters"])
-        .unwrap()
+    let fields =
+        s.fields.iter().map(|v| gen_field_getter::<U>(v, template, type_path_by_name)).join("");
+    scope.var("fields", fields).render("", &["getters"]).unwrap()
 }
 
 fn gen_structure_setters<U: Utilities>(
@@ -243,15 +225,9 @@ fn gen_structure_setters<U: Utilities>(
     type_path_by_name: &TypePathMap,
 ) -> String {
     let mut scope = template.scope();
-    let fields = s
-        .fields
-        .iter()
-        .map(|v| gen_field_setter::<U>(v, template, type_path_by_name))
-        .join("");
-    scope
-        .var("fields", fields)
-        .render("", &["setters"])
-        .unwrap()
+    let fields =
+        s.fields.iter().map(|v| gen_field_setter::<U>(v, template, type_path_by_name)).join("");
+    scope.var("fields", fields).render("", &["setters"]).unwrap()
 }
 
 pub struct Templates<'a> {
@@ -267,12 +243,9 @@ pub fn generate<U: Utilities>(
     let mut template = Template::compile(templates.template).unwrap();
     let mut field_template = Template::compile(templates.field_template).unwrap();
     field_template.var("struct_name", &s.name);
-    template
-        .var("name", &s.name)
-        .var_d("byte_size", s.byte_size);
-    let mut code = template
-        .render("", &["decl", "new", "fixed_size", "write_to", "from_slice"])
-        .unwrap();
+    template.var("name", &s.name).var_d("byte_size", s.byte_size);
+    let mut code =
+        template.render("", &["decl", "new", "fixed_size", "write_to", "from_slice"]).unwrap();
     code += &gen_structure_getters::<U>(s, &field_template, type_path_by_name);
     code += &gen_structure_setters::<U>(s, &field_template, type_path_by_name);
     code

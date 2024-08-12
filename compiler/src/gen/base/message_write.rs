@@ -60,16 +60,11 @@ pub fn generate<U: Utilities>(
     type_path_by_name: &TypePathMap,
 ) -> String {
     let mut template = Template::compile(template).unwrap();
-    template
-        .var("msg_name", &msg.name)
-        .var("generics", U::gen_generics(msg));
+    template.var("msg_name", &msg.name).var("generics", U::gen_generics(msg));
     let fields = msg
         .fields
         .iter()
         .map(|field| gen_field_write_impl::<U>(msg, field, &template, type_path_by_name))
         .join("");
-    template
-        .var("fields", fields)
-        .render("", &["impl"])
-        .unwrap()
+    template.var("fields", fields).render("", &["impl"]).unwrap()
 }

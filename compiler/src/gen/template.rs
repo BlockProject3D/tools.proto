@@ -240,9 +240,8 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                                 cur_fragment.content.push(component);
                             }
                         } else {
-                            if let Some(component) = token
-                                .pop()?
-                                .map(|v| Component::parse_variable(&function_map, v))
+                            if let Some(component) =
+                                token.pop()?.map(|v| Component::parse_variable(&function_map, v))
                             {
                                 cur_fragment.content.push(component?);
                             }
@@ -348,15 +347,12 @@ impl<'a, 'fragment, 'variable> Scope<'a, 'fragment, 'variable> {
         fragments: &[&str],
         key: &'variable str,
     ) -> Result<&mut Self, Error> {
-        let str = self
-            .template
-            .render_internal(&self.variables, path, fragments)?;
+        let str = self.template.render_internal(&self.variables, path, fragments)?;
         self.variables.insert(key, str.into());
         Ok(self)
     }
 
     pub fn render(&self, path: &str, fragments: &[&str]) -> Result<String, Error> {
-        self.template
-            .render_internal(&self.variables, path, fragments)
+        self.template.render_internal(&self.variables, path, fragments)
     }
 }

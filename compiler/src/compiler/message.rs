@@ -50,16 +50,9 @@ impl Referenced {
     }
 
     pub fn lookup(proto: &Protocol, reference_name: &str) -> Option<Self> {
-        proto
-            .structs_by_name
-            .get(reference_name)
-            .map(|v| Referenced::Struct(v.clone()))
-            .or_else(|| {
-                proto
-                    .messages_by_name
-                    .get(reference_name)
-                    .map(|v| Referenced::Message(v.clone()))
-            })
+        proto.structs_by_name.get(reference_name).map(|v| Referenced::Struct(v.clone())).or_else(
+            || proto.messages_by_name.get(reference_name).map(|v| Referenced::Message(v.clone())),
+        )
     }
 }
 

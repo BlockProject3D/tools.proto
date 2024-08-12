@@ -56,18 +56,13 @@ fn gen_message_offset_field(
 
 pub fn gen_message_offsets_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
     let mut template = Template::compile(TEMPLATE).unwrap();
-    template
-        .var("msg_name", &msg.name)
-        .var("generics", Generics::from_message(msg).to_code());
+    template.var("msg_name", &msg.name).var("generics", Generics::from_message(msg).to_code());
     let fields = msg
         .fields
         .iter()
         .map(|field| gen_message_offset_field(field, &template, type_path_by_name))
         .join("");
-    let mut code = template
-        .var("fields", fields)
-        .render("", &["decl"])
-        .unwrap();
+    let mut code = template.var("fields", fields).render("", &["decl"]).unwrap();
     code += "\n";
     code += &generate_from_slice_impl::<RustUtils>(msg, &template, type_path_by_name);
     code

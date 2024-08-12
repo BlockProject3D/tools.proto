@@ -92,13 +92,9 @@ fn gen_union_from_slice_impl(
     scope.var("cases", cases);
     let generics = get_generics(u);
     if generics != "" {
-        scope
-            .render_to_var("from_slice", &["generics"], "fragment")
-            .unwrap();
+        scope.render_to_var("from_slice", &["generics"], "fragment").unwrap();
     } else {
-        scope
-            .render_to_var("from_slice", &["none"], "fragment")
-            .unwrap();
+        scope.render_to_var("from_slice", &["none"], "fragment").unwrap();
     }
     scope.render("", &["from_slice"]).unwrap()
 }
@@ -128,14 +124,9 @@ fn gen_union_write_to_impl(
                 }
             })
             .join("");
-        scope
-            .var("cases", cases)
-            .render_to_var("write_to", &["generics"], "fragment")
-            .unwrap();
+        scope.var("cases", cases).render_to_var("write_to", &["generics"], "fragment").unwrap();
     } else {
-        scope
-            .render_to_var("write_to", &["none"], "fragment")
-            .unwrap();
+        scope.render_to_var("write_to", &["none"], "fragment").unwrap();
     }
     scope.render("", &["write_to"]).unwrap()
 }
@@ -153,11 +144,7 @@ fn gen_union_set_discriminant(u: &Union, template: &Template) -> String {
             }
         })
         .join("");
-    template
-        .scope()
-        .var("cases", cases)
-        .render("", &["setter"])
-        .unwrap()
+    template.scope().var("cases", cases).render("", &["setter"]).unwrap()
 }
 
 fn gen_union_as_getters(u: &Union, template: &Template, type_path_by_name: &TypePathMap) -> String {
@@ -166,9 +153,7 @@ fn gen_union_as_getters(u: &Union, template: &Template, type_path_by_name: &Type
         .iter()
         .map(|case| {
             let mut scope = template.scope();
-            scope
-                .var("name_lower", case.name.to_ascii_lowercase())
-                .var("name", &case.name);
+            scope.var("name_lower", case.name.to_ascii_lowercase()).var("name", &case.name);
             match &case.item_type {
                 Some(Referenced::Struct(v)) => scope
                     .var("type_name", type_path_by_name.get(&v.name))
@@ -182,11 +167,7 @@ fn gen_union_as_getters(u: &Union, template: &Template, type_path_by_name: &Type
             }
         })
         .join("");
-    template
-        .scope()
-        .var("cases", cases)
-        .render("", &["getters"])
-        .unwrap()
+    template.scope().var("cases", cases).render("", &["getters"]).unwrap()
 }
 
 pub fn gen_union_decl(u: &Union, type_path_by_name: &TypePathMap) -> String {
@@ -205,11 +186,7 @@ pub fn gen_union_decl(u: &Union, type_path_by_name: &TypePathMap) -> String {
         .cases
         .iter()
         .map(|case| match &case.item_type {
-            None => template
-                .scope()
-                .var("name", &case.name)
-                .render("decl", &["none"])
-                .unwrap(),
+            None => template.scope().var("name", &case.name).render("decl", &["none"]).unwrap(),
             Some(Referenced::Struct(v)) => template
                 .scope()
                 .var("name", &case.name)
@@ -224,11 +201,7 @@ pub fn gen_union_decl(u: &Union, type_path_by_name: &TypePathMap) -> String {
                 .unwrap(),
         })
         .join("");
-    let mut code = template
-        .scope()
-        .var("cases", cases)
-        .render("", &["decl"])
-        .unwrap();
+    let mut code = template.scope().var("cases", cases).render("", &["decl"]).unwrap();
     code += &gen_union_from_slice_impl(u, &template, type_path_by_name);
     code += &gen_union_write_to_impl(u, &template, type_path_by_name);
     code += &gen_union_set_discriminant(u, &template);

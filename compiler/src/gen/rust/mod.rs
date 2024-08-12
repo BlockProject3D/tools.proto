@@ -60,11 +60,8 @@ impl Generator for GeneratorRust {
     type Error = Error;
 
     fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error> {
-        let decl_messages_code = proto
-            .messages
-            .iter()
-            .map(|v| gen_message_decl(v, &proto.type_path_by_name))
-            .join("\n");
+        let decl_messages_code =
+            proto.messages.iter().map(|v| gen_message_decl(v, &proto.type_path_by_name)).join("\n");
         let impl_from_slice_messages_code = proto
             .messages
             .iter()
@@ -81,11 +78,8 @@ impl Generator for GeneratorRust {
             .map(|v| gen_structure_decl(v, &proto.type_path_by_name))
             .join("\n");
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(v)).join("\n");
-        let decl_unions = proto
-            .unions
-            .iter()
-            .map(|v| gen_union_decl(v, &proto.type_path_by_name))
-            .join("\n");
+        let decl_unions =
+            proto.unions.iter().map(|v| gen_union_decl(v, &proto.type_path_by_name)).join("\n");
         let decl_messages_code_offsets = proto
             .messages
             .iter()

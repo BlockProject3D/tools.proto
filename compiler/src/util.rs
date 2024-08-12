@@ -38,8 +38,7 @@ pub struct SimpleImportSolver<'a> {
 
 impl<'a> ImportSolver for SimpleImportSolver<'a> {
     fn register(&mut self, base_import_path: String, protocol: Protocol) {
-        self.import_map
-            .insert(protocol.name.clone(), (base_import_path, protocol));
+        self.import_map.insert(protocol.name.clone(), (base_import_path, protocol));
     }
 }
 

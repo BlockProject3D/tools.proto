@@ -52,16 +52,13 @@ impl UnionField {
                 .map(|v| *v)
                 .ok_or_else(|| Error::InvalidUnionCase(value.case))?,
             FieldView::Transmute | FieldView::SignedCast { .. } => {
-                let value: isize = value
-                    .case
-                    .parse()
-                    .map_err(|_| Error::InvalidUnionCase(value.case))?;
+                let value: isize =
+                    value.case.parse().map_err(|_| Error::InvalidUnionCase(value.case))?;
                 value as usize
             }
-            FieldView::None => value
-                .case
-                .parse()
-                .map_err(|_| Error::InvalidUnionCase(value.case))?,
+            FieldView::None => {
+                value.case.parse().map_err(|_| Error::InvalidUnionCase(value.case))?
+            }
         };
         let item_type = value
             .item_type

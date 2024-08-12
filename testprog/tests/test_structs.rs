@@ -91,12 +91,7 @@ fn master() {
         .set_b(-4242)
         .set_u_c(0x12)
         .set_c(-42);
-    master
-        .get_flags_mut()
-        .set_a(true)
-        .set_b(true)
-        .set_c(true)
-        .set_d(true);
+    master.get_flags_mut().set_a(true).set_b(true).set_c(true).set_d(true);
     master.get_floats_mut().set_a(4242.0).set_b(4242.4242);
     check_numbers(&master.get_nums());
     check_flags(&master.get_flags());

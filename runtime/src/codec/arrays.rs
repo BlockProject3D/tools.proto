@@ -63,10 +63,7 @@ impl<B: AsRef<[u8]>, Item: ReadBytes, C: ByteCodec, const ITEM_BIT_SIZE: usize>
 
     pub fn iter_raw(&self) -> impl Iterator<Item = Item> + '_ {
         let byte_size = ITEM_BIT_SIZE / 8;
-        self.buffer
-            .as_ref()
-            .chunks(byte_size)
-            .map(|v| C::read::<Item>(v))
+        self.buffer.as_ref().chunks(byte_size).map(|v| C::read::<Item>(v))
     }
 }
 

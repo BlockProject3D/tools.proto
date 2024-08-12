@@ -36,15 +36,7 @@ pub fn gen_enum_decl(e: &Enum) -> String {
     let mut template = Template::compile(TEMPLATE).unwrap();
     template.var("name", &e.name);
     let mut code = e.variants.iter().map(|(k, v)| {
-        template
-            .scope()
-            .var("key", k)
-            .var_d("value", v)
-            .render("enum", &["variant"])
-            .unwrap()
+        template.scope().var("key", k).var_d("value", v).render("enum", &["variant"]).unwrap()
     });
-    template
-        .var("variants", code.join(""))
-        .render("", &["enum"])
-        .unwrap()
+    template.var("variants", code.join("")).render("", &["enum"]).unwrap()
 }
