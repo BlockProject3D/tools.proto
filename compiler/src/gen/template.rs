@@ -295,6 +295,7 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
     }
 }
 
+#[derive(Clone)]
 pub struct Scope<'a, 'fragment, 'variable> {
     template: &'a Template<'fragment, 'variable>,
     variables: HashMap<&'variable str, Cow<'variable, str>>

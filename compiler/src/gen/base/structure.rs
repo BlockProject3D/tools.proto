@@ -62,7 +62,7 @@ fn gen_field_getter<U: Utilities>(field: &Field, template: &Template, type_path_
                     .render_to_var("getters.fixed", &["byte"], "fragment").unwrap();
             }
             let mut code = scope.render("getters", &["fixed"]).unwrap();
-            code += &gen_field_view_getter::<U>(v, scope, type_path_by_name);
+            code += &gen_field_view_getter::<U>(v, &scope, type_path_by_name);
             code
         }
         Field::Array(v) => scope.var("raw_type", U::get_field_type(v.ty))
@@ -94,7 +94,7 @@ fn gen_field_setter<U: Utilities>(field: &Field, template: &Template, type_path_
                     .render_to_var("setters.fixed", &["byte"], "fragment").unwrap();
             }
             let mut code = scope.render("setters", &["fixed"]).unwrap();
-            code += &gen_field_view_setter::<U>(v, scope, type_path_by_name);
+            code += &gen_field_view_setter::<U>(v, &scope, type_path_by_name);
             code
         }
         Field::Array(v) => scope.var("raw_type", U::get_field_type(v.ty))
@@ -105,13 +105,13 @@ fn gen_field_setter<U: Utilities>(field: &Field, template: &Template, type_path_
     }
 }
 
-fn gen_field_view_getter<U: Utilities>(field: &FixedField, mut scope: Scope, type_path_by_name: &TypePathMap) -> String {
+fn gen_field_view_getter<U: Utilities>(field: &FixedField, scope: &Scope, type_path_by_name: &TypePathMap) -> String {
+    let mut scope = scope.clone();
     match &field.view {
         FieldView::Float { a, b, .. } => scope.var("view_type", U::get_field_type(field.ty))
             .var("a", format!("{:?}", a)).var("b", format!("{:?}", b))
             .render("getters", &["view_float"]).unwrap(),
-        //Rust absolutely wants to allocate as randomly the lifetime does not match
-        FieldView::Enum(e) => scope.var("view_type", String::from(type_path_by_name.get(&e.name)))
+        FieldView::Enum(e) => scope.var("view_type", type_path_by_name.get(&e.name))
             .var_d("enum_largest", e.largest).render("getters", &["view_enum"]).unwrap(),
         FieldView::Transmute => {
             let field_type = U::get_field_type(field.ty);
@@ -129,13 +129,13 @@ fn gen_field_view_getter<U: Utilities>(field: &FixedField, mut scope: Scope, typ
     }
 }
 
-fn gen_field_view_setter<U: Utilities>(field: &FixedField, mut scope: Scope, type_path_by_name: &TypePathMap) -> String {
+fn gen_field_view_setter<U: Utilities>(field: &FixedField, scope: &Scope, type_path_by_name: &TypePathMap) -> String {
+    let mut scope = scope.clone();
     match &field.view {
         FieldView::Float { a_inv, b_inv, .. } => scope.var("view_type", U::get_field_type(field.ty))
             .var("a_inv", format!("{:?}", a_inv)).var("b_inv", format!("{:?}", b_inv))
             .render("setters", &["view_float"]).unwrap(),
-        //Rust absolutely wants to allocate as randomly the lifetime does not match
-        FieldView::Enum(e) => scope.var("view_type", String::from(type_path_by_name.get(&e.name)))
+        FieldView::Enum(e) => scope.var("view_type", type_path_by_name.get(&e.name))
             .var_d("enum_largest", e.largest).render("setters", &["view_enum"]).unwrap(),
         FieldView::Transmute | FieldView::SignedCast { .. } => {
             let field_type = U::get_field_type(field.ty);
