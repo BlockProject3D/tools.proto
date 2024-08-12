@@ -76,5 +76,5 @@ macro_rules! transmute {
     };
     (<$src: ty, $dst: ty>($value: expr)) => {
         unsafe { std::mem::transmute::<$src, $dst>($value) }
-    }
+    };
 }
