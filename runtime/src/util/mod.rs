@@ -59,3 +59,22 @@ impl<T, T1> MultiOptionExt for (Option<T>, Option<T1>) {
         Some((t, t1))
     }
 }
+
+#[macro_export]
+macro_rules! transmute {
+    (<f64, u64>($value: expr)) => {
+        $value.to_bits()
+    };
+    (<u64, f64>($value: expr)) => {
+        f64::from_bits($value)
+    };
+    (<f32, u32>($value: expr)) => {
+        $value.to_bits()
+    };
+    (<u32, f32>($value: expr)) => {
+        f32::from_bits($value)
+    };
+    (<$src: ty, $dst: ty>($value: expr)) => {
+        unsafe { std::mem::transmute::<$src, $dst>($value) }
+    }
+}
