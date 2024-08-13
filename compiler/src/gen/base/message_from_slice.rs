@@ -118,8 +118,7 @@ fn gen_field_from_slice_impl<U: Utilities>(
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
-    let msg_type =
-        generate_field_type_inline::<U>(msg, field, template, type_path_by_name);
+    let msg_type = generate_field_type_inline::<U>(msg, field, template, type_path_by_name);
     let union = field.ty.as_union();
     if let Some(v) = union {
         scope.var("on_name", &v.on_name);
