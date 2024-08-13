@@ -92,7 +92,9 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                             if let Some(component) = token.pop()?.map(Component::Constant) {
                                 cur_fragment.content.push(component);
                             }
-                        } else if let Some(component) = token.pop()?.map(|v| Component::parse_variable(&function_map, v)) {
+                        } else if let Some(component) =
+                            token.pop()?.map(|v| Component::parse_variable(&function_map, v))
+                        {
                             cur_fragment.content.push(component?);
                         }
                     }
