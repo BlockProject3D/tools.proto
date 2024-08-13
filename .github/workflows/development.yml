@@ -12,10 +12,13 @@ jobs:
     uses: BlockProject3D/workflows/.github/workflows/Analyze.yml@main
     needs: Test
 
-  CodeCov:
-    uses: BlockProject3D/workflows/.github/workflows/CodeCov.yml@main
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  Coverage:
+    uses: BlockProject3D/workflows/.github/workflows/Coverage.yml@main
+
+#  CodeCov:
+#    uses: BlockProject3D/workflows/.github/workflows/CodeCov.yml@main
+#    secrets:
+#      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   Release:
     uses: BlockProject3D/workflows/.github/workflows/Release.yml@main
