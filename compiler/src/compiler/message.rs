@@ -116,7 +116,10 @@ impl FieldType {
     }
 
     pub fn is_string(&self) -> bool {
-        matches!(self, FieldType::VarcharString(_) | FieldType::NullTerminatedString)
+        matches!(
+            self,
+            FieldType::VarcharString(_) | FieldType::NullTerminatedString
+        )
     }
 }
 
@@ -252,13 +255,16 @@ impl Field {
                     .enumerate()
                     .find_map(|(k, v)| if v.name == on { Some((k, v)) } else { None })
                     .ok_or(Error::UndefinedReference(on))?;
-                let r = proto.unions_by_name.get(&item_type).ok_or(Error::UndefinedReference(item_type))?;
+                let r = proto
+                    .unions_by_name
+                    .get(&item_type)
+                    .ok_or(Error::UndefinedReference(item_type))?;
                 match &on_field.ty {
                     FieldType::Ref(Referenced::Struct(v)) => {
                         if !Rc::ptr_eq(&r.discriminant.root, v) {
                             return Err(Error::UnionTypeMismatch);
                         }
-                    },
+                    }
                     _ => return Err(Error::UnionTypeMismatch),
                 }
                 let on_name = on_field.name.clone();
