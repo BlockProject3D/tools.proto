@@ -34,8 +34,8 @@ use itertools::Itertools;
 
 pub trait Utilities {
     fn get_field_type(field_type: FixedFieldType) -> &'static str;
-    fn get_function_name(field: &FixedField) -> &'static str;
-    fn get_function_name_mut(field: &FixedField) -> &'static str;
+    fn get_fragment_name(field: &FixedField) -> &'static str;
+    fn get_fragment_name_mut(field: &FixedField) -> &'static str;
     fn get_bit_codec_inline(endianness: Endianness) -> &'static str;
     fn get_byte_codec_inline(endianness: Endianness) -> &'static str;
     fn get_byte_codec(endianness: Endianness) -> &'static str;
@@ -55,19 +55,19 @@ fn gen_field_getter<U: Utilities>(
         Field::Fixed(v) => {
             let raw_field_type = v.loc.get_unsigned_integer_type();
             let raw_field_type = U::get_field_type(raw_field_type);
-            let function_name = U::get_function_name(v);
-            scope.var("raw_type", raw_field_type).var("function_name", function_name);
+            let fragment_name = U::get_fragment_name(v);
+            scope.var("raw_type", raw_field_type);
             if v.loc.bit_size % 8 != 0 {
                 scope
                     .var("codec", U::get_bit_codec_inline(v.endianness))
                     .var_d("bit_offset", v.loc.bit_offset)
                     .var_d("bit_size", v.loc.bit_size)
-                    .render_to_var("getters.fixed", &["bit"], "fragment")
+                    .render_to_var("getters.fixed.bit", &[fragment_name], "fragment")
                     .unwrap();
             } else {
                 scope
                     .var("codec", U::get_byte_codec_inline(v.endianness))
-                    .render_to_var("getters.fixed", &["byte"], "fragment")
+                    .render_to_var("getters.fixed.byte", &[fragment_name], "fragment")
                     .unwrap();
             }
             let mut code = scope.render("getters", &["fixed"]).unwrap();
@@ -101,19 +101,19 @@ fn gen_field_setter<U: Utilities>(
         Field::Fixed(v) => {
             let raw_field_type = v.loc.get_unsigned_integer_type();
             let raw_field_type = U::get_field_type(raw_field_type);
-            let function_name = U::get_function_name_mut(v);
-            scope.var("raw_type", raw_field_type).var("function_name", function_name);
+            let fragment_name = U::get_fragment_name_mut(v);
+            scope.var("raw_type", raw_field_type);
             if v.loc.bit_size % 8 != 0 {
                 scope
                     .var("codec", U::get_bit_codec_inline(v.endianness))
                     .var_d("bit_offset", v.loc.bit_offset)
                     .var_d("bit_size", v.loc.bit_size)
-                    .render_to_var("setters.fixed", &["bit"], "fragment")
+                    .render_to_var("setters.fixed.bit", &[fragment_name], "fragment")
                     .unwrap();
             } else {
                 scope
                     .var("codec", U::get_byte_codec_inline(v.endianness))
-                    .render_to_var("setters.fixed", &["byte"], "fragment")
+                    .render_to_var("setters.fixed.byte", &[fragment_name], "fragment")
                     .unwrap();
             }
             let mut code = scope.render("setters", &["fixed"]).unwrap();

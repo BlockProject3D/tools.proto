@@ -39,7 +39,7 @@ pub trait BitCodec {
         buffer: &[u8],
     ) -> T;
 
-    unsafe fn read_unaligned<
+    fn read_unaligned<
         T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>,
         const BIT_OFFSET: usize,
         const BIT_SIZE: usize,
@@ -48,7 +48,7 @@ pub trait BitCodec {
     ) -> T {
         let mut data = [0; 8];
         data[..buffer.len()].copy_from_slice(buffer);
-        Self::read_aligned::<T, BIT_OFFSET, BIT_SIZE>(&data)
+        unsafe { Self::read_aligned::<T, BIT_OFFSET, BIT_SIZE>(&data) }
     }
 
     fn read<
@@ -59,7 +59,7 @@ pub trait BitCodec {
         buffer: &[u8],
     ) -> T {
         if size_of::<T>() != buffer.len() {
-            unsafe { Self::read_unaligned::<T, BIT_OFFSET, BIT_SIZE>(buffer) }
+            Self::read_unaligned::<T, BIT_OFFSET, BIT_SIZE>(buffer)
         } else {
             unsafe { Self::read_aligned::<T, BIT_OFFSET, BIT_SIZE>(buffer) }
         }
@@ -80,7 +80,7 @@ pub trait BitCodec {
         value: T,
     );
 
-    unsafe fn write_unaligned<
+    fn write_unaligned<
         T: ToUsize
             + ReadBytes
             + WriteBytes
@@ -96,7 +96,7 @@ pub trait BitCodec {
     ) {
         let mut data = [0; 8];
         data[..buffer.len()].copy_from_slice(buffer);
-        Self::write_aligned::<T, BIT_OFFSET, BIT_SIZE>(&mut data, value);
+        unsafe { Self::write_aligned::<T, BIT_OFFSET, BIT_SIZE>(&mut data, value) };
         let motherfuckingrust = buffer.len();
         buffer.copy_from_slice(&data[..motherfuckingrust]);
     }
@@ -116,13 +116,9 @@ pub trait BitCodec {
         value: T,
     ) {
         if size_of::<T>() != buffer.len() {
-            unsafe {
-                Self::write_unaligned::<T, BIT_OFFSET, BIT_SIZE>(buffer, value);
-            }
+            Self::write_unaligned::<T, BIT_OFFSET, BIT_SIZE>(buffer, value);
         } else {
-            unsafe {
-                Self::write_aligned::<T, BIT_OFFSET, BIT_SIZE>(buffer, value);
-            }
+            unsafe { Self::write_aligned::<T, BIT_OFFSET, BIT_SIZE>(buffer, value) };
         }
     }
 }

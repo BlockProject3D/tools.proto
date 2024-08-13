@@ -4,11 +4,17 @@ impl<T: AsRef<[u8]>> {struct_name}<T> {{
 #fragment push fixed
     pub fn get_raw_{name}(&self) -> {raw_type} {{
 {fragment}
-#fragment push bit
-        unsafe {{ {codec}::{function_name}::<{raw_type}, {bit_offset}, {bit_size}>(&self.data.as_ref()[{start}..{end}]) }}
+#fragment push bit.aligned
+        unsafe {{ {codec}::read_aligned::<{raw_type}, {bit_offset}, {bit_size}>(&self.data.as_ref()[{start}..{end}]) }}
 #fragment pop
-#fragment push byte
-        unsafe {{ {codec}::{function_name}::<{raw_type}>(&self.data.as_ref()[{start}..{end}]) }}
+#fragment push bit.unaligned
+        {codec}::read_unaligned::<{raw_type}, {bit_offset}, {bit_size}>(&self.data.as_ref()[{start}..{end}])
+#fragment pop
+#fragment push byte.aligned
+        unsafe {{ {codec}::read_aligned::<{raw_type}>(&self.data.as_ref()[{start}..{end}]) }}
+#fragment pop
+#fragment push byte.unaligned
+        {codec}::read_unaligned::<{raw_type}>(&self.data.as_ref()[{start}..{end}])
 #fragment pop
     }}
 #fragment pop
@@ -73,11 +79,17 @@ impl<T: AsMut<[u8]>> {struct_name}<T> {{
 #fragment push fixed
     pub fn set_raw_{name}(&mut self, value: {raw_type}) {{
 {fragment}
-#fragment push bit
-        unsafe {{ {codec}::{function_name}::<{raw_type}, {bit_offset}, {bit_size}>(&mut self.data.as_mut()[{start}..{end}], value) }}
+#fragment push bit.aligned
+        unsafe {{ {codec}::write_aligned::<{raw_type}, {bit_offset}, {bit_size}>(&mut self.data.as_mut()[{start}..{end}], value) }}
 #fragment pop
-#fragment push byte
-        unsafe {{ {codec}::{function_name}::<{raw_type}>(&mut self.data.as_mut()[{start}..{end}], value) }}
+#fragment push bit.unaligned
+        {codec}::write_unaligned::<{raw_type}, {bit_offset}, {bit_size}>(&mut self.data.as_mut()[{start}..{end}], value)
+#fragment pop
+#fragment push byte.aligned
+        unsafe {{ {codec}::write_aligned::<{raw_type}>(&mut self.data.as_mut()[{start}..{end}], value) }}
+#fragment pop
+#fragment push byte.unaligned
+        {codec}::write_unaligned::<{raw_type}>(&mut self.data.as_mut()[{start}..{end}], value)
 #fragment pop
     }}
 #fragment pop

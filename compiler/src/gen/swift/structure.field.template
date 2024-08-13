@@ -4,11 +4,17 @@ extension {struct_name} where T: BP3DProto.Buffer {{
 #fragment push fixed
     public raw{name:to_pascal_case}: {raw_type} {{
 {fragment}
-#fragment push bit
-        BP3DProto.{codec}.{function_name}({raw_type}.self, self.data[{start}...{end}], bitOffset: {bit_offset}, bitSize: {bit_size})
+#fragment push bit.aligned
+        BP3DProto.{codec}.readAligned({raw_type}.self, self.data[{start}...{end}], bitOffset: {bit_offset}, bitSize: {bit_size})
 #fragment pop
-#fragment push byte
-        BP3DProto.{codec}.{function_name}({raw_type}.self, self.data[{start}...{end}])
+#fragment push bit.unaligned
+        BP3DProto.{codec}.readUnaligned({raw_type}.self, self.data[{start}...{end}], bitOffset: {bit_offset}, bitSize: {bit_size})
+#fragment pop
+#fragment push byte.aligned
+        BP3DProto.{codec}.readAligned({raw_type}.self, self.data[{start}...{end}])
+#fragment pop
+#fragment push byte.unaligned
+        BP3DProto.{codec}.readUnaligned({raw_type}.self, self.data[{start}...{end}])
 #fragment pop
     }}
 #fragment pop

@@ -93,21 +93,21 @@ impl crate::gen::base::structure::Utilities for RustUtils {
         gen_value_type!("", field_type, "")
     }
 
-    fn get_function_name(field: &FixedField) -> &'static str {
+    fn get_fragment_name(field: &FixedField) -> &'static str {
         let raw_field_type = field.loc.get_unsigned_integer_type();
         let raw_field_byte_size = raw_field_type.get_byte_size();
         match raw_field_byte_size != field.loc.byte_size {
-            true => "read_unaligned",
-            false => "read_aligned",
+            true => "unaligned",
+            false => "aligned",
         }
     }
 
-    fn get_function_name_mut(field: &FixedField) -> &'static str {
+    fn get_fragment_name_mut(field: &FixedField) -> &'static str {
         let raw_field_type = field.loc.get_unsigned_integer_type();
         let raw_field_byte_size = raw_field_type.get_byte_size();
         match raw_field_byte_size != field.loc.byte_size {
-            true => "write_unaligned",
-            false => "write_aligned",
+            true => "unaligned",
+            false => "aligned",
         }
     }
 

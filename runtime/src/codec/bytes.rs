@@ -31,15 +31,15 @@ use bytesutil::{ReadBytes, WriteBytes};
 pub trait ByteCodec {
     unsafe fn read_aligned<T: ReadBytes>(buffer: &[u8]) -> T;
 
-    unsafe fn read_unaligned<T: ReadBytes>(buffer: &[u8]) -> T {
+    fn read_unaligned<T: ReadBytes>(buffer: &[u8]) -> T {
         let mut data = [0; 8];
         data[..buffer.len()].copy_from_slice(buffer);
-        Self::read_aligned::<T>(&data)
+        unsafe { Self::read_aligned::<T>(&data) }
     }
 
     fn read<T: ReadBytes>(buffer: &[u8]) -> T {
         if size_of::<T>() != buffer.len() {
-            unsafe { Self::read_unaligned::<T>(buffer) }
+            Self::read_unaligned::<T>(buffer)
         } else {
             unsafe { Self::read_aligned::<T>(buffer) }
         }
@@ -47,23 +47,19 @@ pub trait ByteCodec {
 
     unsafe fn write_aligned<T: WriteBytes>(buffer: &mut [u8], value: T);
 
-    unsafe fn write_unaligned<T: WriteBytes>(buffer: &mut [u8], value: T) {
+    fn write_unaligned<T: WriteBytes>(buffer: &mut [u8], value: T) {
         let mut data = [0; 8];
         data[..buffer.len()].copy_from_slice(buffer);
-        Self::write_aligned::<T>(&mut data, value);
+        unsafe { Self::write_aligned::<T>(&mut data, value) };
         let motherfuckingrust = buffer.len();
         buffer.copy_from_slice(&data[..motherfuckingrust]);
     }
 
     fn write<T: WriteBytes>(buffer: &mut [u8], value: T) {
         if size_of::<T>() != buffer.len() {
-            unsafe {
-                Self::write_unaligned::<T>(buffer, value);
-            }
+            Self::write_unaligned::<T>(buffer, value);
         } else {
-            unsafe {
-                Self::write_aligned::<T>(buffer, value);
-            }
+            unsafe { Self::write_aligned::<T>(buffer, value) };
         }
     }
 }
