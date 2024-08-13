@@ -31,6 +31,22 @@ use bytesutil::{ReadBytes, WriteBytes};
 use std::ops::{BitAnd, BitOr, Shl, Shr};
 
 pub trait BitCodec {
+    /// Reads a value of type T from the buffer argument with a custom bit offset and size assuming
+    /// the buffer size is greater or equal to the size of T.
+    ///
+    /// # Arguments
+    ///
+    /// * `buffer`: the buffer to read from.
+    ///
+    /// returns: T
+    ///
+    /// # Safety
+    ///
+    /// This function assumes that the length of the buffer passed in as argument is at least as
+    /// large as the size of T. Currently, this relies on bytesutil which does not apply any
+    /// optimization and as such passing a too small buffer will only panic, however a future
+    /// optimization might remove the panic check from release builds, essentially causing UB in
+    /// such build.
     unsafe fn read_aligned<
         T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>,
         const BIT_OFFSET: usize,
@@ -39,6 +55,15 @@ pub trait BitCodec {
         buffer: &[u8],
     ) -> T;
 
+    /// Reads a value of type T from the buffer argument with a custom bit offset and size assuming
+    /// the buffer size is always less than the size of T. This is not unsafe as will always cause
+    /// a copy into an 8 bytes buffer (the maximum size for T is 8).
+    ///
+    /// # Arguments
+    ///
+    /// * `buffer`: the buffer to read from.
+    ///
+    /// returns: T
     fn read_unaligned<
         T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>,
         const BIT_OFFSET: usize,
@@ -65,6 +90,21 @@ pub trait BitCodec {
         }
     }
 
+    /// Writes a value of type T in the buffer argument with a custom bit offset and size assuming
+    /// the buffer size is greater or equal to the size of T.
+    ///
+    /// # Arguments
+    ///
+    /// * `buffer`: the buffer to write to.
+    /// * `value`: the value to write.
+    ///
+    /// # Safety
+    ///
+    /// This function assumes that the length of the buffer passed in as argument is at least as
+    /// large as the size of T. Currently, this relies on bytesutil which does not apply any
+    /// optimization and as such passing a too small buffer will only panic, however a future
+    /// optimization might remove the panic check from release builds, essentially causing UB in
+    /// such build.
     unsafe fn write_aligned<
         T: ToUsize
             + ReadBytes
