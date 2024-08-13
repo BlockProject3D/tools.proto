@@ -148,7 +148,7 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                     Component::Variable(v) => {
                         let variable = variables
                             .get(v.name)
-                            .ok_or_else(|| Error::VariableNotFound(String::from(&*v.name)))?;
+                            .ok_or_else(|| Error::VariableNotFound(v.name.into()))?;
                         if let Some(function) = v.function {
                             let variable = function(variable);
                             Ok(variable)

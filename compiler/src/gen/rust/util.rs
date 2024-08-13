@@ -100,16 +100,9 @@ impl crate::gen::base::structure::Utilities for RustUtils {
 
 impl crate::gen::base::message::Utilities for RustUtils {
     fn get_generics(msg: &Message) -> &str {
-        let has_lifetime = msg.fields.iter().any(|v| match v.ty {
-            FieldType::Ref(_) => true,
-            FieldType::NullTerminatedString => true,
-            FieldType::VarcharString(_) => true,
-            FieldType::Array(_) => true,
-            FieldType::Union(_) => true,
-            FieldType::List(_) => true,
-            FieldType::Payload => true,
-            _ => false,
-        });
+        let has_lifetime = msg.fields.iter().any(|v| matches!(v.ty,
+            FieldType::Ref(_) | FieldType::NullTerminatedString | FieldType::VarcharString(_)
+            | FieldType::Array(_) | FieldType::Union(_) | FieldType::List(_) | FieldType::Payload));
         if has_lifetime {
             "<'a>"
         } else {

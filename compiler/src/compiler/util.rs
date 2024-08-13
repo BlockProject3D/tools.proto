@@ -65,7 +65,7 @@ impl TypePathMap {
     ) -> Cow<'a, str> {
         match self.type_path_by_name.get(item_type) {
             None => Cow::Owned(format!("{default_prefix}{item_type}")),
-            Some(v) => Cow::Borrowed(&*v),
+            Some(v) => Cow::Borrowed(v),
         }
     }
 }

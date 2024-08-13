@@ -30,13 +30,13 @@ use itertools::Itertools;
 use regex::Regex;
 use std::borrow::Cow;
 
-enum CaseConvention {
+enum Convention {
     PascalCase,
     SnakeCase,
     ScreamingCase,
 }
 
-fn guess_case_convention(s: &str) -> CaseConvention {
+fn guess_case_convention(s: &str) -> Convention {
     //Assume all strings are Rust identifiers following standard Rust conventions:
     // snake_case, PascalCase and SCREAMING_CASE.
     let upper1 = (s.as_bytes()[0] >= b'A' && s.as_bytes()[0] <= b'Z') || s.as_bytes()[0] == b'_';
@@ -44,16 +44,16 @@ fn guess_case_convention(s: &str) -> CaseConvention {
         && s.as_bytes()[s.as_bytes().len() - 1] <= b'Z')
         || s.as_bytes()[s.as_bytes().len() - 1] == b'_';
     if upper1 && upper2 {
-        CaseConvention::ScreamingCase
+        Convention::ScreamingCase
     } else if upper1 {
-        CaseConvention::PascalCase
+        Convention::PascalCase
     } else {
-        CaseConvention::SnakeCase
+        Convention::SnakeCase
     }
 }
 
 fn capitalize(value: &str) -> Cow<str> {
-    if value.len() == 0 {
+    if value.is_empty() {
         return value.into();
     }
     if value.as_bytes()[0] >= b'A' && value.as_bytes()[0] <= b'Z' {
@@ -64,7 +64,7 @@ fn capitalize(value: &str) -> Cow<str> {
 }
 
 fn decapitalize(value: &str) -> Cow<str> {
-    if value.len() == 0 {
+    if value.is_empty() {
         return value.into();
     }
     if value.as_bytes()[0] >= b'A' && value.as_bytes()[0] <= b'Z' {
@@ -115,12 +115,8 @@ impl<'a> CaseConversion<'a> for PascalCase<'a> {
 
     fn to_snake_case(self) -> Cow<'a, str> {
         let regex = Regex::new("[A-Z]([a-z]|[0-9])*").unwrap();
-        //Unfortunately Rust is a piece of shit unable to understand that to_lowercase is supposed to return an owned value so by definition not a Cow!!!!!
-        format!(
-            "{}",
-            regex.find_iter(self.0).map(|v| v.as_str().to_lowercase()).join("_")
-        )
-        .into()
+        let useless = regex.find_iter(self.0).map(|v| v.as_str().to_lowercase()).join("_").into();
+        useless
     }
 
     fn to_camel_case(self) -> Cow<'a, str> {
@@ -129,19 +125,14 @@ impl<'a> CaseConversion<'a> for PascalCase<'a> {
 
     fn to_screaming_case(self) -> Cow<'a, str> {
         let regex = Regex::new("[A-Z]([a-z]|[0-9])*").unwrap();
-        //Unfortunately Rust is a piece of shit unable to understand that to_lowercase is supposed to return an owned value so by definition not a Cow!!!!!
-        format!(
-            "{}",
-            regex.find_iter(self.0).map(|v| v.as_str().to_uppercase()).join("_")
-        )
-        .into()
+        let useless = regex.find_iter(self.0).map(|v| v.as_str().to_uppercase()).join("_").into();
+        useless
     }
 }
 
 impl<'a> CaseConversion<'a> for ScreamingCase<'a> {
     fn to_pascal_case(self) -> Cow<'a, str> {
-        //Unfortunately Rust is a piece of shit unable to understand that to_owned is supposed to return an owned value so by definition not a Cow!!!!!
-        self.0.split("_").map(|v| format!("{}", capitalize(&v.to_lowercase()))).join("").into()
+        self.0.split("_").map(|v| capitalize(&v.to_lowercase()).to_string()).join("").into()
     }
 
     fn to_snake_case(self) -> Cow<'a, str> {
@@ -171,9 +162,9 @@ impl<'a> CaseConversion<'a> for ScreamingCase<'a> {
 macro_rules! impl_case_conversion {
     ($s: expr, $func: ident) => {
         match guess_case_convention($s) {
-            CaseConvention::PascalCase => PascalCase($s).$func(),
-            CaseConvention::SnakeCase => SnakeCase($s).$func(),
-            CaseConvention::ScreamingCase => ScreamingCase($s).$func(),
+            Convention::PascalCase => PascalCase($s).$func(),
+            Convention::SnakeCase => SnakeCase($s).$func(),
+            Convention::ScreamingCase => ScreamingCase($s).$func(),
         }
     };
 }

@@ -64,6 +64,6 @@ impl<'fragment> FunctionMap<'fragment> {
     }
 
     pub(crate) fn get(&self, name: &str) -> Option<fn(&str) -> Cow<str>> {
-        self.map.get(name).map(|v| *v)
+        self.map.get(name).copied()
     }
 }

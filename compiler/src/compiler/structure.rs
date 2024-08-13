@@ -104,16 +104,16 @@ impl FixedFieldType {
             Ok(Self::Float64)
         } else if bit_size > 32 && bit_size <= 64 {
             map_numeric(ty, Self::Int64, Self::UInt64, Self::Float64)
-                .ok_or_else(|| Error::UnsupportedType(motherfuckingrust))
+                .ok_or(Error::UnsupportedType(motherfuckingrust))
         } else if bit_size > 16 && bit_size <= 32 {
             map_numeric(ty, Self::Int32, Self::UInt32, Self::Float64)
-                .ok_or_else(|| Error::UnsupportedType(motherfuckingrust))
+                .ok_or(Error::UnsupportedType(motherfuckingrust))
         } else if bit_size > 8 && bit_size <= 16 {
             map_numeric(ty, Self::Int16, Self::UInt16, Self::Float32)
-                .ok_or_else(|| Error::UnsupportedType(motherfuckingrust))
+                .ok_or(Error::UnsupportedType(motherfuckingrust))
         } else if bit_size > 0 && bit_size <= 8 {
             map_numeric(ty, Self::Int8, Self::UInt8, Self::Float32)
-                .ok_or_else(|| Error::UnsupportedType(motherfuckingrust))
+                .ok_or(Error::UnsupportedType(motherfuckingrust))
         } else {
             Err(Error::UnsupportedBitSize(bit_size))
         }
@@ -177,11 +177,7 @@ pub enum FieldView {
 
 impl FieldView {
     pub fn is_transmute(&self) -> bool {
-        match self {
-            FieldView::Transmute => true,
-            FieldView::None => true,
-            _ => false,
-        }
+        matches!(self, FieldView::Transmute | FieldView::None)
     }
 
     fn from_model(
@@ -198,7 +194,7 @@ impl FieldView {
                 let r = proto
                     .enums_by_name
                     .get(&name)
-                    .ok_or_else(|| Error::UndefinedReference(name))?;
+                    .ok_or(Error::UndefinedReference(name))?;
                 Ok(FieldView::Enum(r.clone()))
             }
             Some(StructFieldView::FloatRange { min, max }) => {
@@ -316,7 +312,7 @@ impl Field {
                 let r = proto
                     .structs_by_name
                     .get(&item_type)
-                    .ok_or_else(|| Error::UndefinedReference(item_type))?;
+                    .ok_or(Error::UndefinedReference(item_type))?;
                 Ok((
                     Self::Struct(StructField {
                         name: value.name,

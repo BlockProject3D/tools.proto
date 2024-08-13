@@ -116,10 +116,7 @@ impl FieldType {
     }
 
     pub fn is_string(&self) -> bool {
-        match self {
-            FieldType::VarcharString(_) | FieldType::NullTerminatedString => true,
-            _ => false,
-        }
+        matches!(self, FieldType::VarcharString(_) | FieldType::NullTerminatedString)
     }
 }
 
@@ -147,7 +144,7 @@ impl Field {
         match value.info {
             MessageFieldType::Item { item_type } => {
                 let r = Referenced::lookup(proto, &item_type)
-                    .ok_or_else(|| Error::UndefinedReference(item_type))?;
+                    .ok_or(Error::UndefinedReference(item_type))?;
                 match r {
                     Referenced::Struct(r) => {
                         if r.fields.len() == 1
@@ -196,7 +193,7 @@ impl Field {
             }
             MessageFieldType::List { max_len, item_type } => {
                 let r = Referenced::lookup(proto, &item_type)
-                    .ok_or_else(|| Error::UndefinedReference(item_type))?;
+                    .ok_or(Error::UndefinedReference(item_type))?;
                 let ty = FixedFieldType::from_max_value(max_len)?;
                 match r {
                     Referenced::Struct(item_type) => Ok(Field {
@@ -254,19 +251,13 @@ impl Field {
                     .iter()
                     .enumerate()
                     .find_map(|(k, v)| if v.name == on { Some((k, v)) } else { None })
-                    .ok_or_else(|| Error::UndefinedReference(on))?;
-                let r = proto
-                    .unions_by_name
-                    .get(&item_type)
-                    .ok_or_else(|| Error::UndefinedReference(item_type))?;
+                    .ok_or(Error::UndefinedReference(on))?;
+                let r = proto.unions_by_name.get(&item_type).ok_or(Error::UndefinedReference(item_type))?;
                 match &on_field.ty {
-                    FieldType::Ref(v) => match v {
-                        Referenced::Struct(v) => {
-                            if !Rc::ptr_eq(&r.discriminant.root, v) {
-                                return Err(Error::UnionTypeMismatch);
-                            }
+                    FieldType::Ref(Referenced::Struct(v)) => {
+                        if !Rc::ptr_eq(&r.discriminant.root, v) {
+                            return Err(Error::UnionTypeMismatch);
                         }
-                        _ => return Err(Error::UnionTypeMismatch),
                     },
                     _ => return Err(Error::UnionTypeMismatch),
                 }

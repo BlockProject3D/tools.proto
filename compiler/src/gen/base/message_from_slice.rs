@@ -38,7 +38,7 @@ fn gen_optional<'a, U: Utilities>(
     type_name: impl Into<Cow<'a, str>>,
 ) -> Cow<'a, str> {
     if optional {
-        U::gen_option_type_inline(&*type_name.into()).into()
+        U::gen_option_type_inline(&type_name.into()).into()
     } else {
         type_name.into()
     }
@@ -141,7 +141,7 @@ pub fn generate_from_slice_impl<U: Utilities>(
     let fields = msg
         .fields
         .iter()
-        .map(|field| gen_field_from_slice_impl::<U>(msg, field, &template, type_path_by_name))
+        .map(|field| gen_field_from_slice_impl::<U>(msg, field, template, type_path_by_name))
         .join("");
     let field_names = msg
         .fields

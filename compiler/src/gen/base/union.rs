@@ -61,7 +61,7 @@ fn gen_union_from_slice_impl<U: Utilities>(
     let mut scope = template.scope();
     scope.var("cases", cases);
     let generics = U::get_generics(u);
-    if generics != "" {
+    if !generics.is_empty() {
         scope.render_to_var("from_slice", &["generics"], "fragment").unwrap();
     } else {
         scope.render_to_var("from_slice", &["none"], "fragment").unwrap();
@@ -76,22 +76,17 @@ fn gen_union_write_to_impl<U: Utilities>(
 ) -> String {
     let generics = U::get_generics(u);
     let mut scope = template.scope();
-    if generics != "" {
+    if !generics.is_empty() {
         let cases = u
             .cases
             .iter()
             .filter_map(|case| {
                 let mut scope = template.scope();
                 scope.var("name", &case.name).var_d("case", case.case);
-                match &case.item_type {
-                    None => None,
-                    Some(item_type) => Some(
-                        scope
-                            .var("type_name", type_path_by_name.get(item_type.name()))
-                            .render("write_to.generics", &["case"])
-                            .unwrap(),
-                    ),
-                }
+                case.item_type.as_ref().map(|item_type| scope
+                    .var("type_name", type_path_by_name.get(item_type.name()))
+                    .render("write_to.generics", &["case"])
+                    .unwrap())
             })
             .join("");
         scope.var("cases", cases).render_to_var("write_to", &["generics"], "fragment").unwrap();

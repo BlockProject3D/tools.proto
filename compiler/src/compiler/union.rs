@@ -46,11 +46,8 @@ impl UnionField {
     ) -> Result<Self, Error> {
         let case: usize = match &discriminant.view {
             FieldView::Float { .. } => return Err(Error::FloatInUnionDiscriminant),
-            FieldView::Enum(v) => v
-                .variants_map
-                .get(&value.case)
-                .map(|v| *v)
-                .ok_or_else(|| Error::InvalidUnionCase(value.case))?,
+            FieldView::Enum(v) => v.variants_map.get(&value.case).copied()
+                .ok_or(Error::InvalidUnionCase(value.case))?,
             FieldView::Transmute | FieldView::SignedCast { .. } => {
                 let value: isize =
                     value.case.parse().map_err(|_| Error::InvalidUnionCase(value.case))?;
@@ -62,7 +59,7 @@ impl UnionField {
         };
         let item_type = value
             .item_type
-            .map(|v| Referenced::lookup(proto, &v).ok_or_else(|| Error::UndefinedReference(v)))
+            .map(|v| Referenced::lookup(proto, &v).ok_or(Error::UndefinedReference(v)))
             .transpose()?;
         Ok(UnionField {
             name: value.name,
@@ -141,7 +138,7 @@ impl DiscriminantField {
         Ok(DiscriminantField {
             root: root.clone(),
             leaf: leaf.clone(),
-            leaf_index: index_list.last().map(|v| *v).unwrap(),
+            leaf_index: index_list.last().copied().unwrap(),
             index_list,
         })
     }

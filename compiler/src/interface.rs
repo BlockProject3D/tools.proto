@@ -164,24 +164,20 @@ impl Protoc {
                 .into_iter()
                 .map(|v| v.write(&out_path))
                 .filter_map(|v| match v {
-                    Ok(o) => match o {
-                        Some(o) => Some(Ok(o)),
-                        None => None,
-                    },
+                    Ok(o) => o.map(Ok),
                     Err(e) => Some(Err(e)),
                 })
                 .collect::<std::io::Result<Vec<PathBuf>>>()
                 .map_err(Error::Io)?;
             let umbrella = T::generate_umbrella(&name, iter.iter().map(|v| &**v))
                 .map_err(|e| Error::Generator(e.to_string()))?;
-            let proto_path;
-            if umbrella.len() > 1 {
+            let proto_path = if umbrella.len() > 1 {
                 let umbrella_path = out_path.join("umbrella.rs");
                 std::fs::write(&umbrella_path, umbrella).map_err(Error::Io)?;
-                proto_path = umbrella_path;
+                umbrella_path
             } else {
-                proto_path = out_path;
-            }
+                out_path
+            };
             generated_protocols.push(Proto {
                 name,
                 path: proto_path,
