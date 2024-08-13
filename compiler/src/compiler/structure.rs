@@ -191,10 +191,7 @@ impl FieldView {
                 if ty != SimpleType::Unsigned {
                     return Err(Error::UnsupportedViewType(ty));
                 }
-                let r = proto
-                    .enums_by_name
-                    .get(&name)
-                    .ok_or(Error::UndefinedReference(name))?;
+                let r = proto.enums_by_name.get(&name).ok_or(Error::UndefinedReference(name))?;
                 Ok(FieldView::Enum(r.clone()))
             }
             Some(StructFieldView::FloatRange { min, max }) => {

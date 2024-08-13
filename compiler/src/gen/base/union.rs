@@ -83,10 +83,12 @@ fn gen_union_write_to_impl<U: Utilities>(
             .filter_map(|case| {
                 let mut scope = template.scope();
                 scope.var("name", &case.name).var_d("case", case.case);
-                case.item_type.as_ref().map(|item_type| scope
-                    .var("type_name", type_path_by_name.get(item_type.name()))
-                    .render("write_to.generics", &["case"])
-                    .unwrap())
+                case.item_type.as_ref().map(|item_type| {
+                    scope
+                        .var("type_name", type_path_by_name.get(item_type.name()))
+                        .render("write_to.generics", &["case"])
+                        .unwrap()
+                })
             })
             .join("");
         scope.var("cases", cases).render_to_var("write_to", &["generics"], "fragment").unwrap();
