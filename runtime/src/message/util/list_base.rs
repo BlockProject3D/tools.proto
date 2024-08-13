@@ -29,12 +29,30 @@
 macro_rules! impl_list_base {
     ($t: ident) => {
         impl<B, T, Item> $t<B, T, Item> {
+            /// Creates a list or an array from raw parts.
+            /// This function assumes that data has the number of items specified by len.
+            ///
+            /// # Arguments
+            ///
+            /// * `data`: the data buffer.
+            /// * `len`: the number of items to be read from the buffer.
+            ///
+            /// # Safetu
+            ///
+            /// This function assumes that data has the number of items specified by len.
+            /// For all list types (i.e. lists with dynamically sized items), a wrong length will
+            /// simply cause an error (truncated) to be returned if the actual buffer has not enough
+            /// bytes to contain all items.
+            ///
+            /// For all array types, (i.e. lists with fixed size items), a wrong length could result
+            /// in UB where the array iterator, getter or setter attempts to slice out of bounds
+            /// with a future optimization in release builds, currently it will result in a panic.
             pub unsafe fn from_raw_parts(data: B, len: usize) -> $t<B, T, Item> {
                 $t {
                     data,
                     len,
-                    useless: PhantomData::default(),
-                    useless1: PhantomData::default(),
+                    useless: PhantomData,
+                    useless1: PhantomData,
                 }
             }
 
@@ -44,6 +62,10 @@ macro_rules! impl_list_base {
 
             pub fn len(&self) -> usize {
                 self.len
+            }
+
+            pub fn is_empty(&self) -> bool {
+                self.len == 0
             }
         }
 

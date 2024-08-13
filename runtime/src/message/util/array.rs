@@ -88,7 +88,7 @@ impl<'a, B: AsRef<[u8]>, T, I> Array<B, T, I> {
     pub fn iter<Item: FixedSize + From<&'a [u8]>>(&'a self) -> Iter<'a, Item> {
         Iter {
             data: self.data.as_ref().chunks(Item::SIZE),
-            useless: PhantomData::default(),
+            useless: PhantomData,
         }
     }
 }
@@ -103,7 +103,7 @@ impl<'a, B: AsMut<[u8]>, T, I> Array<B, T, I> {
     pub fn iter_mut<Item: FixedSize + From<&'a mut [u8]>>(&'a mut self) -> IterMut<'a, Item> {
         IterMut {
             data: self.data.as_mut().chunks_mut(Item::SIZE),
-            useless: PhantomData::default(),
+            useless: PhantomData,
         }
     }
 }
@@ -127,8 +127,8 @@ impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FixedSize + FromSlice<'a, Outp
                 Array {
                     data,
                     len,
-                    useless: PhantomData::default(),
-                    useless1: PhantomData::default(),
+                    useless: PhantomData,
+                    useless1: PhantomData,
                 },
             ))
         }

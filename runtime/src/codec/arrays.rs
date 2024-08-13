@@ -40,8 +40,8 @@ impl<B, Item, C, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, C, ITEM_BIT_SIZ
     pub fn new(buffer: B) -> Self {
         Self {
             buffer,
-            useless: PhantomData::default(),
-            useless1: PhantomData::default(),
+            useless: PhantomData,
+            useless1: PhantomData,
         }
     }
 }
@@ -59,6 +59,10 @@ impl<B: AsRef<[u8]>, Item: ReadBytes, C: ByteCodec, const ITEM_BIT_SIZE: usize>
     pub fn len(&self) -> usize {
         let byte_size = ITEM_BIT_SIZE / 8;
         self.buffer.as_ref().len() / byte_size
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     pub fn iter_raw(&self) -> impl Iterator<Item = Item> + '_ {

@@ -101,7 +101,7 @@ impl<'a, Item: FromSlice<'a, Output = Item> + FromSliceWithOffsets<'a>> Iterator
         if self.len == 0 {
             return None;
         }
-        let msg = match Item::from_slice_with_offsets(&self.data[..]) {
+        let msg = match Item::from_slice_with_offsets(self.data) {
             Err(e) => return Some(Err(e)),
             Ok(v) => v,
         };
@@ -116,7 +116,7 @@ impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
         Iter {
             data: self.data.as_ref(),
             len: self.len,
-            useless: PhantomData::default(),
+            useless: PhantomData,
         }
     }
 
@@ -124,7 +124,7 @@ impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
         IterOffsets {
             data: self.data.as_ref(),
             len: self.len,
-            useless: PhantomData::default(),
+            useless: PhantomData,
         }
     }
 }

@@ -37,7 +37,7 @@ impl<'a, T: FromSlice<'a, Output = T>> FromSlice<'a> for Optional<T> {
     type Output = Option<T>;
 
     fn from_slice(slice: &'a [u8]) -> Result<Message<Option<T>>, Error> {
-        if slice.len() < 1 {
+        if slice.is_empty() {
             Err(Error::Truncated)
         } else {
             let b = slice[0] > 0;
@@ -59,7 +59,7 @@ impl<'a, T: FromSlice<'a, Output = T> + FromSliceWithOffsets<'a>> FromSliceWithO
     fn from_slice_with_offsets(
         slice: &'a [u8],
     ) -> crate::message::Result<Message<(Self::Output, Self::Offsets)>> {
-        if slice.len() < 1 {
+        if slice.is_empty() {
             Err(Error::Truncated)
         } else {
             let b = slice[0] > 0;

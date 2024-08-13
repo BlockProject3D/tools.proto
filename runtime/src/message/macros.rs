@@ -53,6 +53,10 @@ macro_rules! generate_array_wrapper {
             pub fn len(&self) -> usize {
                 self.0.len()
             }
+
+            pub fn is_empty(&self) -> bool {
+                self.0.is_empty()
+            }
         }
 
         impl<'a, B: std::io::Write> $name<'a, B> {

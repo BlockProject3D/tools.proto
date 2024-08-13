@@ -54,7 +54,7 @@ impl TypePathMap {
     pub fn get<'a>(&'a self, item_type: &'a str) -> &'a str {
         match self.type_path_by_name.get(item_type) {
             None => item_type,
-            Some(v) => &*v,
+            Some(v) => v,
         }
     }
 
