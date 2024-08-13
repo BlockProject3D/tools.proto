@@ -31,43 +31,6 @@ use crate::compiler::structure::{FixedField, FixedFieldType};
 use crate::gen::base::message::StringType;
 use crate::model::protocol::Endianness;
 
-pub struct Generics {
-    pub has_lifetime: bool,
-}
-
-impl Generics {
-    pub fn from_message(msg: &Message) -> Self {
-        let has_lifetime = msg.fields.iter().any(|v| match v.ty {
-            FieldType::Ref(_) => true,
-            FieldType::NullTerminatedString => true,
-            FieldType::VarcharString(_) => true,
-            FieldType::Array(_) => true,
-            FieldType::Union(_) => true,
-            FieldType::List(_) => true,
-            FieldType::Payload => true,
-            _ => false,
-        });
-        Generics { has_lifetime }
-    }
-
-    pub fn to_vec(&self) -> Vec<&'static str> {
-        let mut generics = Vec::new();
-        if self.has_lifetime {
-            generics.push("'a");
-        }
-        generics
-    }
-
-    pub fn to_code(&self) -> String {
-        let generics = self.to_vec();
-        if generics.len() > 0 {
-            String::from("<") + &*generics.join(",") + ">"
-        } else {
-            String::from("")
-        }
-    }
-}
-
 macro_rules! gen_value_type {
     ($prefix: literal, $ty: expr, $suffix: literal) => {
         match $ty {
@@ -136,8 +99,22 @@ impl crate::gen::base::structure::Utilities for RustUtils {
 }
 
 impl crate::gen::base::message::Utilities for RustUtils {
-    fn gen_generics(msg: &Message) -> String {
-        Generics::from_message(msg).to_code()
+    fn get_generics(msg: &Message) -> &str {
+        let has_lifetime = msg.fields.iter().any(|v| match v.ty {
+            FieldType::Ref(_) => true,
+            FieldType::NullTerminatedString => true,
+            FieldType::VarcharString(_) => true,
+            FieldType::Array(_) => true,
+            FieldType::Union(_) => true,
+            FieldType::List(_) => true,
+            FieldType::Payload => true,
+            _ => false,
+        });
+        if has_lifetime {
+            "<'a>"
+        } else {
+            ""
+        }
     }
 
     fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str {

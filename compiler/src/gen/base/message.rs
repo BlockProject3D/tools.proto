@@ -39,7 +39,7 @@ pub enum StringType {
 }
 
 pub trait Utilities: crate::gen::base::structure::Utilities {
-    fn gen_generics(msg: &Message) -> String;
+    fn get_generics(msg: &Message) -> &str;
     fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str;
     fn get_value_type_inline(endianness: Endianness, ty: FixedFieldType) -> &'static str;
     fn gen_option_type(ty: &str) -> String;
@@ -94,7 +94,7 @@ pub fn generate<U: Utilities>(
     type_path_by_name: &TypePathMap,
 ) -> String {
     let mut template = Template::compile(template).unwrap();
-    template.var("msg_name", &msg.name).var("generics", U::gen_generics(msg));
+    template.var("msg_name", &msg.name).var("generics", U::get_generics(msg));
     let fields =
         msg.fields.iter().map(|v| gen_field_decl::<U>(v, &template, type_path_by_name)).join("");
     template.scope().var("fields", fields).render("", &["decl"]).unwrap()

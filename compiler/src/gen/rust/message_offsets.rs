@@ -29,9 +29,10 @@
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
 use crate::gen::base::message_from_slice::generate_from_slice_impl;
-use crate::gen::rust::util::{Generics, RustUtils};
+use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 use itertools::Itertools;
+use crate::gen::base::message::Utilities;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.offsets.template");
 
@@ -56,7 +57,7 @@ fn gen_message_offset_field(
 
 pub fn gen_message_offsets_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
     let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("msg_name", &msg.name).var("generics", Generics::from_message(msg).to_code());
+    template.var("msg_name", &msg.name).var("generics", RustUtils::get_generics(msg));
     let fields = msg
         .fields
         .iter()

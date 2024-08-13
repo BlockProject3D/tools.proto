@@ -164,6 +164,6 @@ pub fn generate<U: Utilities>(
     type_path_by_name: &TypePathMap,
 ) -> String {
     let mut template = Template::compile(template).unwrap();
-    template.var("msg_name", &msg.name).var("generics", U::gen_generics(msg));
+    template.var("msg_name", &msg.name).var("generics", U::get_generics(msg));
     generate_from_slice_impl::<U>(msg, &template, type_path_by_name)
 }
