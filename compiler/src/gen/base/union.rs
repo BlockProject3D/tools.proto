@@ -26,11 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use itertools::Itertools;
 use crate::compiler::message::Referenced;
 use crate::compiler::union::{DiscriminantField, Union};
 use crate::compiler::util::TypePathMap;
 use crate::gen::template::Template;
+use itertools::Itertools;
 
 pub trait Utilities {
     fn gen_discriminant_path(discriminant: &DiscriminantField) -> String;
@@ -43,7 +43,9 @@ fn gen_union_from_slice_impl<U: Utilities>(
     template: &Template,
     type_path_by_name: &TypePathMap,
 ) -> String {
-    let cases = u.cases.iter()
+    let cases = u
+        .cases
+        .iter()
         .map(|case| {
             let mut scope = template.scope();
             scope.var("name", &case.name).var_d("case", case.case);
@@ -75,7 +77,9 @@ fn gen_union_write_to_impl<U: Utilities>(
     let generics = U::get_generics(u);
     let mut scope = template.scope();
     if generics != "" {
-        let cases = u.cases.iter()
+        let cases = u
+            .cases
+            .iter()
             .filter_map(|case| {
                 let mut scope = template.scope();
                 scope.var("name", &case.name).var_d("case", case.case);
@@ -136,15 +140,28 @@ fn gen_union_as_getters(u: &Union, template: &Template, type_path_by_name: &Type
     template.scope().var("cases", cases).render("", &["getters"]).unwrap()
 }
 
-pub fn generate<U: Utilities>(template: &[u8], u: &Union, type_path_by_name: &TypePathMap) -> String {
+pub fn generate<U: Utilities>(
+    template: &[u8],
+    u: &Union,
+    type_path_by_name: &TypePathMap,
+) -> String {
     let mut template = Template::compile(template).unwrap();
     let generics = U::get_generics(u);
     template
         .var("union_name", &u.name)
         .var("generics", generics)
-        .var("discriminant_path_mut", U::gen_discriminant_path_mut(&u.discriminant))
-        .var("discriminant_path", U::gen_discriminant_path(&u.discriminant))
-        .var("discriminant_type", type_path_by_name.get(&u.discriminant.root.name));
+        .var(
+            "discriminant_path_mut",
+            U::gen_discriminant_path_mut(&u.discriminant),
+        )
+        .var(
+            "discriminant_path",
+            U::gen_discriminant_path(&u.discriminant),
+        )
+        .var(
+            "discriminant_type",
+            type_path_by_name.get(&u.discriminant.root.name),
+        );
     let cases = u
         .cases
         .iter()

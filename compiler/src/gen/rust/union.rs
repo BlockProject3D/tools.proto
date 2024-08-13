@@ -28,9 +28,9 @@
 
 use crate::compiler::union::{DiscriminantField, Union};
 use crate::compiler::util::TypePathMap;
-use itertools::Itertools;
 use crate::gen::base::union::{generate, Utilities};
 use crate::gen::rust::util::RustUtils;
+use itertools::Itertools;
 
 const TEMPLATE: &[u8] = include_bytes!("./union.template");
 
