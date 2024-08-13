@@ -37,7 +37,7 @@ macro_rules! impl_list_base {
             /// * `data`: the data buffer.
             /// * `len`: the number of items to be read from the buffer.
             ///
-            /// # Safetu
+            /// # Safety
             ///
             /// This function assumes that data has the number of items specified by len.
             /// For all list types (i.e. lists with dynamically sized items), a wrong length will
