@@ -26,9 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use itertools::Itertools;
 use crate::compiler::r#enum::Enum;
 use crate::gen::template::Template;
+use itertools::Itertools;
 
 pub fn generate(template: &[u8], e: &Enum) -> String {
     let mut template = Template::compile(template).unwrap();
