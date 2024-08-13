@@ -18,7 +18,7 @@ pub enum {union_name}{generics} {{
 impl{generics} {union_name}{generics} {{
 {cases}
 #fragment push struct
-    pub fn as_{name_lower}(&self) -> Option<&{type_name}<&'a [u8]>> {{
+    pub fn as_{name:to_snake_case}(&self) -> Option<&{type_name}<&'a [u8]>> {{
         match self {{
             Self::{name}(v) => Some(v),
             _ => None
@@ -26,7 +26,7 @@ impl{generics} {union_name}{generics} {{
     }}
 #fragment pop
 #fragment push message
-    pub fn as_{name_lower}(&self) -> Option<&{type_name}<'a>> {{
+    pub fn as_{name:to_snake_case}(&self) -> Option<&{type_name}<'a>> {{
         match self {{
             Self::{name}(v) => Some(v),
             _ => None
@@ -34,7 +34,7 @@ impl{generics} {union_name}{generics} {{
     }}
 #fragment pop
 #fragment push none
-    pub fn is_{name_lower}(&self) -> bool {{
+    pub fn is_{name:to_snake_case}(&self) -> bool {{
         matches!(self, Self::{name})
     }}
 #fragment pop

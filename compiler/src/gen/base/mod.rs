@@ -30,3 +30,5 @@ pub mod message;
 pub mod message_from_slice;
 pub mod message_write;
 pub mod structure;
+pub mod r#enum;
+pub mod union;

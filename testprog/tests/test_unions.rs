@@ -105,7 +105,7 @@ fn item_numbers() {
         &mut buf,
     );
     assert_eq!(
-        read_message(&buf, Type::UInt8).as_uint8().unwrap().get_data(),
+        read_message(&buf, Type::UInt8).as_u_int8().unwrap().get_data(),
         42
     );
 
@@ -115,7 +115,7 @@ fn item_numbers() {
         &mut buf,
     );
     assert_eq!(
-        read_message(&buf, Type::UInt16).as_uint16().unwrap().get_data(),
+        read_message(&buf, Type::UInt16).as_u_int16().unwrap().get_data(),
         4242
     );
 
@@ -125,7 +125,7 @@ fn item_numbers() {
         &mut buf,
     );
     assert_eq!(
-        read_message(&buf, Type::UInt32).as_uint32().unwrap().get_data(),
+        read_message(&buf, Type::UInt32).as_u_int32().unwrap().get_data(),
         424242
     );
 
@@ -135,7 +135,7 @@ fn item_numbers() {
         &mut buf,
     );
     assert_eq!(
-        read_message(&buf, Type::UInt64).as_uint64().unwrap().get_data(),
+        read_message(&buf, Type::UInt64).as_u_int64().unwrap().get_data(),
         42424242
     );
 }
