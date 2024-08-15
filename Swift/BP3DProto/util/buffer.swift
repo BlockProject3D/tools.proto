@@ -169,7 +169,7 @@ public struct DataBuffer: Buffer, WritableBuffer {
 
     public subscript(index: PartialRangeFrom<Int>) -> DataBuffer {
         assert(index.lowerBound <= size);
-        assert(index.lowerBound > 0);
+        assert(index.lowerBound >= 0);
         return DataBuffer(from: self, start: self.start + index.lowerBound, end: self.end);
     }
 

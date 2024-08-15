@@ -20,6 +20,7 @@
 		DA72E66F2C6E93FE008F8F23 /* transmute.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA72E66E2C6E93FE008F8F23 /* transmute.swift */; };
 		DA72E6712C6E96EE008F8F23 /* StructsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA72E6702C6E96EE008F8F23 /* StructsTests.swift */; };
 		DA72E6742C6E9BFC008F8F23 /* struct_arrays.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA72E6722C6E9BFC008F8F23 /* struct_arrays.structures.swift */; };
+		DA72E6762C6EA290008F8F23 /* StructArraysTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA72E6752C6EA290008F8F23 /* StructArraysTests.swift */; };
 		DA7658F92C655DD60036DDED /* string.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7658F82C655DD60036DDED /* string.swift */; };
 		DA7659012C65FE1B0036DDED /* BP3DProtoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7659002C65FE1B0036DDED /* BP3DProtoTests.swift */; };
 		DA7659022C65FE1B0036DDED /* BP3DProto.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA8EBD642C63D48E00075FDE /* BP3DProto.framework */; };
@@ -107,6 +108,7 @@
 		DA72E66E2C6E93FE008F8F23 /* transmute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = transmute.swift; sourceTree = "<group>"; };
 		DA72E6702C6E96EE008F8F23 /* StructsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructsTests.swift; sourceTree = "<group>"; };
 		DA72E6722C6E9BFC008F8F23 /* struct_arrays.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = struct_arrays.structures.swift; sourceTree = "<group>"; };
+		DA72E6752C6EA290008F8F23 /* StructArraysTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructArraysTests.swift; sourceTree = "<group>"; };
 		DA7658F82C655DD60036DDED /* string.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = string.swift; sourceTree = "<group>"; };
 		DA7658FE2C65FE1B0036DDED /* BP3DProtoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BP3DProtoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA7659002C65FE1B0036DDED /* BP3DProtoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BP3DProtoTests.swift; sourceTree = "<group>"; };
@@ -168,6 +170,7 @@
 				DA9DDA6C2C6E1C61000A9C70 /* BitsTests.swift */,
 				DA72E6692C6E91BF008F8F23 /* ViewsTests.swift */,
 				DA72E6702C6E96EE008F8F23 /* StructsTests.swift */,
+				DA72E6752C6EA290008F8F23 /* StructArraysTests.swift */,
 			);
 			path = testprogTests;
 			sourceTree = "<group>";
@@ -487,6 +490,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA72E6762C6EA290008F8F23 /* StructArraysTests.swift in Sources */,
 				DA72E66A2C6E91BF008F8F23 /* ViewsTests.swift in Sources */,
 				DA9DDA6D2C6E1C61000A9C70 /* BitsTests.swift in Sources */,
 				DA72E6712C6E96EE008F8F23 /* StructsTests.swift in Sources */,

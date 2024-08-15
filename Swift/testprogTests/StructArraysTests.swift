@@ -26,50 +26,32 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import Foundation
+import XCTest
+import testprog
 
-public struct ArrayCodec<B: Buffer, C: ByteCodec, Item: FromBytes> {
-    var buffer: B;
-    let itemByteSize: Int;
+final class StructArraysTests: XCTestCase {
 
-    public var count: Int {
-        buffer.size / itemByteSize
+    override func setUpWithError() throws {
     }
 
-    public init(buffer: B, itemBitSize: Int) {
-        self.buffer = buffer
-        self.itemByteSize = itemBitSize / 8;
+    override func tearDownWithError() throws {
     }
 
-    public subscript(index: Int) -> Item {
-        get {
-            let pos = index * itemByteSize;
-            let end = pos + itemByteSize;
-            return C.read(Item.self, buffer[pos...end]);
-        }
+    func testBasic() throws {
+        let basic = StructArraysBasic();
+        XCTAssertEqual(SIZE_STRUCT_ARRAYS_BASIC, 58);
+        basic.p3.set(0, 42.42).set(1, 42.42).set(2, 42.42).set(3, 42.42);
+        XCTAssertEqual(basic.p3[0], 42.42);
+        XCTAssertEqual(basic.p3[1], 42.42);
+        XCTAssertEqual(basic.p3[2], 42.42);
+        XCTAssertEqual(basic.p3[3], 42.42);
+        basic.setP1(424242);
+        XCTAssertEqual(basic.p1, 424242);
+        basic.p2.fromData(Data("this is a test".utf8));
+        XCTAssertEqual(basic.p2.toData()[...13], Data("this is a test".utf8));
+        basic.p4.set(0, 0xABCDEF).set(1, 0xABCDEF);
+        XCTAssertEqual(basic.p4[0], 0xABCDEF);
+        XCTAssertEqual(basic.p4[1], 0xABCDEF);
     }
-}
 
-extension ArrayCodec where B: WritableBuffer {
-    @discardableResult
-    public func set(_ index: Int, _ newvalue: Item) -> Self {
-        let pos = index * itemByteSize;
-        let end = pos + itemByteSize;
-        var b = buffer[pos...end];
-        C.write(Item.self, &b, value: newvalue);
-        return self;
-    }
-}
-
-extension ArrayCodec where Item == UInt8 {
-    public func toData() -> Data {
-        self.buffer.toData()
-    }
-}
-
-extension ArrayCodec where Item == UInt8, B: WritableBuffer {
-    public func fromData(_ bytes: Data) {
-        var b = buffer[0...];
-        b.write(bytes: bytes);
-    }
 }
