@@ -33,16 +33,16 @@ use testprog::struct_arrays::Basic;
 fn basic() {
     let mut basic = Basic::new_on_stack();
     assert_eq!(basic.size(), 58);
-    basic.get_p3_mut().set_raw(0, 42.42).set_raw(1, 42.42).set_raw(2, 42.42).set_raw(3, 42.42);
-    assert_eq!(basic.get_p3().get_raw(0), 42.42);
-    assert_eq!(basic.get_p3().get_raw(1), 42.42);
-    assert_eq!(basic.get_p3().get_raw(2), 42.42);
-    assert_eq!(basic.get_p3().get_raw(3), 42.42);
+    basic.get_p3_mut().set(0, 42.42).set(1, 42.42).set(2, 42.42).set(3, 42.42);
+    assert_eq!(basic.get_p3().get(0), 42.42);
+    assert_eq!(basic.get_p3().get(1), 42.42);
+    assert_eq!(basic.get_p3().get(2), 42.42);
+    assert_eq!(basic.get_p3().get(3), 42.42);
     basic.set_p1(424242);
     assert_eq!(basic.get_p1(), 424242);
     basic.get_p2_mut().as_mut()[..14].copy_from_slice(b"this is a test");
     assert_eq!(&basic.get_p2().as_ref()[..14], b"this is a test");
-    basic.get_p4_mut().set_raw(0, 0xABCDEF).set_raw(1, 0xABCDEF);
-    assert_eq!(basic.get_p4().get_raw(0), 0xABCDEF);
-    assert_eq!(basic.get_p4().get_raw(1), 0xABCDEF);
+    basic.get_p4_mut().set(0, 0xABCDEF).set(1, 0xABCDEF);
+    assert_eq!(basic.get_p4().get(0), 0xABCDEF);
+    assert_eq!(basic.get_p4().get(1), 0xABCDEF);
 }

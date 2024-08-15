@@ -49,7 +49,7 @@ impl<B, Item, C, const ITEM_BIT_SIZE: usize> ArrayCodec<B, Item, C, ITEM_BIT_SIZ
 impl<B: AsRef<[u8]>, Item: ReadBytes, C: ByteCodec, const ITEM_BIT_SIZE: usize>
     ArrayCodec<B, Item, C, ITEM_BIT_SIZE>
 {
-    pub fn get_raw(&self, index: usize) -> Item {
+    pub fn get(&self, index: usize) -> Item {
         let byte_size = ITEM_BIT_SIZE / 8;
         let pos = index * byte_size;
         let end = pos + byte_size;
@@ -74,7 +74,7 @@ impl<B: AsRef<[u8]>, Item: ReadBytes, C: ByteCodec, const ITEM_BIT_SIZE: usize>
 impl<B: AsMut<[u8]>, Item: WriteBytes, C: ByteCodec, const ITEM_BIT_SIZE: usize>
     ArrayCodec<B, Item, C, ITEM_BIT_SIZE>
 {
-    pub fn set_raw(&mut self, index: usize, value: Item) -> &mut Self {
+    pub fn set(&mut self, index: usize, value: Item) -> &mut Self {
         let byte_size = ITEM_BIT_SIZE / 8;
         let pos = index * byte_size;
         let end = pos + byte_size;
