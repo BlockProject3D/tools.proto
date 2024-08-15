@@ -51,7 +51,7 @@ extension {proto_name:to_pascal_case}{struct_name} where T: BP3DProto.Buffer {{
         }}
 #fragment pop
 #fragment push other
-        {view_type}(bitPattern: self.raw{name:to_pascal_case})
+        BP3DProto.transmute(self.raw{name:to_pascal_case})
 #fragment pop
     }}
 #fragment pop
@@ -125,7 +125,7 @@ extension {proto_name:to_pascal_case}{struct_name} where T: BP3DProto.Buffer, T:
         }}
 #fragment pop
 #fragment push other
-        self.setRaw{name:to_pascal_case}({raw_type}(bitPattern: value));
+        self.setRaw{name:to_pascal_case}(BP3DProto.transmute(value));
 #fragment pop
         return self;
     }}
