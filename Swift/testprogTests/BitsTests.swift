@@ -62,4 +62,27 @@ final class BitsTests: XCTestCase {
         XCTAssertEqual(nums.a, 4);
         XCTAssertEqual(nums.rawA, 4);
     }
+
+    func testNumbersRaw() throws {
+        let nums = Numbers();
+        nums.setRawA(15);
+        nums.setRawB(15);
+        nums.setRawC(65536);
+        nums.setRawD(127);
+        nums.setRawC(65536);
+        XCTAssertEqual(nums.rawA, 15);
+        XCTAssertEqual(nums.a, -1);
+        XCTAssertEqual(nums.rawB, 15);
+        XCTAssertEqual(nums.rawC, 65536);
+        XCTAssertEqual(nums.rawD, 127);
+        var cur_a = 0;
+        for i in 0...15 {
+            nums.setRawA(UInt8(i));
+            if i > 7 && cur_a > 0 {
+                cur_a = -8
+            }
+            XCTAssertEqual(nums.a, Int8(cur_a));
+            cur_a += 1;
+        }
+    }
 }
