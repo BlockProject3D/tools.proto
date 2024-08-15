@@ -30,8 +30,7 @@ use crate::compiler::r#enum::Enum;
 use crate::gen::template::Template;
 use itertools::Itertools;
 
-pub fn generate(template: &[u8], e: &Enum) -> String {
-    let mut template = Template::compile(template).unwrap();
+pub fn generate<'fragment, 'variable>(mut template: Template<'fragment, 'variable>, e: &'variable Enum) -> String {
     template.var("name", &e.name);
     let mut code = e.variants.iter().map(|(k, v)| {
         template.scope().var("key", k).var_d("value", v).render("enum", &["variant"]).unwrap()

@@ -88,12 +88,11 @@ fn gen_field_decl<U: Utilities>(
     scope.var("type", msg_type).render("decl", &["field"]).unwrap()
 }
 
-pub fn generate<U: Utilities>(
-    template: &[u8],
-    msg: &Message,
+pub fn generate<'fragment, 'variable, U: Utilities>(
+    mut template: Template<'fragment, 'variable>,
+    msg: &'variable Message,
     type_path_by_name: &TypePathMap,
 ) -> String {
-    let mut template = Template::compile(template).unwrap();
     template.var("msg_name", &msg.name).var("generics", U::get_generics(msg));
     let fields =
         msg.fields.iter().map(|v| gen_field_decl::<U>(v, &template, type_path_by_name)).join("");

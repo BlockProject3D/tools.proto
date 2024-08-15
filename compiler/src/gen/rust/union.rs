@@ -31,6 +31,7 @@ use crate::compiler::util::TypePathMap;
 use crate::gen::base::union::{generate, Utilities};
 use crate::gen::rust::util::RustUtils;
 use itertools::Itertools;
+use crate::gen::template::Template;
 
 const TEMPLATE: &[u8] = include_bytes!("./union.template");
 
@@ -71,5 +72,5 @@ impl Utilities for RustUtils {
 }
 
 pub fn gen_union_decl(u: &Union, type_path_by_name: &TypePathMap) -> String {
-    generate::<RustUtils>(TEMPLATE, u, type_path_by_name)
+    generate::<RustUtils>(Template::compile(TEMPLATE).unwrap(), u, type_path_by_name)
 }

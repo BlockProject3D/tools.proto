@@ -65,7 +65,7 @@ fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMap) 
 }
 
 pub fn gen_message_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    let mut code = generate::<RustUtils>(TEMPLATE, msg, type_path_by_name);
+    let mut code = generate::<RustUtils>(Template::compile(TEMPLATE).unwrap(), msg, type_path_by_name);
     code += "\n\n";
     code += &gen_message_array_type_decls(msg, type_path_by_name);
     code += "\n";

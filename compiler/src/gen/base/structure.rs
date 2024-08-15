@@ -230,18 +230,18 @@ fn gen_structure_setters<U: Utilities>(
     scope.var("fields", fields).render("", &["setters"]).unwrap()
 }
 
-pub struct Templates<'a> {
-    pub field_template: &'a [u8],
-    pub template: &'a [u8],
+pub struct Templates<'fragment, 'variable> {
+    pub field_template: Template<'fragment, 'variable>,
+    pub template: Template<'fragment, 'variable>,
 }
 
-pub fn generate<U: Utilities>(
-    templates: Templates,
-    s: &Structure,
+pub fn generate<'fragment, 'variable, U: Utilities>(
+    templates: Templates<'fragment, 'variable>,
+    s: &'variable Structure,
     type_path_by_name: &TypePathMap,
 ) -> String {
-    let mut template = Template::compile(templates.template).unwrap();
-    let mut field_template = Template::compile(templates.field_template).unwrap();
+    let mut template = templates.template;
+    let mut field_template = templates.field_template;
     field_template.var("struct_name", &s.name);
     template.var("name", &s.name).var_d("byte_size", s.byte_size);
     let mut code =

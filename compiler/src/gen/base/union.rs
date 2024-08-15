@@ -137,12 +137,11 @@ fn gen_union_as_getters(u: &Union, template: &Template, type_path_by_name: &Type
     template.scope().var("cases", cases).render("", &["getters"]).unwrap()
 }
 
-pub fn generate<U: Utilities>(
-    template: &[u8],
-    u: &Union,
-    type_path_by_name: &TypePathMap,
+pub fn generate<'fragment, 'variable, U: Utilities>(
+    mut template: Template<'fragment, 'variable>,
+    u: &'variable Union,
+    type_path_by_name: &'variable TypePathMap,
 ) -> String {
-    let mut template = Template::compile(template).unwrap();
     let generics = U::get_generics(u);
     template
         .var("union_name", &u.name)
