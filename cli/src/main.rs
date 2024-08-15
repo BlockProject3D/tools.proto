@@ -71,7 +71,7 @@ pub enum Feature {
 }
 
 impl Feature {
-    pub fn apply(&self, protoc: Protoc) -> Protoc {
+    pub fn apply<'a>(&self, protoc: Protoc<'a>) -> Protoc<'a> {
         match self {
             Feature::WriteMessages => protoc.set_writes_messages(true),
             Feature::ReadMessages => protoc.set_reads_messages(true),
@@ -112,6 +112,11 @@ pub struct Args {
     /// '::', as used by Rust and C++).
     #[clap(long="separator", default_value="::")]
     pub import_separator: String,
+    /// The file header to include at the top of each generated file, each line in the file header
+    /// is already formatted according to the line comments syntax of the chosen target generation
+    /// language.
+    #[clap(long="header")]
+    pub file_header: Option<PathBuf>
 }
 
 impl Args {
@@ -136,6 +141,9 @@ fn main() {
         for f in features {
             protoc = f.apply(protoc);
         }
+    }
+    if let Some(file_header) = &args.file_header {
+        protoc = protoc.set_file_header(file_header);
     }
     match args.generator {
         Generator::Rust => protoc.generate::<GeneratorRust>(args.output.unwrap_or(PathBuf::from("./"))),

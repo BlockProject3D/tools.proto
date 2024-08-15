@@ -66,7 +66,7 @@ impl Loader {
         Ok(())
     }
 
-    pub fn compile<T: ImportResolver + ImportSolver>(self, mut solver: T) -> Result<Protoc, Error> {
+    pub fn compile<'a, T: ImportResolver + ImportSolver>(self, mut solver: T) -> Result<Protoc<'a>, Error> {
         for (base_import_path, model) in self.imported_models {
             let compiled =
                 compiler::Protocol::from_model(model, &solver).map_err(Error::Compiler)?;
@@ -87,8 +87,9 @@ pub struct Proto {
     pub path: PathBuf,
 }
 
-pub struct Protoc {
+pub struct Protoc<'a> {
     protocols: Vec<compiler::Protocol>,
+    file_header: Option<&'a Path>,
     write_messages: bool,
     read_messages: bool,
     use_enums: bool,
@@ -97,7 +98,7 @@ pub struct Protoc {
     use_unions: bool,
 }
 
-impl Protoc {
+impl<'a> Protoc<'a> {
     pub fn new(protocols: Vec<compiler::Protocol>) -> Self {
         Self {
             protocols,
@@ -107,6 +108,7 @@ impl Protoc {
             use_structs: true,
             use_messages: true,
             use_unions: true,
+            file_header: None
         }
     }
 
@@ -140,10 +142,20 @@ impl Protoc {
         self
     }
 
+    pub fn set_file_header(mut self, path: &'a Path) -> Self {
+        self.file_header = Some(path);
+        self
+    }
+
     pub fn generate<T: Generator>(
         self,
         out_directory: impl AsRef<Path>,
     ) -> Result<Vec<Proto>, Error> {
+        let file_header = self.file_header
+            .map(|v| std::fs::read_to_string(v))
+            .transpose()
+            .map_err(Error::Io)?
+            .map(|v| T::generate_file_header(v.lines()));
         let mut generated_protocols = Vec::new();
         for proto in self.protocols {
             let name = proto.name.clone();
@@ -162,7 +174,7 @@ impl Protoc {
             });
             let iter = files_iter
                 .into_iter()
-                .map(|v| v.write(&out_path))
+                .map(|v| v.write(&out_path, file_header.as_deref()))
                 .filter_map(|v| match v {
                     Ok(o) => o.map(Ok),
                     Err(e) => Some(Err(e)),
