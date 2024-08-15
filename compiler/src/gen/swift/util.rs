@@ -58,8 +58,8 @@ impl crate::gen::base::structure::Utilities for SwiftUtils {
         let raw_field_type = field.loc.get_unsigned_integer_type();
         let raw_field_byte_size = raw_field_type.get_byte_size();
         match raw_field_byte_size != field.loc.byte_size {
-            true => "readUnaligned",
-            false => "readAligned",
+            true => "unaligned",
+            false => "aligned",
         }
     }
 
@@ -67,8 +67,8 @@ impl crate::gen::base::structure::Utilities for SwiftUtils {
         let raw_field_type = field.loc.get_unsigned_integer_type();
         let raw_field_byte_size = raw_field_type.get_byte_size();
         match raw_field_byte_size != field.loc.byte_size {
-            true => "writeUnaligned",
-            false => "writeAligned",
+            true => "unaligned",
+            false => "aligned",
         }
     }
 

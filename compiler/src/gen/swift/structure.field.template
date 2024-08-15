@@ -2,46 +2,46 @@
 extension {struct_name} where T: BP3DProto.Buffer {{
 {fields}
 #fragment push fixed
-    public raw{name:to_pascal_case}: {raw_type} {{
+    public var raw{name:to_pascal_case}: {raw_type} {{
 {fragment}
 #fragment push bit.aligned
-        BP3DProto.{codec}.readAligned({raw_type}.self, self.data[{start}...{end}], bitOffset: {bit_offset}, bitSize: {bit_size})
+        {codec}.readAligned({raw_type}.self, self.data[{start}...{end}], bitOffset: {bit_offset}, bitSize: {bit_size})
 #fragment pop
 #fragment push bit.unaligned
-        BP3DProto.{codec}.readUnaligned({raw_type}.self, self.data[{start}...{end}], bitOffset: {bit_offset}, bitSize: {bit_size})
+        {codec}.readUnaligned({raw_type}.self, self.data[{start}...{end}], bitOffset: {bit_offset}, bitSize: {bit_size})
 #fragment pop
 #fragment push byte.aligned
-        BP3DProto.{codec}.readAligned({raw_type}.self, self.data[{start}...{end}])
+        {codec}.readAligned({raw_type}.self, self.data[{start}...{end}])
 #fragment pop
 #fragment push byte.unaligned
-        BP3DProto.{codec}.readUnaligned({raw_type}.self, self.data[{start}...{end}])
+        {codec}.readUnaligned({raw_type}.self, self.data[{start}...{end}])
 #fragment pop
     }}
 #fragment pop
 #fragment push array
-    public {name:to_camel_case}: BP3DProto.ArrayCodec<T, {codec}, {raw_type}> {{
+    public var {name:to_camel_case}: BP3DProto.ArrayCodec<T, {codec}, {raw_type}> {{
         BP3DProto.ArrayCodec(buffer: self.data[{start}...{end}], itemBitSize: {bit_size})
     }}
 #fragment pop
 #fragment push struct
-    public {name:to_camel_case}: {type_name}<T> {{
+    public var {name:to_camel_case}: {type_name}<T> {{
         {type_name}(self.data[{start}...{end}])
     }}
 #fragment pop
 #fragment push view_float
-    public {name:to_camel_case}: {view_type} {{
-        let rawValue = self.raw{name:to_pascal_case} as {view_type};
+    public var {name:to_camel_case}: {view_type} {{
+        let rawValue = {view_type}(self.raw{name:to_pascal_case});
         return rawValue * {a} + {b};
     }}
 #fragment pop
 #fragment push view_enum
-    public {name:to_camel_case}: {view_type}? {{
+    public var {name:to_camel_case}: {view_type}? {{
         let rawValue = self.raw{name:to_pascal_case};
         return {view_type}(raw: rawValue);
     }}
 #fragment pop
 #fragment push view_transmute
-    public {name:to_camel_case}: {view_type} {{
+    public var {name:to_camel_case}: {view_type} {{
 {fragment}
 #fragment push bool
         if self.raw{name:to_pascal_case} != 0 {{
@@ -56,17 +56,17 @@ extension {struct_name} where T: BP3DProto.Buffer {{
     }}
 #fragment pop
 #fragment push view_signed
-    public {name:to_camel_case}: {view_type} {{
+    public var {name:to_camel_case}: {view_type} {{
         let rawValue = self.raw{name:to_pascal_case};
         if rawValue > {max_positive} {{
-            return -((((~rawValue) & {max_positive}) + 1) as {view_type});
+            return -({view_type}(((~rawValue) & {max_positive}) + 1));
         }} else {{
-            return (rawValue & {max_positive}) as {view_type};
+            return {view_type}(rawValue & {max_positive});
         }}
     }}
 #fragment pop
 #fragment push view_none
-    public {name:to_camel_case}: {view_type} {{
+    public var {name:to_camel_case}: {view_type} {{
         self.raw{name:to_pascal_case}
     }}
 #fragment pop
@@ -74,16 +74,23 @@ extension {struct_name} where T: BP3DProto.Buffer {{
 #fragment pop
 
 #fragment push setters
-impl<T: AsMut<[u8]>> {struct_name}<T> {{
+extension {struct_name} where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {{
 {fields}
 #fragment push fixed
-    pub fn set_raw_{name}(&mut self, value: {raw_type}) {{
+    public mutating func setRaw{name:to_pascal_case}(_ value: {raw_type}) {{
+        var buffer = self.data[{start}...{end}];
 {fragment}
-#fragment push bit
-        unsafe {{ {codec}::{function_name}::<{raw_type}, {bit_offset}, {bit_size}>(&mut self.data.as_mut()[{start}..{end}], value) }}
+#fragment push bit.aligned
+        {codec}.writeAligned({raw_type}.self, &buffer, bitOffset: {bit_offset}, bitSize: {bit_size}, value: value);
 #fragment pop
-#fragment push byte
-        unsafe {{ {codec}::{function_name}::<{raw_type}>(&mut self.data.as_mut()[{start}..{end}], value) }}
+#fragment push bit.unaligned
+        {codec}.writeUnaligned({raw_type}.self, &buffer, bitOffset: {bit_offset}, bitSize: {bit_size}, value: value);
+#fragment pop
+#fragment push byte.aligned
+        {codec}.writeAligned({raw_type}.self, &buffer, value: value);
+#fragment pop
+#fragment push byte.unaligned
+        {codec}.writeUnaligned({raw_type}.self, &buffer, value: value);
 #fragment pop
     }}
 #fragment pop
@@ -92,38 +99,38 @@ impl<T: AsMut<[u8]>> {struct_name}<T> {{
 #fragment push struct
 #fragment pop
 #fragment push view_float
-    pub fn set{name:to_pascal_case}(&mut self, value: {view_type}) -> &mut Self {{
-        let raw_value = value * {a_inv} + {b_inv};
-        self.set_raw_{name}(raw_value as {raw_type});
-        self
+    public mutating func set{name:to_pascal_case}(_ value: {view_type}) -> Self {{
+        let rawValue = value * {a_inv} + {b_inv};
+        self.setRaw{name:to_pascal_case}(rawValue as {raw_type});
+        return self;
     }}
 #fragment pop
 #fragment push view_enum
-    pub fn set_{name:to_pascal_case}(&mut self, value: {view_type}) -> &mut Self {{
-        self.set_raw_{name}(value as {raw_type});
-        self
+    public mutating func set{name:to_pascal_case}(_ value: {view_type}) -> Self {{
+        self.setRaw{name:to_pascal_case}(value as {raw_type});
+        return self;
     }}
 #fragment pop
 #fragment push view_transmute
-    pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
+    public mutating func set{name:to_pascal_case}(_ value: {view_type}) -> Self {{
 {fragment}
 #fragment push bool
         if value {{
-            self.set_raw_{name}(1);
+            self.setRaw{name:to_pascal_case}(1);
         }} else {{
-            self.set_raw_{name}(0);
+            self.setRaw{name:to_pascal_case}(0);
         }}
 #fragment pop
 #fragment push other
-        self.set_raw_{name}(unsafe {{ std::mem::transmute::<{view_type}, {raw_type}>(value) }});
+        self.setRaw{name:to_pascal_case}({raw_type}(bitPattern: value));
 #fragment pop
-        self
+        return self;
     }}
 #fragment pop
 #fragment push view_none
-    pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
-        self.set_raw_{name}(value);
-        self
+    public mutating func set{name:to_pascal_case}(_ value: {view_type}) -> Self {{
+        self.setRaw{name:to_pascal_case}(value);
+        return self;
     }}
 #fragment pop
 }}

@@ -54,7 +54,7 @@ impl Generator for GeneratorSwift {
             .join("\n");
         Ok(vec![File::new(
             FileType::Structure,
-            "structures.rs",
+            "structures.swift",
             decl_structures,
         )])
     }
