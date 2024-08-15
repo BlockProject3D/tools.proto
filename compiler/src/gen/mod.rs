@@ -92,3 +92,4 @@ pub trait Generator {
 }
 
 pub use rust::GeneratorRust;
+pub use swift::GeneratorSwift;
