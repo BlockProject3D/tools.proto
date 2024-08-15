@@ -139,8 +139,8 @@ public struct DataBuffer: Buffer, WritableBuffer {
     }
 
     public init(mut ptr: UnsafeMutableRawBufferPointer) {
-        self.data = NSData(bytes: ptr.baseAddress!, length: ptr.count);
         self.dataMut = NSMutableData(bytes: ptr.baseAddress!, length: ptr.count);
+        self.data = self.dataMut!;
         self.start = 0;
         self.end = ptr.count;
         self.cursor = start;
@@ -173,7 +173,7 @@ public struct DataBuffer: Buffer, WritableBuffer {
 
     public func copyTo(ptr: UnsafeMutableRawBufferPointer, size: Int) {
         assert(size <= self.size);
-        self.get().copyBytes(to: ptr, from: self.start...self.start + size)
+        self.get().copyBytes(to: ptr, from: self.start...self.start + size - 1)
     }
 
     public func findFirst(_ value: UInt8) -> Int? {

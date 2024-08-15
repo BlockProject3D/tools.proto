@@ -41,7 +41,7 @@ public protocol Scalar: BinaryInteger {
 
 extension UInt64: Scalar {
     public init(fromUInt value: UInt) {
-        self = UInt64(value);
+        self = UInt64(truncatingIfNeeded: value);
     }
     
     public func toUInt() -> UInt {
@@ -93,7 +93,7 @@ extension UInt64: Scalar {
 
 extension UInt32: Scalar {
     public init(fromUInt value: UInt) {
-        self = UInt32(value);
+        self = UInt32(truncatingIfNeeded: value);
     }
 
     public func toUInt() -> UInt {
@@ -177,7 +177,7 @@ extension UInt16: Scalar {
 
 extension UInt8: Scalar {
     public init(fromUInt value: UInt) {
-        self = UInt8(value);
+        self = UInt8(truncatingIfNeeded: value);
     }
 
     public func toUInt() -> UInt {
