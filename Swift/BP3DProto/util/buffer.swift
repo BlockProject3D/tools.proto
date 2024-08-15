@@ -106,7 +106,15 @@ public struct DataBuffer: Buffer, WritableBuffer {
         self.dataMut = self.data.mutableCopy() as? NSMutableData;
     }
 
-    public init<S: Sequence<UInt8>>(bytes: S) {
+    public init<S: Sequence<UInt8>>(_ bytes: S) {
+        self.data = Data(bytes) as NSData;
+        self.start = 0;
+        self.end = self.data.count;
+        self.cursor = 0;
+        self.dataMut = nil;
+    }
+
+    public init<S: Sequence<UInt8>>(mut bytes: S) {
         self.data = Data(bytes) as NSData;
         self.start = 0;
         self.end = self.data.count;
@@ -114,15 +122,15 @@ public struct DataBuffer: Buffer, WritableBuffer {
         self.dataMut = self.data.mutableCopy() as? NSMutableData;
     }
 
-    public init(mutableBytes: NSMutableData) {
-        self.data = mutableBytes;
-        self.dataMut = mutableBytes;
+    public init(mut bytes: NSMutableData) {
+        self.data = bytes;
+        self.dataMut = bytes;
         self.start = 0;
-        self.end = mutableBytes.length;
+        self.end = bytes.length;
         self.cursor = start;
     }
 
-    public init(mutableBytes ptr: UnsafeMutableRawBufferPointer) {
+    public init(mut ptr: UnsafeMutableRawBufferPointer) {
         self.data = NSData(bytes: ptr.baseAddress!, length: ptr.count);
         self.dataMut = NSMutableData(bytes: ptr.baseAddress!, length: ptr.count);
         self.start = 0;
@@ -130,7 +138,7 @@ public struct DataBuffer: Buffer, WritableBuffer {
         self.cursor = start;
     }
 
-    public init(bytes ptr: UnsafeRawBufferPointer) {
+    public init(_ ptr: UnsafeRawBufferPointer) {
         self.data = NSData(bytes: ptr.baseAddress!, length: ptr.count);
         self.dataMut = nil;
         self.start = 0;
@@ -138,7 +146,7 @@ public struct DataBuffer: Buffer, WritableBuffer {
         self.cursor = start;
     }
 
-    public init(bytes: NSData) {
+    public init(_ bytes: NSData) {
         self.data = bytes;
         self.dataMut = nil;
         self.start = 0;

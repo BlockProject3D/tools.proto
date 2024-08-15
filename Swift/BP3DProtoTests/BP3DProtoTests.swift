@@ -37,11 +37,11 @@ final class BP3DProtoTests: XCTestCase {
     }
 
     func testValueLE() throws {
-        let data = DataBuffer(bytes: [0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x67, 0x89]);
-        let value8 = try ValueLE<UInt8>.from(slice: data).data;
-        let value16 = try ValueLE<UInt16>.from(slice: data).data;
-        let value32 = try ValueLE<UInt32>.from(slice: data).data;
-        let value64 = try ValueLE<UInt64>.from(slice: data).data;
+        let data = DataBuffer([0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x67, 0x89]);
+        let value8 = try ValueLE<DataBuffer, UInt8>.from(slice: data).data;
+        let value16 = try ValueLE<DataBuffer, UInt16>.from(slice: data).data;
+        let value32 = try ValueLE<DataBuffer, UInt32>.from(slice: data).data;
+        let value64 = try ValueLE<DataBuffer, UInt64>.from(slice: data).data;
         XCTAssertEqual(value8, 0xAB);
         XCTAssertEqual(value16, 0xCDAB);
         XCTAssertEqual(value32, 0x12EFCDAB);
@@ -49,11 +49,11 @@ final class BP3DProtoTests: XCTestCase {
     }
 
     func testValueBE() throws {
-        let data = DataBuffer(bytes: [0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x67, 0x89]);
-        let value8 = try ValueBE<UInt8>.from(slice: data).data;
-        let value16 = try ValueBE<UInt16>.from(slice: data).data;
-        let value32 = try ValueBE<UInt32>.from(slice: data).data;
-        let value64 = try ValueBE<UInt64>.from(slice: data).data;
+        let data = DataBuffer([0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x67, 0x89]);
+        let value8 = try ValueBE<DataBuffer, UInt8>.from(slice: data).data;
+        let value16 = try ValueBE<DataBuffer, UInt16>.from(slice: data).data;
+        let value32 = try ValueBE<DataBuffer, UInt32>.from(slice: data).data;
+        let value64 = try ValueBE<DataBuffer, UInt64>.from(slice: data).data;
         XCTAssertEqual(value8, 0xAB);
         XCTAssertEqual(value16, 0xABCD);
         XCTAssertEqual(value32, 0xABCDEF12);
@@ -62,59 +62,59 @@ final class BP3DProtoTests: XCTestCase {
 
     func testValueLEWrite() throws {
         var data = DataBuffer();
-        try ValueLE<UInt64>.write(input: 0xABCDEF1234566789, to: &data);
+        try ValueLE<DataBuffer, UInt64>.write(input: 0xABCDEF1234566789, to: &data);
         XCTAssertEqual(data.toData(), Data([0x89, 0x67, 0x56, 0x34, 0x12, 0xEF, 0xCD, 0xAB]));
-        let value64 = try ValueLE<UInt64>.from(slice: data).data;
+        let value64 = try ValueLE<DataBuffer, UInt64>.from(slice: data).data;
         XCTAssertEqual(value64, 0xABCDEF1234566789);
     }
 
     func testValueBEWrite() throws {
         var data = DataBuffer();
-        try ValueBE<UInt64>.write(input: 0xABCDEF1234566789, to: &data);
+        try ValueBE<DataBuffer, UInt64>.write(input: 0xABCDEF1234566789, to: &data);
         XCTAssertEqual(data.toData(), Data([0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x67, 0x89]));
-        let value64 = try ValueBE<UInt64>.from(slice: data).data;
+        let value64 = try ValueBE<DataBuffer, UInt64>.from(slice: data).data;
         XCTAssertEqual(value64, 0xABCDEF1234566789);
     }
 
     func testNullTerminatedString() throws {
         var data = DataBuffer();
-        try NullTerminatedString.write(input: "test", to: &data);
+        try NullTerminatedString<DataBuffer>.write(input: "test", to: &data);
         let str = try NullTerminatedString.from(slice: data).data;
         XCTAssertEqual(str, "test");
         data.clear();
-        try NullTerminatedString.write(input: "toto", to: &data);
+        try NullTerminatedString<DataBuffer>.write(input: "toto", to: &data);
         let str1 = try NullTerminatedString.from(slice: data).data;
         XCTAssertEqual(str1, "toto");
     }
 
     func testVarcharString() throws {
         var data = DataBuffer();
-        try VarcharString<ValueLE<UInt8>>.write(input: "test", to: &data);
-        let str = try VarcharString<ValueLE<UInt8>>.from(slice: data).data;
+        try VarcharString<DataBuffer, ValueLE<DataBuffer, UInt8>>.write(input: "test", to: &data);
+        let str = try VarcharString<DataBuffer, ValueLE<DataBuffer, UInt8>>.from(slice: data).data;
         XCTAssertEqual(str, "test");
         data.clear();
-        try VarcharString<ValueBE<UInt32>>.write(input: "toto", to: &data);
-        let str1 = try VarcharString<ValueBE<UInt32>>.from(slice: data).data;
+        try VarcharString<DataBuffer, ValueBE<DataBuffer, UInt32>>.write(input: "toto", to: &data);
+        let str1 = try VarcharString<DataBuffer, ValueBE<DataBuffer, UInt32>>.from(slice: data).data;
         XCTAssertEqual(str1, "toto");
     }
 
     func testOptionals() throws {
         var data = DataBuffer();
-        try Optional<VarcharString<ValueBE<UInt32>>>.write(input: "toto", to: &data);
-        let str = try Optional<VarcharString<ValueBE<UInt32>>>.from(slice: data).data;
+        try Optional<DataBuffer, VarcharString<DataBuffer, ValueBE<DataBuffer, UInt32>>>.write(input: "toto", to: &data);
+        let str = try Optional<DataBuffer, VarcharString<DataBuffer, ValueBE<DataBuffer, UInt32>>>.from(slice: data).data;
         XCTAssertEqual(str, "toto");
         data.clear();
-        try Optional<VarcharString<ValueBE<UInt32>>>.write(input: "test", to: &data);
-        let str1 = try Optional<VarcharString<ValueBE<UInt32>>>.from(slice: data).data;
+        try Optional<DataBuffer, VarcharString<DataBuffer, ValueBE<DataBuffer, UInt32>>>.write(input: "test", to: &data);
+        let str1 = try Optional<DataBuffer, VarcharString<DataBuffer, ValueBE<DataBuffer, UInt32>>>.from(slice: data).data;
         XCTAssertEqual(str1, "test");
         data.clear();
-        try Optional<VarcharString<ValueBE<UInt32>>>.write(input: nil, to: &data);
-        let str2 = try Optional<VarcharString<ValueBE<UInt32>>>.from(slice: data).data;
+        try Optional<DataBuffer, VarcharString<DataBuffer, ValueBE<DataBuffer, UInt32>>>.write(input: nil, to: &data);
+        let str2 = try Optional<DataBuffer, VarcharString<DataBuffer, ValueBE<DataBuffer, UInt32>>>.from(slice: data).data;
         XCTAssertNil(str2);
     }
 
     func testBitCodecLE() throws {
-        let buffer = DataBuffer(bytes: [0xFF, 0xFF, 0xFF, 0xFF]);
+        let buffer = DataBuffer([0xFF, 0xFF, 0xFF, 0xFF]);
         XCTAssertEqual(BitCodecLE.read(UInt32.self, buffer[...4], bitOffset: 0, bitSize: 32), 0xFFFFFFFF);
         XCTAssertEqual(BitCodecLE.read(UInt8.self, buffer[0...1], bitOffset: 0, bitSize: 1), 1);
         XCTAssertEqual(BitCodecLE.read(UInt8.self, buffer[0...1], bitOffset: 0, bitSize: 4), 0xF);
@@ -122,16 +122,16 @@ final class BP3DProtoTests: XCTestCase {
     }
 
     func testBitCodecBE() throws {
-        let buffer = DataBuffer(bytes: [0xAB, 0xF0]);
+        let buffer = DataBuffer([0xAB, 0xF0]);
         XCTAssertEqual(BitCodecBE.read(UInt16.self, buffer[0...2], bitOffset: 0, bitSize: 12), 0xABF);
-        let buffer1 = DataBuffer(bytes: [0x0, 0x0]);
+        let buffer1 = DataBuffer(mut: [0x0, 0x0]);
         var b = buffer1[...2]
         BitCodecBE.write(UInt16.self, &b, bitOffset: 0, bitSize: 12, value: 0xABF);
         XCTAssertEqual(BitCodecBE.read(UInt16.self, buffer1[0...2], bitOffset: 0, bitSize: 12), 0xABF);
     }
 
     func testArrayCodec() throws {
-        var buffer = DataBuffer(bytes: Data(count: UInt32.size * 4));
+        var buffer = DataBuffer(mut: Data(count: UInt32.size * 4));
         var codec = ArrayCodec<DataBuffer, ByteCodecBE, UInt32>(buffer: &buffer, itemBitSize: 32);
         XCTAssertEqual(codec.count, 4);
         codec[0] = 0xAB;
