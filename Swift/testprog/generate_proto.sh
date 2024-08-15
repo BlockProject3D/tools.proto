@@ -26,5 +26,7 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-../../target/debug/protoc --header ../../LICENSE.txt -g swift ../../testprog/src/bits.json5
-../../target/debug/protoc --header ../../LICENSE.txt -g swift ../../testprog/src/bits2.json5
+../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -g swift ../../testprog/src/bits.json5
+../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -g swift ../../testprog/src/bits2.json5
+../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -g swift ../../testprog/src/views.json5
+../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -g swift ../../testprog/src/structs.json5

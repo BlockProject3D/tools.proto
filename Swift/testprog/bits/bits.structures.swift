@@ -106,7 +106,7 @@ extension BitsNumbers where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
     }
     @discardableResult
     public func setA(_ value: Int8) -> Self {
-        self.setRawA(UInt8(bitPattern: value));
+        self.setRawA(BP3DProto.transmute(value));
 
         return self;
     }
@@ -127,7 +127,7 @@ extension BitsNumbers where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
     }
     @discardableResult
     public func setC(_ value: Int32) -> Self {
-        self.setRawC(UInt32(bitPattern: value));
+        self.setRawC(BP3DProto.transmute(value));
 
         return self;
     }

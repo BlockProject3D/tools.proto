@@ -14,6 +14,10 @@
 		DA72E62D2C6E2BC9008F8F23 /* ptrbuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA72E62C2C6E2BC9008F8F23 /* ptrbuffer.swift */; };
 		DA72E6642C6E5E37008F8F23 /* bits.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA72E6602C6E5E37008F8F23 /* bits.structures.swift */; };
 		DA72E6652C6E5E37008F8F23 /* bits2.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA72E6622C6E5E37008F8F23 /* bits2.structures.swift */; };
+		DA72E6682C6E9181008F8F23 /* views.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA72E6662C6E9181008F8F23 /* views.structures.swift */; };
+		DA72E66A2C6E91BF008F8F23 /* ViewsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA72E6692C6E91BF008F8F23 /* ViewsTests.swift */; };
+		DA72E66D2C6E9330008F8F23 /* structs.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA72E66B2C6E9330008F8F23 /* structs.structures.swift */; };
+		DA72E66F2C6E93FE008F8F23 /* transmute.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA72E66E2C6E93FE008F8F23 /* transmute.swift */; };
 		DA7658F92C655DD60036DDED /* string.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7658F82C655DD60036DDED /* string.swift */; };
 		DA7659012C65FE1B0036DDED /* BP3DProtoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7659002C65FE1B0036DDED /* BP3DProtoTests.swift */; };
 		DA7659022C65FE1B0036DDED /* BP3DProto.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA8EBD642C63D48E00075FDE /* BP3DProto.framework */; };
@@ -95,6 +99,10 @@
 		DA72E62C2C6E2BC9008F8F23 /* ptrbuffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ptrbuffer.swift; sourceTree = "<group>"; };
 		DA72E6602C6E5E37008F8F23 /* bits.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = bits.structures.swift; sourceTree = "<group>"; };
 		DA72E6622C6E5E37008F8F23 /* bits2.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = bits2.structures.swift; sourceTree = "<group>"; };
+		DA72E6662C6E9181008F8F23 /* views.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = views.structures.swift; sourceTree = "<group>"; };
+		DA72E6692C6E91BF008F8F23 /* ViewsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewsTests.swift; sourceTree = "<group>"; };
+		DA72E66B2C6E9330008F8F23 /* structs.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = structs.structures.swift; sourceTree = "<group>"; };
+		DA72E66E2C6E93FE008F8F23 /* transmute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = transmute.swift; sourceTree = "<group>"; };
 		DA7658F82C655DD60036DDED /* string.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = string.swift; sourceTree = "<group>"; };
 		DA7658FE2C65FE1B0036DDED /* BP3DProtoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BP3DProtoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA7659002C65FE1B0036DDED /* BP3DProtoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BP3DProtoTests.swift; sourceTree = "<group>"; };
@@ -154,6 +162,7 @@
 			isa = PBXGroup;
 			children = (
 				DA9DDA6C2C6E1C61000A9C70 /* BitsTests.swift */,
+				DA72E6692C6E91BF008F8F23 /* ViewsTests.swift */,
 			);
 			path = testprogTests;
 			sourceTree = "<group>";
@@ -172,6 +181,22 @@
 				DA72E6622C6E5E37008F8F23 /* bits2.structures.swift */,
 			);
 			path = bits2;
+			sourceTree = "<group>";
+		};
+		DA72E6672C6E9181008F8F23 /* views */ = {
+			isa = PBXGroup;
+			children = (
+				DA72E6662C6E9181008F8F23 /* views.structures.swift */,
+			);
+			path = views;
+			sourceTree = "<group>";
+		};
+		DA72E66C2C6E9330008F8F23 /* structs */ = {
+			isa = PBXGroup;
+			children = (
+				DA72E66B2C6E9330008F8F23 /* structs.structures.swift */,
+			);
+			path = structs;
 			sourceTree = "<group>";
 		};
 		DA7658FF2C65FE1B0036DDED /* BP3DProtoTests */ = {
@@ -200,6 +225,7 @@
 				DA76590A2C664C390036DDED /* buffer.swift */,
 				DA76590E2C6679000036DDED /* size.swift */,
 				DA72E62C2C6E2BC9008F8F23 /* ptrbuffer.swift */,
+				DA72E66E2C6E93FE008F8F23 /* transmute.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -235,6 +261,8 @@
 		DAC4A9BE2C6E183E00ED8343 /* testprog */ = {
 			isa = PBXGroup;
 			children = (
+				DA72E66C2C6E9330008F8F23 /* structs */,
+				DA72E6672C6E9181008F8F23 /* views */,
 				DA72E6612C6E5E37008F8F23 /* bits */,
 				DA72E6632C6E5E37008F8F23 /* bits2 */,
 				DAC4A9BF2C6E183E00ED8343 /* testprog.h */,
@@ -445,6 +473,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA72E66A2C6E91BF008F8F23 /* ViewsTests.swift in Sources */,
 				DA9DDA6D2C6E1C61000A9C70 /* BitsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -466,6 +495,7 @@
 				DA7659162C66A9710036DDED /* array.swift in Sources */,
 				DA76590F2C6679000036DDED /* size.swift in Sources */,
 				DACACEBF2C6530B80076A026 /* bytesutil.swift in Sources */,
+				DA72E66F2C6E93FE008F8F23 /* transmute.swift in Sources */,
 				DACACEBD2C63DBDC0076A026 /* common.swift in Sources */,
 				DA7659122C667AB90036DDED /* bit.swift in Sources */,
 				DA7658F92C655DD60036DDED /* string.swift in Sources */,
@@ -479,6 +509,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA72E6682C6E9181008F8F23 /* views.structures.swift in Sources */,
+				DA72E66D2C6E9330008F8F23 /* structs.structures.swift in Sources */,
 				DA72E6642C6E5E37008F8F23 /* bits.structures.swift in Sources */,
 				DA72E6652C6E5E37008F8F23 /* bits2.structures.swift in Sources */,
 			);
