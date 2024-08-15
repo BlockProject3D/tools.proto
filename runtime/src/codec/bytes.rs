@@ -98,10 +98,18 @@ pub struct ByteCodecBE;
 pub struct ByteCodecLE;
 
 impl ByteCodec for ByteCodecLE {
+    unsafe fn read_aligned<T: ReadBytes>(buffer: &[u8]) -> T {
+        T::read_bytes_le(buffer)
+    }
+
     fn read_unaligned<T: ReadBytes>(buffer: &[u8]) -> T {
         let mut data = [0; 8];
         data[..buffer.len()].copy_from_slice(buffer);
         unsafe { Self::read_aligned::<T>(&data) }
+    }
+
+    unsafe fn write_aligned<T: WriteBytes>(buffer: &mut [u8], value: T) {
+        value.write_bytes_le(buffer);
     }
 
     fn write_unaligned<T: WriteBytes>(buffer: &mut [u8], value: T) {
@@ -111,24 +119,11 @@ impl ByteCodec for ByteCodecLE {
         let motherfuckingrust = buffer.len();
         buffer.copy_from_slice(&data[..motherfuckingrust]);
     }
-
-    unsafe fn read_aligned<T: ReadBytes>(buffer: &[u8]) -> T {
-        T::read_bytes_le(buffer)
-    }
-
-    unsafe fn write_aligned<T: WriteBytes>(buffer: &mut [u8], value: T) {
-        value.write_bytes_le(buffer);
-    }
 }
 
 impl ByteCodec for ByteCodecBE {
-    fn write_unaligned<T: WriteBytes>(buffer: &mut [u8], value: T) {
-        let offset = size_of::<T>() - buffer.len();
-        let mut data = [0; 8];
-        data[offset..buffer.len() + offset].copy_from_slice(buffer);
-        unsafe { Self::write_aligned::<T>(&mut data, value) };
-        let motherfuckingrust = buffer.len();
-        buffer.copy_from_slice(&data[offset..motherfuckingrust + offset]);
+    unsafe fn read_aligned<T: ReadBytes>(buffer: &[u8]) -> T {
+        T::read_bytes_be(buffer)
     }
 
     fn read_unaligned<T: ReadBytes>(buffer: &[u8]) -> T {
@@ -138,12 +133,17 @@ impl ByteCodec for ByteCodecBE {
         unsafe { Self::read_aligned::<T>(&data) }
     }
 
-    unsafe fn read_aligned<T: ReadBytes>(buffer: &[u8]) -> T {
-        T::read_bytes_be(buffer)
-    }
-
     unsafe fn write_aligned<T: WriteBytes>(buffer: &mut [u8], value: T) {
         value.write_bytes_be(buffer);
+    }
+
+    fn write_unaligned<T: WriteBytes>(buffer: &mut [u8], value: T) {
+        let offset = size_of::<T>() - buffer.len();
+        let mut data = [0; 8];
+        data[offset..buffer.len() + offset].copy_from_slice(buffer);
+        unsafe { Self::write_aligned::<T>(&mut data, value) };
+        let motherfuckingrust = buffer.len();
+        buffer.copy_from_slice(&data[offset..motherfuckingrust + offset]);
     }
 }
 
