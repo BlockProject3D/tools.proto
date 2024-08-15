@@ -58,7 +58,7 @@ impl Protocol {
     ) -> Result<Self, Error> {
         let mut proto = Protocol {
             name: value.name,
-            endianness: Endianness::Little,
+            endianness: value.endianness.unwrap_or(Endianness::Little),
             type_path_by_name: TypePathMap::new(),
             structs_by_name: HashMap::new(),
             messages_by_name: HashMap::new(),

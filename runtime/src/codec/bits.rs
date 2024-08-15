@@ -70,11 +70,7 @@ pub trait BitCodec {
         const BIT_SIZE: usize,
     >(
         buffer: &[u8],
-    ) -> T {
-        let mut data = [0; 8];
-        data[..buffer.len()].copy_from_slice(buffer);
-        unsafe { Self::read_aligned::<T, BIT_OFFSET, BIT_SIZE>(&data) }
-    }
+    ) -> T;
 
     fn read<
         T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>,
@@ -133,13 +129,7 @@ pub trait BitCodec {
     >(
         buffer: &mut [u8],
         value: T,
-    ) {
-        let mut data = [0; 8];
-        data[..buffer.len()].copy_from_slice(buffer);
-        unsafe { Self::write_aligned::<T, BIT_OFFSET, BIT_SIZE>(&mut data, value) };
-        let motherfuckingrust = buffer.len();
-        buffer.copy_from_slice(&data[..motherfuckingrust]);
-    }
+    );
 
     fn write<
         T: ToUsize
@@ -167,6 +157,39 @@ pub struct BitCodecLE;
 pub struct BitCodecBE;
 
 impl BitCodec for BitCodecLE {
+    fn read_unaligned<
+        T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>,
+        const BIT_OFFSET: usize,
+        const BIT_SIZE: usize,
+    >(
+        buffer: &[u8],
+    ) -> T {
+        let mut data = [0; 8];
+        data[..buffer.len()].copy_from_slice(buffer);
+        unsafe { Self::read_aligned::<T, BIT_OFFSET, BIT_SIZE>(&data) }
+    }
+
+    fn write_unaligned<
+        T: ToUsize
+        + ReadBytes
+        + WriteBytes
+        + Shl<Output = T>
+        + Shr<Output = T>
+        + BitAnd<Output = T>
+        + BitOr<Output = T>,
+        const BIT_OFFSET: usize,
+        const BIT_SIZE: usize,
+    >(
+        buffer: &mut [u8],
+        value: T,
+    ) {
+        let mut data = [0; 8];
+        data[..buffer.len()].copy_from_slice(buffer);
+        unsafe { Self::write_aligned::<T, BIT_OFFSET, BIT_SIZE>(&mut data, value) };
+        let motherfuckingrust = buffer.len();
+        buffer.copy_from_slice(&data[..motherfuckingrust]);
+    }
+
     unsafe fn read_aligned<
         T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>,
         const BIT_OFFSET: usize,
@@ -203,6 +226,41 @@ impl BitCodec for BitCodecLE {
 }
 
 impl BitCodec for BitCodecBE {
+    fn read_unaligned<
+        T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>,
+        const BIT_OFFSET: usize,
+        const BIT_SIZE: usize,
+    >(
+        buffer: &[u8],
+    ) -> T {
+        let offset = size_of::<T>() - buffer.len();
+        let mut data = [0; 8];
+        data[offset..buffer.len() + offset].copy_from_slice(buffer);
+        unsafe { Self::read_aligned::<T, BIT_OFFSET, BIT_SIZE>(&data) }
+    }
+
+    fn write_unaligned<
+        T: ToUsize
+        + ReadBytes
+        + WriteBytes
+        + Shl<Output = T>
+        + Shr<Output = T>
+        + BitAnd<Output = T>
+        + BitOr<Output = T>,
+        const BIT_OFFSET: usize,
+        const BIT_SIZE: usize,
+    >(
+        buffer: &mut [u8],
+        value: T,
+    ) {
+        let offset = size_of::<T>() - buffer.len();
+        let mut data = [0; 8];
+        data[offset..buffer.len() + offset].copy_from_slice(buffer);
+        unsafe { Self::write_aligned::<T, BIT_OFFSET, BIT_SIZE>(&mut data, value) };
+        let motherfuckingrust = buffer.len();
+        buffer.copy_from_slice(&data[offset..motherfuckingrust + offset]);
+    }
+
     unsafe fn read_aligned<
         T: ToUsize + ReadBytes + Shr<Output = T> + BitAnd<Output = T>,
         const BIT_OFFSET: usize,
@@ -230,7 +288,7 @@ impl BitCodec for BitCodecBE {
         value: T,
     ) {
         let mask: usize = (1 << BIT_SIZE) - 1;
-        let reset_mask = !(mask << BIT_OFFSET);
+        let reset_mask = !(mask << 8 - (BIT_SIZE % 8) - BIT_OFFSET);
         let original = T::read_bytes_be(buffer);
         let clean = original & T::from_usize(reset_mask);
         let value = (value & T::from_usize(mask)) << T::from_usize(8 - (BIT_SIZE % 8) - BIT_OFFSET);
@@ -256,7 +314,11 @@ mod tests {
         let buffer = [0xAB, 0xF0];
         assert_eq!(BitCodecBE::read::<u16, 0, 12>(&buffer[0..2]), 0xABF);
         let mut buffer = [0x0, 0x0];
+        BitCodecBE::write::<u8, 0, 4>(&mut buffer[0..1], 0xF);
+        assert_eq!(BitCodecBE::read::<u8, 0, 4>(&buffer[0..1]), 0xF);
         BitCodecBE::write::<u16, 0, 12>(&mut buffer[0..2], 0xABF);
         assert_eq!(BitCodecBE::read::<u16, 0, 12>(&buffer[0..2]), 0xABF);
+        BitCodecBE::write::<u8, 1, 7>(&mut buffer[1..2], 127);
+        assert_eq!(BitCodecBE::read::<u8, 1, 7>(&buffer[1..2]), 127);
     }
 }
