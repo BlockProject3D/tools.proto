@@ -30,6 +30,7 @@ use crate::compiler::Protocol;
 use std::borrow::Cow;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use bp3d_util::path::PathExt;
 use itertools::Itertools;
 
 mod base;
@@ -66,13 +67,13 @@ impl File {
         self.ty
     }
 
-    pub fn write(self, out_directory: &Path, file_header: Option<&str>) -> std::io::Result<Option<PathBuf>> {
+    pub fn write(self, out_directory: &Path, file_header: Option<&str>, extension: &str) -> std::io::Result<Option<PathBuf>> {
         if self.data.len() > 1 {
             let sub_folder = self.name.find("/").map(|id| &self.name[..id]);
             if let Some(sub_folder) = sub_folder {
                 std::fs::create_dir(out_directory.join(sub_folder))?;
             }
-            let path = out_directory.join(&*self.name);
+            let path = out_directory.join(&*self.name).ensure_extension(extension).to_path_buf();
             let mut file = std::fs::File::create(&path)?;
             if let Some(file_header) = file_header {
                 file.write_all(file_header.as_bytes())?;
@@ -100,6 +101,7 @@ pub trait Generator {
     fn generate_file_header<'a>(lines: impl Iterator<Item = &'a str>) -> String {
         lines.map(|v| String::from("// ") + v).join("\n") + "\n\n"
     }
+    fn get_language_extension() -> &'static str;
 }
 
 pub use rust::GeneratorRust;

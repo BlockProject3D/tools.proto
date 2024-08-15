@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::path::Path;
 use crate::compiler::Protocol;
 use crate::gen::swift::structure::gen_structure_decl;
 use crate::gen::{File, FileType, Generator};
@@ -50,12 +51,20 @@ impl Generator for GeneratorSwift {
         let decl_structures = proto
             .structs
             .iter()
-            .map(|v| gen_structure_decl(v, &proto.type_path_by_name))
+            .map(|v| gen_structure_decl(&proto, v))
             .join("\n");
         Ok(vec![File::new(
             FileType::Structure,
             "structures.swift",
             decl_structures,
         )])
+    }
+
+    fn generate_umbrella<'a>(name: &str, _: impl Iterator<Item=&'a Path>) -> Result<String, Self::Error> {
+        Ok(format!("public struct {} {{ }}", name))
+    }
+
+    fn get_language_extension() -> &'static str {
+        "swift"
     }
 }

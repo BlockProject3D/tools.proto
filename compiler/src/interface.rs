@@ -30,6 +30,7 @@ use crate::compiler::util::ImportResolver;
 use crate::gen::{FileType, Generator};
 use crate::{compiler, model, Error};
 use std::path::{Path, PathBuf};
+use bp3d_util::path::PathExt;
 
 pub trait ImportSolver {
     fn register(&mut self, base_import_path: String, protocol: compiler::Protocol);
@@ -174,7 +175,7 @@ impl<'a> Protoc<'a> {
             });
             let iter = files_iter
                 .into_iter()
-                .map(|v| v.write(&out_path, file_header.as_deref()))
+                .map(|v| v.write(&out_path, file_header.as_deref(), T::get_language_extension()))
                 .filter_map(|v| match v {
                     Ok(o) => o.map(Ok),
                     Err(e) => Some(Err(e)),
@@ -184,7 +185,7 @@ impl<'a> Protoc<'a> {
             let umbrella = T::generate_umbrella(&name, iter.iter().map(|v| &**v))
                 .map_err(|e| Error::Generator(e.to_string()))?;
             let proto_path = if umbrella.len() > 1 {
-                let umbrella_path = out_path.join("umbrella.rs");
+                let umbrella_path = out_path.join("umbrella").ensure_extension(T::get_language_extension()).to_path_buf();
                 std::fs::write(&umbrella_path, umbrella).map_err(Error::Io)?;
                 umbrella_path
             } else {

@@ -119,4 +119,8 @@ impl Generator for GeneratorRust {
         code += "}\n";
         Ok(code)
     }
+
+    fn get_language_extension() -> &'static str {
+        "rs"
+    }
 }
