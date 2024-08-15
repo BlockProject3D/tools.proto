@@ -24,8 +24,8 @@ extension {proto_name:to_pascal_case}{struct_name} where T: BP3DProto.Buffer {{
     }}
 #fragment pop
 #fragment push struct
-    public var {name:to_camel_case}: {type_name}<T> {{
-        {type_name}(self.data[{start}...{end}])
+    public var {name:to_camel_case}: {proto_name:to_pascal_case}{type_name}<T> {{
+        {proto_name:to_pascal_case}{type_name}(self.data[{start}...{end}])
     }}
 #fragment pop
 #fragment push view_float

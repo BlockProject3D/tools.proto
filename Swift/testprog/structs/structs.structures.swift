@@ -426,14 +426,14 @@ extension StructsMaster: BP3DProto.FromSlice where T: BP3DProto.Buffer {
     }
 }
 extension StructsMaster where T: BP3DProto.Buffer {
-    public var floats: Floats<T> {
-        Floats(self.data[0...12])
+    public var floats: StructsFloats<T> {
+        StructsFloats(self.data[0...12])
     }
-    public var nums: Numbers<T> {
-        Numbers(self.data[12...26])
+    public var nums: StructsNumbers<T> {
+        StructsNumbers(self.data[12...26])
     }
-    public var flags: Flags<T> {
-        Flags(self.data[26...41])
+    public var flags: StructsFlags<T> {
+        StructsFlags(self.data[26...41])
     }
 
 }
