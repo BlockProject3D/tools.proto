@@ -131,7 +131,7 @@ final class BP3DProtoTests: XCTestCase {
     }
 
     func testArrayCodec() throws {
-        var buffer = DataBuffer(mut: Data(count: UInt32.size * 4));
+        var buffer = DataBuffer(size: UInt32.size * 4);
         var codec = ArrayCodec<DataBuffer, ByteCodecBE, UInt32>(buffer: &buffer, itemBitSize: 32);
         XCTAssertEqual(codec.count, 4);
         codec[0] = 0xAB;

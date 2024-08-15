@@ -99,11 +99,19 @@ public struct DataBuffer: Buffer, WritableBuffer {
     }
 
     public init() {
-        self.data = NSData();
         self.start = 0;
         self.end = 0;
         self.cursor = 0;
-        self.dataMut = self.data.mutableCopy() as? NSMutableData;
+        self.dataMut = NSMutableData();
+        self.data = self.dataMut!;
+    }
+
+    public init(size: Int) {
+        self.start = 0;
+        self.end = size;
+        self.cursor = 0;
+        self.dataMut = NSMutableData(length: size);
+        self.data = self.dataMut!;
     }
 
     public init<S: Sequence<UInt8>>(_ bytes: S) {
