@@ -28,36 +28,36 @@
 
 import Foundation;
 import BP3DProto;
-public struct Numbers<T>: BP3DProto.FixedSize {
+public struct Bits2Numbers<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 4 }
     public init(_ data: T) {
         self.data = data;
     }
 }
-extension Numbers<BP3DProto.DataBuffer> {
+extension Bits2Numbers<BP3DProto.DataBuffer> {
     public init() {
         self.data = BP3DProto.DataBuffer(size: 4)
     }
 }
-public let SIZE_NUMBERS: Int = 4;
-extension Numbers: BP3DProto.WriteTo where T: BP3DProto.Buffer {
-    public typealias Input = Numbers;
+public let SIZE_BITS2_NUMBERS: Int = 4;
+extension Bits2Numbers: BP3DProto.WriteTo where T: BP3DProto.Buffer {
+    public typealias Input = Bits2Numbers;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
         out.write(bytes: input.data.toData());
     }
 }
-extension Numbers: BP3DProto.FromSlice where T: BP3DProto.Buffer {
+extension Bits2Numbers: BP3DProto.FromSlice where T: BP3DProto.Buffer {
     public typealias Buffer = T;
-    public typealias Output = Numbers;
+    public typealias Output = Bits2Numbers;
     public static func from(slice: T) throws -> BP3DProto.Message<Output> {
         if slice.size < 4 {
             throw BP3DProto.Error.truncated;
         }
-        return BP3DProto.Message(size: 4, data: Numbers(slice[...4]));
+        return BP3DProto.Message(size: 4, data: Bits2Numbers(slice[...4]));
     }
 }
-extension Numbers where T: BP3DProto.Buffer {
+extension Bits2Numbers where T: BP3DProto.Buffer {
     public var rawA: UInt8 {
         BP3DProto.BitCodecLE.readAligned(UInt8.self, self.data[0...1], bitOffset: 0, bitSize: 4)
 
@@ -98,7 +98,7 @@ extension Numbers where T: BP3DProto.Buffer {
     }
 
 }
-extension Numbers where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
+extension Bits2Numbers where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
     public func setRawA(_ value: UInt8) {
         var buffer = self.data[0...1];
         BP3DProto.BitCodecLE.writeAligned(UInt8.self, &buffer, bitOffset: 0, bitSize: 4, value: value);

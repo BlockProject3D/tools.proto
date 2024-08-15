@@ -1,5 +1,5 @@
 #fragment push getters
-extension {struct_name} where T: BP3DProto.Buffer {{
+extension {proto_name:to_pascal_case}{struct_name} where T: BP3DProto.Buffer {{
 {fields}
 #fragment push fixed
     public var raw{name:to_pascal_case}: {raw_type} {{
@@ -74,7 +74,7 @@ extension {struct_name} where T: BP3DProto.Buffer {{
 #fragment pop
 
 #fragment push setters
-extension {struct_name} where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {{
+extension {proto_name:to_pascal_case}{struct_name} where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {{
 {fields}
 #fragment push fixed
     public func setRaw{name:to_pascal_case}(_ value: {raw_type}) {{

@@ -5,7 +5,7 @@
 import Foundation;
 import BP3DProto;
 
-public struct {name}<T>: BP3DProto.FixedSize {{
+public struct {proto_name:to_pascal_case}{name}<T>: BP3DProto.FixedSize {{
     var data: T
 
     public static var size: Int {{ {byte_size} }}
@@ -15,21 +15,21 @@ public struct {name}<T>: BP3DProto.FixedSize {{
     }}
 }}
 
-extension {name}<BP3DProto.DataBuffer> {{
+extension {proto_name:to_pascal_case}{name}<BP3DProto.DataBuffer> {{
     public init() {{
         self.data = BP3DProto.DataBuffer(size: {byte_size})
     }}
 }}
 
-public let SIZE_{name:to_screaming_case}: Int = {byte_size};
+public let SIZE_{proto_name:to_screaming_case}_{name:to_screaming_case}: Int = {byte_size};
 #fragment pop
 
 #fragment push fixed_size
 #fragment pop
 
 #fragment push write_to
-extension {name}: BP3DProto.WriteTo where T: BP3DProto.Buffer {{
-    public typealias Input = {name};
+extension {proto_name:to_pascal_case}{name}: BP3DProto.WriteTo where T: BP3DProto.Buffer {{
+    public typealias Input = {proto_name:to_pascal_case}{name};
 
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {{
         out.write(bytes: input.data.toData());
@@ -38,15 +38,15 @@ extension {name}: BP3DProto.WriteTo where T: BP3DProto.Buffer {{
 #fragment pop
 
 #fragment push from_slice
-extension {name}: BP3DProto.FromSlice where T: BP3DProto.Buffer {{
+extension {proto_name:to_pascal_case}{name}: BP3DProto.FromSlice where T: BP3DProto.Buffer {{
     public typealias Buffer = T;
-    public typealias Output = {name};
+    public typealias Output = {proto_name:to_pascal_case}{name};
 
     public static func from(slice: T) throws -> BP3DProto.Message<Output> {{
         if slice.size < {byte_size} {{
             throw BP3DProto.Error.truncated;
         }}
-        return BP3DProto.Message(size: {byte_size}, data: {name}(slice[...{byte_size}]));
+        return BP3DProto.Message(size: {byte_size}, data: {proto_name:to_pascal_case}{name}(slice[...{byte_size}]));
     }}
 }}
 #fragment pop

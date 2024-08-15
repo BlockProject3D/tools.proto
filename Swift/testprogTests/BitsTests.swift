@@ -37,8 +37,8 @@ final class BitsTests: XCTestCase {
     }
 
     func testNumbers() throws {
-        let nums = Numbers();
-        XCTAssertEqual(SIZE_NUMBERS, 4);
+        let nums = BitsNumbers();
+        XCTAssertEqual(SIZE_BITS_NUMBERS, 4);
         nums.setA(-8).setB(15).setC(-65536).setD(127);
         XCTAssertEqual(nums.a, -8);
         XCTAssertEqual(nums.b, 15);
@@ -64,7 +64,7 @@ final class BitsTests: XCTestCase {
     }
 
     func testNumbersRaw() throws {
-        let nums = Numbers();
+        let nums = BitsNumbers();
         nums.setRawA(15);
         nums.setRawB(15);
         nums.setRawC(65536);
