@@ -119,38 +119,14 @@ public struct DataBuffer: Buffer, WritableBuffer {
         self.start = 0;
         self.end = self.data.count;
         self.cursor = 0;
-        self.dataMut = nil;
-    }
-
-    public init<S: Sequence<UInt8>>(mut bytes: S) {
-        self.data = Data(bytes) as NSData;
-        self.start = 0;
-        self.end = self.data.count;
-        self.cursor = 0;
         self.dataMut = self.data.mutableCopy() as? NSMutableData;
     }
 
-    public init(mut bytes: NSMutableData) {
+    public init(_ bytes: NSMutableData) {
         self.data = bytes;
         self.dataMut = bytes;
         self.start = 0;
         self.end = bytes.length;
-        self.cursor = start;
-    }
-
-    public init(mut ptr: UnsafeMutableRawBufferPointer) {
-        self.dataMut = NSMutableData(bytes: ptr.baseAddress!, length: ptr.count);
-        self.data = self.dataMut!;
-        self.start = 0;
-        self.end = ptr.count;
-        self.cursor = start;
-    }
-
-    public init(_ ptr: UnsafeRawBufferPointer) {
-        self.data = NSData(bytes: ptr.baseAddress!, length: ptr.count);
-        self.dataMut = nil;
-        self.start = 0;
-        self.end = ptr.count;
         self.cursor = start;
     }
 
@@ -214,21 +190,18 @@ public struct DataBuffer: Buffer, WritableBuffer {
             bytes.withUnsafeBytes { ptr in
                 data.replaceBytes(in: NSRange(location: self.cursor, length: bytes.count), withBytes: ptr);
             }
-            //data.replaceSubrange(self.cursor...self.cursor + bytes.count - 1, with: bytes);
         } else {
             let maxLen = data.count - self.cursor;
             if maxLen > 0 {
                 bytes.withUnsafeBytes { ptr in
                     data.replaceBytes(in: NSRange(location: self.cursor, length: maxLen), withBytes: ptr);
                 }
-                //data.replaceSubrange(self.cursor...self.cursor + maxLen - 1, with: bytes[0...maxLen - 1]);
             }
             let remaining = bytes.count - maxLen;
             if remaining > 0 {
                 bytes[maxLen...].withUnsafeBytes { ptr in
                     data.append(ptr, length: remaining);
                 }
-                //data.append(contentsOf: bytes[maxLen...maxLen + remaining - 1]);
             }
         }
         self.cursor += bytes.count;
@@ -245,9 +218,7 @@ public struct DataBuffer: Buffer, WritableBuffer {
             withUnsafeBytes(of: byte, { ptr in
                 data.replaceBytes(in: NSRange(location: self.cursor, length: 1), withBytes: ptr.baseAddress!);
             });
-            //data[self.cursor] = byte;
         } else {
-            //data.append(byte);
             withUnsafeBytes(of: byte, { ptr in
                 data.append(ptr.baseAddress!, length: 1);
             });

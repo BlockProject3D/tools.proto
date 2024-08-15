@@ -47,7 +47,7 @@ extension ByteCodec {
         var data: UInt64 = 0;
         return withUnsafeMutableBytes(of: &data, { ptr in
             buffer.copyTo(ptr: ptr, size: buffer.size);
-            return readAligned(ty, DataBuffer(ptr));
+            return readAligned(ty, PtrBuffer(ptr));
         });
     }
 
@@ -63,7 +63,7 @@ extension ByteCodec {
         var data: UInt64 = 0;
         return withUnsafeMutableBytes(of: &data, { ptr in
             buffer.copyTo(ptr: ptr, size: buffer.size);
-            var useless = DataBuffer(ptr)
+            var useless = MutPtrBuffer(ptr)
             writeAligned(ty, &useless, value: value);
             buffer.write(bytes: ptr);
         });

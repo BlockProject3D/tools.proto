@@ -124,7 +124,7 @@ final class BP3DProtoTests: XCTestCase {
     func testBitCodecBE() throws {
         let buffer = DataBuffer([0xAB, 0xF0]);
         XCTAssertEqual(BitCodecBE.read(UInt16.self, buffer[0...2], bitOffset: 0, bitSize: 12), 0xABF);
-        let buffer1 = DataBuffer(mut: [0x0, 0x0]);
+        let buffer1 = DataBuffer([0x0, 0x0]);
         var b = buffer1[...2]
         BitCodecBE.write(UInt16.self, &b, bitOffset: 0, bitSize: 12, value: 0xABF);
         XCTAssertEqual(BitCodecBE.read(UInt16.self, buffer1[0...2], bitOffset: 0, bitSize: 12), 0xABF);
