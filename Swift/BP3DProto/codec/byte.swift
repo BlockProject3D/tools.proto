@@ -29,29 +29,21 @@
 import Foundation
 
 public protocol ByteCodec {
-    static func readAligned<B: Buffer, T: Scalar>(_: T.Type, _ buffer: B) -> T;
+    static func readAligned<B: Buffer, T: FromBytes>(_: T.Type, _ buffer: B) -> T;
 
-    static func readUnaligned<B: Buffer, T: Scalar>(_: T.Type, _ buffer: B) -> T;
+    static func readUnaligned<B: Buffer, T: FromBytes>(_: T.Type, _ buffer: B) -> T;
 
     static func read<B: Buffer, T: Scalar>(_: T.Type, _ buffer: B) -> T;
 
-    static func writeAligned<B: WritableBuffer, T: Scalar>(_: T.Type, _ buffer: inout B, value: T) where B: Buffer;
+    static func writeAligned<B: WritableBuffer, T: FromBytes>(_: T.Type, _ buffer: inout B, value: T) where B: Buffer;
 
-    static func writeUnaligned<B: WritableBuffer, T: Scalar>(_: T.Type, _ buffer: inout B, value: T) where B: Buffer;
+    static func writeUnaligned<B: WritableBuffer, T: FromBytes>(_: T.Type, _ buffer: inout B, value: T) where B: Buffer;
 
-    static func write<B: WritableBuffer, T: Scalar>(_: T.Type, _ buffer: inout B, value: T) where B: Buffer;
+    static func write<B: WritableBuffer, T: FromBytes>(_: T.Type, _ buffer: inout B, value: T) where B: Buffer;
 }
 
 extension ByteCodec {
-    public static func readUnaligned<B: Buffer, T: Scalar>(_ ty: T.Type, _ buffer: B) -> T {
-        var data: UInt64 = 0;
-        return withUnsafeMutableBytes(of: &data, { ptr in
-            buffer.copyTo(ptr: ptr, size: buffer.size);
-            return readAligned(ty, PtrBuffer(ptr));
-        });
-    }
-
-    public static func read<B: Buffer, T: Scalar>(_ ty: T.Type, _ buffer: B) -> T {
+    public static func read<B: Buffer, T: FromBytes>(_ ty: T.Type, _ buffer: B) -> T {
         if T.size != buffer.size {
             return readUnaligned(ty, buffer);
         } else {
@@ -59,17 +51,7 @@ extension ByteCodec {
         }
     }
 
-    public static func writeUnaligned<B: WritableBuffer, T: Scalar>(_ ty: T.Type, _ buffer: inout B, value: T) where B: Buffer {
-        var data: UInt64 = 0;
-        return withUnsafeMutableBytes(of: &data, { ptr in
-            buffer.copyTo(ptr: ptr, size: buffer.size);
-            var useless = MutPtrBuffer(ptr)
-            writeAligned(ty, &useless, value: value);
-            buffer.write(bytes: ptr);
-        });
-    }
-
-    public static func write<B: WritableBuffer, T: Scalar>(_ ty: T.Type, _ buffer: inout B, value: T) where B: Buffer {
+    public static func write<B: WritableBuffer, T: FromBytes>(_ ty: T.Type, _ buffer: inout B, value: T) where B: Buffer {
         if T.size != buffer.size {
             writeUnaligned(ty, &buffer, value: value);
         } else {
@@ -79,21 +61,59 @@ extension ByteCodec {
 }
 
 public struct ByteCodecLE: ByteCodec {
-    public static func readAligned<B, T>(_: T.Type, _ buffer: B) -> T where B : Buffer, T : Scalar {
+    public static func readUnaligned<B: Buffer, T: FromBytes>(_ ty: T.Type, _ buffer: B) -> T {
+        var data: UInt64 = 0;
+        return withUnsafeMutableBytes(of: &data, { ptr in
+            buffer.copyTo(ptr: ptr, size: buffer.size);
+            return readAligned(ty, PtrBuffer(ptr));
+        });
+    }
+
+    public static func writeUnaligned<B: WritableBuffer, T: FromBytes>(_ ty: T.Type, _ buffer: inout B, value: T) where B: Buffer {
+        var data: UInt64 = 0;
+        return withUnsafeMutableBytes(of: &data, { ptr in
+            buffer.copyTo(ptr: ptr, size: buffer.size);
+            var useless = MutPtrBuffer(ptr)
+            writeAligned(ty, &useless, value: value);
+            buffer.write(bytes: ptr);
+        });
+    }
+
+    public static func readAligned<B, T>(_: T.Type, _ buffer: B) -> T where B : Buffer, T : FromBytes {
         return T(fromBytesLE: buffer);
     }
 
-    public static func writeAligned<B: WritableBuffer, T>(_: T.Type, _ buffer: inout B, value: T) where B: Buffer, T : Scalar {
+    public static func writeAligned<B: WritableBuffer, T>(_: T.Type, _ buffer: inout B, value: T) where B: Buffer, T : FromBytes {
         buffer.write(bytes: value.toBytesLE());
     }
 }
 
 public struct ByteCodecBE: ByteCodec {
-    public static func readAligned<B, T>(_: T.Type, _ buffer: B) -> T where B : Buffer, T : Scalar {
+    public static func readUnaligned<B: Buffer, T: FromBytes>(_ ty: T.Type, _ buffer: B) -> T {
+        let offset = T.size - buffer.size;
+        var data: UInt64 = 0;
+        return withUnsafeMutableBytes(of: &data, { ptr in
+            buffer.copyTo(ptr: UnsafeMutableRawBufferPointer(rebasing: ptr[offset...]), size: buffer.size);
+            return readAligned(ty, PtrBuffer(ptr));
+        });
+    }
+
+    public static func writeUnaligned<B: WritableBuffer, T: FromBytes>(_ ty: T.Type, _ buffer: inout B, value: T) where B: Buffer {
+        let offset = T.size - buffer.size;
+        var data: UInt64 = 0;
+        return withUnsafeMutableBytes(of: &data, { ptr in
+            buffer.copyTo(ptr: UnsafeMutableRawBufferPointer(rebasing: ptr[offset...]), size: buffer.size);
+            var useless = MutPtrBuffer(ptr)
+            writeAligned(ty, &useless, value: value);
+            buffer.write(bytes: ptr[offset...]);
+        });
+    }
+
+    public static func readAligned<B, T>(_: T.Type, _ buffer: B) -> T where B : Buffer, T : FromBytes {
         return T(fromBytesBE: buffer);
     }
 
-    public static func writeAligned<B: WritableBuffer, T>(_: T.Type, _ buffer: inout B, value: T) where B: Buffer, T : Scalar {
+    public static func writeAligned<B: WritableBuffer, T>(_: T.Type, _ buffer: inout B, value: T) where B: Buffer, T : FromBytes {
         buffer.write(bytes: value.toBytesBE());
     }
 }

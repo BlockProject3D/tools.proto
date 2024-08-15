@@ -30,3 +30,4 @@
 ../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -g swift ../../testprog/src/bits2.json5
 ../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -g swift ../../testprog/src/views.json5
 ../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -g swift ../../testprog/src/structs.json5
+../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -g swift ../../testprog/src/struct_arrays.json5

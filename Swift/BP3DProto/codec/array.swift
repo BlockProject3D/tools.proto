@@ -28,7 +28,7 @@
 
 import Foundation
 
-public struct ArrayCodec<B: Buffer, C: ByteCodec, Item: Scalar> where B: WritableBuffer {
+public struct ArrayCodec<B: Buffer, C: ByteCodec, Item: FromBytes> {
     var buffer: B;
     let itemByteSize: Int;
 
@@ -36,11 +36,21 @@ public struct ArrayCodec<B: Buffer, C: ByteCodec, Item: Scalar> where B: Writabl
         buffer.size / itemByteSize
     }
 
-    public init(buffer: inout B, itemBitSize: Int) {
+    public init(buffer: B, itemBitSize: Int) {
         self.buffer = buffer
         self.itemByteSize = itemBitSize / 8;
     }
 
+    public subscript(index: Int) -> Item {
+        get {
+            let pos = index * itemByteSize;
+            let end = pos + itemByteSize;
+            return C.read(Item.self, buffer[pos...end]);
+        }
+    }
+}
+
+extension ArrayCodec where B: WritableBuffer {
     public subscript(index: Int) -> Item {
         get {
             let pos = index * itemByteSize;

@@ -28,14 +28,17 @@
 
 import Foundation
 
-public protocol Scalar: BinaryInteger {
+public protocol FromBytes {
     static var size: Int {get};
 
     init<B: Buffer>(fromBytesLE slice: B);
     init<B: Buffer>(fromBytesBE slice: B);
-    init(fromUInt value: UInt);
     func toBytesLE() -> Data;
     func toBytesBE() -> Data;
+}
+
+public protocol Scalar: FromBytes, BinaryInteger {
+    init(fromUInt value: UInt);
     func toUInt() -> UInt;
 }
 
@@ -202,5 +205,49 @@ extension UInt8: Scalar {
 
     public func toBytesBE() -> Data {
         return Data([self]);
+    }
+}
+
+extension Float32: FromBytes {
+    public static var size: Int {
+        4
+    }
+
+    public init<B: Buffer>(fromBytesLE slice: B) {
+        self = Float32(bitPattern: UInt32(fromBytesLE: slice));
+    }
+
+    public init<B: Buffer>(fromBytesBE slice: B) {
+        self = Float32(bitPattern: UInt32(fromBytesBE: slice));
+    }
+
+    public func toBytesLE() -> Data {
+        self.bitPattern.toBytesLE()
+    }
+
+    public func toBytesBE() -> Data {
+        self.bitPattern.toBytesBE()
+    }
+}
+
+extension Float64: FromBytes {
+    public static var size: Int {
+        8
+    }
+
+    public init<B: Buffer>(fromBytesLE slice: B) {
+        self = Float64(bitPattern: UInt64(fromBytesLE: slice));
+    }
+
+    public init<B: Buffer>(fromBytesBE slice: B) {
+        self = Float64(bitPattern: UInt64(fromBytesBE: slice));
+    }
+
+    public func toBytesLE() -> Data {
+        self.bitPattern.toBytesLE()
+    }
+
+    public func toBytesBE() -> Data {
+        self.bitPattern.toBytesBE()
     }
 }
