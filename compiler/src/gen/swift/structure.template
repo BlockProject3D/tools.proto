@@ -14,6 +14,14 @@ public struct {name}<T>: BP3DProto.FixedSize {{
         self.data = data;
     }}
 }}
+
+extension {name}<BP3DProto.DataBuffer> {{
+    public init() {{
+        self.data = BP3DProto.DataBuffer(size: {byte_size})
+    }}
+}}
+
+public let SIZE_{name:to_screaming_case}: Int = {byte_size};
 #fragment pop
 
 #fragment push fixed_size
