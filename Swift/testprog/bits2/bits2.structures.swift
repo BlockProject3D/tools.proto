@@ -59,7 +59,7 @@ extension Bits2Numbers: BP3DProto.FromSlice where T: BP3DProto.Buffer {
 }
 extension Bits2Numbers where T: BP3DProto.Buffer {
     public var rawA: UInt8 {
-        BP3DProto.BitCodecLE.readAligned(UInt8.self, self.data[0...1], bitOffset: 0, bitSize: 4)
+        BP3DProto.BitCodecBE.readAligned(UInt8.self, self.data[0...1], bitOffset: 0, bitSize: 4)
 
     }
     public var a: Int8 {
@@ -71,14 +71,14 @@ extension Bits2Numbers where T: BP3DProto.Buffer {
         }
     }
     public var rawB: UInt8 {
-        BP3DProto.BitCodecLE.readAligned(UInt8.self, self.data[0...1], bitOffset: 4, bitSize: 4)
+        BP3DProto.BitCodecBE.readAligned(UInt8.self, self.data[0...1], bitOffset: 4, bitSize: 4)
 
     }
     public var b: UInt8 {
         self.rawB
     }
     public var rawC: UInt32 {
-        BP3DProto.BitCodecLE.readUnaligned(UInt32.self, self.data[1...4], bitOffset: 0, bitSize: 17)
+        BP3DProto.BitCodecBE.readUnaligned(UInt32.self, self.data[1...4], bitOffset: 0, bitSize: 17)
 
     }
     public var c: Int32 {
@@ -90,7 +90,7 @@ extension Bits2Numbers where T: BP3DProto.Buffer {
         }
     }
     public var rawD: UInt8 {
-        BP3DProto.BitCodecLE.readAligned(UInt8.self, self.data[3...4], bitOffset: 1, bitSize: 7)
+        BP3DProto.BitCodecBE.readAligned(UInt8.self, self.data[3...4], bitOffset: 1, bitSize: 7)
 
     }
     public var d: UInt8 {
@@ -101,7 +101,7 @@ extension Bits2Numbers where T: BP3DProto.Buffer {
 extension Bits2Numbers where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
     public func setRawA(_ value: UInt8) {
         var buffer = self.data[0...1];
-        BP3DProto.BitCodecLE.writeAligned(UInt8.self, &buffer, bitOffset: 0, bitSize: 4, value: value);
+        BP3DProto.BitCodecBE.writeAligned(UInt8.self, &buffer, bitOffset: 0, bitSize: 4, value: value);
 
     }
     @discardableResult
@@ -112,7 +112,7 @@ extension Bits2Numbers where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
     }
     public func setRawB(_ value: UInt8) {
         var buffer = self.data[0...1];
-        BP3DProto.BitCodecLE.writeAligned(UInt8.self, &buffer, bitOffset: 4, bitSize: 4, value: value);
+        BP3DProto.BitCodecBE.writeAligned(UInt8.self, &buffer, bitOffset: 4, bitSize: 4, value: value);
 
     }
     @discardableResult
@@ -122,7 +122,7 @@ extension Bits2Numbers where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
     }
     public func setRawC(_ value: UInt32) {
         var buffer = self.data[1...4];
-        BP3DProto.BitCodecLE.writeUnaligned(UInt32.self, &buffer, bitOffset: 0, bitSize: 17, value: value);
+        BP3DProto.BitCodecBE.writeUnaligned(UInt32.self, &buffer, bitOffset: 0, bitSize: 17, value: value);
 
     }
     @discardableResult
@@ -133,7 +133,7 @@ extension Bits2Numbers where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
     }
     public func setRawD(_ value: UInt8) {
         var buffer = self.data[3...4];
-        BP3DProto.BitCodecLE.writeAligned(UInt8.self, &buffer, bitOffset: 1, bitSize: 7, value: value);
+        BP3DProto.BitCodecBE.writeAligned(UInt8.self, &buffer, bitOffset: 1, bitSize: 7, value: value);
 
     }
     @discardableResult

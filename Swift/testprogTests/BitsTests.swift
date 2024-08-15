@@ -32,10 +32,10 @@ import testprog
 final class BitsTests: XCTestCase {
     override func setUpWithError() throws {
     }
-
+    
     override func tearDownWithError() throws {
     }
-
+    
     func testNumbers() throws {
         let nums = BitsNumbers();
         XCTAssertEqual(SIZE_BITS_NUMBERS, 4);
@@ -62,9 +62,59 @@ final class BitsTests: XCTestCase {
         XCTAssertEqual(nums.a, 4);
         XCTAssertEqual(nums.rawA, 4);
     }
-
+    
     func testNumbersRaw() throws {
         let nums = BitsNumbers();
+        nums.setRawA(15);
+        nums.setRawB(15);
+        nums.setRawC(65536);
+        nums.setRawD(127);
+        nums.setRawC(65536);
+        XCTAssertEqual(nums.rawA, 15);
+        XCTAssertEqual(nums.a, -1);
+        XCTAssertEqual(nums.rawB, 15);
+        XCTAssertEqual(nums.rawC, 65536);
+        XCTAssertEqual(nums.rawD, 127);
+        var cur_a = 0;
+        for i in 0...15 {
+            nums.setRawA(UInt8(i));
+            if i > 7 && cur_a > 0 {
+                cur_a = -8
+            }
+            XCTAssertEqual(nums.a, Int8(cur_a));
+            cur_a += 1;
+        }
+    }
+    
+    func testNumbers2() throws {
+        let nums = Bits2Numbers();
+        XCTAssertEqual(SIZE_BITS2_NUMBERS, 4);
+        nums.setA(-8).setB(15).setC(-65536).setD(127);
+        XCTAssertEqual(nums.a, -8);
+        XCTAssertEqual(nums.b, 15);
+        XCTAssertEqual(nums.c, -65536);
+        XCTAssertEqual(nums.d, 127);
+        nums.setC(65535);
+        XCTAssertEqual(nums.c, 65535);
+        nums.setA(-7);
+        XCTAssertEqual(nums.a, -7);
+        XCTAssertEqual(nums.rawA, 9);
+        nums.setA(-6);
+        XCTAssertEqual(nums.a, -6);
+        XCTAssertEqual(nums.rawA, 10);
+        nums.setA(-5);
+        XCTAssertEqual(nums.a, -5);
+        XCTAssertEqual(nums.rawA, 11);
+        nums.setA(1);
+        XCTAssertEqual(nums.a, 1);
+        XCTAssertEqual(nums.rawA, 1);
+        nums.setA(4);
+        XCTAssertEqual(nums.a, 4);
+        XCTAssertEqual(nums.rawA, 4);
+    }
+
+    func testNumbersRaw2() throws {
+        let nums = Bits2Numbers();
         nums.setRawA(15);
         nums.setRawB(15);
         nums.setRawC(65536);

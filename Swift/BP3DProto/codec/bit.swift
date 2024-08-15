@@ -43,30 +43,12 @@ public protocol BitCodec {
 }
 
 extension BitCodec {
-    public static func readUnaligned<B: Buffer, T: Scalar>(_ ty: T.Type, _ buffer: B, bitOffset: UInt, bitSize: UInt) -> T {
-        var data: UInt64 = 0;
-        return withUnsafeMutableBytes(of: &data, { ptr in
-            buffer.copyTo(ptr: ptr, size: buffer.size);
-            return readAligned(ty, PtrBuffer(ptr), bitOffset: bitOffset, bitSize: bitSize);
-        });
-    }
-
     public static func read<B: Buffer, T: Scalar>(_ ty: T.Type, _ buffer: B, bitOffset: UInt, bitSize: UInt) -> T {
         if T.size != buffer.size {
             return readUnaligned(ty, buffer, bitOffset: bitOffset, bitSize: bitSize);
         } else {
             return readAligned(ty, buffer, bitOffset: bitOffset, bitSize: bitSize);
         }
-    }
-
-    public static func writeUnaligned<B: WritableBuffer, T: Scalar>(_ ty: T.Type, _ buffer: inout B, bitOffset: UInt, bitSize: UInt, value: T) where B: Buffer {
-        var data: UInt64 = 0;
-        return withUnsafeMutableBytes(of: &data, { ptr in
-            buffer.copyTo(ptr: ptr, size: buffer.size);
-            var useless = MutPtrBuffer(ptr)
-            writeAligned(ty, &useless, bitOffset: bitOffset, bitSize: bitSize, value: value);
-            buffer.write(bytes: ptr);
-        });
     }
 
     public static func write<B: WritableBuffer, T: Scalar>(_ ty: T.Type, _ buffer: inout B, bitOffset: UInt, bitSize: UInt, value: T) where B: Buffer {
@@ -79,6 +61,14 @@ extension BitCodec {
 }
 
 public struct BitCodecLE: BitCodec {
+    public static func readUnaligned<B: Buffer, T: Scalar>(_ ty: T.Type, _ buffer: B, bitOffset: UInt, bitSize: UInt) -> T {
+        var data: UInt64 = 0;
+        return withUnsafeMutableBytes(of: &data, { ptr in
+            buffer.copyTo(ptr: ptr, size: buffer.size);
+            return readAligned(ty, PtrBuffer(ptr), bitOffset: bitOffset, bitSize: bitSize);
+        });
+    }
+
     public static func readAligned<B, T>(_: T.Type, _ buffer: B, bitOffset: UInt, bitSize: UInt) -> T where B : Buffer, T : Scalar {
         let mask = (UInt(1) << bitSize) - 1;
         let value = T(fromBytesLE: buffer);
@@ -93,9 +83,28 @@ public struct BitCodecLE: BitCodec {
         let value1 = (value & T(fromUInt: mask)) << T(fromUInt: bitOffset);
         buffer.write(bytes: (clean | value1).toBytesLE());
     }
+
+    public static func writeUnaligned<B: WritableBuffer, T: Scalar>(_ ty: T.Type, _ buffer: inout B, bitOffset: UInt, bitSize: UInt, value: T) where B: Buffer {
+        var data: UInt64 = 0;
+        return withUnsafeMutableBytes(of: &data, { ptr in
+            buffer.copyTo(ptr: ptr, size: buffer.size);
+            var useless = MutPtrBuffer(ptr)
+            writeAligned(ty, &useless, bitOffset: bitOffset, bitSize: bitSize, value: value);
+            buffer.write(bytes: ptr);
+        });
+    }
 }
 
 public struct BitCodecBE: BitCodec {
+    public static func readUnaligned<B: Buffer, T: Scalar>(_ ty: T.Type, _ buffer: B, bitOffset: UInt, bitSize: UInt) -> T {
+        let offset = T.size - buffer.size;
+        var data: UInt64 = 0;
+        return withUnsafeMutableBytes(of: &data, { ptr in
+            buffer.copyTo(ptr: UnsafeMutableRawBufferPointer(rebasing: ptr[offset...]), size: buffer.size);
+            return readAligned(ty, PtrBuffer(ptr), bitOffset: bitOffset, bitSize: bitSize);
+        });
+    }
+
     public static func readAligned<B, T>(_: T.Type, _ buffer: B, bitOffset: UInt, bitSize: UInt) -> T where B : Buffer, T : Scalar {
         let mask = (UInt(1) << bitSize) - 1;
         let value = T(fromBytesBE: buffer);
@@ -104,10 +113,21 @@ public struct BitCodecBE: BitCodec {
 
     public static func writeAligned<B: WritableBuffer, T>(_: T.Type, _ buffer: inout B, bitOffset: UInt, bitSize: UInt, value: T) where B: Buffer, T : Scalar {
         let mask = (UInt(1) << bitSize) - 1;
-        let reset_mask = ~(mask << bitOffset);
+        let reset_mask = ~(mask << (8 - (bitSize % 8) - bitOffset));
         let original = T(fromBytesBE: buffer);
         let clean = original & T(fromUInt: reset_mask);
         let value1 = (value & T(fromUInt: mask)) << T(fromUInt: 8 - (bitSize % 8) - bitOffset);
         buffer.write(bytes: (clean | value1).toBytesBE());
+    }
+
+    public static func writeUnaligned<B: WritableBuffer, T: Scalar>(_ ty: T.Type, _ buffer: inout B, bitOffset: UInt, bitSize: UInt, value: T) where B: Buffer {
+        let offset = T.size - buffer.size;
+        var data: UInt64 = 0;
+        return withUnsafeMutableBytes(of: &data, { ptr in
+            buffer.copyTo(ptr: UnsafeMutableRawBufferPointer(rebasing: ptr[offset...]), size: buffer.size);
+            var useless = MutPtrBuffer(ptr)
+            writeAligned(ty, &useless, bitOffset: bitOffset, bitSize: bitSize, value: value);
+            buffer.write(bytes: ptr[offset...]);
+        });
     }
 }
