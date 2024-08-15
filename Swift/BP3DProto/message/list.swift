@@ -28,10 +28,10 @@
 
 import Foundation
 
-public struct List<T: FromSlice, Item: FromSlice>: FromSlice where T.Output: Scalar {
+public struct List<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: FromSlice where T.Output: Scalar, T.Buffer == Buffer, Item.Buffer == Buffer {
     public typealias Output = [Item.Output];
 
-    public static func from<B>(slice: B) throws -> Message<[Item.Output]> where B : Buffer {
+    public static func from(slice: Buffer) throws -> Message<[Item.Output]> {
         let msg = try T.from(slice: slice);
         var data = slice[msg.size...];
         var totalSize = msg.size;
@@ -58,10 +58,10 @@ extension List: WriteTo where T: WriteTo, T.Input: Scalar, Item: WriteTo {
     }
 }
 
-public struct Array<T: FromSlice, Item: FromSlice>: FromSlice where T.Output: Scalar, Item.Output: FixedSize {
+public struct Array<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: FromSlice where T.Output: Scalar, Item.Output: FixedSize, T.Buffer == Buffer, Item.Buffer == Buffer {
     public typealias Output = [Item.Output];
 
-    public static func from<B>(slice: B) throws -> Message<[Item.Output]> where B : Buffer {
+    public static func from(slice: Buffer) throws -> Message<[Item.Output]> {
         let msg = try T.from(slice: slice);
         var data = slice[msg.size...];
         let totalSize = msg.size + Int(msg.data.toUInt()) * Item.Output.size;

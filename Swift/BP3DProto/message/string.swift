@@ -28,11 +28,11 @@
 
 import Foundation
 
-public struct NullTerminatedString: FromSlice, WriteTo {
+public struct NullTerminatedString<Buffer: BP3DProto.Buffer>: FromSlice, WriteTo {
     public typealias Output = String;
     public typealias Input = String;
 
-    public static func from<B: Buffer>(slice: B) throws -> Message<String> {
+    public static func from(slice: Buffer) throws -> Message<String> {
         guard let index = slice.findFirst(0x0) else { throw Error.truncated };
         let str = String(decoding: slice[...index].toData(), as: UTF8.self);
         return Message(size: index + 1, data: str);
@@ -45,10 +45,10 @@ public struct NullTerminatedString: FromSlice, WriteTo {
     }
 }
 
-public struct VarcharString<T: FromSlice>: FromSlice where T.Output: Scalar {
+public struct VarcharString<Buffer: BP3DProto.Buffer, T: FromSlice>: FromSlice where T.Output: Scalar, T.Buffer == Buffer {
     public typealias Output = String;
 
-    public static func from<B: Buffer>(slice: B) throws -> Message<String> {
+    public static func from(slice: Buffer) throws -> Message<String> {
         let size = try T.from(slice: slice);
         let length = size.data.toUInt();
         let data = slice[size.size...size.size + Int(length)].toData();

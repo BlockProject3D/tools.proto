@@ -28,10 +28,10 @@
 
 import Foundation
 
-public struct Optional<T: FromSlice>: FromSlice {
+public struct Optional<Buffer: BP3DProto.Buffer, T: FromSlice>: FromSlice where T.Buffer == Buffer {
     public typealias Output = T.Output?;
 
-    public static func from<B: Buffer>(slice: B) throws -> Message<T.Output?> {
+    public static func from(slice: Buffer) throws -> Message<T.Output?> {
         if slice.isEmpty {
             throw Error.truncated;
         }
@@ -57,11 +57,11 @@ extension Optional: WriteTo where T: WriteTo {
     }
 }
 
-public struct ValueLE<T: Scalar>: FromSlice, WriteTo {
+public struct ValueLE<Buffer: BP3DProto.Buffer, T: Scalar>: FromSlice, WriteTo {
     public typealias Input = T;
     public typealias Output = T;
 
-    public static func from<B: Buffer>(slice: B) throws -> Message<T> {
+    public static func from(slice: Buffer) throws -> Message<T> {
         if slice.size < T.size {
             throw Error.truncated;
         }
@@ -73,11 +73,11 @@ public struct ValueLE<T: Scalar>: FromSlice, WriteTo {
     }
 }
 
-public struct ValueBE<T: Scalar>: FromSlice, WriteTo {
+public struct ValueBE<Buffer: BP3DProto.Buffer, T: Scalar>: FromSlice, WriteTo {
     public typealias Input = T;
     public typealias Output = T;
 
-    public static func from<B: Buffer>(slice: B) throws -> Message<T> {
+    public static func from(slice: Buffer) throws -> Message<T> {
         if slice.size < T.size {
             throw Error.truncated;
         }
