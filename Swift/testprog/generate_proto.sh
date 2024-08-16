@@ -32,4 +32,4 @@
 ../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -g swift ../../testprog/src/structs.json5
 ../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -g swift ../../testprog/src/struct_arrays.json5
 ../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -f use-enums -g swift ../../testprog/src/enums.json5
-../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -f use-messages -g swift ../../testprog/src/test.json5
+../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -f use-messages -f read-messages -f write-messages -g swift ../../testprog/src/test.json5

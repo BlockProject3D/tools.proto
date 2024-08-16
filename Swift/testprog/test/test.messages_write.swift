@@ -27,29 +27,23 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import BP3DProto;
-public struct TestTest1<B> {
-    public let s1: String;
-    public let p1: UInt32;
-
-    public init(s1: String, p1: UInt32) {
-        self.s1 = s1;
-        self.p1 = p1;
+extension TestTest1: BP3DProto.WriteTo where B: BP3DProto.Buffer {
+    public typealias Input = Self;
+    public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {
+        try BP3DProto.NullTerminatedString<B>.write(input: input.s1, to: &out);
+        try BP3DProto.ValueLE<B, UInt32>.write(input: input.p1, to: &out);
 
     }
-
 }
 
 import BP3DProto;
-public struct TestTest<B> {
-    public let s1: String;
-    public let s2: String;
-    public let p1: TestTest1<B>?;
-
-    public init(s1: String, s2: String, p1: TestTest1<B>?) {
-        self.s1 = s1;
-        self.s2 = s2;
-        self.p1 = p1;
+extension TestTest: BP3DProto.WriteTo where B: BP3DProto.Buffer {
+    public typealias Input = Self;
+    public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {
+        try BP3DProto.NullTerminatedString<B>.write(input: input.s1, to: &out);
+        try BP3DProto.VarcharString<B, BP3DProto.ValueLE<B, UInt8>>
+.write(input: input.s2, to: &out);
+        try BP3DProto.Optional<B, TestTest1>.write(input: input.p1, to: &out);
 
     }
-
 }

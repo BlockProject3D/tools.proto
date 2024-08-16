@@ -1,10 +1,10 @@
 // Copyright (c) 2024, BlockProject 3D
-// 
+//
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 //     * Redistributions of source code must retain the above copyright notice,
 //       this list of conditions and the following disclaimer.
 //     * Redistributions in binary form must reproduce the above copyright notice,
@@ -13,7 +13,7 @@
 //     * Neither the name of BlockProject 3D nor the names of its contributors
 //       may be used to endorse or promote products derived from this software
 //       without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -26,30 +26,38 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import BP3DProto;
-public struct TestTest1<B> {
-    public let s1: String;
-    public let p1: UInt32;
+import XCTest
+import testprog
+import BP3DProto
 
-    public init(s1: String, p1: UInt32) {
-        self.s1 = s1;
-        self.p1 = p1;
+final class TestTests: XCTestCase {
 
+    override func setUpWithError() throws {
     }
 
-}
+    override func tearDownWithError() throws {
+    }
 
-import BP3DProto;
-public struct TestTest<B> {
-    public let s1: String;
-    public let s2: String;
-    public let p1: TestTest1<B>?;
+    func writeMessage<B: WritableBuffer>(out: inout B) throws where B: Buffer {
+        let msg = TestTest<B>(
+            s1: "a test",
+            s2: "hello world",
+            p1: TestTest1<B>(
+                s1: "this is a test",
+                p1: 42
+            )
+        );
+        try TestTest.write(input: msg, to: &out);
+    }
 
-    public init(s1: String, s2: String, p1: TestTest1<B>?) {
-        self.s1 = s1;
-        self.s2 = s2;
-        self.p1 = p1;
-
+    func testBasic() throws {
+        var buffer = DataBuffer();
+        try writeMessage(out: &buffer);
+        let msg = try TestTest.from(slice: buffer).data;
+        XCTAssertEqual(msg.p1!.p1, 42);
+        XCTAssertEqual(msg.p1!.s1, "this is a test");
+        XCTAssertEqual(msg.s1, "a test");
+        XCTAssertEqual(msg.s2, "hello world");
     }
 
 }

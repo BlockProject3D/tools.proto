@@ -27,29 +27,48 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import BP3DProto;
-public struct TestTest1<B> {
-    public let s1: String;
-    public let p1: UInt32;
+extension TestTest1: BP3DProto.FromSlice where B: BP3DProto.Buffer  {
+    public typealias Buffer = B;
+    public typealias Output = Self;
+    public static func from(slice: B) throws -> BP3DProto.Message<Self> {
+        var byteOffset = 0;
+        let s1Msg = try BP3DProto.NullTerminatedString<B>.from(slice: slice[byteOffset...]);
+        byteOffset += s1Msg.size;
+        let s1 = s1Msg.data;
+        let p1Msg = try BP3DProto.ValueLE<B, UInt32>.from(slice: slice[byteOffset...]);
+        byteOffset += p1Msg.size;
+        let p1 = p1Msg.data;
 
-    public init(s1: String, p1: UInt32) {
-        self.s1 = s1;
-        self.p1 = p1;
-
+        let data = TestTest1(
+            s1: s1,
+            p1: p1
+        );
+        return BP3DProto.Message(size: byteOffset, data: data);
     }
-
 }
 
 import BP3DProto;
-public struct TestTest<B> {
-    public let s1: String;
-    public let s2: String;
-    public let p1: TestTest1<B>?;
+extension TestTest: BP3DProto.FromSlice where B: BP3DProto.Buffer  {
+    public typealias Buffer = B;
+    public typealias Output = Self;
+    public static func from(slice: B) throws -> BP3DProto.Message<Self> {
+        var byteOffset = 0;
+        let s1Msg = try BP3DProto.NullTerminatedString<B>.from(slice: slice[byteOffset...]);
+        byteOffset += s1Msg.size;
+        let s1 = s1Msg.data;
+        let s2Msg = try BP3DProto.VarcharString<B, BP3DProto.ValueLE<B, UInt8>>
+.from(slice: slice[byteOffset...]);
+        byteOffset += s2Msg.size;
+        let s2 = s2Msg.data;
+        let p1Msg = try BP3DProto.Optional<B, TestTest1>.from(slice: slice[byteOffset...]);
+        byteOffset += p1Msg.size;
+        let p1 = p1Msg.data;
 
-    public init(s1: String, s2: String, p1: TestTest1<B>?) {
-        self.s1 = s1;
-        self.s2 = s2;
-        self.p1 = p1;
-
+        let data = TestTest(
+            s1: s1,
+            s2: s2,
+            p1: p1
+        );
+        return BP3DProto.Message(size: byteOffset, data: data);
     }
-
 }

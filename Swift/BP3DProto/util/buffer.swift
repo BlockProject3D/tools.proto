@@ -153,7 +153,11 @@ public struct DataBuffer: Buffer, WritableBuffer {
     }
 
     public func findFirst(_ value: UInt8) -> Int? {
-        return self.get()[self.start...].firstIndex(of: value);
+        if let id = self.get()[self.start...].firstIndex(of: value) {
+            return id - self.start;
+        } else {
+            return nil;
+        }
     }
 
     public subscript(index: ClosedRange<Int>) -> DataBuffer {
