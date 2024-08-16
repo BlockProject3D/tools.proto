@@ -1,0 +1,16 @@
+#fragment push decl
+public struct {proto_name:to_pascal_case}{msg_name}<B> {{
+{fields}
+#fragment push field
+    public let {name}: {type};
+#fragment pop
+}}
+#fragment pop
+
+#fragment push array
+BP3DProto.Array<B, {raw_type}, {item_type}>
+#fragment pop
+
+#fragment push list
+BP3DProto.List<B, {raw_type}, {item_type}>
+#fragment pop

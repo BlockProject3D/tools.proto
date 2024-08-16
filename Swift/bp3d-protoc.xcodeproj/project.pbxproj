@@ -33,6 +33,8 @@
 		DA7E14D52C6F4D4300FE83FE /* enums.enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D22C6F4D4300FE83FE /* enums.enums.swift */; };
 		DA7E14D62C6F4D4300FE83FE /* enums.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D32C6F4D4300FE83FE /* enums.structures.swift */; };
 		DA7E14D82C6F78AC00FE83FE /* EnumsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D72C6F78AC00FE83FE /* EnumsTests.swift */; };
+		DA7E14DC2C6F7C6100FE83FE /* test.messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D92C6F7C6100FE83FE /* test.messages.swift */; };
+		DA7E14DD2C6F7C6100FE83FE /* test.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14DA2C6F7C6100FE83FE /* test.structures.swift */; };
 		DA8EBD672C63D48E00075FDE /* BP3DProto.h in Headers */ = {isa = PBXBuildFile; fileRef = DA8EBD662C63D48E00075FDE /* BP3DProto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DA9DDA6D2C6E1C61000A9C70 /* BitsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA9DDA6C2C6E1C61000A9C70 /* BitsTests.swift */; };
 		DAC4A9CB2C6E183E00ED8343 /* testprog.h in Headers */ = {isa = PBXBuildFile; fileRef = DAC4A9BF2C6E183E00ED8343 /* testprog.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -124,6 +126,8 @@
 		DA7E14D22C6F4D4300FE83FE /* enums.enums.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = enums.enums.swift; sourceTree = "<group>"; };
 		DA7E14D32C6F4D4300FE83FE /* enums.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = enums.structures.swift; sourceTree = "<group>"; };
 		DA7E14D72C6F78AC00FE83FE /* EnumsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnumsTests.swift; sourceTree = "<group>"; };
+		DA7E14D92C6F7C6100FE83FE /* test.messages.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = test.messages.swift; sourceTree = "<group>"; };
+		DA7E14DA2C6F7C6100FE83FE /* test.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = test.structures.swift; sourceTree = "<group>"; };
 		DA8EBD642C63D48E00075FDE /* BP3DProto.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BP3DProto.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA8EBD662C63D48E00075FDE /* BP3DProto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BP3DProto.h; sourceTree = "<group>"; };
 		DA9DDA6C2C6E1C61000A9C70 /* BitsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitsTests.swift; sourceTree = "<group>"; };
@@ -272,6 +276,15 @@
 			path = enums;
 			sourceTree = "<group>";
 		};
+		DA7E14DB2C6F7C6100FE83FE /* test */ = {
+			isa = PBXGroup;
+			children = (
+				DA7E14D92C6F7C6100FE83FE /* test.messages.swift */,
+				DA7E14DA2C6F7C6100FE83FE /* test.structures.swift */,
+			);
+			path = test;
+			sourceTree = "<group>";
+		};
 		DA8EBD652C63D48E00075FDE /* BP3DProto */ = {
 			isa = PBXGroup;
 			children = (
@@ -293,6 +306,7 @@
 		DAC4A9BE2C6E183E00ED8343 /* testprog */ = {
 			isa = PBXGroup;
 			children = (
+				DA7E14DB2C6F7C6100FE83FE /* test */,
 				DA7E14D42C6F4D4300FE83FE /* enums */,
 				DA72E6732C6E9BFC008F8F23 /* struct_arrays */,
 				DA72E66C2C6E9330008F8F23 /* structs */,
@@ -550,6 +564,8 @@
 				DA72E6682C6E9181008F8F23 /* views.structures.swift in Sources */,
 				DA72E66D2C6E9330008F8F23 /* structs.structures.swift in Sources */,
 				DA72E6642C6E5E37008F8F23 /* bits.structures.swift in Sources */,
+				DA7E14DD2C6F7C6100FE83FE /* test.structures.swift in Sources */,
+				DA7E14DC2C6F7C6100FE83FE /* test.messages.swift in Sources */,
 				DA72E6742C6E9BFC008F8F23 /* struct_arrays.structures.swift in Sources */,
 				DA7E14D62C6F4D4300FE83FE /* enums.structures.swift in Sources */,
 				DA72E6652C6E5E37008F8F23 /* bits2.structures.swift in Sources */,
