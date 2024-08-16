@@ -29,6 +29,7 @@
 use crate::compiler::structure::Structure;
 use crate::compiler::util::TypePathMap;
 use crate::gen::base::structure::{generate, Templates};
+use crate::gen::base::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 
@@ -40,7 +41,7 @@ pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap) -> Str
         template: Template::compile(STRUCT_TEMPLATE).unwrap(),
         field_template: Template::compile(STRUCT_FIELD_TEMPLATE).unwrap(),
     };
-    generate::<RustUtils>(templates, s, type_path_by_name)
+    generate::<RustUtils, _>(templates, s, &TypePathMapper::new(type_path_by_name, DefaultTypeMapper))
 }
 
 #[cfg(test)]

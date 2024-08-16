@@ -35,6 +35,11 @@ pub trait ImportResolver {
     fn get_full_type_path(&self, protocol: &str, type_name: &str) -> Option<String>;
 }
 
+pub trait TypeMapper {
+    fn map_local_type<'a>(&self, item_type: &'a str) -> Cow<'a, str>;
+    fn map_foreign_type<'a>(&self, item_type: &'a str) -> Cow<'a, str>;
+}
+
 #[derive(Clone, Debug)]
 pub struct TypePathMap {
     type_path_by_name: HashMap<String, String>,
@@ -51,10 +56,10 @@ impl TypePathMap {
         self.type_path_by_name.insert(name, type_path);
     }
 
-    pub fn get<'a>(&'a self, item_type: &'a str) -> &'a str {
+    pub fn get<'a, T: TypeMapper>(&'a self, mapper: &T, item_type: &'a str) -> Cow<'a, str> {
         match self.type_path_by_name.get(item_type) {
-            None => item_type,
-            Some(v) => v,
+            None => mapper.map_local_type(item_type),
+            Some(v) => mapper.map_foreign_type(v),
         }
     }
 

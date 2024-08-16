@@ -27,21 +27,22 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::message::{Field, Message};
-use crate::compiler::util::TypePathMap;
+use crate::compiler::util::TypeMapper;
 use crate::gen::base::message::Utilities;
 use crate::gen::base::message_from_slice::generate_field_type_inline;
 use crate::gen::template::Template;
 use itertools::Itertools;
+use crate::gen::base::TypePathMapper;
 
-fn gen_field_write_impl<U: Utilities>(
+fn gen_field_write_impl<U: Utilities, T: TypeMapper>(
     msg: &Message,
     field: &Field,
     template: &Template,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
-    let msg_type = generate_field_type_inline::<U>(msg, field, template, type_path_by_name);
+    let msg_type = generate_field_type_inline::<U, T>(msg, field, template, type_path_by_name);
     let union = field.ty.as_union();
     if let Some(v) = union {
         scope.var("on_name", &v.on_name);
@@ -56,16 +57,16 @@ fn gen_field_write_impl<U: Utilities>(
     }
 }
 
-pub fn generate<'fragment, 'variable, U: Utilities>(
+pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
     mut template: Template<'fragment, 'variable>,
     msg: &'variable Message,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     template.var("msg_name", &msg.name).var("generics", U::get_generics(msg));
     let fields = msg
         .fields
         .iter()
-        .map(|field| gen_field_write_impl::<U>(msg, field, &template, type_path_by_name))
+        .map(|field| gen_field_write_impl::<U, T>(msg, field, &template, type_path_by_name))
         .join("");
     template.var("fields", fields).render("", &["impl"]).unwrap()
 }

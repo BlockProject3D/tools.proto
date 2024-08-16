@@ -27,10 +27,11 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::structure::{Field, FieldView, FixedField, FixedFieldType, Structure};
-use crate::compiler::util::TypePathMap;
+use crate::compiler::util::TypeMapper;
 use crate::gen::template::{Scope, Template};
 use crate::model::protocol::Endianness;
 use itertools::Itertools;
+use crate::gen::base::TypePathMapper;
 
 pub trait Utilities {
     fn get_field_type(field_type: FixedFieldType) -> &'static str;
@@ -41,10 +42,10 @@ pub trait Utilities {
     fn get_byte_codec(endianness: Endianness) -> &'static str;
 }
 
-fn gen_field_getter<U: Utilities>(
+fn gen_field_getter<U: Utilities, T: TypeMapper>(
     field: &Field,
     template: &Template,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
     scope
@@ -71,7 +72,7 @@ fn gen_field_getter<U: Utilities>(
                     .unwrap();
             }
             let mut code = scope.render("getters", &["fixed"]).unwrap();
-            code += &gen_field_view_getter::<U>(v, &scope, type_path_by_name);
+            code += &gen_field_view_getter::<U, T>(v, &scope, type_path_by_name);
             code
         }
         Field::Array(v) => scope
@@ -87,10 +88,10 @@ fn gen_field_getter<U: Utilities>(
     }
 }
 
-fn gen_field_setter<U: Utilities>(
+fn gen_field_setter<U: Utilities, T: TypeMapper>(
     field: &Field,
     template: &Template,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
     scope
@@ -117,7 +118,7 @@ fn gen_field_setter<U: Utilities>(
                     .unwrap();
             }
             let mut code = scope.render("setters", &["fixed"]).unwrap();
-            code += &gen_field_view_setter::<U>(v, &scope, type_path_by_name);
+            code += &gen_field_view_setter::<U, T>(v, &scope, type_path_by_name);
             code
         }
         Field::Array(v) => scope
@@ -133,10 +134,10 @@ fn gen_field_setter<U: Utilities>(
     }
 }
 
-fn gen_field_view_getter<U: Utilities>(
+fn gen_field_view_getter<U: Utilities, T: TypeMapper>(
     field: &FixedField,
     scope: &Scope,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let mut scope = scope.clone();
     match &field.view {
@@ -173,10 +174,10 @@ fn gen_field_view_getter<U: Utilities>(
     }
 }
 
-fn gen_field_view_setter<U: Utilities>(
+fn gen_field_view_setter<U: Utilities, T: TypeMapper>(
     field: &FixedField,
     scope: &Scope,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let mut scope = scope.clone();
     match &field.view {
@@ -208,25 +209,25 @@ fn gen_field_view_setter<U: Utilities>(
     }
 }
 
-fn gen_structure_getters<U: Utilities>(
+fn gen_structure_getters<U: Utilities, T: TypeMapper>(
     s: &Structure,
     template: &Template,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
     let fields =
-        s.fields.iter().map(|v| gen_field_getter::<U>(v, template, type_path_by_name)).join("");
+        s.fields.iter().map(|v| gen_field_getter::<U, T>(v, template, type_path_by_name)).join("");
     scope.var("fields", fields).render("", &["getters"]).unwrap()
 }
 
-fn gen_structure_setters<U: Utilities>(
+fn gen_structure_setters<U: Utilities, T: TypeMapper>(
     s: &Structure,
     template: &Template,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
     let fields =
-        s.fields.iter().map(|v| gen_field_setter::<U>(v, template, type_path_by_name)).join("");
+        s.fields.iter().map(|v| gen_field_setter::<U, T>(v, template, type_path_by_name)).join("");
     scope.var("fields", fields).render("", &["setters"]).unwrap()
 }
 
@@ -235,10 +236,10 @@ pub struct Templates<'fragment, 'variable> {
     pub template: Template<'fragment, 'variable>,
 }
 
-pub fn generate<'fragment, 'variable, U: Utilities>(
+pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
     templates: Templates<'fragment, 'variable>,
     s: &'variable Structure,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let mut template = templates.template;
     let mut field_template = templates.field_template;
@@ -246,7 +247,7 @@ pub fn generate<'fragment, 'variable, U: Utilities>(
     template.var("name", &s.name).var_d("byte_size", s.byte_size);
     let mut code =
         template.render("", &["decl", "new", "fixed_size", "write_to", "from_slice"]).unwrap();
-    code += &gen_structure_getters::<U>(s, &field_template, type_path_by_name);
-    code += &gen_structure_setters::<U>(s, &field_template, type_path_by_name);
+    code += &gen_structure_getters::<U, T>(s, &field_template, type_path_by_name);
+    code += &gen_structure_setters::<U, T>(s, &field_template, type_path_by_name);
     code
 }

@@ -27,11 +27,12 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
-use crate::compiler::util::TypePathMap;
+use crate::compiler::util::TypeMapper;
 use crate::gen::base::message::{StringType, Utilities};
 use crate::gen::template::Template;
 use itertools::Itertools;
 use std::borrow::Cow;
+use crate::gen::base::TypePathMapper;
 
 fn gen_optional<'a, U: Utilities>(
     optional: bool,
@@ -44,11 +45,11 @@ fn gen_optional<'a, U: Utilities>(
     }
 }
 
-pub fn generate_field_type_inline<'a, U: Utilities>(
+pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
     msg: &Message,
     field: &'a Field,
     template: &Template,
-    type_path_by_name: &'a TypePathMap,
+    type_path_by_name: &'a TypePathMapper<T>,
 ) -> Cow<'a, str> {
     let msg_type = match &field.ty {
         FieldType::Fixed(ty) => gen_optional::<U>(
@@ -110,15 +111,15 @@ pub fn generate_field_type_inline<'a, U: Utilities>(
     msg_type
 }
 
-fn gen_field_from_slice_impl<U: Utilities>(
+fn gen_field_from_slice_impl<U: Utilities, T: TypeMapper>(
     msg: &Message,
     field: &Field,
     template: &Template,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
-    let msg_type = generate_field_type_inline::<U>(msg, field, template, type_path_by_name);
+    let msg_type = generate_field_type_inline::<U, T>(msg, field, template, type_path_by_name);
     let union = field.ty.as_union();
     if let Some(v) = union {
         scope.var("on_name", &v.on_name);
@@ -133,15 +134,15 @@ fn gen_field_from_slice_impl<U: Utilities>(
     }
 }
 
-pub fn generate_from_slice_impl<U: Utilities>(
+pub fn generate_from_slice_impl<U: Utilities, T: TypeMapper>(
     msg: &Message,
     template: &Template,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let fields = msg
         .fields
         .iter()
-        .map(|field| gen_field_from_slice_impl::<U>(msg, field, template, type_path_by_name))
+        .map(|field| gen_field_from_slice_impl::<U, T>(msg, field, template, type_path_by_name))
         .join("");
     let field_names = msg
         .fields
@@ -158,11 +159,11 @@ pub fn generate_from_slice_impl<U: Utilities>(
         .unwrap()
 }
 
-pub fn generate<'fragment, 'variable, U: Utilities>(
+pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
     mut template: Template<'fragment, 'variable>,
     msg: &'variable Message,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     template.var("msg_name", &msg.name).var("generics", U::get_generics(msg));
-    generate_from_slice_impl::<U>(msg, &template, type_path_by_name)
+    generate_from_slice_impl::<U, T>(msg, &template, type_path_by_name)
 }

@@ -32,11 +32,12 @@ use crate::gen::base::message::{generate, Utilities};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 use itertools::Itertools;
+use crate::gen::base::{DefaultTypeMapper, TypePathMapper};
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
 
-fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMap) -> String {
+fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMapper<DefaultTypeMapper>) -> String {
     let mut template = Template::compile(TEMPLATE_EXT).unwrap();
     template.var("msg_name", &msg.name);
     msg.fields
@@ -65,9 +66,10 @@ fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMap) 
 }
 
 pub fn gen_message_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    let mut code = generate::<RustUtils>(Template::compile(TEMPLATE).unwrap(), msg, type_path_by_name);
+    let type_path_by_name = TypePathMapper::new(type_path_by_name, DefaultTypeMapper);
+    let mut code = generate::<RustUtils, _>(Template::compile(TEMPLATE).unwrap(), msg, &type_path_by_name);
     code += "\n\n";
-    code += &gen_message_array_type_decls(msg, type_path_by_name);
+    code += &gen_message_array_type_decls(msg, &type_path_by_name);
     code += "\n";
     code
 }

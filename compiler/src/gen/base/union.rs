@@ -28,9 +28,10 @@
 
 use crate::compiler::message::Referenced;
 use crate::compiler::union::{DiscriminantField, Union};
-use crate::compiler::util::TypePathMap;
+use crate::compiler::util::TypeMapper;
 use crate::gen::template::Template;
 use itertools::Itertools;
+use crate::gen::base::TypePathMapper;
 
 pub trait Utilities {
     fn gen_discriminant_path(discriminant: &DiscriminantField) -> String;
@@ -38,10 +39,10 @@ pub trait Utilities {
     fn get_generics(u: &Union) -> &str;
 }
 
-fn gen_union_from_slice_impl<U: Utilities>(
+fn gen_union_from_slice_impl<U: Utilities, T: TypeMapper>(
     u: &Union,
     template: &Template,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let cases = u
         .cases
@@ -69,10 +70,10 @@ fn gen_union_from_slice_impl<U: Utilities>(
     scope.render("", &["from_slice"]).unwrap()
 }
 
-fn gen_union_write_to_impl<U: Utilities>(
+fn gen_union_write_to_impl<U: Utilities, T: TypeMapper>(
     u: &Union,
     template: &Template,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let generics = U::get_generics(u);
     let mut scope = template.scope();
@@ -114,7 +115,7 @@ fn gen_union_set_discriminant(u: &Union, template: &Template) -> String {
     template.scope().var("cases", cases).render("", &["setter"]).unwrap()
 }
 
-fn gen_union_as_getters(u: &Union, template: &Template, type_path_by_name: &TypePathMap) -> String {
+fn gen_union_as_getters<T: TypeMapper>(u: &Union, template: &Template, type_path_by_name: &TypePathMapper<T>) -> String {
     let cases = u
         .cases
         .iter()
@@ -137,10 +138,10 @@ fn gen_union_as_getters(u: &Union, template: &Template, type_path_by_name: &Type
     template.scope().var("cases", cases).render("", &["getters"]).unwrap()
 }
 
-pub fn generate<'fragment, 'variable, U: Utilities>(
+pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
     mut template: Template<'fragment, 'variable>,
     u: &'variable Union,
-    type_path_by_name: &'variable TypePathMap,
+    type_path_by_name: &'variable TypePathMapper<T>,
 ) -> String {
     let generics = U::get_generics(u);
     template
@@ -178,8 +179,8 @@ pub fn generate<'fragment, 'variable, U: Utilities>(
         })
         .join("");
     let mut code = template.scope().var("cases", cases).render("", &["decl"]).unwrap();
-    code += &gen_union_from_slice_impl::<U>(u, &template, type_path_by_name);
-    code += &gen_union_write_to_impl::<U>(u, &template, type_path_by_name);
+    code += &gen_union_from_slice_impl::<U, T>(u, &template, type_path_by_name);
+    code += &gen_union_write_to_impl::<U, T>(u, &template, type_path_by_name);
     code += &gen_union_set_discriminant(u, &template);
     code += &gen_union_as_getters(u, &template, type_path_by_name);
     code

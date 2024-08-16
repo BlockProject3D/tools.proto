@@ -31,9 +31,11 @@ use crate::gen::swift::structure::gen_structure_decl;
 use crate::gen::{File, FileType, Generator};
 use bp3d_util::simple_error;
 use itertools::Itertools;
+use crate::gen::swift::r#enum::gen_enum_decl;
 
 mod structure;
 mod util;
+mod r#enum;
 
 simple_error! {
     pub Error {
@@ -52,11 +54,11 @@ impl Generator for GeneratorSwift {
             .iter()
             .map(|v| gen_structure_decl(&proto, v))
             .join("\n");
-        Ok(vec![File::new(
-            FileType::Structure,
-            format!("{}.structures.swift", proto.name),
-            decl_structures,
-        )])
+        let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(&proto, v)).join("\n");
+        Ok(vec![
+            File::new(FileType::Structure, format!("{}.structures.swift", proto.name), decl_structures),
+            File::new(FileType::Enum, format!("{}.enums.swift", proto.name), decl_enums)
+        ])
     }
 
     fn get_language_extension() -> &'static str {

@@ -28,10 +28,11 @@
 
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::structure::FixedFieldType;
-use crate::compiler::util::TypePathMap;
+use crate::compiler::util::TypeMapper;
 use crate::gen::template::Template;
 use crate::model::protocol::Endianness;
 use itertools::Itertools;
+use crate::gen::base::TypePathMapper;
 
 pub enum StringType {
     Varchar,
@@ -53,18 +54,18 @@ pub trait Utilities: crate::gen::base::structure::Utilities {
     fn gen_union_ref_type(type_name: &str) -> String;
 }
 
-fn gen_field_decl<U: Utilities>(
+fn gen_field_decl<U: Utilities, T: TypeMapper>(
     field: &Field,
     template: &Template,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
     let msg_type = match &field.ty {
         FieldType::Fixed(ty) => U::get_field_type(ty.ty).into(),
         FieldType::Ref(v) => match v {
-            Referenced::Struct(v) => U::gen_struct_ref_type(type_path_by_name.get(&v.name)),
-            Referenced::Message(v) => U::gen_message_ref_type(type_path_by_name.get(&v.name)),
+            Referenced::Struct(v) => U::gen_struct_ref_type(&type_path_by_name.get(&v.name)),
+            Referenced::Message(v) => U::gen_message_ref_type(&type_path_by_name.get(&v.name)),
         },
         FieldType::NullTerminatedString => U::get_string_type(StringType::NullTerminated).into(),
         FieldType::VarcharString(_) => U::get_string_type(StringType::Varchar).into(),
@@ -73,7 +74,7 @@ fn gen_field_decl<U: Utilities>(
             .var("type_name", type_path_by_name.get(&v.item_type.name))
             .render("", &["array"])
             .unwrap(),
-        FieldType::Union(v) => U::gen_union_ref_type(type_path_by_name.get(&v.r.name)),
+        FieldType::Union(v) => U::gen_union_ref_type(&type_path_by_name.get(&v.r.name)),
         FieldType::List(v) => scope
             .var("codec", U::get_value_type(field.endianness, v.ty))
             .var("type_name", type_path_by_name.get(&v.item_type.name))
@@ -88,13 +89,13 @@ fn gen_field_decl<U: Utilities>(
     scope.var("type", msg_type).render("decl", &["field"]).unwrap()
 }
 
-pub fn generate<'fragment, 'variable, U: Utilities>(
+pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
     mut template: Template<'fragment, 'variable>,
     msg: &'variable Message,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<T>
 ) -> String {
     template.var("msg_name", &msg.name).var("generics", U::get_generics(msg));
     let fields =
-        msg.fields.iter().map(|v| gen_field_decl::<U>(v, &template, type_path_by_name)).join("");
+        msg.fields.iter().map(|v| gen_field_decl::<U, T>(v, &template, type_path_by_name)).join("");
     template.scope().var("fields", fields).render("", &["decl"]).unwrap()
 }

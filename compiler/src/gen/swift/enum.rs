@@ -26,42 +26,15 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::borrow::Cow;
-use crate::compiler::util::{TypeMapper, TypePathMap};
+use crate::compiler::Protocol;
+use crate::compiler::r#enum::Enum;
+use crate::gen::base::r#enum::generate;
+use crate::gen::template::Template;
 
-pub mod r#enum;
-pub mod message;
-pub mod message_from_slice;
-pub mod message_write;
-pub mod structure;
-pub mod union;
+const TEMPLATE: &[u8] = include_bytes!("./enum.template");
 
-pub struct DefaultTypeMapper;
-
-impl TypeMapper for DefaultTypeMapper {
-    fn map_local_type<'a>(&self, item_type: &'a str) -> Cow<'a, str> {
-        item_type.into()
-    }
-
-    fn map_foreign_type<'a>(&self, item_type: &'a str) -> Cow<'a, str> {
-        item_type.into()
-    }
-}
-
-pub struct TypePathMapper<'a, T: TypeMapper> {
-    type_path_map: &'a TypePathMap,
-    mapper: T
-}
-
-impl<'a, T: TypeMapper> TypePathMapper<'a, T> {
-    pub fn new(type_path_map: &'a TypePathMap, mapper: T) -> Self {
-        Self {
-            type_path_map,
-            mapper
-        }
-    }
-
-    pub fn get<'b>(&'b self, item_type: &'b str) -> Cow<'b, str> {
-        self.type_path_map.get(&self.mapper, item_type)
-    }
+pub fn gen_enum_decl(proto: &Protocol, e: &Enum) -> String {
+    let mut template = Template::compile(TEMPLATE).unwrap();
+    template.var("proto_name", &proto.name);
+    generate(template, e)
 }

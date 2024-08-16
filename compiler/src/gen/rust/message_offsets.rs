@@ -33,13 +33,14 @@ use crate::gen::base::message_from_slice::generate_from_slice_impl;
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 use itertools::Itertools;
+use crate::gen::base::{DefaultTypeMapper, TypePathMapper};
 
 const TEMPLATE: &[u8] = include_bytes!("./message.offsets.template");
 
 fn gen_message_offset_field(
     field: &Field,
     template: &Template,
-    type_path_by_name: &TypePathMap,
+    type_path_by_name: &TypePathMapper<DefaultTypeMapper>,
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
@@ -56,15 +57,16 @@ fn gen_message_offset_field(
 }
 
 pub fn gen_message_offsets_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
+    let type_path_by_name = TypePathMapper::new(type_path_by_name, DefaultTypeMapper);
     let mut template = Template::compile(TEMPLATE).unwrap();
     template.var("msg_name", &msg.name).var("generics", RustUtils::get_generics(msg));
     let fields = msg
         .fields
         .iter()
-        .map(|field| gen_message_offset_field(field, &template, type_path_by_name))
+        .map(|field| gen_message_offset_field(field, &template, &type_path_by_name))
         .join("");
     let mut code = template.var("fields", fields).render("", &["decl"]).unwrap();
     code += "\n";
-    code += &generate_from_slice_impl::<RustUtils>(msg, &template, type_path_by_name);
+    code += &generate_from_slice_impl::<RustUtils, _>(msg, &template, &type_path_by_name);
     code
 }

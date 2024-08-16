@@ -26,7 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::compiler::message::Message;
 use crate::compiler::structure::{FixedField, FixedFieldType};
+use crate::gen::base::message::StringType;
 use crate::model::protocol::Endianness;
 
 macro_rules! gen_value_type {
@@ -91,5 +93,64 @@ impl crate::gen::base::structure::Utilities for SwiftUtils {
             Endianness::Little => "BP3DProto.ByteCodecLE",
             Endianness::Big => "BP3DProto.ByteCodecBE",
         }
+    }
+}
+
+impl crate::gen::base::message::Utilities for SwiftUtils {
+    fn get_generics(_: &Message) -> &str {
+        ""
+    }
+
+    fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str {
+        match endianness {
+            Endianness::Little => gen_value_type!("BP3DProto.ValueLE<", ty, ">"),
+            Endianness::Big => gen_value_type!("BP3DProto.ValueBE<", ty, ">")
+        }
+    }
+
+    fn get_value_type_inline(endianness: Endianness, ty: FixedFieldType) -> &'static str {
+        match endianness {
+            Endianness::Little => gen_value_type!("BP3DProto.ValueLE<", ty, ">"),
+            Endianness::Big => gen_value_type!("BP3DProto.ValueBE<", ty, ">")
+        }
+    }
+
+    fn gen_option_type(ty: &str) -> String {
+        format!("{}?", ty)
+    }
+
+    fn gen_option_type_inline(ty: &str) -> String {
+        format!("BP3DProto.Optional<{}>", ty)
+    }
+
+    fn get_string_type(_: StringType) -> &'static str {
+        "String"
+    }
+
+    fn get_string_type_inline(ty: StringType) -> &'static str {
+        match ty {
+            StringType::Varchar => "BP3DProto.VarcharString",
+            StringType::NullTerminated => "BP3DProto.NullTerminatedString"
+        }
+    }
+
+    fn get_payload_type() -> &'static str {
+        "Data"
+    }
+
+    fn get_payload_type_inline() -> &'static str {
+        "Data"
+    }
+
+    fn gen_struct_ref_type(type_name: &str) -> String {
+        format!("{}<B>", type_name)
+    }
+
+    fn gen_message_ref_type(type_name: &str) -> String {
+        format!("{}<B>", type_name)
+    }
+
+    fn gen_union_ref_type(type_name: &str) -> String {
+        format!("{}<B>", type_name)
     }
 }

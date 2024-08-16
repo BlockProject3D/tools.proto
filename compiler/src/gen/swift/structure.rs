@@ -29,6 +29,7 @@
 use crate::compiler::Protocol;
 use crate::compiler::structure::Structure;
 use crate::gen::base::structure::{generate, Templates};
+use crate::gen::base::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::swift::util::SwiftUtils;
 use crate::gen::template::Template;
 
@@ -44,5 +45,5 @@ pub fn gen_structure_decl(proto: &Protocol, s: &Structure) -> String {
         template,
         field_template,
     };
-    generate::<SwiftUtils>(templates, s, &proto.type_path_by_name)
+    generate::<SwiftUtils, _>(templates, s, &TypePathMapper::new(&proto.type_path_by_name, DefaultTypeMapper))
 }

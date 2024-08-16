@@ -1,0 +1,8 @@
+#fragment push enum
+public enum {proto_name:to_pascal_case}{name}: UInt {{
+{variants}
+#fragment push variant
+    case {key:to_camel_case} = {value};
+#fragment pop
+}}
+#fragment pop

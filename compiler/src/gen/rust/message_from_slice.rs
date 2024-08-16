@@ -29,11 +29,12 @@
 use crate::compiler::message::Message;
 use crate::compiler::util::TypePathMap;
 use crate::gen::base::message_from_slice::generate;
+use crate::gen::base::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.from_slice.template");
 
 pub fn gen_message_from_slice_impl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    generate::<RustUtils>(Template::compile(TEMPLATE).unwrap(), msg, type_path_by_name)
+    generate::<RustUtils, _>(Template::compile(TEMPLATE).unwrap(), msg, &TypePathMapper::new(type_path_by_name, DefaultTypeMapper))
 }
