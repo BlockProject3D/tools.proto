@@ -28,11 +28,13 @@
 
 use crate::compiler::Error;
 use std::collections::HashMap;
+use crate::compiler::structure::FixedFieldType;
 
 #[derive(Clone, Debug)]
 pub struct Enum {
     pub name: String,
     pub largest: usize,
+    pub repr_type: FixedFieldType,
     pub variants: Vec<(String, usize)>,
     pub variants_map: HashMap<String, usize>,
 }
@@ -46,8 +48,10 @@ impl Enum {
         for (k, v) in &variants {
             variants_map.insert(k.clone(), *v);
         }
+        let repr_type = FixedFieldType::from_max_value(largest)?;
         Ok(Enum {
             name: value.name,
+            repr_type,
             variants,
             variants_map,
             largest,

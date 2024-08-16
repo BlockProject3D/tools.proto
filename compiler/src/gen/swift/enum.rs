@@ -29,6 +29,7 @@
 use crate::compiler::Protocol;
 use crate::compiler::r#enum::Enum;
 use crate::gen::base::r#enum::generate;
+use crate::gen::swift::util::SwiftUtils;
 use crate::gen::template::Template;
 
 const TEMPLATE: &[u8] = include_bytes!("./enum.template");
@@ -36,5 +37,5 @@ const TEMPLATE: &[u8] = include_bytes!("./enum.template");
 pub fn gen_enum_decl(proto: &Protocol, e: &Enum) -> String {
     let mut template = Template::compile(TEMPLATE).unwrap();
     template.var("proto_name", &proto.name);
-    generate(template, e)
+    generate::<SwiftUtils>(template, e)
 }

@@ -1,9 +1,24 @@
 #fragment push enum
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[repr({repr_type})]
 pub enum {name} {{
 {variants}
 #fragment push variant
     {key} = {value},
 #fragment pop
+}}
+
+impl {name} {{
+    pub fn from_raw(raw_value: {repr_type}) -> Option<{name}> {{
+        if raw_value > {largest} {{
+            None
+        }} else {{
+            Some(unsafe {{ std::mem::transmute::<{repr_type}, {name}>(raw_value) }})
+        }}
+    }}
+
+    pub fn into_raw(self) -> {repr_type} {{
+        self as {repr_type}
+    }}
 }}
 #fragment pop

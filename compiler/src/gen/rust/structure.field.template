@@ -36,12 +36,7 @@ impl<T: AsRef<[u8]>> {struct_name}<T> {{
 #fragment pop
 #fragment push view_enum
     pub fn get_{name}(&self) -> Option<{view_type}> {{
-        let raw_value = self.get_raw_{name}();
-        if raw_value > {enum_largest} {{
-            None
-        }} else {{
-            Some(unsafe {{ std::mem::transmute::<{raw_type}, {view_type}>(raw_value) }})
-        }}
+        {view_type}::from_raw(self.get_raw_{name}())
     }}
 #fragment pop
 #fragment push view_transmute
@@ -112,7 +107,7 @@ impl<T: AsMut<[u8]>> {struct_name}<T> {{
 #fragment pop
 #fragment push view_enum
     pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
-        self.set_raw_{name}(value as {raw_type});
+        self.set_raw_{name}(value.into_raw());
         self
     }}
 #fragment pop

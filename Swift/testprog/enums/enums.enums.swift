@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-public enum EnumsType: UInt {
+public enum EnumsType: UInt8 {
     case null = 0;
     case string = 1;
     case int8 = 2;

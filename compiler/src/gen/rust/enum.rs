@@ -28,10 +28,11 @@
 
 use crate::compiler::r#enum::Enum;
 use crate::gen::base::r#enum::generate;
+use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 
 const TEMPLATE: &[u8] = include_bytes!("./enum.template");
 
 pub fn gen_enum_decl(e: &Enum) -> String {
-    generate(Template::compile(TEMPLATE).unwrap(), e)
+    generate::<RustUtils>(Template::compile(TEMPLATE).unwrap(), e)
 }
