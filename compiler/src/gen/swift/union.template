@@ -1,0 +1,134 @@
+#fragment push decl
+import BP3DProto;
+
+public enum {proto_name:to_pascal_case}{union_name}<B> {{
+{cases}
+#fragment push struct
+    case {name:to_camel_case}({type_name}<B>);
+#fragment pop
+#fragment push message
+    case {name:to_camel_case}({type_name}<B>);
+#fragment pop
+#fragment push none
+    case {name:to_camel_case};
+#fragment pop
+}}
+#fragment pop
+
+#fragment push getters
+extension {proto_name:to_pascal_case}{union_name} {{
+{cases}
+#fragment push struct
+    public func as{name:to_camel_case}() -> {type_name}<B>? {{
+        switch self {{
+            case Self.{name:to_camel_case}(let v):
+                return v;
+            default:
+                return nil;
+        }}
+    }}
+#fragment pop
+#fragment push message
+    public func as{name:to_camel_case}() -> {type_name}<B>? {{
+        switch self {{
+            case Self.{name:to_camel_case}(let v):
+                return v;
+            default:
+                return nil;
+        }}
+    }}
+#fragment pop
+#fragment push none
+    public func is{name:to_camel_case}() -> Bool {{
+        return self == Self.{name:to_camel_case};
+    }}
+#fragment pop
+}}
+#fragment pop
+
+#fragment push setter
+extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.WritableBuffer, B: BP3DProto.Buffer {{
+    public func setDiscriminant(_ discriminant: {discriminant_type}<B>) {{
+        var discriminantValue: {discriminant_raw_type} = 0;
+        switch self {{
+{cases}
+#fragment push none
+            case Self.{name:to_camel_case}:
+                discriminantValue = {case};
+                break;
+#fragment pop
+#fragment push ref
+            case Self.{name:to_camel_case}:
+                discriminantValue = {case};
+                break;
+#fragment pop
+        }};
+        discriminant.{discriminant_path_mut}(discriminantValue);
+    }}
+}}
+#fragment pop
+
+#fragment push write_to
+extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.WritableBuffer, B: BP3DProto.Buffer {{
+{fragment}
+#fragment push content
+    public static func write<B1: WritableBuffer>(input: Self, discriminant: {discriminant_type}<B>, to out: inout B1) throws {{
+        let discriminant = discriminant.{discriminant_path};
+        switch input {{
+{cases}
+#fragment push case
+            case Self.{name:to_camel_case}(let v):
+                if discriminant == {case} {{
+                    try {type_name}.write(input: v, to: &out);
+                }} else {{
+                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant)));
+                }}
+                break;
+#fragment pop
+            default:
+                break;
+        }}
+    }}
+#fragment pop
+#fragment push none
+    public func write<B1: WritableBuffer>(input: Self, discriminant: {discriminant_type}<B>, to _: inout B1) throws {{
+    }}
+#fragment pop
+}}
+#fragment pop
+
+#fragment push from_slice
+extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.Buffer {{
+{fragment}
+#fragment push content
+    public static func from(slice: B, discriminant: {discriminant_type}<B>) throws -> BP3DProto.Message<Self> {{
+        let discriminant = discriminant.{discriminant_path};
+        switch discriminant {{
+{cases}
+#fragment push case
+            case {case}:
+                let msg = try {type_name}.from(slice: slice);
+                return msg.map({{ v in Self.{name:to_camel_case}(v) }});
+                break;
+#fragment pop
+            default:
+                throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
+        }}
+    }}
+#fragment pop
+#fragment push none
+    public static func from(slice: B, discriminant: {discriminant_type}<B>) throws -> BP3DProto.Message<Self> {{
+        let discriminant = discriminant.{discriminant_path};
+        switch discriminant {{
+{cases}
+#fragment push case
+            case {case}:
+                return BP3DProto.Message(size: 0, data: Self.{name:to_camel_case});
+#fragment pop
+            default:
+                throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
+        }}
+    }}
+#fragment pop
+}}
+#fragment pop

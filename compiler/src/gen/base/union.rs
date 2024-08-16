@@ -33,13 +33,13 @@ use crate::gen::template::Template;
 use itertools::Itertools;
 use crate::gen::base::TypePathMapper;
 
-pub trait Utilities {
+pub trait Utilities: crate::gen::base::structure::Utilities {
     fn gen_discriminant_path(discriminant: &DiscriminantField) -> String;
     fn gen_discriminant_path_mut(discriminant: &DiscriminantField) -> String;
     fn get_generics(u: &Union) -> &str;
 }
 
-fn gen_union_from_slice_impl<U: Utilities, T: TypeMapper>(
+fn gen_union_from_slice_impl<T: TypeMapper>(
     u: &Union,
     template: &Template,
     type_path_by_name: &TypePathMapper<T>,
@@ -54,30 +54,28 @@ fn gen_union_from_slice_impl<U: Utilities, T: TypeMapper>(
                 None => scope.render("from_slice.none", &["case"]).unwrap(),
                 Some(item_type) => scope
                     .var("type_name", type_path_by_name.get(item_type.name()))
-                    .render("from_slice.generics", &["case"])
+                    .render("from_slice.content", &["case"])
                     .unwrap(),
             }
         })
         .join("");
     let mut scope = template.scope();
     scope.var("cases", cases);
-    let generics = U::get_generics(u);
-    if !generics.is_empty() {
-        scope.render_to_var("from_slice", &["generics"], "fragment").unwrap();
+    if u.has_content() {
+        scope.render_to_var("from_slice", &["content"], "fragment").unwrap();
     } else {
         scope.render_to_var("from_slice", &["none"], "fragment").unwrap();
     }
     scope.render("", &["from_slice"]).unwrap()
 }
 
-fn gen_union_write_to_impl<U: Utilities, T: TypeMapper>(
+fn gen_union_write_to_impl<T: TypeMapper>(
     u: &Union,
     template: &Template,
     type_path_by_name: &TypePathMapper<T>,
 ) -> String {
-    let generics = U::get_generics(u);
     let mut scope = template.scope();
-    if !generics.is_empty() {
+    if u.has_content() {
         let cases = u
             .cases
             .iter()
@@ -87,12 +85,12 @@ fn gen_union_write_to_impl<U: Utilities, T: TypeMapper>(
                 case.item_type.as_ref().map(|item_type| {
                     scope
                         .var("type_name", type_path_by_name.get(item_type.name()))
-                        .render("write_to.generics", &["case"])
+                        .render("write_to.content", &["case"])
                         .unwrap()
                 })
             })
             .join("");
-        scope.var("cases", cases).render_to_var("write_to", &["generics"], "fragment").unwrap();
+        scope.var("cases", cases).render_to_var("write_to", &["content"], "fragment").unwrap();
     } else {
         scope.render_to_var("write_to", &["none"], "fragment").unwrap();
     }
@@ -145,6 +143,7 @@ pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
 ) -> String {
     let generics = U::get_generics(u);
     template
+        .var("discriminant_raw_type", U::get_field_type(u.discriminant.get_leaf().ty))
         .var("union_name", &u.name)
         .var("generics", generics)
         .var(
@@ -179,8 +178,8 @@ pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
         })
         .join("");
     let mut code = template.scope().var("cases", cases).render("", &["decl"]).unwrap();
-    code += &gen_union_from_slice_impl::<U, T>(u, &template, type_path_by_name);
-    code += &gen_union_write_to_impl::<U, T>(u, &template, type_path_by_name);
+    code += &gen_union_from_slice_impl::<T>(u, &template, type_path_by_name);
+    code += &gen_union_write_to_impl::<T>(u, &template, type_path_by_name);
     code += &gen_union_set_discriminant(u, &template);
     code += &gen_union_as_getters(u, &template, type_path_by_name);
     code

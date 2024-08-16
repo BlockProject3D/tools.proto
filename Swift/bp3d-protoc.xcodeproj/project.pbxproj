@@ -38,6 +38,9 @@
 		DA7E14EF2C6F88FD00FE83FE /* test.messages_write.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14EA2C6F88FD00FE83FE /* test.messages_write.swift */; };
 		DA7E14F02C6F88FD00FE83FE /* test.messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14EB2C6F88FD00FE83FE /* test.messages.swift */; };
 		DA7E14F12C6F88FD00FE83FE /* test.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14EC2C6F88FD00FE83FE /* test.structures.swift */; };
+		DA7E14F62C6FFDF100FE83FE /* unions2.enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14F22C6FFDF100FE83FE /* unions2.enums.swift */; };
+		DA7E14F72C6FFDF100FE83FE /* unions2.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14F32C6FFDF100FE83FE /* unions2.structures.swift */; };
+		DA7E14F82C6FFDF100FE83FE /* unions2.unions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14F42C6FFDF100FE83FE /* unions2.unions.swift */; };
 		DA8EBD672C63D48E00075FDE /* BP3DProto.h in Headers */ = {isa = PBXBuildFile; fileRef = DA8EBD662C63D48E00075FDE /* BP3DProto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DA9DDA6D2C6E1C61000A9C70 /* BitsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA9DDA6C2C6E1C61000A9C70 /* BitsTests.swift */; };
 		DAC4A9CB2C6E183E00ED8343 /* testprog.h in Headers */ = {isa = PBXBuildFile; fileRef = DAC4A9BF2C6E183E00ED8343 /* testprog.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -134,6 +137,9 @@
 		DA7E14EA2C6F88FD00FE83FE /* test.messages_write.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = test.messages_write.swift; sourceTree = "<group>"; };
 		DA7E14EB2C6F88FD00FE83FE /* test.messages.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = test.messages.swift; sourceTree = "<group>"; };
 		DA7E14EC2C6F88FD00FE83FE /* test.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = test.structures.swift; sourceTree = "<group>"; };
+		DA7E14F22C6FFDF100FE83FE /* unions2.enums.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unions2.enums.swift; sourceTree = "<group>"; };
+		DA7E14F32C6FFDF100FE83FE /* unions2.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unions2.structures.swift; sourceTree = "<group>"; };
+		DA7E14F42C6FFDF100FE83FE /* unions2.unions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unions2.unions.swift; sourceTree = "<group>"; };
 		DA8EBD642C63D48E00075FDE /* BP3DProto.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BP3DProto.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA8EBD662C63D48E00075FDE /* BP3DProto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BP3DProto.h; sourceTree = "<group>"; };
 		DA9DDA6C2C6E1C61000A9C70 /* BitsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitsTests.swift; sourceTree = "<group>"; };
@@ -294,6 +300,16 @@
 			path = test;
 			sourceTree = "<group>";
 		};
+		DA7E14F52C6FFDF100FE83FE /* unions2 */ = {
+			isa = PBXGroup;
+			children = (
+				DA7E14F22C6FFDF100FE83FE /* unions2.enums.swift */,
+				DA7E14F32C6FFDF100FE83FE /* unions2.structures.swift */,
+				DA7E14F42C6FFDF100FE83FE /* unions2.unions.swift */,
+			);
+			path = unions2;
+			sourceTree = "<group>";
+		};
 		DA8EBD652C63D48E00075FDE /* BP3DProto */ = {
 			isa = PBXGroup;
 			children = (
@@ -315,6 +331,7 @@
 		DAC4A9BE2C6E183E00ED8343 /* testprog */ = {
 			isa = PBXGroup;
 			children = (
+				DA7E14F52C6FFDF100FE83FE /* unions2 */,
 				DA7E14ED2C6F88FD00FE83FE /* test */,
 				DA7E14D42C6F4D4300FE83FE /* enums */,
 				DA72E6732C6E9BFC008F8F23 /* struct_arrays */,
@@ -575,11 +592,14 @@
 				DA7E14EF2C6F88FD00FE83FE /* test.messages_write.swift in Sources */,
 				DA72E6682C6E9181008F8F23 /* views.structures.swift in Sources */,
 				DA72E66D2C6E9330008F8F23 /* structs.structures.swift in Sources */,
+				DA7E14F72C6FFDF100FE83FE /* unions2.structures.swift in Sources */,
 				DA72E6642C6E5E37008F8F23 /* bits.structures.swift in Sources */,
 				DA7E14F02C6F88FD00FE83FE /* test.messages.swift in Sources */,
 				DA72E6742C6E9BFC008F8F23 /* struct_arrays.structures.swift in Sources */,
 				DA7E14F12C6F88FD00FE83FE /* test.structures.swift in Sources */,
 				DA7E14D62C6F4D4300FE83FE /* enums.structures.swift in Sources */,
+				DA7E14F82C6FFDF100FE83FE /* unions2.unions.swift in Sources */,
+				DA7E14F62C6FFDF100FE83FE /* unions2.enums.swift in Sources */,
 				DA72E6652C6E5E37008F8F23 /* bits2.structures.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

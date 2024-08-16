@@ -61,7 +61,7 @@ impl{generics} {union_name}{generics} {{
 #fragment push write_to
 impl<'a> {union_name}{generics} {{
 {fragment}
-#fragment push generics
+#fragment push content
     pub fn write_to<W: std::io::Write>(input: &Self, discriminant: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
         use bp3d_proto::message::WriteTo;
         let discriminant = discriminant.{discriminant_path};
@@ -90,7 +90,7 @@ impl<'a> {union_name}{generics} {{
 #fragment push from_slice
 impl<'a> {union_name}{generics} {{
 {fragment}
-#fragment push generics
+#fragment push content
     pub fn from_slice(slice: &'a [u8], discriminant: &{discriminant_type}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
         use bp3d_proto::message::FromSlice;
         let discriminant = discriminant.{discriminant_path};

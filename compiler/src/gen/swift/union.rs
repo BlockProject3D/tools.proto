@@ -26,45 +26,52 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import Foundation
+use crate::compiler::union::{DiscriminantField, Union};
+use crate::gen::base::union::{generate, Utilities};
+use itertools::Itertools;
+use crate::compiler::Protocol;
+use crate::gen::base::TypePathMapper;
+use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
+use crate::gen::template::Template;
+use crate::gen::template::util::CaseConversion;
 
-public enum Error: Swift.Error {
-    case invalidUTF8;
-    case truncated;
-    case invalidUnionDiscriminant(UInt);
-}
+const TEMPLATE: &[u8] = include_bytes!("./union.template");
 
-public struct FieldOffset {
-    public let start: Int;
-    public let end: Int;
-    public var size: Int {
-        return end - start;
+impl Utilities for SwiftUtils {
+    fn gen_discriminant_path(discriminant: &DiscriminantField) -> String {
+        discriminant
+            .iter()
+            .map(|(f, is_leaf)| {
+                if is_leaf {
+                    format!("raw{}", f.name().to_pascal_case())
+                } else {
+                    format!("{}", f.name().to_camel_case())
+                }
+            })
+            .join(".")
+    }
+
+    fn gen_discriminant_path_mut(discriminant: &DiscriminantField) -> String {
+        discriminant
+            .iter()
+            .map(|(f, is_leaf)| {
+                if is_leaf {
+                    format!("setRaw{}", f.name().to_pascal_case())
+                } else {
+                    format!("{}", f.name().to_camel_case())
+                }
+            })
+            .join(".")
+    }
+
+    fn get_generics(_: &Union) -> &str {
+        ""
     }
 }
 
-public struct Message<T> {
-    public let data: T;
-    public let size: Int;
-
-    public init(size: Int, data: T) {
-        self.data = data;
-        self.size = size;
-    }
-
-    public func map<T1>(f: (T) -> T1) -> Message<T1> {
-        return Message<T1>(size: self.size, data: f(self.data));
-    }
-}
-
-public protocol FromSlice {
-    associatedtype Buffer: BP3DProto.Buffer
-    associatedtype Output;
-
-    static func from(slice: Self.Buffer) throws -> Message<Output>;
-}
-
-public protocol WriteTo {
-    associatedtype Input;
-
-    static func write<B: WritableBuffer>(input: Input, to out: inout B) throws;
+pub fn gen_union_decl(proto: &Protocol, u: &Union) -> String {
+    let type_path_by_name = TypePathMapper::new(&proto.type_path_by_name, SwiftTypeMapper::from_protocol(proto));
+    let mut template = Template::compile(TEMPLATE).unwrap();
+    template.var("proto_name", &proto.name);
+    generate::<SwiftUtils, _>(template, u, &type_path_by_name)
 }

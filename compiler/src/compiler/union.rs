@@ -156,6 +156,10 @@ pub struct Union {
 }
 
 impl Union {
+    pub fn has_content(&self) -> bool {
+        self.cases.iter().any(|v| v.item_type.is_some())
+    }
+
     pub fn from_model(proto: &Protocol, value: crate::model::union::Union) -> Result<Self, Error> {
         let discriminant = DiscriminantField::from_model(proto, value.discriminant)?;
         let cases = value
