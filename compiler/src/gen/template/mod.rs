@@ -30,7 +30,7 @@ mod core;
 mod error;
 mod functions;
 mod parse_tree;
-mod util;
+pub mod util;
 
 pub use core::Scope;
 pub use core::Template;

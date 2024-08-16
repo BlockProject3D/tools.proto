@@ -24,8 +24,8 @@ extension {proto_name:to_pascal_case}{struct_name} where T: BP3DProto.Buffer {{
     }}
 #fragment pop
 #fragment push struct
-    public var {name:to_camel_case}: {proto_name:to_pascal_case}{type_name}<T> {{
-        {proto_name:to_pascal_case}{type_name}(self.data[{start}...{end}])
+    public var {name:to_camel_case}: {type_name}<T> {{
+        {type_name}(self.data[{start}...{end}])
     }}
 #fragment pop
 #fragment push view_float
@@ -37,7 +37,7 @@ extension {proto_name:to_pascal_case}{struct_name} where T: BP3DProto.Buffer {{
 #fragment push view_enum
     public var {name:to_camel_case}: {view_type}? {{
         let rawValue = self.raw{name:to_pascal_case};
-        return {view_type}(rawValue: rawValue);
+        return {view_type}(rawValue: UInt(rawValue));
     }}
 #fragment pop
 #fragment push view_transmute

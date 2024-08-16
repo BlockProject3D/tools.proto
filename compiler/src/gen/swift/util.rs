@@ -26,10 +26,36 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::borrow::Cow;
 use crate::compiler::message::Message;
+use crate::compiler::Protocol;
 use crate::compiler::structure::{FixedField, FixedFieldType};
+use crate::compiler::util::TypeMapper;
 use crate::gen::base::message::StringType;
+use crate::gen::template::util::CaseConversion;
 use crate::model::protocol::Endianness;
+
+pub struct SwiftTypeMapper<'a> {
+    proto_name: Cow<'a, str>
+}
+
+impl<'a> SwiftTypeMapper<'a> {
+    pub fn from_protocol(proto: &'a Protocol) -> Self {
+        Self {
+            proto_name: proto.name.to_pascal_case()
+        }
+    }
+}
+
+impl<'b> TypeMapper for SwiftTypeMapper<'b> {
+    fn map_local_type<'a>(&self, item_type: &'a str) -> Cow<'a, str> {
+        format!("{}{}", self.proto_name, item_type).into()
+    }
+
+    fn map_foreign_type<'a>(&self, item_type: &'a str) -> Cow<'a, str> {
+        item_type.into()
+    }
+}
 
 macro_rules! gen_value_type {
     ($prefix: literal, $ty: expr, $suffix: literal) => {
