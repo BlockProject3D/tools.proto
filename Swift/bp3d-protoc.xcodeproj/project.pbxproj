@@ -32,6 +32,7 @@
 		DA7659162C66A9710036DDED /* array.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7659152C66A9710036DDED /* array.swift */; };
 		DA7E14D52C6F4D4300FE83FE /* enums.enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D22C6F4D4300FE83FE /* enums.enums.swift */; };
 		DA7E14D62C6F4D4300FE83FE /* enums.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D32C6F4D4300FE83FE /* enums.structures.swift */; };
+		DA7E14D82C6F78AC00FE83FE /* EnumsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D72C6F78AC00FE83FE /* EnumsTests.swift */; };
 		DA8EBD672C63D48E00075FDE /* BP3DProto.h in Headers */ = {isa = PBXBuildFile; fileRef = DA8EBD662C63D48E00075FDE /* BP3DProto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DA9DDA6D2C6E1C61000A9C70 /* BitsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA9DDA6C2C6E1C61000A9C70 /* BitsTests.swift */; };
 		DAC4A9CB2C6E183E00ED8343 /* testprog.h in Headers */ = {isa = PBXBuildFile; fileRef = DAC4A9BF2C6E183E00ED8343 /* testprog.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -122,6 +123,7 @@
 		DA7659152C66A9710036DDED /* array.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = array.swift; sourceTree = "<group>"; };
 		DA7E14D22C6F4D4300FE83FE /* enums.enums.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = enums.enums.swift; sourceTree = "<group>"; };
 		DA7E14D32C6F4D4300FE83FE /* enums.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = enums.structures.swift; sourceTree = "<group>"; };
+		DA7E14D72C6F78AC00FE83FE /* EnumsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnumsTests.swift; sourceTree = "<group>"; };
 		DA8EBD642C63D48E00075FDE /* BP3DProto.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BP3DProto.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA8EBD662C63D48E00075FDE /* BP3DProto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BP3DProto.h; sourceTree = "<group>"; };
 		DA9DDA6C2C6E1C61000A9C70 /* BitsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitsTests.swift; sourceTree = "<group>"; };
@@ -175,6 +177,7 @@
 				DA72E6692C6E91BF008F8F23 /* ViewsTests.swift */,
 				DA72E6702C6E96EE008F8F23 /* StructsTests.swift */,
 				DA72E6752C6EA290008F8F23 /* StructArraysTests.swift */,
+				DA7E14D72C6F78AC00FE83FE /* EnumsTests.swift */,
 			);
 			path = testprogTests;
 			sourceTree = "<group>";
@@ -505,6 +508,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA72E6762C6EA290008F8F23 /* StructArraysTests.swift in Sources */,
+				DA7E14D82C6F78AC00FE83FE /* EnumsTests.swift in Sources */,
 				DA72E66A2C6E91BF008F8F23 /* ViewsTests.swift in Sources */,
 				DA9DDA6D2C6E1C61000A9C70 /* BitsTests.swift in Sources */,
 				DA72E6712C6E96EE008F8F23 /* StructsTests.swift in Sources */,
