@@ -38,6 +38,7 @@ mod structure;
 mod util;
 mod r#enum;
 mod message;
+mod message_from_slice;
 
 simple_error! {
     pub Error {

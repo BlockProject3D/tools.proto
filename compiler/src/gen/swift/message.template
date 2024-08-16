@@ -4,6 +4,8 @@ public struct {proto_name:to_pascal_case}{msg_name}<B> {{
 #fragment push field
     public let {name}: {type};
 #fragment pop
+
+{initializer}
 }}
 #fragment pop
 

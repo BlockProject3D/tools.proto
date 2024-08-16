@@ -26,33 +26,18 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use itertools::Itertools;
 use crate::compiler::message::Message;
 use crate::compiler::Protocol;
+use crate::gen::base::message_from_slice::generate;
 use crate::gen::base::TypePathMapper;
-use crate::gen::base::message::{gen_msg_field_decl, generate};
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::Template;
 
-const TEMPLATE: &[u8] = include_bytes!("./message.template");
-const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
+const TEMPLATE: &[u8] = include_bytes!("./message.from_slice.template");
 
-fn gen_initializer(template: &Template, msg: &Message, type_path_by_name: &TypePathMapper<SwiftTypeMapper>) -> String {
-    let init_field_list = msg.fields.iter()
-        .map(|field| gen_msg_field_decl::<SwiftUtils, _>(field, template, type_path_by_name))
-        .map(|v| format!("{}", &v[..v.len() - 1])).join(", ");
-    let initializers = msg.fields.iter()
-        .map(|field| template.scope().var("name", &field.name).render("decl", &["initializer"]).unwrap())
-        .join("");
-    template.scope().var("init_field_list", init_field_list).var("initializers", initializers).render("", &["decl"]).unwrap()
-}
-
-pub fn gen_message_decl(proto: &Protocol, msg: &Message) -> String {
-    let type_path_by_name = TypePathMapper::new(&proto.type_path_by_name, SwiftTypeMapper::from_protocol(proto));
-    let mut template_ext = Template::compile(TEMPLATE_EXT).unwrap();
-    template_ext.var("proto_name", &proto.name).var("msg_name", &msg.name);
-    let initializer = gen_initializer(&template_ext, msg, &type_path_by_name);
+pub fn gen_message_from_slice_impl(proto: &Protocol, msg: &Message) -> String {
     let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("proto_name", &proto.name).var("initializer", initializer);
+    template.var("proto_name", &proto.name);
+    let type_path_by_name = TypePathMapper::new(&proto.type_path_by_name, SwiftTypeMapper::from_protocol(proto));
     generate::<SwiftUtils, _>(template, msg, &type_path_by_name)
 }

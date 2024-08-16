@@ -54,7 +54,7 @@ pub trait Utilities: crate::gen::base::structure::Utilities {
     fn gen_union_ref_type(type_name: &str) -> String;
 }
 
-fn gen_field_decl<U: Utilities, T: TypeMapper>(
+pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
     field: &Field,
     template: &Template,
     type_path_by_name: &TypePathMapper<T>,
@@ -96,6 +96,6 @@ pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
 ) -> String {
     template.var("msg_name", &msg.name).var("generics", U::get_generics(msg));
     let fields =
-        msg.fields.iter().map(|v| gen_field_decl::<U, T>(v, &template, type_path_by_name)).join("");
+        msg.fields.iter().map(|v| gen_msg_field_decl::<U, T>(v, &template, type_path_by_name)).join("");
     template.scope().var("fields", fields).render("", &["decl"]).unwrap()
 }

@@ -30,11 +30,24 @@ public struct TestTest1<B> {
     public let s1: String;
     public let p1: UInt32;
 
+    public init(s1: String, p1: UInt32) {
+        self.s1 = s1;
+        self.p1 = p1;
+
+    }
+
 }
 
 public struct TestTest<B> {
     public let s1: String;
     public let s2: String;
     public let p1: TestTest1<B>?;
+
+    public init(s1: String, s2: String, p1: TestTest1<B>?) {
+        self.s1 = s1;
+        self.s2 = s2;
+        self.p1 = p1;
+
+    }
 
 }

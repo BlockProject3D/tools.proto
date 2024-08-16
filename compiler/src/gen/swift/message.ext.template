@@ -1,0 +1,11 @@
+#fragment push decl
+#fragment push field
+{name}: {type}
+#fragment pop
+    public init({init_field_list}) {{
+{initializers}
+#fragment push initializer
+        self.{name} = {name};
+#fragment pop
+    }}
+#fragment pop

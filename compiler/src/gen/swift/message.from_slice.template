@@ -1,0 +1,49 @@
+#fragment push impl
+extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.FromSlice where B: BP3DProto.Buffer  {{
+    public typealias Buffer = B;
+    public typealias Output = Self;
+
+    public static func from(slice: B) throws -> BP3DProto.Message<Self> {{
+        var byteOffset = 0;
+{fields}
+#fragment push field
+        let {name}Msg = try {type}.from(slice[byte_offset...]);
+        byteOffset += {name}Msg.size;
+        let {name} = {name}Msg.data;
+#fragment pop
+#fragment push field_msg
+        let {name}Msg = try {type}.from(slice[byte_offset...]);
+        byteOffset += {name}Msg.size;
+        let {name} = {name}Msg.data;
+#fragment pop
+#fragment push field_union
+        let {name}Msg = try {type}.from(slice[byte_offset...], {on_name});
+        byteOffset += {name}Msg.size;
+        let {name} = {name}Msg.data;
+#fragment pop
+        let data = {proto_name:to_pascal_case}{msg_name}(
+{field_names}
+#fragment push field_name
+            {name}: {name},
+#fragment pop
+        );
+        return BP3DProto.Message(size: byte_offset, data: data);
+    }}
+}}
+#fragment pop
+
+#fragment push varchar
+bp3d_proto::message::util::VarcharString::<{codec}>
+#fragment pop
+
+#fragment push array
+bp3d_proto::message::util::Array::<&'a [u8], {codec}, {type_name}<&'a [u8]>>
+#fragment pop
+
+#fragment push list
+bp3d_proto::message::util::List::<&'a [u8], {codec}, {type_name}>
+#fragment pop
+
+#fragment push unsized
+bp3d_proto::message::util::list::Unsized::<{codec}, {type_name}>
+#fragment pop
