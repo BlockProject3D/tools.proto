@@ -32,6 +32,8 @@ use crate::gen::{File, FileType, Generator};
 use bp3d_util::simple_error;
 use itertools::Itertools;
 use crate::gen::swift::message::gen_message_decl;
+use crate::gen::swift::message_from_slice::gen_message_from_slice_impl;
+use crate::gen::swift::message_write::gen_message_write_impl;
 use crate::gen::swift::r#enum::gen_enum_decl;
 
 mod structure;
@@ -39,6 +41,7 @@ mod util;
 mod r#enum;
 mod message;
 mod message_from_slice;
+mod message_write;
 
 simple_error! {
     pub Error {
@@ -60,10 +63,18 @@ impl Generator for GeneratorSwift {
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(&proto, v)).join("\n");
         let decl_messages_code =
             proto.messages.iter().map(|v| gen_message_decl(&proto, v)).join("\n");
+        let impl_from_slice_messages_code = proto.messages.iter()
+            .map(|v| gen_message_from_slice_impl(&proto, v))
+            .join("\n");
+        let impl_write_messages_code = proto.messages.iter()
+            .map(|v| gen_message_write_impl(&proto, v))
+            .join("\n");
         Ok(vec![
             File::new(FileType::Structure, format!("{}.structures.swift", proto.name), decl_structures),
             File::new(FileType::Enum, format!("{}.enums.swift", proto.name), decl_enums),
-            File::new(FileType::Message, format!("{}.messages.swift", proto.name), decl_messages_code)
+            File::new(FileType::Message, format!("{}.messages.swift", proto.name), decl_messages_code),
+            File::new(FileType::MessageWriting, format!("{}.messages_write.swift", proto.name), impl_write_messages_code),
+            File::new(FileType::MessageReading, format!("{}.messages_from_slice.swift", proto.name), impl_from_slice_messages_code)
         ])
     }
 

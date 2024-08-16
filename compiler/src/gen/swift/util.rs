@@ -129,15 +129,15 @@ impl crate::gen::base::message::Utilities for SwiftUtils {
 
     fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str {
         match endianness {
-            Endianness::Little => gen_value_type!("BP3DProto.ValueLE<", ty, ">"),
-            Endianness::Big => gen_value_type!("BP3DProto.ValueBE<", ty, ">")
+            Endianness::Little => gen_value_type!("BP3DProto.ValueLE<B, ", ty, ">"),
+            Endianness::Big => gen_value_type!("BP3DProto.ValueBE<B, ", ty, ">")
         }
     }
 
     fn get_value_type_inline(endianness: Endianness, ty: FixedFieldType) -> &'static str {
         match endianness {
-            Endianness::Little => gen_value_type!("BP3DProto.ValueLE<", ty, ">"),
-            Endianness::Big => gen_value_type!("BP3DProto.ValueBE<", ty, ">")
+            Endianness::Little => gen_value_type!("BP3DProto.ValueLE<B, ", ty, ">"),
+            Endianness::Big => gen_value_type!("BP3DProto.ValueBE<B, ", ty, ">")
         }
     }
 
@@ -146,7 +146,7 @@ impl crate::gen::base::message::Utilities for SwiftUtils {
     }
 
     fn gen_option_type_inline(ty: &str) -> String {
-        format!("BP3DProto.Optional<{}>", ty)
+        format!("BP3DProto.Optional<B, {}>", ty)
     }
 
     fn get_string_type(_: StringType) -> &'static str {
@@ -156,7 +156,7 @@ impl crate::gen::base::message::Utilities for SwiftUtils {
     fn get_string_type_inline(ty: StringType) -> &'static str {
         match ty {
             StringType::Varchar => "BP3DProto.VarcharString",
-            StringType::NullTerminated => "BP3DProto.NullTerminatedString"
+            StringType::NullTerminated => "BP3DProto.NullTerminatedString<B>"
         }
     }
 

@@ -1,0 +1,36 @@
+#fragment push impl
+import BP3DProto;
+
+extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.WriteTo where B: BP3DProto.Buffer {{
+    public typealias Input = Self;
+
+    public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {{
+{fields}
+#fragment push field
+        try {type}.write(input: input.{name}, to: &out);
+#fragment pop
+#fragment push field_string
+        try {type}.write(input: input.{name}, to: &out);
+#fragment pop
+#fragment push field_union
+        try {type}.write(input: input.{name}, discriminant: input.{on_name}, to: &out);
+#fragment pop
+    }}
+}}
+#fragment pop
+
+#fragment push varchar
+BP3DProto.VarcharString<B, {codec}>
+#fragment pop
+
+#fragment push array
+BP3DProto.Array<B, {codec}, {type_name}>
+#fragment pop
+
+#fragment push list
+BP3DProto.List<B, {codec}, {type_name}>
+#fragment pop
+
+#fragment push unsized
+BP3DProto.List<B, {codec}, {type_name}>
+#fragment pop

@@ -1,4 +1,6 @@
 #fragment push decl
+import BP3DProto;
+
 public struct {proto_name:to_pascal_case}{msg_name}<B> {{
 {fields}
 #fragment push field

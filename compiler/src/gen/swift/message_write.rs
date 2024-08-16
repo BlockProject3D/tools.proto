@@ -26,21 +26,18 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::borrow::Cow;
 use crate::compiler::message::Message;
 use crate::compiler::Protocol;
-use crate::gen::base::message_from_slice::generate;
+use crate::gen::base::message_write::generate;
 use crate::gen::base::TypePathMapper;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
-use crate::gen::template::{FunctionMap, Template};
+use crate::gen::template::Template;
 
-const TEMPLATE: &[u8] = include_bytes!("./message.from_slice.template");
+const TEMPLATE: &[u8] = include_bytes!("./message.write.template");
 
-pub fn gen_message_from_slice_impl(proto: &Protocol, msg: &Message) -> String {
-    let mut functions = FunctionMap::default();
-    functions.add("remove_leading_coma", |v| Cow::Borrowed(&v[..v.len() - 2]));
-    let mut template = Template::compile_with_function_map(TEMPLATE, functions).unwrap();
-    template.var("proto_name", &proto.name);
+pub fn gen_message_write_impl(proto: &Protocol, msg: &Message) -> String {
     let type_path_by_name = TypePathMapper::new(&proto.type_path_by_name, SwiftTypeMapper::from_protocol(proto));
+    let mut template = Template::compile(TEMPLATE).unwrap();
+    template.var("proto_name", &proto.name);
     generate::<SwiftUtils, _>(template, msg, &type_path_by_name)
 }
