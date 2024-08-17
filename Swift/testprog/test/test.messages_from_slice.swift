@@ -57,8 +57,7 @@ extension TestTest: BP3DProto.FromSlice  {
         let s1Msg = try BP3DProto.NullTerminatedString<B>.from(slice: slice[byteOffset...]);
         byteOffset += s1Msg.size;
         let s1 = s1Msg.data;
-        let s2Msg = try BP3DProto.VarcharString<B, BP3DProto.ValueLE<B, UInt8>>
-.from(slice: slice[byteOffset...]);
+        let s2Msg = try BP3DProto.VarcharString<B, BP3DProto.ValueLE<B, UInt8>>.from(slice: slice[byteOffset...]);
         byteOffset += s2Msg.size;
         let s2 = s2Msg.data;
         let p1Msg = try BP3DProto.Optional<B, TestTest1>.from(slice: slice[byteOffset...]);

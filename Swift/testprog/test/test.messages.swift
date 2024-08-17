@@ -41,6 +41,7 @@ public struct TestTest1<B: BP3DProto.Buffer> {
 
 }
 
+
 public struct TestTest<B: BP3DProto.Buffer> {
     public let s1: String;
     public let s2: String;
@@ -54,3 +55,4 @@ public struct TestTest<B: BP3DProto.Buffer> {
     }
 
 }
+

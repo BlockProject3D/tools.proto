@@ -42,3 +42,4 @@ public struct UnionsItem<B: BP3DProto.Buffer> {
     }
 
 }
+

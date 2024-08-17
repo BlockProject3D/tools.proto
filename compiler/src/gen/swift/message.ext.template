@@ -1,3 +1,7 @@
+#fragment push decl_array
+public typealias {proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B: BP3DProto.Buffer> = BP3DProto.Array<B, {codec}, {item_type}<B>>;
+#fragment pop
+
 #fragment push decl
 #fragment push field
 {name}: {type}

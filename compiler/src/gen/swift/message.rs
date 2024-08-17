@@ -27,15 +27,35 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use itertools::Itertools;
-use crate::compiler::message::Message;
+use crate::compiler::message::{FieldType, Message};
 use crate::compiler::Protocol;
-use crate::gen::base::TypePathMapper;
-use crate::gen::base::message::{gen_msg_field_decl, generate};
+use crate::gen::base::{DefaultTypeMapper, TypePathMapper};
+use crate::gen::base::message::{gen_msg_field_decl, generate, Utilities};
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::Template;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
+
+fn gen_message_array_type_decls(template: &Template, msg: &Message, type_path_by_name: &TypePathMapper<SwiftTypeMapper>) -> String {
+    let mut scope = template.scope();
+    msg.fields
+        .iter()
+        .filter_map(|field| {
+            scope.var("name", &field.name);
+            match &field.ty {
+                FieldType::Array(v) => Some(
+                    scope
+                        .var("item_type", type_path_by_name.get(&v.item_type.name))
+                        .var("codec", SwiftUtils::get_value_type(field.endianness, v.ty))
+                        .render("", &["decl_array"])
+                        .unwrap(),
+                ),
+                _ => None,
+            }
+        })
+        .join("")
+}
 
 fn gen_initializer(template: &Template, msg: &Message, type_path_by_name: &TypePathMapper<SwiftTypeMapper>) -> String {
     let init_field_list = msg.fields.iter()
@@ -54,5 +74,8 @@ pub fn gen_message_decl(proto: &Protocol, msg: &Message) -> String {
     let initializer = gen_initializer(&template_ext, msg, &type_path_by_name);
     let mut template = Template::compile(TEMPLATE).unwrap();
     template.var("proto_name", &proto.name).var("initializer", initializer);
-    generate::<SwiftUtils, _>(template, msg, &type_path_by_name)
+    let mut code = generate::<SwiftUtils, _>(template, msg, &type_path_by_name);
+    code += "\n";
+    code += &gen_message_array_type_decls(&template_ext, msg, &type_path_by_name);
+    code
 }
