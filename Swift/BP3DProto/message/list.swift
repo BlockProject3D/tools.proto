@@ -59,6 +59,9 @@ extension List: WriteTo where T: WriteTo, T.Input: Scalar, Item: WriteTo {
 }
 
 public struct Array<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: FromSlice where T.Output: Scalar, Item.Output: FixedSize, T.Buffer == Buffer, Item.Buffer == Buffer {
+    let buffer: Buffer;
+    public let count: Int;
+
     public typealias Output = [Item.Output];
 
     public static func from(slice: Buffer) throws -> Message<[Item.Output]> {
@@ -76,6 +79,25 @@ public struct Array<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: Fr
             data = data[item.size...]
         }
         return Message(size: totalSize, data: items);
+    }
+
+    public init(_ buffer: Buffer) {
+        self.buffer = buffer
+        self.count = self.buffer.size / Item.Output.size
+    }
+
+    public subscript(index: Int) -> Item.Output where Item.Output: FromBuffer, Item.Output.Buffer == Buffer {
+        let pos = index * Item.Output.size;
+        let end = pos + Item.Output.size;
+        return Item.Output(self.buffer[pos...end]);
+    }
+
+    public func toArray() -> [Item.Output] where Item.Output: FromBuffer, Item.Output.Buffer == Buffer {
+        var arr: [Item.Output] = [];
+        for i in 0...count - 1 {
+            arr.append(self[i])
+        }
+        return arr;
     }
 }
 
