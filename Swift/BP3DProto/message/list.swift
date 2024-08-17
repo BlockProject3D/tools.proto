@@ -62,23 +62,22 @@ public struct Array<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: Fr
     let buffer: Buffer;
     public let count: Int;
 
-    public typealias Output = [Item.Output];
+    public typealias Output = Self;
 
-    public static func from(slice: Buffer) throws -> Message<[Item.Output]> {
+    public static func from(slice: Buffer) throws -> Message<Self> {
         let msg = try T.from(slice: slice);
         var data = slice[msg.size...];
         let totalSize = msg.size + Int(msg.data.toUInt()) * Item.Output.size;
         if slice.size < totalSize {
             throw Error.truncated;
         }
-        var items: [Item.Output] = [];
-        items.reserveCapacity(Int(msg.data.toUInt()));
-        for _ in 0...msg.data.toUInt() - 1 {
-            let item = try Item.from(slice: data);
-            items.append(item.data);
-            data = data[item.size...]
-        }
-        return Message(size: totalSize, data: items);
+        let len = Int(msg.data.toUInt());
+        return Message(size: totalSize, data: Array(data[...(len * Item.Output.size)], count: len));
+    }
+
+    private init(_ buffer: Buffer, count: Int) {
+        self.count = count;
+        self.buffer = buffer;
     }
 
     public init(_ buffer: Buffer) {
@@ -94,6 +93,7 @@ public struct Array<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: Fr
 
     public func toArray() -> [Item.Output] where Item.Output: FromBuffer, Item.Output.Buffer == Buffer {
         var arr: [Item.Output] = [];
+        arr.reserveCapacity(count);
         for i in 0...count - 1 {
             arr.append(self[i])
         }
@@ -102,12 +102,10 @@ public struct Array<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: Fr
 }
 
 extension Array: WriteTo where T: WriteTo, T.Input: Scalar, Item: WriteTo {
-    public typealias Input = [Item.Input]
+    public typealias Input = Self;
 
-    public static func write<B>(input: [Item.Input], to out: inout B) throws where B : WritableBuffer {
+    public static func write<B>(input: Self, to out: inout B) throws where B : WritableBuffer {
         try T.write(input: T.Input(fromUInt: UInt(input.count)), to: &out);
-        for item in input {
-            try Item.write(input: item, to: &out);
-        }
+        out.write(bytes: input.buffer.toData());
     }
 }

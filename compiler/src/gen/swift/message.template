@@ -10,7 +10,7 @@ public struct {proto_name:to_pascal_case}{msg_name}<B: BP3DProto.Buffer> {{
 #fragment pop
 
 #fragment push array:inline
-[{type_name}<B>]
+{proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}Type<B>
 #fragment pop
 
 #fragment push list:inline

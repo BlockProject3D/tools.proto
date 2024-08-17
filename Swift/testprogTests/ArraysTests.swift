@@ -42,7 +42,7 @@ final class ArraysTests: XCTestCase {
         var msg_buffer = DataBuffer();
         do {
             let buffer = DataBuffer(size: 12);
-            let arr = ArraysMsgItems(buffer);
+            let arr = ArraysMsgItemsType(buffer);
             arr[0].setId(3).setCount(1024).setSlot(10);
             arr[1].setId(2).setCount(1023).setSlot(9);
             arr[2].setId(1).setCount(16).setSlot(8);
@@ -52,7 +52,7 @@ final class ArraysTests: XCTestCase {
                 arr[i].setSlot(UInt8(slot));
                 slot += 1;
             }
-            let msg = ArraysMsg(items: arr.toArray());
+            let msg = ArraysMsg(items: arr);
             try ArraysMsg.write(input: msg, to: &msg_buffer);
         }
         do {

@@ -30,25 +30,25 @@ import Foundation;
 import BP3DProto;
 
 public struct ArraysMsg<B: BP3DProto.Buffer> {
-    public let items: [ArraysItem<B>];
+    public let items: ArraysMsgItemsType<B>;
 
-    public init(items: [ArraysItem<B>]) {
+    public init(items: ArraysMsgItemsType<B>) {
         self.items = items;
 
     }
 
 }
 
-public typealias ArraysMsgItems<B: BP3DProto.Buffer> = BP3DProto.Array<B, BP3DProto.ValueLE<B, UInt8>, ArraysItem<B>>;
+public typealias ArraysMsgItemsType<B: BP3DProto.Buffer> = BP3DProto.Array<B, BP3DProto.ValueLE<B, UInt8>, ArraysItem<B>>;
 
 public struct ArraysMsg1<B: BP3DProto.Buffer> {
-    public let items: [ArraysItem<B>]?;
+    public let items: ArraysMsg1ItemsType<B>?;
 
-    public init(items: [ArraysItem<B>]?) {
+    public init(items: ArraysMsg1ItemsType<B>?) {
         self.items = items;
 
     }
 
 }
 
-public typealias ArraysMsg1Items<B: BP3DProto.Buffer> = BP3DProto.Array<B, BP3DProto.ValueLE<B, UInt8>, ArraysItem<B>>;
+public typealias ArraysMsg1ItemsType<B: BP3DProto.Buffer> = BP3DProto.Array<B, BP3DProto.ValueLE<B, UInt8>, ArraysItem<B>>;
