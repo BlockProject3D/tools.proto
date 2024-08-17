@@ -29,7 +29,7 @@
 import Foundation;
 import BP3DProto;
 
-extension ValuesValueString: BP3DProto.WriteTo where B: BP3DProto.Buffer {
+extension ValuesValueString: BP3DProto.WriteTo {
     public typealias Input = Self;
     public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {
         try BP3DProto.NullTerminatedString<B>.write(input: input.data, to: &out);

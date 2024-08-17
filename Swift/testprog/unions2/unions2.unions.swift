@@ -29,12 +29,12 @@
 import Foundation;
 import BP3DProto;
 
-public enum Unions2NestedDiscriminant<B> {
+public enum Unions2NestedDiscriminant<B: BP3DProto.Buffer> {
     case v1;
     case v2;
 
 }
-extension Unions2NestedDiscriminant where B: BP3DProto.Buffer {
+extension Unions2NestedDiscriminant {
     public static func from(slice: B, discriminant: Unions2Header2<B>) throws -> BP3DProto.Message<Self> {
         let discriminant = discriminant.inner.rawTest;
         switch discriminant {
@@ -49,12 +49,12 @@ extension Unions2NestedDiscriminant where B: BP3DProto.Buffer {
     }
 
 }
-extension Unions2NestedDiscriminant where B: BP3DProto.Buffer {
+extension Unions2NestedDiscriminant {
     public func write<B1: WritableBuffer>(input: Self, discriminant: Unions2Header2<B>, to _: inout B1) throws {
     }
 
 }
-extension Unions2NestedDiscriminant where B: BP3DProto.Buffer {
+extension Unions2NestedDiscriminant {
     public func setDiscriminant<B1: BP3DProto.WritableBuffer>(_ discriminant: Unions2Header2<B1>) where B1: BP3DProto.Buffer {
         var discriminantValue: UInt8 = 0;
         switch self {

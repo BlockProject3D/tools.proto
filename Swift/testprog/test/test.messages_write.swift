@@ -29,7 +29,7 @@
 import Foundation;
 import BP3DProto;
 
-extension TestTest1: BP3DProto.WriteTo where B: BP3DProto.Buffer {
+extension TestTest1: BP3DProto.WriteTo {
     public typealias Input = Self;
     public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {
         try BP3DProto.NullTerminatedString<B>.write(input: input.s1, to: &out);
@@ -38,10 +38,7 @@ extension TestTest1: BP3DProto.WriteTo where B: BP3DProto.Buffer {
     }
 }
 
-import Foundation;
-import BP3DProto;
-
-extension TestTest: BP3DProto.WriteTo where B: BP3DProto.Buffer {
+extension TestTest: BP3DProto.WriteTo {
     public typealias Input = Self;
     public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {
         try BP3DProto.NullTerminatedString<B>.write(input: input.s1, to: &out);

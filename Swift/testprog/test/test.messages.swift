@@ -29,7 +29,7 @@
 import Foundation;
 import BP3DProto;
 
-public struct TestTest1<B> {
+public struct TestTest1<B: BP3DProto.Buffer> {
     public let s1: String;
     public let p1: UInt32;
 
@@ -41,10 +41,7 @@ public struct TestTest1<B> {
 
 }
 
-import Foundation;
-import BP3DProto;
-
-public struct TestTest<B> {
+public struct TestTest<B: BP3DProto.Buffer> {
     public let s1: String;
     public let s2: String;
     public let p1: TestTest1<B>?;

@@ -29,7 +29,7 @@
 import Foundation;
 import BP3DProto;
 
-extension ValuesValueString: BP3DProto.FromSlice where B: BP3DProto.Buffer  {
+extension ValuesValueString: BP3DProto.FromSlice  {
     public typealias Buffer = B;
     public typealias Output = Self;
     public static func from(slice: B) throws -> BP3DProto.Message<Self> {

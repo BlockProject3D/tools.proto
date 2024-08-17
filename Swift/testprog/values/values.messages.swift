@@ -29,7 +29,7 @@
 import Foundation;
 import BP3DProto;
 
-public struct ValuesValueString<B> {
+public struct ValuesValueString<B: BP3DProto.Buffer> {
     public let data: String;
 
     public init(data: String) {

@@ -29,7 +29,7 @@
 import Foundation;
 import BP3DProto;
 
-extension TestTest1: BP3DProto.FromSlice where B: BP3DProto.Buffer  {
+extension TestTest1: BP3DProto.FromSlice  {
     public typealias Buffer = B;
     public typealias Output = Self;
     public static func from(slice: B) throws -> BP3DProto.Message<Self> {
@@ -49,10 +49,7 @@ extension TestTest1: BP3DProto.FromSlice where B: BP3DProto.Buffer  {
     }
 }
 
-import Foundation;
-import BP3DProto;
-
-extension TestTest: BP3DProto.FromSlice where B: BP3DProto.Buffer  {
+extension TestTest: BP3DProto.FromSlice  {
     public typealias Buffer = B;
     public typealias Output = Self;
     public static func from(slice: B) throws -> BP3DProto.Message<Self> {

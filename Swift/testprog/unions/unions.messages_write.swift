@@ -29,7 +29,7 @@
 import Foundation;
 import BP3DProto;
 
-extension UnionsItem: BP3DProto.WriteTo where B: BP3DProto.Buffer {
+extension UnionsItem: BP3DProto.WriteTo {
     public typealias Input = Self;
     public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {
         try EnumsHeader.write(input: input.header, to: &out);

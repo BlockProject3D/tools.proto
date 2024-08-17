@@ -27,10 +27,11 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::util::ImportResolver;
-use crate::gen::{FileType, Generator};
+use crate::gen::Generator;
 use crate::{compiler, model, Error};
 use std::path::{Path, PathBuf};
 use bp3d_util::path::PathExt;
+use crate::gen::file::FileType;
 
 pub trait ImportSolver {
     fn register(&mut self, base_import_path: String, protocol: compiler::Protocol);

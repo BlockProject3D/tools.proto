@@ -28,9 +28,8 @@
 
 use crate::compiler::Protocol;
 use crate::gen::swift::structure::gen_structure_decl;
-use crate::gen::{File, FileType, Generator};
+use crate::gen::{file::{File, FileType}, Generator};
 use bp3d_util::simple_error;
-use itertools::Itertools;
 use crate::gen::swift::message::gen_message_decl;
 use crate::gen::swift::message_from_slice::gen_message_from_slice_impl;
 use crate::gen::swift::message_write::gen_message_write_impl;
@@ -54,8 +53,8 @@ simple_error! {
 }
 
 pub use solver::SwiftImportSolver;
+use crate::gen::file::B;
 use crate::gen::swift::imports::gen_imports;
-use crate::gen::template::Template;
 
 pub struct GeneratorSwift;
 
@@ -68,27 +67,24 @@ impl Generator for GeneratorSwift {
         let decl_structures = proto
             .structs
             .iter()
-            .map(|v| gen_structure_decl(&proto, v))
-            .join("\n");
+            .map(|v| gen_structure_decl(&proto, v));
         let decl_enums =
-            proto.enums.iter().map(|v| gen_enum_decl(&proto, v)).join("\n");
+            proto.enums.iter().map(|v| gen_enum_decl(&proto, v));
         let decl_messages_code =
-            proto.messages.iter().map(|v| gen_message_decl(&proto, v)).join("\n");
+            proto.messages.iter().map(|v| gen_message_decl(&proto, v));
         let impl_from_slice_messages_code = proto.messages.iter()
-            .map(|v| gen_message_from_slice_impl(&proto, v))
-            .join("\n");
+            .map(|v| gen_message_from_slice_impl(&proto, v));
         let impl_write_messages_code = proto.messages.iter()
-            .map(|v| gen_message_write_impl(&proto, v))
-            .join("\n");
+            .map(|v| gen_message_write_impl(&proto, v));
         let decl_unions =
-            proto.unions.iter().map(|v| gen_union_decl(&proto, v)).join("\n");
+            proto.unions.iter().map(|v| gen_union_decl(&proto, v));
         Ok(vec![
-            File::new(FileType::Structure, format!("{}.structures.swift", proto.name), imports.clone() + &decl_structures),
-            File::new(FileType::Enum, format!("{}.enums.swift", proto.name), decl_enums),
-            File::new(FileType::Message, format!("{}.messages.swift", proto.name), imports.clone() + &decl_messages_code),
-            File::new(FileType::MessageWriting, format!("{}.messages_write.swift", proto.name), imports.clone() + &impl_write_messages_code),
-            File::new(FileType::MessageReading, format!("{}.messages_from_slice.swift", proto.name), imports.clone() + &impl_from_slice_messages_code),
-            File::new(FileType::Union, format!("{}.unions.swift", proto.name), imports + &decl_unions)
+            File::new(FileType::Structure, format!("{}.structures.swift", proto.name), (&imports, decl_structures)),
+            File::new(FileType::Enum, format!("{}.enums.swift", proto.name), B(decl_enums)),
+            File::new(FileType::Message, format!("{}.messages.swift", proto.name), (&imports, decl_messages_code)),
+            File::new(FileType::MessageWriting, format!("{}.messages_write.swift", proto.name), (&imports, impl_write_messages_code)),
+            File::new(FileType::MessageReading, format!("{}.messages_from_slice.swift", proto.name), (&imports, impl_from_slice_messages_code)),
+            File::new(FileType::Union, format!("{}.unions.swift", proto.name), (&imports, decl_unions))
         ])
     }
 

@@ -106,9 +106,6 @@ extension Unions2Header where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
 
 }
 
-import Foundation;
-import BP3DProto;
-
 public struct Unions2Header2<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 1 }

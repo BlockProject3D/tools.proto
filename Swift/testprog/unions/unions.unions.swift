@@ -29,7 +29,7 @@
 import Foundation;
 import BP3DProto;
 
-public enum UnionsValue<B> {
+public enum UnionsValue<B: BP3DProto.Buffer> {
     case null;
     case string(ValuesValueString<B>);
     case int8(ValuesValueInt8<B>);
@@ -44,7 +44,7 @@ public enum UnionsValue<B> {
     case double(ValuesValueDouble<B>);
 
 }
-extension UnionsValue where B: BP3DProto.Buffer {
+extension UnionsValue {
     public static func from(slice: B, discriminant: EnumsHeader<B>) throws -> BP3DProto.Message<Self> {
         let discriminant = discriminant.rawType;
         switch discriminant {
@@ -90,7 +90,7 @@ extension UnionsValue where B: BP3DProto.Buffer {
     }
 
 }
-extension UnionsValue where B: BP3DProto.Buffer {
+extension UnionsValue {
     public static func write<B1: WritableBuffer>(input: Self, discriminant: EnumsHeader<B>, to out: inout B1) throws {
         let discriminant = discriminant.rawType;
         switch input {
@@ -178,7 +178,7 @@ extension UnionsValue where B: BP3DProto.Buffer {
     }
 
 }
-extension UnionsValue where B: BP3DProto.Buffer {
+extension UnionsValue {
     public func setDiscriminant<B1: BP3DProto.WritableBuffer>(_ discriminant: EnumsHeader<B1>) where B1: BP3DProto.Buffer {
         var discriminantValue: UInt8 = 0;
         switch self {

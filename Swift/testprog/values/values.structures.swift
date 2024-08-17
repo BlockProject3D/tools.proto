@@ -84,9 +84,6 @@ extension ValuesValueInt8 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer
 
 }
 
-import Foundation;
-import BP3DProto;
-
 public struct ValuesValueInt16<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 2 }
@@ -141,9 +138,6 @@ extension ValuesValueInt16 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffe
     }
 
 }
-
-import Foundation;
-import BP3DProto;
 
 public struct ValuesValueInt32<T>: BP3DProto.FixedSize {
     var data: T
@@ -200,9 +194,6 @@ extension ValuesValueInt32 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffe
 
 }
 
-import Foundation;
-import BP3DProto;
-
 public struct ValuesValueInt64<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 8 }
@@ -258,9 +249,6 @@ extension ValuesValueInt64 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffe
 
 }
 
-import Foundation;
-import BP3DProto;
-
 public struct ValuesValueUInt8<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 1 }
@@ -313,9 +301,6 @@ extension ValuesValueUInt8 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffe
     }
 
 }
-
-import Foundation;
-import BP3DProto;
 
 public struct ValuesValueUInt16<T>: BP3DProto.FixedSize {
     var data: T
@@ -370,9 +355,6 @@ extension ValuesValueUInt16 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuff
 
 }
 
-import Foundation;
-import BP3DProto;
-
 public struct ValuesValueUInt32<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 4 }
@@ -426,9 +408,6 @@ extension ValuesValueUInt32 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuff
 
 }
 
-import Foundation;
-import BP3DProto;
-
 public struct ValuesValueUInt64<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 8 }
@@ -481,9 +460,6 @@ extension ValuesValueUInt64 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuff
     }
 
 }
-
-import Foundation;
-import BP3DProto;
 
 public struct ValuesValueFloat<T>: BP3DProto.FixedSize {
     var data: T
@@ -539,9 +515,6 @@ extension ValuesValueFloat where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffe
     }
 
 }
-
-import Foundation;
-import BP3DProto;
 
 public struct ValuesValueDouble<T>: BP3DProto.FixedSize {
     var data: T
