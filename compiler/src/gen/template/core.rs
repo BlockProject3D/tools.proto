@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::gen::template::parse_tree::{Component, Fragment, Token};
+use crate::gen::template::parse_tree::{Component, Fragment, FragmentMode, Token};
 use crate::gen::template::{Error, FunctionMap};
 use itertools::Itertools;
 use std::borrow::Cow;
@@ -62,11 +62,22 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                 continue;
             }
             if line.starts_with(b"#fragment push ") {
-                let name = std::str::from_utf8(&line[15..]).map_err(|_| Error::InvalidUTF8)?;
-                frag_stack.push(Fragment {
-                    name,
-                    content: Vec::new(),
-                });
+                let fragment = std::str::from_utf8(&line[15..]).map_err(|_| Error::InvalidUTF8)?;
+                if let Some(id) = fragment.find(":") {
+                    let name = &fragment[..id];
+                    let mode = &fragment[id + 1..];
+                    frag_stack.push(Fragment {
+                        name,
+                        content: Vec::new(),
+                        mode: FragmentMode::from_str(mode).ok_or_else(|| Error::UnknownFragmentMode(mode.into()))?
+                    });
+                } else {
+                    frag_stack.push(Fragment {
+                        name: fragment,
+                        content: Vec::new(),
+                        mode: FragmentMode::Default
+                    });
+                }
             } else if line.starts_with(b"#fragment pop") {
                 if frag_stack.is_empty() {
                     return Err(Error::InvalidPop);
@@ -132,13 +143,9 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                 false => Cow::Owned(format!("{}.{}", path, name)),
                 true => Cow::Borrowed(name),
             };
-            let fragment = self
-                .fragments
-                .get(&*name)
+            let fragment = self.fragments.get(&*name)
                 .ok_or_else(|| Error::FragmentNotFound(String::from(&*name)))?;
-            let sub_rendered = fragment
-                .content
-                .iter()
+            let sub_rendered = fragment.content.iter()
                 .map(|v| match v {
                     Component::Constant(v) => Ok(Cow::Borrowed(*v)),
                     Component::Variable(v) => {
@@ -156,7 +163,11 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                 })
                 .collect::<Result<Vec<Cow<str>>, Error>>()?
                 .join("");
-            rendered.push(sub_rendered);
+            if fragment.mode == FragmentMode::Inline {
+                rendered.push(sub_rendered.trim().into());
+            } else {
+                rendered.push(sub_rendered);
+            }
         }
         Ok(rendered.join(""))
     }

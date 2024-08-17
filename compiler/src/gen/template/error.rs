@@ -35,6 +35,7 @@ simple_error! {
         NoFragment => "cannot push code: no fragment is on the stack",
         FragmentNotFound(String) => "fragment not found: {}",
         VariableNotFound(String) => "variable not found: {}",
-        FunctionNotFound(String) => "function not found: {}"
+        FunctionNotFound(String) => "function not found: {}",
+        UnknownFragmentMode(String) => "unknown fragment mode: {}"
     }
 }

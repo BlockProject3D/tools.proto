@@ -65,9 +65,26 @@ impl<'a> Component<'a> {
     }
 }
 
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum FragmentMode {
+    Inline,
+    Default
+}
+
+impl FragmentMode {
+    pub fn from_str(name: &str) -> Option<FragmentMode> {
+        match name {
+            "inline" => Some(FragmentMode::Inline),
+            "Default" => Some(FragmentMode::Default),
+            _ => None
+        }
+    }
+}
+
 pub struct Fragment<'a> {
     pub(crate) name: &'a str,
     pub(crate) content: Vec<Component<'a>>,
+    pub(crate) mode: FragmentMode
 }
 
 pub struct Token<'a> {
