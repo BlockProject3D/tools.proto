@@ -90,19 +90,25 @@ impl File {
 
 pub trait Generator {
     type Error: std::error::Error;
+    type Params;
 
-    fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error>;
+    fn generate(proto: Protocol, params: &Self::Params) -> Result<Vec<File>, Self::Error>;
+
     fn generate_umbrella<'a>(
         _: &str,
         _: impl Iterator<Item = &'a Path>,
+        _: &Self::Params
     ) -> Result<String, Self::Error> {
         Ok(String::new())
     }
+
     fn generate_file_header<'a>(lines: impl Iterator<Item = &'a str>) -> String {
         lines.map(|v| String::from("// ") + v).join("\n") + "\n\n"
     }
+
     fn get_language_extension() -> &'static str;
 }
 
 pub use rust::GeneratorRust;
 pub use swift::GeneratorSwift;
+pub use swift::SwiftImportSolver;

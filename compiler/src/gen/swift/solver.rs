@@ -26,46 +26,50 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::gen::GeneratorRust;
-use crate::util::SimpleImportSolver;
-use crate::{Error, Loader, Protoc};
+use std::collections::HashMap;
+use crate::compiler::Protocol;
+use crate::compiler::util::ImportResolver;
+use crate::gen::template::util::CaseConversion;
+use crate::ImportSolver;
 
-/// A simple function to quickly generate protocols in Rust for use with the Cargo build system.
-///
-/// # Arguments
-///
-/// * `load_fn`: a function which loads and imports all required protocols to compile and generate
-///              Rust code for.
-/// * `configure_fn`: a configuration function to configure the [Protoc](Protoc) for generating.
-///
-/// # Panics
-///
-/// This function panics in case the loader, compiler or generator failed and the protocol Rust code
-/// could not be generated.
-pub fn generate_rust<F: FnOnce(&mut Loader) -> Result<(), Error>, F1: FnOnce(Protoc) -> Protoc>(
-    load_fn: F,
-    configure_fn: F1,
-) {
-    let mut loader = Loader::new();
-    let res = load_fn(&mut loader);
-    if let Err(e) = res {
-        panic!("Failed to load protocols: {}", e);
+pub struct SwiftImportSolver {
+    import_map: HashMap<String, (Option<String>, Protocol)>,
+}
+
+impl SwiftImportSolver {
+    pub fn new() -> Self {
+        Self {
+            import_map: HashMap::new()
+        }
     }
-    let protoc = match loader.compile(&mut SimpleImportSolver::new("::")) {
-        Err(e) => panic!("Failed to compile protocols: {}", e),
-        Ok(v) => v,
-    };
-    let protoc = configure_fn(protoc);
-    let out_dir = std::env::var("OUT_DIR").unwrap();
-    let generated = match protoc.generate::<GeneratorRust>(out_dir, ()) {
-        Err(e) => panic!("Failed to generate Rust code: {}", e),
-        Ok(v) => v,
-    };
-    for proto in generated {
-        println!(
-            "cargo::rustc-env=BP3D_PROTOC_{}={}",
-            proto.name.to_ascii_uppercase(),
-            proto.path.display()
-        );
+
+    pub fn iter_imports(&self) -> impl Iterator<Item=&str> {
+        self.import_map.values().filter_map(|(k, _)| k.as_deref())
+    }
+}
+
+impl ImportResolver for SwiftImportSolver {
+    fn get_protocol_by_name(&self, name: &str) -> Option<&Protocol> {
+        self.import_map.get(name).map(|(_, v)| v)
+    }
+
+    fn get_full_type_path(&self, protocol: &str, type_name: &str) -> Option<String> {
+        if let Some(import_path) = self.import_map.get(protocol).map(|(k, _)| k)? {
+            Some(format!("{}.{}{}", import_path, protocol.to_pascal_case(), type_name))
+        } else {
+            Some(format!("{}{}", protocol.to_pascal_case(), type_name))
+        }
+    }
+}
+
+impl ImportSolver for SwiftImportSolver {
+    /// base_import_path is assumed to be the module name containing the protocol, Self if the
+    /// module is not external (so not to be imported).
+    fn register(&mut self, base_import_path: String, protocol: Protocol) {
+        if base_import_path == "Self" {
+            self.import_map.insert(protocol.name.clone(), (None, protocol));
+        } else {
+            self.import_map.insert(protocol.name.clone(), (Some(base_import_path), protocol));
+        }
     }
 }

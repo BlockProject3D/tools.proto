@@ -151,6 +151,7 @@ impl<'a> Protoc<'a> {
     pub fn generate<T: Generator>(
         self,
         out_directory: impl AsRef<Path>,
+        params: T::Params
     ) -> Result<Vec<Proto>, Error> {
         let file_header = self.file_header
             .map(|v| std::fs::read_to_string(v))
@@ -160,7 +161,7 @@ impl<'a> Protoc<'a> {
         let mut generated_protocols = Vec::new();
         for proto in self.protocols {
             let name = proto.name.clone();
-            let files = T::generate(proto).map_err(|e| Error::Generator(e.to_string()))?;
+            let files = T::generate(proto, &params).map_err(|e| Error::Generator(e.to_string()))?;
             let out_path = out_directory.as_ref().join(&name);
             if !out_path.exists() {
                 std::fs::create_dir(&out_path).map_err(Error::Io)?;
@@ -182,7 +183,7 @@ impl<'a> Protoc<'a> {
                 })
                 .collect::<std::io::Result<Vec<PathBuf>>>()
                 .map_err(Error::Io)?;
-            let umbrella = T::generate_umbrella(&name, iter.iter().map(|v| &**v))
+            let umbrella = T::generate_umbrella(&name, iter.iter().map(|v| &**v), &params)
                 .map_err(|e| Error::Generator(e.to_string()))?;
             let proto_path = if umbrella.len() > 1 {
                 let umbrella_path = out_path.join("umbrella").ensure_extension(T::get_language_extension()).to_path_buf();

@@ -31,7 +31,7 @@ use std::path::{Path, PathBuf};
 use bp3d_util::result::ResultExt;
 use clap::{Parser, ValueEnum};
 use bp3d_protoc::{Loader, Protoc};
-use bp3d_protoc::gen::{GeneratorRust, GeneratorSwift};
+use bp3d_protoc::gen::{GeneratorRust, GeneratorSwift, SwiftImportSolver};
 use bp3d_protoc::util::SimpleImportSolver;
 
 #[derive(ValueEnum, Copy, Clone, Debug)]
@@ -45,8 +45,12 @@ pub enum Generator {
 
 #[derive(ValueEnum, Copy, Clone, Debug)]
 pub enum Solver {
-    /// The simple import solver which is the default for Rust and Swift, should work in most cases.
-    Simple
+    /// The simple import solver which is the default for Rust, should work in most cases.
+    Simple,
+
+    /// The swift import solver which simplifies dealing with the distinction between foreign and
+    /// local imports.
+    Swift
 }
 
 #[derive(ValueEnum, Copy, Clone, Debug)]
@@ -135,7 +139,8 @@ fn main() {
         loader.load(input).expect_exit("failed to load protocol", 1);
     }
     let mut protoc = match args.solver {
-        Solver::Simple => loader.compile(&mut SimpleImportSolver::new(&args.import_separator))
+        Solver::Simple => loader.compile(&mut SimpleImportSolver::new(&args.import_separator)),
+        Solver::Swift => loader.compile(&mut SwiftImportSolver::new())
     }.expect_exit("failed to compile protocols", 1);
     if let Some(features) = args.features {
         for f in features {
@@ -146,7 +151,7 @@ fn main() {
         protoc = protoc.set_file_header(file_header);
     }
     match args.generator {
-        Generator::Rust => protoc.generate::<GeneratorRust>(args.output.unwrap_or(PathBuf::from("./"))),
-        Generator::Swift => protoc.generate::<GeneratorSwift>(args.output.unwrap_or(PathBuf::from("./")))
+        Generator::Rust => protoc.generate::<GeneratorRust>(args.output.unwrap_or(PathBuf::from("./")), ()),
+        Generator::Swift => protoc.generate::<GeneratorSwift>(args.output.unwrap_or(PathBuf::from("./")), ())
     }.expect_exit("failed to generate protocols", 1);
 }

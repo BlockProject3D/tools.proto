@@ -44,6 +44,7 @@ mod message;
 mod message_from_slice;
 mod message_write;
 mod union;
+mod solver;
 
 simple_error! {
     pub Error {
@@ -51,12 +52,15 @@ simple_error! {
     }
 }
 
+pub use solver::SwiftImportSolver;
+
 pub struct GeneratorSwift;
 
 impl Generator for GeneratorSwift {
     type Error = Error;
+    type Params = ();
 
-    fn generate(proto: Protocol) -> Result<Vec<File>, Self::Error> {
+    fn generate(proto: Protocol, _: &()) -> Result<Vec<File>, Self::Error> {
         let decl_structures = proto
             .structs
             .iter()
