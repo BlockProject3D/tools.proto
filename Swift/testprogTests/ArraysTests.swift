@@ -75,4 +75,49 @@ final class ArraysTests: XCTestCase {
         }
     }
 
+    func testMsg1_1() throws {
+        var msg_buffer = DataBuffer();
+        do {
+            let buffer = DataBuffer(size: 12);
+            let arr = ArraysMsg1ItemsType(buffer);
+            arr[0].setId(3).setCount(1024).setSlot(10);
+            arr[1].setId(2).setCount(1023).setSlot(9);
+            arr[2].setId(1).setCount(16).setSlot(8);
+            arr[3].setId(0).setCount(4).setSlot(7);
+            let msg = ArraysMsg1(items: arr);
+            try ArraysMsg1.write(input: msg, to: &msg_buffer);
+        }
+        do {
+            let msg = try ArraysMsg1.from(slice: msg_buffer);
+            XCTAssertEqual(msg_buffer.size, msg.size);
+            let msg1 = msg.data;
+            XCTAssertEqual(msg1.items!.count, 4);
+            XCTAssertEqual(msg1.items![0].id, 3);
+            XCTAssertEqual(msg1.items![1].id, 2);
+            XCTAssertEqual(msg1.items![2].id, 1);
+            XCTAssertEqual(msg1.items![3].id, 0);
+            XCTAssertEqual(msg1.items![0].count, 1024);
+            XCTAssertEqual(msg1.items![1].count, 1023);
+            XCTAssertEqual(msg1.items![2].count, 16);
+            XCTAssertEqual(msg1.items![3].count, 4);
+            XCTAssertEqual(msg1.items![0].slot, 10);
+            XCTAssertEqual(msg1.items![1].slot, 9);
+            XCTAssertEqual(msg1.items![2].slot, 8);
+            XCTAssertEqual(msg1.items![3].slot, 7);
+        }
+    }
+
+    func testMsg1_2() throws {
+        var msg_buffer = DataBuffer();
+        do {
+            let msg = ArraysMsg1<DataBuffer>(items: nil);
+            try ArraysMsg1.write(input: msg, to: &msg_buffer);
+        }
+        do {
+            let msg = try ArraysMsg1.from(slice: msg_buffer);
+            XCTAssertEqual(msg_buffer.size, msg.size);
+            let msg1 = msg.data;
+            XCTAssert(msg1.items == nil);
+        }
+    }
 }

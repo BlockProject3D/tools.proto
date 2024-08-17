@@ -86,7 +86,9 @@ fn msg1_1() {
         Msg1::write_to(&msg, &mut msg_buffer).unwrap();
     }
     {
-        let msg = Msg1::from_slice(&msg_buffer).unwrap().into_inner();
+        let msg = Msg1::from_slice(&msg_buffer).unwrap();
+        assert_eq!(msg_buffer.len(), msg.size());
+        let msg = msg.into_inner();
         assert!(msg.items.is_some());
         let items = msg.items.map(Msg1Items::from_array).unwrap();
         assert_eq!(items.len(), 4);

@@ -66,7 +66,7 @@ public struct Array<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: Fr
 
     public static func from(slice: Buffer) throws -> Message<Self> {
         let msg = try T.from(slice: slice);
-        var data = slice[msg.size...];
+        let data = slice[msg.size...];
         let totalSize = msg.size + Int(msg.data.toUInt()) * Item.Output.size;
         if slice.size < totalSize {
             throw Error.truncated;

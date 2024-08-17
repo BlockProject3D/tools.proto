@@ -38,7 +38,7 @@ public struct Optional<Buffer: BP3DProto.Buffer, T: FromSlice>: FromSlice where 
         let b = slice[0] > 0;
         if b {
             let msg = try T.from(slice: slice[1...]);
-            return Message(size: msg.size, data: msg.data);
+            return Message(size: msg.size + 1, data: msg.data);
         } else {
             return Message(size: 1, data: nil);
         }
