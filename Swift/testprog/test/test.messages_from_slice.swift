@@ -41,11 +41,11 @@ extension TestTest1: BP3DProto.FromSlice where B: BP3DProto.Buffer  {
         byteOffset += p1Msg.size;
         let p1 = p1Msg.data;
 
-        let data = TestTest1(
+        let _data = TestTest1(
             s1: s1,
             p1: p1
         );
-        return BP3DProto.Message(size: byteOffset, data: data);
+        return BP3DProto.Message(size: byteOffset, data: _data);
     }
 }
 
@@ -68,11 +68,11 @@ extension TestTest: BP3DProto.FromSlice where B: BP3DProto.Buffer  {
         byteOffset += p1Msg.size;
         let p1 = p1Msg.data;
 
-        let data = TestTest(
+        let _data = TestTest(
             s1: s1,
             s2: s2,
             p1: p1
         );
-        return BP3DProto.Message(size: byteOffset, data: data);
+        return BP3DProto.Message(size: byteOffset, data: _data);
     }
 }

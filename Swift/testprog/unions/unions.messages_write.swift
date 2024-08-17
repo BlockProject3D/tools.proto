@@ -1,10 +1,10 @@
 // Copyright (c) 2024, BlockProject 3D
-//
+// 
 // All rights reserved.
-//
+// 
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-//
+// 
 //     * Redistributions of source code must retain the above copyright notice,
 //       this list of conditions and the following disclaimer.
 //     * Redistributions in binary form must reproduce the above copyright notice,
@@ -13,7 +13,7 @@
 //     * Neither the name of BlockProject 3D nor the names of its contributors
 //       may be used to endorse or promote products derived from this software
 //       without specific prior written permission.
-//
+// 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -26,45 +26,15 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import Foundation
+import Foundation;
+import BP3DProto;
 
-public enum Error: Swift.Error {
-    case invalidUTF8;
-    case truncated;
-    case invalidUnionDiscriminant(UInt);
-}
+extension UnionsItem: BP3DProto.WriteTo where B: BP3DProto.Buffer {
+    public typealias Input = Self;
+    public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {
+        try EnumsHeader.write(input: input.header, to: &out);
+        try BP3DProto.NullTerminatedString<B>.write(input: input.name, to: &out);
+        try UnionsValue.write(input: input.value, discriminant: input.header, to: &out);
 
-public struct FieldOffset {
-    public let start: Int;
-    public let end: Int;
-    public var size: Int {
-        return end - start;
     }
-}
-
-public struct Message<T> {
-    public let data: T;
-    public let size: Int;
-
-    public init(size: Int, data: T) {
-        self.data = data;
-        self.size = size;
-    }
-
-    public func map<T1>(_ f: (T) -> T1) -> Message<T1> {
-        return Message<T1>(size: self.size, data: f(self.data));
-    }
-}
-
-public protocol FromSlice {
-    associatedtype Buffer: BP3DProto.Buffer
-    associatedtype Output;
-
-    static func from(slice: Self.Buffer) throws -> Message<Output>;
-}
-
-public protocol WriteTo {
-    associatedtype Input;
-
-    static func write<B: WritableBuffer>(input: Input, to out: inout B) throws;
 }

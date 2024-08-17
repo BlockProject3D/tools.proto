@@ -25,13 +25,13 @@ extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.FromSlice where B: BP
         byteOffset += {name}Msg.size;
         let {name} = {name}Msg.data;
 #fragment pop
-        let data = {proto_name:to_pascal_case}{msg_name}(
+        let _data = {proto_name:to_pascal_case}{msg_name}(
 {field_names:remove_leading_coma}
 #fragment push field_name
             {name}: {name},
 #fragment pop
         );
-        return BP3DProto.Message(size: byteOffset, data: data);
+        return BP3DProto.Message(size: byteOffset, data: _data);
     }}
 }}
 #fragment pop

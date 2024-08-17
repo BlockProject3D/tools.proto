@@ -30,6 +30,14 @@
 		DA7659122C667AB90036DDED /* bit.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7659112C667AB90036DDED /* bit.swift */; };
 		DA7659142C66A7620036DDED /* byte.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7659132C66A7620036DDED /* byte.swift */; };
 		DA7659162C66A9710036DDED /* array.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7659152C66A9710036DDED /* array.swift */; };
+		DA7D6F952C709F7900A176F2 /* values.messages_from_slice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6F902C709F7900A176F2 /* values.messages_from_slice.swift */; };
+		DA7D6F962C709F7900A176F2 /* values.messages_write.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6F912C709F7900A176F2 /* values.messages_write.swift */; };
+		DA7D6F972C709F7900A176F2 /* values.messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6F922C709F7900A176F2 /* values.messages.swift */; };
+		DA7D6F982C709F7900A176F2 /* values.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6F932C709F7900A176F2 /* values.structures.swift */; };
+		DA7D6F9E2C709F8200A176F2 /* unions.messages_from_slice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6F992C709F8200A176F2 /* unions.messages_from_slice.swift */; };
+		DA7D6F9F2C709F8200A176F2 /* unions.messages_write.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6F9A2C709F8200A176F2 /* unions.messages_write.swift */; };
+		DA7D6FA02C709F8200A176F2 /* unions.messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6F9B2C709F8200A176F2 /* unions.messages.swift */; };
+		DA7D6FA12C709F8200A176F2 /* unions.unions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6F9C2C709F8200A176F2 /* unions.unions.swift */; };
 		DA7E14D52C6F4D4300FE83FE /* enums.enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D22C6F4D4300FE83FE /* enums.enums.swift */; };
 		DA7E14D62C6F4D4300FE83FE /* enums.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D32C6F4D4300FE83FE /* enums.structures.swift */; };
 		DA7E14D82C6F78AC00FE83FE /* EnumsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D72C6F78AC00FE83FE /* EnumsTests.swift */; };
@@ -129,6 +137,14 @@
 		DA7659112C667AB90036DDED /* bit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bit.swift; sourceTree = "<group>"; };
 		DA7659132C66A7620036DDED /* byte.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = byte.swift; sourceTree = "<group>"; };
 		DA7659152C66A9710036DDED /* array.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = array.swift; sourceTree = "<group>"; };
+		DA7D6F902C709F7900A176F2 /* values.messages_from_slice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = values.messages_from_slice.swift; sourceTree = "<group>"; };
+		DA7D6F912C709F7900A176F2 /* values.messages_write.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = values.messages_write.swift; sourceTree = "<group>"; };
+		DA7D6F922C709F7900A176F2 /* values.messages.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = values.messages.swift; sourceTree = "<group>"; };
+		DA7D6F932C709F7900A176F2 /* values.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = values.structures.swift; sourceTree = "<group>"; };
+		DA7D6F992C709F8200A176F2 /* unions.messages_from_slice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unions.messages_from_slice.swift; sourceTree = "<group>"; };
+		DA7D6F9A2C709F8200A176F2 /* unions.messages_write.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unions.messages_write.swift; sourceTree = "<group>"; };
+		DA7D6F9B2C709F8200A176F2 /* unions.messages.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unions.messages.swift; sourceTree = "<group>"; };
+		DA7D6F9C2C709F8200A176F2 /* unions.unions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unions.unions.swift; sourceTree = "<group>"; };
 		DA7E14D22C6F4D4300FE83FE /* enums.enums.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = enums.enums.swift; sourceTree = "<group>"; };
 		DA7E14D32C6F4D4300FE83FE /* enums.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = enums.structures.swift; sourceTree = "<group>"; };
 		DA7E14D72C6F78AC00FE83FE /* EnumsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnumsTests.swift; sourceTree = "<group>"; };
@@ -280,6 +296,28 @@
 			path = codec;
 			sourceTree = "<group>";
 		};
+		DA7D6F942C709F7900A176F2 /* values */ = {
+			isa = PBXGroup;
+			children = (
+				DA7D6F902C709F7900A176F2 /* values.messages_from_slice.swift */,
+				DA7D6F912C709F7900A176F2 /* values.messages_write.swift */,
+				DA7D6F922C709F7900A176F2 /* values.messages.swift */,
+				DA7D6F932C709F7900A176F2 /* values.structures.swift */,
+			);
+			path = values;
+			sourceTree = "<group>";
+		};
+		DA7D6F9D2C709F8200A176F2 /* unions */ = {
+			isa = PBXGroup;
+			children = (
+				DA7D6F992C709F8200A176F2 /* unions.messages_from_slice.swift */,
+				DA7D6F9A2C709F8200A176F2 /* unions.messages_write.swift */,
+				DA7D6F9B2C709F8200A176F2 /* unions.messages.swift */,
+				DA7D6F9C2C709F8200A176F2 /* unions.unions.swift */,
+			);
+			path = unions;
+			sourceTree = "<group>";
+		};
 		DA7E14D42C6F4D4300FE83FE /* enums */ = {
 			isa = PBXGroup;
 			children = (
@@ -331,6 +369,8 @@
 		DAC4A9BE2C6E183E00ED8343 /* testprog */ = {
 			isa = PBXGroup;
 			children = (
+				DA7D6F9D2C709F8200A176F2 /* unions */,
+				DA7D6F942C709F7900A176F2 /* values */,
 				DA7E14F52C6FFDF100FE83FE /* unions2 */,
 				DA7E14ED2C6F88FD00FE83FE /* test */,
 				DA7E14D42C6F4D4300FE83FE /* enums */,
@@ -589,18 +629,26 @@
 			files = (
 				DA7E14D52C6F4D4300FE83FE /* enums.enums.swift in Sources */,
 				DA7E14EE2C6F88FD00FE83FE /* test.messages_from_slice.swift in Sources */,
+				DA7D6F982C709F7900A176F2 /* values.structures.swift in Sources */,
 				DA7E14EF2C6F88FD00FE83FE /* test.messages_write.swift in Sources */,
+				DA7D6FA12C709F8200A176F2 /* unions.unions.swift in Sources */,
 				DA72E6682C6E9181008F8F23 /* views.structures.swift in Sources */,
+				DA7D6F9E2C709F8200A176F2 /* unions.messages_from_slice.swift in Sources */,
 				DA72E66D2C6E9330008F8F23 /* structs.structures.swift in Sources */,
 				DA7E14F72C6FFDF100FE83FE /* unions2.structures.swift in Sources */,
+				DA7D6F962C709F7900A176F2 /* values.messages_write.swift in Sources */,
 				DA72E6642C6E5E37008F8F23 /* bits.structures.swift in Sources */,
 				DA7E14F02C6F88FD00FE83FE /* test.messages.swift in Sources */,
 				DA72E6742C6E9BFC008F8F23 /* struct_arrays.structures.swift in Sources */,
+				DA7D6F972C709F7900A176F2 /* values.messages.swift in Sources */,
 				DA7E14F12C6F88FD00FE83FE /* test.structures.swift in Sources */,
+				DA7D6FA02C709F8200A176F2 /* unions.messages.swift in Sources */,
 				DA7E14D62C6F4D4300FE83FE /* enums.structures.swift in Sources */,
 				DA7E14F82C6FFDF100FE83FE /* unions2.unions.swift in Sources */,
 				DA7E14F62C6FFDF100FE83FE /* unions2.enums.swift in Sources */,
 				DA72E6652C6E5E37008F8F23 /* bits2.structures.swift in Sources */,
+				DA7D6F9F2C709F8200A176F2 /* unions.messages_write.swift in Sources */,
+				DA7D6F952C709F7900A176F2 /* values.messages_from_slice.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -49,13 +49,13 @@ extension Unions2NestedDiscriminant where B: BP3DProto.Buffer {
     }
 
 }
-extension Unions2NestedDiscriminant where B: BP3DProto.WritableBuffer, B: BP3DProto.Buffer {
+extension Unions2NestedDiscriminant where B: BP3DProto.Buffer {
     public func write<B1: WritableBuffer>(input: Self, discriminant: Unions2Header2<B>, to _: inout B1) throws {
     }
 
 }
-extension Unions2NestedDiscriminant where B: BP3DProto.WritableBuffer, B: BP3DProto.Buffer {
-    public func setDiscriminant(_ discriminant: Unions2Header2<B>) {
+extension Unions2NestedDiscriminant where B: BP3DProto.Buffer {
+    public func setDiscriminant<B1: BP3DProto.WritableBuffer>(_ discriminant: Unions2Header2<B1>) where B1: BP3DProto.Buffer {
         var discriminantValue: UInt8 = 0;
         switch self {
             case Self.v1:
@@ -70,11 +70,21 @@ extension Unions2NestedDiscriminant where B: BP3DProto.WritableBuffer, B: BP3DPr
     }
 }
 extension Unions2NestedDiscriminant {
-    public func isv1() -> Bool {
-        return self == Self.v1;
+    public func isV1() -> Bool {
+        switch self {
+            case Self.v1:
+                return true;
+            default:
+                return false;
+        }
     }
-    public func isv2() -> Bool {
-        return self == Self.v2;
+    public func isV2() -> Bool {
+        switch self {
+            case Self.v2:
+                return true;
+            default:
+                return false;
+        }
     }
 
 }

@@ -21,7 +21,7 @@ public enum {proto_name:to_pascal_case}{union_name}<B> {{
 extension {proto_name:to_pascal_case}{union_name} {{
 {cases}
 #fragment push struct
-    public func as{name:to_camel_case}() -> {type_name}<B>? {{
+    public func as{name:to_pascal_case}() -> {type_name}<B>? {{
         switch self {{
             case Self.{name:to_camel_case}(let v):
                 return v;
@@ -31,7 +31,7 @@ extension {proto_name:to_pascal_case}{union_name} {{
     }}
 #fragment pop
 #fragment push message
-    public func as{name:to_camel_case}() -> {type_name}<B>? {{
+    public func as{name:to_pascal_case}() -> {type_name}<B>? {{
         switch self {{
             case Self.{name:to_camel_case}(let v):
                 return v;
@@ -41,16 +41,21 @@ extension {proto_name:to_pascal_case}{union_name} {{
     }}
 #fragment pop
 #fragment push none
-    public func is{name:to_camel_case}() -> Bool {{
-        return self == Self.{name:to_camel_case};
+    public func is{name:to_pascal_case}() -> Bool {{
+        switch self {{
+            case Self.{name:to_camel_case}:
+                return true;
+            default:
+                return false;
+        }}
     }}
 #fragment pop
 }}
 #fragment pop
 
 #fragment push setter
-extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.WritableBuffer, B: BP3DProto.Buffer {{
-    public func setDiscriminant(_ discriminant: {discriminant_type}<B>) {{
+extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.Buffer {{
+    public func setDiscriminant<B1: BP3DProto.WritableBuffer>(_ discriminant: {discriminant_type}<B1>) where B1: BP3DProto.Buffer {{
         var discriminantValue: {discriminant_raw_type} = 0;
         switch self {{
 {cases}
@@ -71,7 +76,7 @@ extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.WritableBuf
 #fragment pop
 
 #fragment push write_to
-extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.WritableBuffer, B: BP3DProto.Buffer {{
+extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.Buffer {{
 {fragment}
 #fragment push content
     public static func write<B1: WritableBuffer>(input: Self, discriminant: {discriminant_type}<B>, to out: inout B1) throws {{
@@ -83,7 +88,7 @@ extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.WritableBuf
                 if discriminant == {case} {{
                     try {type_name}.write(input: v, to: &out);
                 }} else {{
-                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant)));
+                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
                 }}
                 break;
 #fragment pop
@@ -111,7 +116,6 @@ extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.Buffer {{
             case {case}:
                 let msg = try {type_name}.from(slice: slice);
                 return msg.map({{ v in Self.{name:to_camel_case}(v) }});
-                break;
 #fragment pop
             default:
                 throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
