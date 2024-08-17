@@ -28,6 +28,7 @@
 
 import Foundation;
 import BP3DProto;
+
 public struct Bits2Numbers<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 4 }

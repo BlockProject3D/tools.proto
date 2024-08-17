@@ -28,6 +28,7 @@
 
 import Foundation;
 import BP3DProto;
+
 public struct StructArraysBasic<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 58 }

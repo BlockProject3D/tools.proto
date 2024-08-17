@@ -28,6 +28,7 @@
 
 import Foundation;
 import BP3DProto;
+
 public struct TestIntContainer<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 4 }

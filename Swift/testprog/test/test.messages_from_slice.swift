@@ -26,7 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import Foundation;
 import BP3DProto;
+
 extension TestTest1: BP3DProto.FromSlice where B: BP3DProto.Buffer  {
     public typealias Buffer = B;
     public typealias Output = Self;
@@ -47,7 +49,9 @@ extension TestTest1: BP3DProto.FromSlice where B: BP3DProto.Buffer  {
     }
 }
 
+import Foundation;
 import BP3DProto;
+
 extension TestTest: BP3DProto.FromSlice where B: BP3DProto.Buffer  {
     public typealias Buffer = B;
     public typealias Output = Self;

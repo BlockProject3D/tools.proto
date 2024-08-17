@@ -26,7 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import Foundation;
 import BP3DProto;
+
 extension TestTest1: BP3DProto.WriteTo where B: BP3DProto.Buffer {
     public typealias Input = Self;
     public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {
@@ -36,7 +38,9 @@ extension TestTest1: BP3DProto.WriteTo where B: BP3DProto.Buffer {
     }
 }
 
+import Foundation;
 import BP3DProto;
+
 extension TestTest: BP3DProto.WriteTo where B: BP3DProto.Buffer {
     public typealias Input = Self;
     public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {

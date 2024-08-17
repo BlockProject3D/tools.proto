@@ -26,7 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import Foundation;
 import BP3DProto;
+
 public enum Unions2NestedDiscriminant<B> {
     case v1;
     case v2;

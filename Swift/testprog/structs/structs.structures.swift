@@ -28,6 +28,7 @@
 
 import Foundation;
 import BP3DProto;
+
 public struct StructsNumbers<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 14 }
@@ -174,6 +175,7 @@ extension StructsNumbers where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer 
 
 import Foundation;
 import BP3DProto;
+
 public struct StructsFlags<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 15 }
@@ -320,6 +322,7 @@ extension StructsFlags where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
 
 import Foundation;
 import BP3DProto;
+
 public struct StructsFloats<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 12 }
@@ -396,6 +399,7 @@ extension StructsFloats where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
 
 import Foundation;
 import BP3DProto;
+
 public struct StructsMaster<T>: BP3DProto.FixedSize {
     var data: T
     public static var size: Int { 41 }

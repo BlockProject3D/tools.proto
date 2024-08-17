@@ -26,7 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import Foundation;
 import BP3DProto;
+
 public struct TestTest1<B> {
     public let s1: String;
     public let p1: UInt32;
@@ -39,7 +41,9 @@ public struct TestTest1<B> {
 
 }
 
+import Foundation;
 import BP3DProto;
+
 public struct TestTest<B> {
     public let s1: String;
     public let s2: String;
