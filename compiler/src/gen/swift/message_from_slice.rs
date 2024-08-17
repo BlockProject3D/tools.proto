@@ -36,11 +36,11 @@ use crate::gen::template::{FunctionMap, Template};
 
 const TEMPLATE: &[u8] = include_bytes!("./message.from_slice.template");
 
-pub fn gen_message_from_slice_impl(proto: &Protocol, msg: &Message) -> String {
+pub fn gen_message_from_slice_impl(proto: &Protocol, msg: &Message, import_list: &str) -> String {
     let mut functions = FunctionMap::default();
     functions.add("remove_leading_coma", |v| Cow::Borrowed(&v[..v.len() - 2]));
     let mut template = Template::compile_with_function_map(TEMPLATE, functions).unwrap();
-    template.var("proto_name", &proto.name);
+    template.var("proto_name", &proto.name).var("import_list", import_list);
     let type_path_by_name = TypePathMapper::new(&proto.type_path_by_name, SwiftTypeMapper::from_protocol(proto));
     generate::<SwiftUtils, _>(template, msg, &type_path_by_name)
 }

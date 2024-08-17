@@ -1,5 +1,7 @@
 #fragment push decl
+import Foundation;
 import BP3DProto;
+{import_list}
 
 public enum {proto_name:to_pascal_case}{union_name}<B> {{
 {cases}

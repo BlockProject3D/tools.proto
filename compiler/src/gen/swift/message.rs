@@ -47,12 +47,13 @@ fn gen_initializer(template: &Template, msg: &Message, type_path_by_name: &TypeP
     template.scope().var("init_field_list", init_field_list).var("initializers", initializers).render("", &["decl"]).unwrap()
 }
 
-pub fn gen_message_decl(proto: &Protocol, msg: &Message) -> String {
+pub fn gen_message_decl(proto: &Protocol, msg: &Message, import_list: &str) -> String {
     let type_path_by_name = TypePathMapper::new(&proto.type_path_by_name, SwiftTypeMapper::from_protocol(proto));
     let mut template_ext = Template::compile(TEMPLATE_EXT).unwrap();
     template_ext.var("proto_name", &proto.name).var("msg_name", &msg.name);
     let initializer = gen_initializer(&template_ext, msg, &type_path_by_name);
     let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("proto_name", &proto.name).var("initializer", initializer);
+    template.var("proto_name", &proto.name).var("initializer", initializer)
+        .var("import_list", import_list);
     generate::<SwiftUtils, _>(template, msg, &type_path_by_name)
 }

@@ -35,9 +35,9 @@ use crate::gen::template::Template;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.write.template");
 
-pub fn gen_message_write_impl(proto: &Protocol, msg: &Message) -> String {
+pub fn gen_message_write_impl(proto: &Protocol, msg: &Message, import_list: &str) -> String {
     let type_path_by_name = TypePathMapper::new(&proto.type_path_by_name, SwiftTypeMapper::from_protocol(proto));
     let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("proto_name", &proto.name);
+    template.var("proto_name", &proto.name).var("import_list", import_list);
     generate::<SwiftUtils, _>(template, msg, &type_path_by_name)
 }

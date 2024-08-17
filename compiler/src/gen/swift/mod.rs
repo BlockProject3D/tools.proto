@@ -58,26 +58,27 @@ pub struct GeneratorSwift;
 
 impl Generator for GeneratorSwift {
     type Error = Error;
-    type Params = ();
+    type Params = SwiftImportSolver;
 
-    fn generate(proto: Protocol, _: &()) -> Result<Vec<File>, Self::Error> {
+    fn generate(proto: Protocol, params: &SwiftImportSolver) -> Result<Vec<File>, Self::Error> {
+        let import_list = params.gen_import_list();
         let decl_structures = proto
             .structs
             .iter()
-            .map(|v| gen_structure_decl(&proto, v))
+            .map(|v| gen_structure_decl(&proto, v, &import_list))
             .join("\n");
         let decl_enums =
             proto.enums.iter().map(|v| gen_enum_decl(&proto, v)).join("\n");
         let decl_messages_code =
-            proto.messages.iter().map(|v| gen_message_decl(&proto, v)).join("\n");
+            proto.messages.iter().map(|v| gen_message_decl(&proto, v, &import_list)).join("\n");
         let impl_from_slice_messages_code = proto.messages.iter()
-            .map(|v| gen_message_from_slice_impl(&proto, v))
+            .map(|v| gen_message_from_slice_impl(&proto, v, &import_list))
             .join("\n");
         let impl_write_messages_code = proto.messages.iter()
-            .map(|v| gen_message_write_impl(&proto, v))
+            .map(|v| gen_message_write_impl(&proto, v, &import_list))
             .join("\n");
         let decl_unions =
-            proto.unions.iter().map(|v| gen_union_decl(&proto, v)).join("\n");
+            proto.unions.iter().map(|v| gen_union_decl(&proto, v, &import_list)).join("\n");
         Ok(vec![
             File::new(FileType::Structure, format!("{}.structures.swift", proto.name), decl_structures),
             File::new(FileType::Enum, format!("{}.enums.swift", proto.name), decl_enums),

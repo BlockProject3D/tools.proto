@@ -138,9 +138,10 @@ fn main() {
     for input in args.inputs {
         loader.load(input).expect_exit("failed to load protocol", 1);
     }
+    let mut swift_solver = SwiftImportSolver::new();
     let mut protoc = match args.solver {
         Solver::Simple => loader.compile(&mut SimpleImportSolver::new(&args.import_separator)),
-        Solver::Swift => loader.compile(&mut SwiftImportSolver::new())
+        Solver::Swift => loader.compile(&mut swift_solver)
     }.expect_exit("failed to compile protocols", 1);
     if let Some(features) = args.features {
         for f in features {
@@ -152,6 +153,6 @@ fn main() {
     }
     match args.generator {
         Generator::Rust => protoc.generate::<GeneratorRust>(args.output.unwrap_or(PathBuf::from("./")), ()),
-        Generator::Swift => protoc.generate::<GeneratorSwift>(args.output.unwrap_or(PathBuf::from("./")), ())
+        Generator::Swift => protoc.generate::<GeneratorSwift>(args.output.unwrap_or(PathBuf::from("./")), swift_solver)
     }.expect_exit("failed to generate protocols", 1);
 }

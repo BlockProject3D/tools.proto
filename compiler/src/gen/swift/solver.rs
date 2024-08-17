@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::collections::HashMap;
+use itertools::Itertools;
 use crate::compiler::Protocol;
 use crate::compiler::util::ImportResolver;
 use crate::gen::template::util::CaseConversion;
@@ -45,6 +46,10 @@ impl SwiftImportSolver {
 
     pub fn iter_imports(&self) -> impl Iterator<Item=&str> {
         self.import_map.values().filter_map(|(k, _)| k.as_deref())
+    }
+
+    pub fn gen_import_list(&self) -> String {
+        self.iter_imports().map(|v| format!("import {};", v)).join("\n")
     }
 }
 

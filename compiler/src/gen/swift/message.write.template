@@ -1,5 +1,7 @@
 #fragment push impl
+import Foundation;
 import BP3DProto;
+{import_list}
 
 extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.WriteTo where B: BP3DProto.Buffer {{
     public typealias Input = Self;
