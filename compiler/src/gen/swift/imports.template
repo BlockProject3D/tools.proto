@@ -1,0 +1,6 @@
+#fragment push imports
+import Foundation;
+import BP3DProto;
+{import_list}
+
+#fragment pop

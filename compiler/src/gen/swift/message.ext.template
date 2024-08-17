@@ -9,3 +9,11 @@
 #fragment pop
     }}
 #fragment pop
+
+#fragment push array
+[{type_name}<B>]
+#fragment pop
+
+#fragment push list
+[{type_name}<B>]
+#fragment pop

@@ -2,10 +2,6 @@
 #fragment pop
 
 #fragment push decl
-import Foundation;
-import BP3DProto;
-{import_list}
-
 public struct {proto_name:to_pascal_case}{name}<T>: BP3DProto.FixedSize {{
     var data: T
 

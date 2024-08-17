@@ -1,9 +1,5 @@
 #fragment push decl
-import Foundation;
-import BP3DProto;
-{import_list}
-
-public struct {proto_name:to_pascal_case}{msg_name}<B> {{
+public struct {proto_name:to_pascal_case}{msg_name}<B: BP3DProto.Buffer> {{
 {fields}
 #fragment push field
     public let {name}: {type};
@@ -14,9 +10,9 @@ public struct {proto_name:to_pascal_case}{msg_name}<B> {{
 #fragment pop
 
 #fragment push array
-BP3DProto.Array<B, {raw_type}, {item_type}>
+[{type_name}<B>]
 #fragment pop
 
 #fragment push list
-BP3DProto.List<B, {raw_type}, {item_type}>
+[{type_name}<B>]
 #fragment pop

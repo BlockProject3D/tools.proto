@@ -1,9 +1,5 @@
 #fragment push decl
-import Foundation;
-import BP3DProto;
-{import_list}
-
-public enum {proto_name:to_pascal_case}{union_name}<B> {{
+public enum {proto_name:to_pascal_case}{union_name}<B: BP3DProto.Buffer> {{
 {cases}
 #fragment push struct
     case {name:to_camel_case}({type_name}<B>);
@@ -54,7 +50,7 @@ extension {proto_name:to_pascal_case}{union_name} {{
 #fragment pop
 
 #fragment push setter
-extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.Buffer {{
+extension {proto_name:to_pascal_case}{union_name} {{
     public func setDiscriminant<B1: BP3DProto.WritableBuffer>(_ discriminant: {discriminant_type}<B1>) where B1: BP3DProto.Buffer {{
         var discriminantValue: {discriminant_raw_type} = 0;
         switch self {{
@@ -76,7 +72,7 @@ extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.Buffer {{
 #fragment pop
 
 #fragment push write_to
-extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.Buffer {{
+extension {proto_name:to_pascal_case}{union_name} {{
 {fragment}
 #fragment push content
     public static func write<B1: WritableBuffer>(input: Self, discriminant: {discriminant_type}<B>, to out: inout B1) throws {{
@@ -105,7 +101,7 @@ extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.Buffer {{
 #fragment pop
 
 #fragment push from_slice
-extension {proto_name:to_pascal_case}{union_name} where B: BP3DProto.Buffer {{
+extension {proto_name:to_pascal_case}{union_name} {{
 {fragment}
 #fragment push content
     public static func from(slice: B, discriminant: {discriminant_type}<B>) throws -> BP3DProto.Message<Self> {{

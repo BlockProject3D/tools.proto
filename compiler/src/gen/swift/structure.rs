@@ -36,11 +36,11 @@ use crate::gen::template::Template;
 const STRUCT_TEMPLATE: &[u8] = include_bytes!("./structure.template");
 const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("./structure.field.template");
 
-pub fn gen_structure_decl(proto: &Protocol, s: &Structure, import_list: &str) -> String {
+pub fn gen_structure_decl(proto: &Protocol, s: &Structure) -> String {
     let type_path_by_name = TypePathMapper::new(&proto.type_path_by_name, SwiftTypeMapper::from_protocol(proto));
     let mut template = Template::compile(STRUCT_TEMPLATE).unwrap();
     let mut field_template = Template::compile(STRUCT_FIELD_TEMPLATE).unwrap();
-    template.var("proto_name", &proto.name).var("import_list", import_list);
+    template.var("proto_name", &proto.name);
     field_template.var("proto_name", &proto.name);
     let templates = Templates {
         template,

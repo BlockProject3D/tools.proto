@@ -1,9 +1,5 @@
 #fragment push impl
-import Foundation;
-import BP3DProto;
-{import_list}
-
-extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.FromSlice where B: BP3DProto.Buffer  {{
+extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.FromSlice  {{
     public typealias Buffer = B;
     public typealias Output = Self;
 
@@ -41,13 +37,13 @@ BP3DProto.VarcharString<B, {codec}>
 #fragment pop
 
 #fragment push array
-BP3DProto.Array<B, {codec}, {type_name}>
+BP3DProto.Array<B, {codec}, {type_name}<B>>
 #fragment pop
 
 #fragment push list
-BP3DProto.List<B, {codec}, {type_name}>
+BP3DProto.List<B, {codec}, {type_name}<B>>
 #fragment pop
 
 #fragment push unsized
-BP3DProto.List<B, {codec}, {type_name}>
+BP3DProto.List<B, {codec}, {type_name}<B>>
 #fragment pop
