@@ -64,6 +64,59 @@ final class UnionsTests: XCTestCase {
 
         try writeMessage(UnionsValue.int8(ValuesValueInt8(value_buffer).setData(-42)), out: &out);
         XCTAssertEqual(try readMessage(out, type: EnumsType.int8).asInt8()!.data, -42);
+
+        out.clear();
+        try writeMessage(UnionsValue.int16(ValuesValueInt16(value_buffer).setData(-4242)), out: &out);
+        XCTAssertEqual(try readMessage(out, type: EnumsType.int16).asInt16()!.data, -4242);
+
+        out.clear();
+        try writeMessage(UnionsValue.int32(ValuesValueInt32(value_buffer).setData(-424242)), out: &out);
+        XCTAssertEqual(try readMessage(out, type: EnumsType.int32).asInt32()!.data, -424242);
+
+        out.clear();
+        try writeMessage(UnionsValue.int64(ValuesValueInt64(value_buffer).setData(-42424242)), out: &out);
+        XCTAssertEqual(try readMessage(out, type: EnumsType.int64).asInt64()!.data, -42424242);
+
+        out.clear();
+        try writeMessage(UnionsValue.uInt8(ValuesValueUInt8(value_buffer).setData(42)), out: &out);
+        XCTAssertEqual(try readMessage(out, type: EnumsType.uInt8).asUInt8()!.data, 42);
+
+        out.clear();
+        try writeMessage(UnionsValue.uInt16(ValuesValueUInt16(value_buffer).setData(4242)), out: &out);
+        XCTAssertEqual(try readMessage(out, type: EnumsType.uInt16).asUInt16()!.data, 4242);
+
+        out.clear();
+        try writeMessage(UnionsValue.uInt32(ValuesValueUInt32(value_buffer).setData(424242)), out: &out);
+        XCTAssertEqual(try readMessage(out, type: EnumsType.uInt32).asUInt32()!.data, 424242);
+
+        out.clear();
+        try writeMessage(UnionsValue.uInt64(ValuesValueUInt64(value_buffer).setData(42424242)), out: &out);
+        XCTAssertEqual(try readMessage(out, type: EnumsType.uInt64).asUInt64()!.data, 42424242);
     }
 
+    func testNull() throws {
+        var out = DataBuffer();
+
+        try writeMessage(UnionsValue.null, out: &out);
+        XCTAssert(try readMessage(out, type: EnumsType.null).isNull());
+    }
+
+    func testFloat() throws {
+        let value_buffer = DataBuffer(size: 8);
+        var out = DataBuffer();
+
+        try writeMessage(UnionsValue.float(ValuesValueFloat(value_buffer).setData(42.42)), out: &out);
+        XCTAssertEqual(try readMessage(out, type: EnumsType.float).asFloat()!.data, 42.42);
+
+        out.clear();
+        try writeMessage(UnionsValue.double(ValuesValueDouble(value_buffer).setData(42.4242)), out: &out);
+        XCTAssertEqual(try readMessage(out, type: EnumsType.double).asDouble()!.data, 42.4242);
+    }
+
+    func testString() throws {
+        var out = DataBuffer();
+
+        try writeMessage(UnionsValue.string(ValuesValueString(data: "this is a test")), out: &out);
+        XCTAssertEqual(try readMessage(out, type: EnumsType.string).asString()!.data, "this is a test");
+    }
 }
