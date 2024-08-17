@@ -45,7 +45,7 @@ public let SIZE_STRUCT_ARRAYS_BASIC: Int = 58;
 extension StructArraysBasic: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = StructArraysBasic;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...58].toData());
     }
 }
 extension StructArraysBasic: BP3DProto.FromSlice where T: BP3DProto.Buffer {

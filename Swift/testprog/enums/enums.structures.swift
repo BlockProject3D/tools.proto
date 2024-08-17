@@ -45,7 +45,7 @@ public let SIZE_ENUMS_HEADER: Int = 1;
 extension EnumsHeader: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = EnumsHeader;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...1].toData());
     }
 }
 extension EnumsHeader: BP3DProto.FromSlice where T: BP3DProto.Buffer {

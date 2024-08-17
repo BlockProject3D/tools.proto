@@ -45,7 +45,7 @@ public let SIZE_VALUES_VALUE_INT8: Int = 1;
 extension ValuesValueInt8: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = ValuesValueInt8;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...1].toData());
     }
 }
 extension ValuesValueInt8: BP3DProto.FromSlice where T: BP3DProto.Buffer {
@@ -103,7 +103,7 @@ public let SIZE_VALUES_VALUE_INT16: Int = 2;
 extension ValuesValueInt16: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = ValuesValueInt16;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...2].toData());
     }
 }
 extension ValuesValueInt16: BP3DProto.FromSlice where T: BP3DProto.Buffer {
@@ -161,7 +161,7 @@ public let SIZE_VALUES_VALUE_INT32: Int = 4;
 extension ValuesValueInt32: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = ValuesValueInt32;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...4].toData());
     }
 }
 extension ValuesValueInt32: BP3DProto.FromSlice where T: BP3DProto.Buffer {
@@ -219,7 +219,7 @@ public let SIZE_VALUES_VALUE_INT64: Int = 8;
 extension ValuesValueInt64: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = ValuesValueInt64;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...8].toData());
     }
 }
 extension ValuesValueInt64: BP3DProto.FromSlice where T: BP3DProto.Buffer {
@@ -277,7 +277,7 @@ public let SIZE_VALUES_VALUE_U_INT8: Int = 1;
 extension ValuesValueUInt8: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = ValuesValueUInt8;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...1].toData());
     }
 }
 extension ValuesValueUInt8: BP3DProto.FromSlice where T: BP3DProto.Buffer {
@@ -333,7 +333,7 @@ public let SIZE_VALUES_VALUE_U_INT16: Int = 2;
 extension ValuesValueUInt16: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = ValuesValueUInt16;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...2].toData());
     }
 }
 extension ValuesValueUInt16: BP3DProto.FromSlice where T: BP3DProto.Buffer {
@@ -389,7 +389,7 @@ public let SIZE_VALUES_VALUE_U_INT32: Int = 4;
 extension ValuesValueUInt32: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = ValuesValueUInt32;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...4].toData());
     }
 }
 extension ValuesValueUInt32: BP3DProto.FromSlice where T: BP3DProto.Buffer {
@@ -445,7 +445,7 @@ public let SIZE_VALUES_VALUE_U_INT64: Int = 8;
 extension ValuesValueUInt64: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = ValuesValueUInt64;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...8].toData());
     }
 }
 extension ValuesValueUInt64: BP3DProto.FromSlice where T: BP3DProto.Buffer {
@@ -501,7 +501,7 @@ public let SIZE_VALUES_VALUE_FLOAT: Int = 4;
 extension ValuesValueFloat: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = ValuesValueFloat;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...4].toData());
     }
 }
 extension ValuesValueFloat: BP3DProto.FromSlice where T: BP3DProto.Buffer {
@@ -559,7 +559,7 @@ public let SIZE_VALUES_VALUE_DOUBLE: Int = 8;
 extension ValuesValueDouble: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = ValuesValueDouble;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...8].toData());
     }
 }
 extension ValuesValueDouble: BP3DProto.FromSlice where T: BP3DProto.Buffer {

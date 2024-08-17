@@ -45,7 +45,7 @@ public let SIZE_BITS_NUMBERS: Int = 4;
 extension BitsNumbers: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = BitsNumbers;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...4].toData());
     }
 }
 extension BitsNumbers: BP3DProto.FromSlice where T: BP3DProto.Buffer {

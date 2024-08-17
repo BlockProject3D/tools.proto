@@ -33,7 +33,7 @@ extension {proto_name:to_pascal_case}{name}: BP3DProto.WriteTo where T: BP3DProt
     public typealias Input = {proto_name:to_pascal_case}{name};
 
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {{
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...{byte_size}].toData());
     }}
 }}
 #fragment pop

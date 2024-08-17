@@ -45,7 +45,7 @@ public let SIZE_UNIONS2_HEADER: Int = 1;
 extension Unions2Header: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = Unions2Header;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...1].toData());
     }
 }
 extension Unions2Header: BP3DProto.FromSlice where T: BP3DProto.Buffer {
@@ -125,7 +125,7 @@ public let SIZE_UNIONS2_HEADER2: Int = 1;
 extension Unions2Header2: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = Unions2Header2;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...1].toData());
     }
 }
 extension Unions2Header2: BP3DProto.FromSlice where T: BP3DProto.Buffer {

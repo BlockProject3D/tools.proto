@@ -38,6 +38,7 @@
 		DA7D6F9F2C709F8200A176F2 /* unions.messages_write.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6F9A2C709F8200A176F2 /* unions.messages_write.swift */; };
 		DA7D6FA02C709F8200A176F2 /* unions.messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6F9B2C709F8200A176F2 /* unions.messages.swift */; };
 		DA7D6FA12C709F8200A176F2 /* unions.unions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6F9C2C709F8200A176F2 /* unions.unions.swift */; };
+		DA7D6FA32C70BEBB00A176F2 /* UnionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6FA22C70BEBB00A176F2 /* UnionsTests.swift */; };
 		DA7E14D52C6F4D4300FE83FE /* enums.enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D22C6F4D4300FE83FE /* enums.enums.swift */; };
 		DA7E14D62C6F4D4300FE83FE /* enums.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D32C6F4D4300FE83FE /* enums.structures.swift */; };
 		DA7E14D82C6F78AC00FE83FE /* EnumsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D72C6F78AC00FE83FE /* EnumsTests.swift */; };
@@ -145,6 +146,7 @@
 		DA7D6F9A2C709F8200A176F2 /* unions.messages_write.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unions.messages_write.swift; sourceTree = "<group>"; };
 		DA7D6F9B2C709F8200A176F2 /* unions.messages.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unions.messages.swift; sourceTree = "<group>"; };
 		DA7D6F9C2C709F8200A176F2 /* unions.unions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unions.unions.swift; sourceTree = "<group>"; };
+		DA7D6FA22C70BEBB00A176F2 /* UnionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnionsTests.swift; sourceTree = "<group>"; };
 		DA7E14D22C6F4D4300FE83FE /* enums.enums.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = enums.enums.swift; sourceTree = "<group>"; };
 		DA7E14D32C6F4D4300FE83FE /* enums.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = enums.structures.swift; sourceTree = "<group>"; };
 		DA7E14D72C6F78AC00FE83FE /* EnumsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnumsTests.swift; sourceTree = "<group>"; };
@@ -211,6 +213,7 @@
 				DA72E6752C6EA290008F8F23 /* StructArraysTests.swift */,
 				DA7E14D72C6F78AC00FE83FE /* EnumsTests.swift */,
 				DA7E14DE2C6F856400FE83FE /* TestTests.swift */,
+				DA7D6FA22C70BEBB00A176F2 /* UnionsTests.swift */,
 			);
 			path = testprogTests;
 			sourceTree = "<group>";
@@ -588,6 +591,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA72E6762C6EA290008F8F23 /* StructArraysTests.swift in Sources */,
+				DA7D6FA32C70BEBB00A176F2 /* UnionsTests.swift in Sources */,
 				DA7E14DF2C6F856400FE83FE /* TestTests.swift in Sources */,
 				DA7E14D82C6F78AC00FE83FE /* EnumsTests.swift in Sources */,
 				DA72E66A2C6E91BF008F8F23 /* ViewsTests.swift in Sources */,

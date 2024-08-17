@@ -45,7 +45,7 @@ public let SIZE_STRUCTS_NUMBERS: Int = 14;
 extension StructsNumbers: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = StructsNumbers;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...14].toData());
     }
 }
 extension StructsNumbers: BP3DProto.FromSlice where T: BP3DProto.Buffer {
@@ -192,7 +192,7 @@ public let SIZE_STRUCTS_FLAGS: Int = 15;
 extension StructsFlags: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = StructsFlags;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...15].toData());
     }
 }
 extension StructsFlags: BP3DProto.FromSlice where T: BP3DProto.Buffer {
@@ -339,7 +339,7 @@ public let SIZE_STRUCTS_FLOATS: Int = 12;
 extension StructsFloats: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = StructsFloats;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...12].toData());
     }
 }
 extension StructsFloats: BP3DProto.FromSlice where T: BP3DProto.Buffer {
@@ -416,7 +416,7 @@ public let SIZE_STRUCTS_MASTER: Int = 41;
 extension StructsMaster: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = StructsMaster;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data.toData());
+        out.write(bytes: input.data[...41].toData());
     }
 }
 extension StructsMaster: BP3DProto.FromSlice where T: BP3DProto.Buffer {
