@@ -36,3 +36,4 @@
 ../../target/debug/protoc --header ../../LICENSE.txt -f use-structs -f use-enums -f use-unions -g swift ../../testprog/src/unions2.json5
 ../../target/debug/protoc --header ../../LICENSE.txt -g swift ../../testprog/src/values.json5
 ../../target/debug/protoc --header ../../LICENSE.txt -i ../../testprog/src/enums.json5 Self -i ../../testprog/src/values.json5 Self -s swift -g swift ../../testprog/src/unions.json5
+../../target/debug/protoc --header ../../LICENSE.txt -g swift ../../testprog/src/arrays.json5

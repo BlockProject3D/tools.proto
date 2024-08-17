@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DA13C7732C710A3100B6D4B1 /* ArraysTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA13C7722C710A3100B6D4B1 /* ArraysTests.swift */; };
 		DA72E6252C6E1EA8008F8F23 /* BP3DProto.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA8EBD642C63D48E00075FDE /* BP3DProto.framework */; };
 		DA72E6262C6E1EA8008F8F23 /* BP3DProto.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DA8EBD642C63D48E00075FDE /* BP3DProto.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DA72E62A2C6E1EB1008F8F23 /* testprog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAC4A9BD2C6E183E00ED8343 /* testprog.framework */; };
@@ -39,6 +40,10 @@
 		DA7D6FA02C709F8200A176F2 /* unions.messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6F9B2C709F8200A176F2 /* unions.messages.swift */; };
 		DA7D6FA12C709F8200A176F2 /* unions.unions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6F9C2C709F8200A176F2 /* unions.unions.swift */; };
 		DA7D6FA32C70BEBB00A176F2 /* UnionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6FA22C70BEBB00A176F2 /* UnionsTests.swift */; };
+		DA7D6FA92C70CACA00A176F2 /* arrays.messages_from_slice.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6FA42C70CACA00A176F2 /* arrays.messages_from_slice.swift */; };
+		DA7D6FAA2C70CACA00A176F2 /* arrays.messages_write.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6FA52C70CACA00A176F2 /* arrays.messages_write.swift */; };
+		DA7D6FAB2C70CACA00A176F2 /* arrays.messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6FA62C70CACA00A176F2 /* arrays.messages.swift */; };
+		DA7D6FAC2C70CACA00A176F2 /* arrays.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7D6FA72C70CACA00A176F2 /* arrays.structures.swift */; };
 		DA7E14D52C6F4D4300FE83FE /* enums.enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D22C6F4D4300FE83FE /* enums.enums.swift */; };
 		DA7E14D62C6F4D4300FE83FE /* enums.structures.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D32C6F4D4300FE83FE /* enums.structures.swift */; };
 		DA7E14D82C6F78AC00FE83FE /* EnumsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA7E14D72C6F78AC00FE83FE /* EnumsTests.swift */; };
@@ -118,6 +123,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DA13C7722C710A3100B6D4B1 /* ArraysTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArraysTests.swift; sourceTree = "<group>"; };
 		DA46DC862C6E1BCF00E3E98C /* testprogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = testprogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA72E62C2C6E2BC9008F8F23 /* ptrbuffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ptrbuffer.swift; sourceTree = "<group>"; };
 		DA72E6602C6E5E37008F8F23 /* bits.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = bits.structures.swift; sourceTree = "<group>"; };
@@ -147,6 +153,10 @@
 		DA7D6F9B2C709F8200A176F2 /* unions.messages.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unions.messages.swift; sourceTree = "<group>"; };
 		DA7D6F9C2C709F8200A176F2 /* unions.unions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unions.unions.swift; sourceTree = "<group>"; };
 		DA7D6FA22C70BEBB00A176F2 /* UnionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnionsTests.swift; sourceTree = "<group>"; };
+		DA7D6FA42C70CACA00A176F2 /* arrays.messages_from_slice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = arrays.messages_from_slice.swift; sourceTree = "<group>"; };
+		DA7D6FA52C70CACA00A176F2 /* arrays.messages_write.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = arrays.messages_write.swift; sourceTree = "<group>"; };
+		DA7D6FA62C70CACA00A176F2 /* arrays.messages.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = arrays.messages.swift; sourceTree = "<group>"; };
+		DA7D6FA72C70CACA00A176F2 /* arrays.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = arrays.structures.swift; sourceTree = "<group>"; };
 		DA7E14D22C6F4D4300FE83FE /* enums.enums.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = enums.enums.swift; sourceTree = "<group>"; };
 		DA7E14D32C6F4D4300FE83FE /* enums.structures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = enums.structures.swift; sourceTree = "<group>"; };
 		DA7E14D72C6F78AC00FE83FE /* EnumsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnumsTests.swift; sourceTree = "<group>"; };
@@ -214,6 +224,7 @@
 				DA7E14D72C6F78AC00FE83FE /* EnumsTests.swift */,
 				DA7E14DE2C6F856400FE83FE /* TestTests.swift */,
 				DA7D6FA22C70BEBB00A176F2 /* UnionsTests.swift */,
+				DA13C7722C710A3100B6D4B1 /* ArraysTests.swift */,
 			);
 			path = testprogTests;
 			sourceTree = "<group>";
@@ -321,6 +332,17 @@
 			path = unions;
 			sourceTree = "<group>";
 		};
+		DA7D6FA82C70CACA00A176F2 /* arrays */ = {
+			isa = PBXGroup;
+			children = (
+				DA7D6FA42C70CACA00A176F2 /* arrays.messages_from_slice.swift */,
+				DA7D6FA52C70CACA00A176F2 /* arrays.messages_write.swift */,
+				DA7D6FA62C70CACA00A176F2 /* arrays.messages.swift */,
+				DA7D6FA72C70CACA00A176F2 /* arrays.structures.swift */,
+			);
+			path = arrays;
+			sourceTree = "<group>";
+		};
 		DA7E14D42C6F4D4300FE83FE /* enums */ = {
 			isa = PBXGroup;
 			children = (
@@ -372,6 +394,7 @@
 		DAC4A9BE2C6E183E00ED8343 /* testprog */ = {
 			isa = PBXGroup;
 			children = (
+				DA7D6FA82C70CACA00A176F2 /* arrays */,
 				DA7D6F9D2C709F8200A176F2 /* unions */,
 				DA7D6F942C709F7900A176F2 /* values */,
 				DA7E14F52C6FFDF100FE83FE /* unions2 */,
@@ -591,6 +614,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA72E6762C6EA290008F8F23 /* StructArraysTests.swift in Sources */,
+				DA13C7732C710A3100B6D4B1 /* ArraysTests.swift in Sources */,
 				DA7D6FA32C70BEBB00A176F2 /* UnionsTests.swift in Sources */,
 				DA7E14DF2C6F856400FE83FE /* TestTests.swift in Sources */,
 				DA7E14D82C6F78AC00FE83FE /* EnumsTests.swift in Sources */,
@@ -646,10 +670,14 @@
 				DA72E6742C6E9BFC008F8F23 /* struct_arrays.structures.swift in Sources */,
 				DA7D6F972C709F7900A176F2 /* values.messages.swift in Sources */,
 				DA7E14F12C6F88FD00FE83FE /* test.structures.swift in Sources */,
+				DA7D6FAB2C70CACA00A176F2 /* arrays.messages.swift in Sources */,
 				DA7D6FA02C709F8200A176F2 /* unions.messages.swift in Sources */,
+				DA7D6FAA2C70CACA00A176F2 /* arrays.messages_write.swift in Sources */,
 				DA7E14D62C6F4D4300FE83FE /* enums.structures.swift in Sources */,
+				DA7D6FA92C70CACA00A176F2 /* arrays.messages_from_slice.swift in Sources */,
 				DA7E14F82C6FFDF100FE83FE /* unions2.unions.swift in Sources */,
 				DA7E14F62C6FFDF100FE83FE /* unions2.enums.swift in Sources */,
+				DA7D6FAC2C70CACA00A176F2 /* arrays.structures.swift in Sources */,
 				DA72E6652C6E5E37008F8F23 /* bits2.structures.swift in Sources */,
 				DA7D6F9F2C709F8200A176F2 /* unions.messages_write.swift in Sources */,
 				DA7D6F952C709F7900A176F2 /* values.messages_from_slice.swift in Sources */,
