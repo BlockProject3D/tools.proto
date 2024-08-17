@@ -103,8 +103,8 @@ impl<'a> Protoc<'a> {
     pub fn new(protocols: Vec<compiler::Protocol>) -> Self {
         Self {
             protocols,
-            write_messages: false,
-            read_messages: false,
+            write_messages: true,
+            read_messages: true,
             use_enums: true,
             use_structs: true,
             use_messages: true,
