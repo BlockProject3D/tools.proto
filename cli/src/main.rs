@@ -135,7 +135,7 @@ fn main() {
         loader.load(input).expect_exit("failed to load protocol", 1);
     }
     let mut protoc = match args.solver {
-        Solver::Simple => loader.compile(SimpleImportSolver::new(&args.import_separator))
+        Solver::Simple => loader.compile(&mut SimpleImportSolver::new(&args.import_separator))
     }.expect_exit("failed to compile protocols", 1);
     if let Some(features) = args.features {
         for f in features {

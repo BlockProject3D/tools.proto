@@ -51,7 +51,7 @@ pub fn generate_rust<F: FnOnce(&mut Loader) -> Result<(), Error>, F1: FnOnce(Pro
     if let Err(e) = res {
         panic!("Failed to load protocols: {}", e);
     }
-    let protoc = match loader.compile(SimpleImportSolver::new("::")) {
+    let protoc = match loader.compile(&mut SimpleImportSolver::new("::")) {
         Err(e) => panic!("Failed to compile protocols: {}", e),
         Ok(v) => v,
     };

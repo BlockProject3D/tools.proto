@@ -67,16 +67,16 @@ impl Loader {
         Ok(())
     }
 
-    pub fn compile<'a, T: ImportResolver + ImportSolver>(self, mut solver: T) -> Result<Protoc<'a>, Error> {
+    pub fn compile<'a, T: ImportResolver + ImportSolver>(self, solver: &mut T) -> Result<Protoc<'a>, Error> {
         for (base_import_path, model) in self.imported_models {
             let compiled =
-                compiler::Protocol::from_model(model, &solver).map_err(Error::Compiler)?;
+                compiler::Protocol::from_model(model, solver).map_err(Error::Compiler)?;
             solver.register(base_import_path, compiled);
         }
         let models = self
             .models
             .into_iter()
-            .map(|model| compiler::Protocol::from_model(model, &solver))
+            .map(|model| compiler::Protocol::from_model(model, solver))
             .collect::<Result<Vec<compiler::Protocol>, compiler::Error>>()
             .map_err(Error::Compiler)?;
         Ok(Protoc::new(models))
