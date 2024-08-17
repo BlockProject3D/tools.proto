@@ -29,7 +29,8 @@
 import Foundation;
 import BP3DProto;
 
-public struct EnumsHeader<T>: BP3DProto.FixedSize {
+public struct EnumsHeader<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 1 }
     public init(_ data: T) {

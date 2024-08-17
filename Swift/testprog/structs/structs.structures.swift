@@ -29,7 +29,8 @@
 import Foundation;
 import BP3DProto;
 
-public struct StructsNumbers<T>: BP3DProto.FixedSize {
+public struct StructsNumbers<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 14 }
     public init(_ data: T) {
@@ -173,7 +174,8 @@ extension StructsNumbers where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer 
 
 }
 
-public struct StructsFlags<T>: BP3DProto.FixedSize {
+public struct StructsFlags<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 15 }
     public init(_ data: T) {
@@ -317,7 +319,8 @@ extension StructsFlags where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
 
 }
 
-public struct StructsFloats<T>: BP3DProto.FixedSize {
+public struct StructsFloats<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 12 }
     public init(_ data: T) {
@@ -391,7 +394,8 @@ extension StructsFloats where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
 
 }
 
-public struct StructsMaster<T>: BP3DProto.FixedSize {
+public struct StructsMaster<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 41 }
     public init(_ data: T) {

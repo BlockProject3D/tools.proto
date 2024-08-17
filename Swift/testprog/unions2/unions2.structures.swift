@@ -29,7 +29,8 @@
 import Foundation;
 import BP3DProto;
 
-public struct Unions2Header<T>: BP3DProto.FixedSize {
+public struct Unions2Header<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 1 }
     public init(_ data: T) {
@@ -106,7 +107,8 @@ extension Unions2Header where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
 
 }
 
-public struct Unions2Header2<T>: BP3DProto.FixedSize {
+public struct Unions2Header2<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 1 }
     public init(_ data: T) {

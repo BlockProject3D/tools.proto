@@ -29,7 +29,8 @@
 import Foundation;
 import BP3DProto;
 
-public struct BitsNumbers<T>: BP3DProto.FixedSize {
+public struct BitsNumbers<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 4 }
     public init(_ data: T) {

@@ -31,3 +31,9 @@ import Foundation
 public protocol FixedSize {
     static var size: Int { get }
 }
+
+public protocol FromBuffer {
+    associatedtype Buffer;
+
+    init(_ buffer: Self.Buffer);
+}

@@ -2,7 +2,9 @@
 #fragment pop
 
 #fragment push decl
-public struct {proto_name:to_pascal_case}{name}<T>: BP3DProto.FixedSize {{
+public struct {proto_name:to_pascal_case}{name}<T>: BP3DProto.FixedSize, FromBuffer {{
+    public typealias Buffer = T
+
     var data: T
 
     public static var size: Int {{ {byte_size} }}

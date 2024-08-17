@@ -29,7 +29,8 @@
 import Foundation;
 import BP3DProto;
 
-public struct ValuesValueInt8<T>: BP3DProto.FixedSize {
+public struct ValuesValueInt8<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 1 }
     public init(_ data: T) {
@@ -84,7 +85,8 @@ extension ValuesValueInt8 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer
 
 }
 
-public struct ValuesValueInt16<T>: BP3DProto.FixedSize {
+public struct ValuesValueInt16<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 2 }
     public init(_ data: T) {
@@ -139,7 +141,8 @@ extension ValuesValueInt16 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffe
 
 }
 
-public struct ValuesValueInt32<T>: BP3DProto.FixedSize {
+public struct ValuesValueInt32<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 4 }
     public init(_ data: T) {
@@ -194,7 +197,8 @@ extension ValuesValueInt32 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffe
 
 }
 
-public struct ValuesValueInt64<T>: BP3DProto.FixedSize {
+public struct ValuesValueInt64<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 8 }
     public init(_ data: T) {
@@ -249,7 +253,8 @@ extension ValuesValueInt64 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffe
 
 }
 
-public struct ValuesValueUInt8<T>: BP3DProto.FixedSize {
+public struct ValuesValueUInt8<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 1 }
     public init(_ data: T) {
@@ -302,7 +307,8 @@ extension ValuesValueUInt8 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffe
 
 }
 
-public struct ValuesValueUInt16<T>: BP3DProto.FixedSize {
+public struct ValuesValueUInt16<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 2 }
     public init(_ data: T) {
@@ -355,7 +361,8 @@ extension ValuesValueUInt16 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuff
 
 }
 
-public struct ValuesValueUInt32<T>: BP3DProto.FixedSize {
+public struct ValuesValueUInt32<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 4 }
     public init(_ data: T) {
@@ -408,7 +415,8 @@ extension ValuesValueUInt32 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuff
 
 }
 
-public struct ValuesValueUInt64<T>: BP3DProto.FixedSize {
+public struct ValuesValueUInt64<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 8 }
     public init(_ data: T) {
@@ -461,7 +469,8 @@ extension ValuesValueUInt64 where T: BP3DProto.Buffer, T: BP3DProto.WritableBuff
 
 }
 
-public struct ValuesValueFloat<T>: BP3DProto.FixedSize {
+public struct ValuesValueFloat<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 4 }
     public init(_ data: T) {
@@ -516,7 +525,8 @@ extension ValuesValueFloat where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffe
 
 }
 
-public struct ValuesValueDouble<T>: BP3DProto.FixedSize {
+public struct ValuesValueDouble<T>: BP3DProto.FixedSize, FromBuffer {
+    public typealias Buffer = T
     var data: T
     public static var size: Int { 8 }
     public init(_ data: T) {
