@@ -41,10 +41,7 @@ pub enum Component<'a> {
 }
 
 impl<'a> Component<'a> {
-    pub fn parse_variable(
-        function_map: &FunctionMap,
-        variable: &'a str,
-    ) -> Result<Component<'a>, Error> {
+    pub fn parse_variable(function_map: &FunctionMap, variable: &'a str) -> Result<Component<'a>, Error> {
         match variable.find(":") {
             None => Ok(Component::Variable(Variable {
                 name: variable,
@@ -53,9 +50,8 @@ impl<'a> Component<'a> {
             Some(id) => {
                 let name = &variable[..id];
                 let function_name = &variable[id + 1..];
-                let function = function_map
-                    .get(function_name)
-                    .ok_or_else(|| Error::FunctionNotFound(function_name.into()))?;
+                let function =
+                    function_map.get(function_name).ok_or_else(|| Error::FunctionNotFound(function_name.into()))?;
                 Ok(Component::Variable(Variable {
                     name,
                     function: Some(function),
@@ -95,11 +91,7 @@ pub struct Token<'a> {
 
 impl<'a> Token<'a> {
     pub fn new(data: &'a [u8]) -> Self {
-        Self {
-            data,
-            start: 0,
-            end: 0,
-        }
+        Self { data, start: 0, end: 0 }
     }
 
     pub fn has_next(&self) -> bool {
@@ -124,8 +116,7 @@ impl<'a> Token<'a> {
         self.start = end + 1;
         self.end = end;
         if end > start && end - start > 0 {
-            let data =
-                std::str::from_utf8(&self.data[start..end]).map_err(|_| Error::InvalidUTF8)?;
+            let data = std::str::from_utf8(&self.data[start..end]).map_err(|_| Error::InvalidUTF8)?;
             Ok(Some(data))
         } else {
             Ok(None)

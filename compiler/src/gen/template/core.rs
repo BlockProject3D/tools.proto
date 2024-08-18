@@ -42,10 +42,7 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
         Self::compile_with_function_map(data, FunctionMap::default())
     }
 
-    pub fn compile_with_function_map(
-        data: &'fragment [u8],
-        function_map: FunctionMap,
-    ) -> Result<Self, Error> {
+    pub fn compile_with_function_map(data: &'fragment [u8], function_map: FunctionMap) -> Result<Self, Error> {
         let mut fragments = HashMap::new();
         let mut frag_stack = Vec::new();
         let lines = data.split(|v| *v == b'\n');
@@ -69,8 +66,7 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                     frag_stack.push(Fragment {
                         name,
                         content: Vec::new(),
-                        mode: FragmentMode::from_str(mode)
-                            .ok_or_else(|| Error::UnknownFragmentMode(mode.into()))?,
+                        mode: FragmentMode::from_str(mode).ok_or_else(|| Error::UnknownFragmentMode(mode.into()))?,
                     });
                 } else {
                     frag_stack.push(Fragment {
@@ -146,19 +142,14 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                 false => Cow::Owned(format!("{}.{}", path, name)),
                 true => Cow::Borrowed(name),
             };
-            let fragment = self
-                .fragments
-                .get(&*name)
-                .ok_or_else(|| Error::FragmentNotFound(String::from(&*name)))?;
+            let fragment = self.fragments.get(&*name).ok_or_else(|| Error::FragmentNotFound(String::from(&*name)))?;
             let sub_rendered = fragment
                 .content
                 .iter()
                 .map(|v| match v {
                     Component::Constant(v) => Ok(Cow::Borrowed(*v)),
                     Component::Variable(v) => {
-                        let variable = variables
-                            .get(v.name)
-                            .ok_or_else(|| Error::VariableNotFound(v.name.into()))?;
+                        let variable = variables.get(v.name).ok_or_else(|| Error::VariableNotFound(v.name.into()))?;
                         if let Some(function) = v.function {
                             let variable = function(variable);
                             Ok(variable)
@@ -208,12 +199,7 @@ impl<'a, 'fragment, 'variable> Scope<'a, 'fragment, 'variable> {
         self
     }
 
-    pub fn render_to_var(
-        &mut self,
-        path: &str,
-        fragments: &[&str],
-        key: &'variable str,
-    ) -> Result<&mut Self, Error> {
+    pub fn render_to_var(&mut self, path: &str, fragments: &[&str], key: &'variable str) -> Result<&mut Self, Error> {
         let str = self.template.render_internal(&self.variables, path, fragments)?;
         self.variables.insert(key, str.into());
         Ok(self)

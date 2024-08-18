@@ -81,10 +81,9 @@ fn gen_field_getter<U: Utilities, T: TypeMapper>(
             .var_d("bit_size", v.item_bit_size())
             .render("getters", &["array"])
             .unwrap(),
-        Field::Struct(v) => scope
-            .var("type_name", type_path_by_name.get(&v.r.name))
-            .render("getters", &["struct"])
-            .unwrap(),
+        Field::Struct(v) => {
+            scope.var("type_name", type_path_by_name.get(&v.r.name)).render("getters", &["struct"]).unwrap()
+        }
     }
 }
 
@@ -127,10 +126,9 @@ fn gen_field_setter<U: Utilities, T: TypeMapper>(
             .var_d("bit_size", v.item_bit_size())
             .render("setters", &["array"])
             .unwrap(),
-        Field::Struct(v) => scope
-            .var("type_name", type_path_by_name.get(&v.r.name))
-            .render("setters", &["struct"])
-            .unwrap(),
+        Field::Struct(v) => {
+            scope.var("type_name", type_path_by_name.get(&v.r.name)).render("setters", &["struct"]).unwrap()
+        }
     }
 }
 
@@ -167,10 +165,9 @@ fn gen_field_view_getter<U: Utilities, T: TypeMapper>(
             .var_d("max_positive", max_positive)
             .render("getters", &["view_signed"])
             .unwrap(),
-        FieldView::None => scope
-            .var("view_type", U::get_field_type(field.ty))
-            .render("getters", &["view_none"])
-            .unwrap(),
+        FieldView::None => {
+            scope.var("view_type", U::get_field_type(field.ty)).render("getters", &["view_none"]).unwrap()
+        }
     }
 }
 
@@ -202,10 +199,9 @@ fn gen_field_view_setter<U: Utilities, T: TypeMapper>(
             }
             scope.render("setters", &["view_transmute"]).unwrap()
         }
-        FieldView::None => scope
-            .var("view_type", U::get_field_type(field.ty))
-            .render("setters", &["view_none"])
-            .unwrap(),
+        FieldView::None => {
+            scope.var("view_type", U::get_field_type(field.ty)).render("setters", &["view_none"]).unwrap()
+        }
     }
 }
 
@@ -215,8 +211,7 @@ fn gen_structure_getters<U: Utilities, T: TypeMapper>(
     type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
-    let fields =
-        s.fields.iter().map(|v| gen_field_getter::<U, T>(v, template, type_path_by_name)).join("");
+    let fields = s.fields.iter().map(|v| gen_field_getter::<U, T>(v, template, type_path_by_name)).join("");
     scope.var("fields", fields).render("", &["getters"]).unwrap()
 }
 
@@ -226,8 +221,7 @@ fn gen_structure_setters<U: Utilities, T: TypeMapper>(
     type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
-    let fields =
-        s.fields.iter().map(|v| gen_field_setter::<U, T>(v, template, type_path_by_name)).join("");
+    let fields = s.fields.iter().map(|v| gen_field_setter::<U, T>(v, template, type_path_by_name)).join("");
     scope.var("fields", fields).render("", &["setters"]).unwrap()
 }
 
@@ -245,8 +239,7 @@ pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
     let mut field_template = templates.field_template;
     field_template.var("struct_name", &s.name);
     template.var("name", &s.name).var_d("byte_size", s.byte_size);
-    let mut code =
-        template.render("", &["decl", "new", "fixed_size", "write_to", "from_slice"]).unwrap();
+    let mut code = template.render("", &["decl", "new", "fixed_size", "write_to", "from_slice"]).unwrap();
     code += &gen_structure_getters::<U, T>(s, &field_template, type_path_by_name);
     code += &gen_structure_setters::<U, T>(s, &field_template, type_path_by_name);
     code

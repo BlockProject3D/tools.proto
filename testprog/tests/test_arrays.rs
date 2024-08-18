@@ -44,9 +44,7 @@ fn msg() {
             v.set_slot(slot);
             slot += 1;
         }
-        let msg = Msg {
-            items: arr.to_ref(),
-        };
+        let msg = Msg { items: arr.to_ref() };
         Msg::write_to(&msg, &mut msg_buffer).unwrap();
     }
     {

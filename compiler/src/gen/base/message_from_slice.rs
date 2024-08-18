@@ -34,10 +34,7 @@ use crate::gen::template::Template;
 use itertools::Itertools;
 use std::borrow::Cow;
 
-fn gen_optional<'a, U: Utilities>(
-    optional: bool,
-    type_name: impl Into<Cow<'a, str>>,
-) -> Cow<'a, str> {
+fn gen_optional<'a, U: Utilities>(optional: bool, type_name: impl Into<Cow<'a, str>>) -> Cow<'a, str> {
     if optional {
         U::gen_option_type_inline(&type_name.into()).into()
     } else {
@@ -52,22 +49,14 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
     type_path_by_name: &'a TypePathMapper<T>,
 ) -> Cow<'a, str> {
     let msg_type = match &field.ty {
-        FieldType::Fixed(ty) => gen_optional::<U>(
-            field.optional,
-            U::get_value_type_inline(field.endianness, ty.ty),
-        ),
+        FieldType::Fixed(ty) => gen_optional::<U>(field.optional, U::get_value_type_inline(field.endianness, ty.ty)),
         FieldType::Ref(v) => match v {
-            Referenced::Struct(v) => {
-                gen_optional::<U>(field.optional, type_path_by_name.get(&v.name))
-            }
-            Referenced::Message(v) => {
-                gen_optional::<U>(field.optional, type_path_by_name.get(&v.name))
-            }
+            Referenced::Struct(v) => gen_optional::<U>(field.optional, type_path_by_name.get(&v.name)),
+            Referenced::Message(v) => gen_optional::<U>(field.optional, type_path_by_name.get(&v.name)),
         },
-        FieldType::NullTerminatedString => gen_optional::<U>(
-            field.optional,
-            U::get_string_type_inline(StringType::NullTerminated),
-        ),
+        FieldType::NullTerminatedString => {
+            gen_optional::<U>(field.optional, U::get_string_type_inline(StringType::NullTerminated))
+        }
         FieldType::VarcharString(v) => gen_optional::<U>(
             field.optional,
             template
@@ -147,9 +136,7 @@ pub fn generate_from_slice_impl<U: Utilities, T: TypeMapper>(
     let field_names = msg
         .fields
         .iter()
-        .map(|field| {
-            template.scope().var("name", &field.name).render("impl", &["field_name"]).unwrap()
-        })
+        .map(|field| template.scope().var("name", &field.name).render("impl", &["field_name"]).unwrap())
         .join("");
     template
         .scope()

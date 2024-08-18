@@ -83,9 +83,7 @@ impl crate::gen::base::structure::Utilities for RustUtils {
 
     fn get_byte_codec_inline(endianness: Endianness) -> &'static str {
         match endianness {
-            Endianness::Little => {
-                "<bp3d_proto::codec::ByteCodecLE as bp3d_proto::codec::ByteCodec>"
-            }
+            Endianness::Little => "<bp3d_proto::codec::ByteCodecLE as bp3d_proto::codec::ByteCodec>",
             Endianness::Big => "<bp3d_proto::codec::ByteCodecBE as bp3d_proto::codec::ByteCodec>",
         }
     }

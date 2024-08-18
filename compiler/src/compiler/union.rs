@@ -46,19 +46,14 @@ impl UnionField {
     ) -> Result<Self, Error> {
         let case: usize = match &discriminant.view {
             FieldView::Float { .. } => return Err(Error::FloatInUnionDiscriminant),
-            FieldView::Enum(v) => v
-                .variants_map
-                .get(&value.case)
-                .copied()
-                .ok_or(Error::InvalidUnionCase(value.case))?,
+            FieldView::Enum(v) => {
+                v.variants_map.get(&value.case).copied().ok_or(Error::InvalidUnionCase(value.case))?
+            }
             FieldView::Transmute | FieldView::SignedCast { .. } => {
-                let value: isize =
-                    value.case.parse().map_err(|_| Error::InvalidUnionCase(value.case))?;
+                let value: isize = value.case.parse().map_err(|_| Error::InvalidUnionCase(value.case))?;
                 value as usize
             }
-            FieldView::None => {
-                value.case.parse().map_err(|_| Error::InvalidUnionCase(value.case))?
-            }
+            FieldView::None => value.case.parse().map_err(|_| Error::InvalidUnionCase(value.case))?,
         };
         let item_type = value
             .item_type
@@ -118,10 +113,7 @@ impl DiscriminantField {
     pub fn from_model(proto: &Protocol, discriminant: String) -> Result<Self, Error> {
         let mut parts = discriminant.split(".");
         let name = parts.next().ok_or(Error::InvalidUnionDiscriminant)?;
-        let mut leaf = proto
-            .structs_by_name
-            .get(name)
-            .ok_or_else(|| Error::UndefinedReference(name.into()))?;
+        let mut leaf = proto.structs_by_name.get(name).ok_or_else(|| Error::UndefinedReference(name.into()))?;
         let root = leaf;
         let mut index_list = Vec::new();
         for sub in parts {

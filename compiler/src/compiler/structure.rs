@@ -103,17 +103,13 @@ impl FixedFieldType {
         } else if ty == SimpleType::Float && bit_size == 64 {
             Ok(Self::Float64)
         } else if bit_size > 32 && bit_size <= 64 {
-            map_numeric(ty, Self::Int64, Self::UInt64, Self::Float64)
-                .ok_or(Error::UnsupportedType(motherfuckingrust))
+            map_numeric(ty, Self::Int64, Self::UInt64, Self::Float64).ok_or(Error::UnsupportedType(motherfuckingrust))
         } else if bit_size > 16 && bit_size <= 32 {
-            map_numeric(ty, Self::Int32, Self::UInt32, Self::Float64)
-                .ok_or(Error::UnsupportedType(motherfuckingrust))
+            map_numeric(ty, Self::Int32, Self::UInt32, Self::Float64).ok_or(Error::UnsupportedType(motherfuckingrust))
         } else if bit_size > 8 && bit_size <= 16 {
-            map_numeric(ty, Self::Int16, Self::UInt16, Self::Float32)
-                .ok_or(Error::UnsupportedType(motherfuckingrust))
+            map_numeric(ty, Self::Int16, Self::UInt16, Self::Float32).ok_or(Error::UnsupportedType(motherfuckingrust))
         } else if bit_size > 0 && bit_size <= 8 {
-            map_numeric(ty, Self::Int8, Self::UInt8, Self::Float32)
-                .ok_or(Error::UnsupportedType(motherfuckingrust))
+            map_numeric(ty, Self::Int8, Self::UInt8, Self::Float32).ok_or(Error::UnsupportedType(motherfuckingrust))
         } else {
             Err(Error::UnsupportedBitSize(bit_size))
         }
@@ -144,22 +140,14 @@ impl Location {
     }
 
     pub fn get_unsigned_integer_type(&self) -> FixedFieldType {
-        FixedFieldType::from_model(StructFieldType::Unsigned {
-            bits: self.bit_size,
-        })
-        .unwrap()
+        FixedFieldType::from_model(StructFieldType::Unsigned { bits: self.bit_size }).unwrap()
     }
 }
 
 #[derive(Clone, Debug)]
 pub enum FieldView {
     /// Apply a float view based on an affine transformation function.
-    Float {
-        a: f64,
-        b: f64,
-        a_inv: f64,
-        b_inv: f64,
-    },
+    Float { a: f64, b: f64, a_inv: f64, b_inv: f64 },
 
     /// Apply an enum view.
     Enum(Rc<Enum>),
@@ -219,12 +207,7 @@ impl FieldView {
                 if ty == SimpleType::Float && bit_size != 32 && bit_size != 64 {
                     return Err(Error::UnsupportedViewType(ty));
                 }
-                if ty == SimpleType::Signed
-                    && bit_size != 8
-                    && bit_size != 16
-                    && bit_size != 32
-                    && bit_size != 64
-                {
+                if ty == SimpleType::Signed && bit_size != 8 && bit_size != 16 && bit_size != 32 && bit_size != 64 {
                     let max_value = 1 << (bit_size - 1);
                     Ok(FieldView::SignedCast(max_value - 1))
                 } else if ty == SimpleType::Unsigned {
@@ -306,10 +289,7 @@ impl Field {
     ) -> Result<(Self, usize), Error> {
         match value.info {
             StructFieldType::Struct { item_type } => {
-                let r = proto
-                    .structs_by_name
-                    .get(&item_type)
-                    .ok_or(Error::UndefinedReference(item_type))?;
+                let r = proto.structs_by_name.get(&item_type).ok_or(Error::UndefinedReference(item_type))?;
                 Ok((
                     Self::Struct(StructField {
                         name: value.name,
@@ -322,12 +302,7 @@ impl Field {
             _ => {
                 let array_len = value.array_len.unwrap_or(1);
                 let mut bit_size = value.info.get_bit_size().ok_or(Error::MissingBitSize)?;
-                let view = FieldView::from_model(
-                    proto,
-                    value.info.get_simple_type(),
-                    bit_size,
-                    value.view,
-                )?;
+                let view = FieldView::from_model(proto, value.info.get_simple_type(), bit_size, value.view)?;
                 bit_size *= array_len;
                 let ty = FixedFieldType::from_model(value.info)?;
                 let loc = Location::from_model(bit_size, last_bit_offset);
@@ -371,10 +346,7 @@ pub struct Structure {
 }
 
 impl Structure {
-    pub fn from_model(
-        proto: &Protocol,
-        value: crate::model::structure::Structure,
-    ) -> Result<Structure, Error> {
+    pub fn from_model(proto: &Protocol, value: crate::model::structure::Structure) -> Result<Structure, Error> {
         let mut last_bit_offset = 0;
         let fields = value.fields.into_iter().map(|v| {
             let res = Field::from_model(proto, last_bit_offset, v);

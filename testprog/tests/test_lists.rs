@@ -42,9 +42,7 @@ fn write_span_run<F: FnOnce(SpanRun) -> bp3d_proto::message::Result<()>>(f: F) {
     list.write_item(&Item {
         header: header.set_type(Type::String).to_ref(),
         name: "test",
-        value: Value::String(ValueString {
-            data: "this is a test",
-        }),
+        value: Value::String(ValueString { data: "this is a test" }),
     })
     .unwrap();
     list.write_item(&Item {
@@ -96,9 +94,7 @@ fn dataset() {
         write_span_run(|msg| list.write_item(&msg));
         write_span_run(|msg| list.write_item(&msg));
         write_span_run(|msg| list.write_item(&msg));
-        let msg = Dataset {
-            runs: list.to_ref(),
-        };
+        let msg = Dataset { runs: list.to_ref() };
         Dataset::write_to(&msg, &mut msg_buffer).unwrap();
     }
     {

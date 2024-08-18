@@ -92,9 +92,7 @@ pub struct IterOffsets<'a, Item> {
     useless: PhantomData<Item>,
 }
 
-impl<'a, Item: FromSlice<'a, Output = Item> + FromSliceWithOffsets<'a>> Iterator
-    for IterOffsets<'a, Item>
-{
+impl<'a, Item: FromSlice<'a, Output = Item> + FromSliceWithOffsets<'a>> Iterator for IterOffsets<'a, Item> {
     type Item = crate::message::Result<(Item, Item::Offsets)>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -142,8 +140,6 @@ impl<'a, T: FromSlice<'a, Output: ToUsize>, Item> FromSlice<'a> for Unsized<T, I
         let control_size = msg.size();
         let len = msg.into_inner().to_usize();
         let data = &slice[control_size..];
-        Ok(Message::new(slice.len(), unsafe {
-            List::from_raw_parts(data, len)
-        }))
+        Ok(Message::new(slice.len(), unsafe { List::from_raw_parts(data, len) }))
     }
 }

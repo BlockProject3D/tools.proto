@@ -102,13 +102,7 @@ pub trait BitCodec {
     /// optimization might remove the panic check from release builds, essentially causing UB in
     /// such build.
     unsafe fn write_aligned<
-        T: ToUsize
-            + ReadBytes
-            + WriteBytes
-            + Shl<Output = T>
-            + Shr<Output = T>
-            + BitAnd<Output = T>
-            + BitOr<Output = T>,
+        T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>,
         const BIT_OFFSET: usize,
         const BIT_SIZE: usize,
     >(
@@ -117,13 +111,7 @@ pub trait BitCodec {
     );
 
     fn write_unaligned<
-        T: ToUsize
-            + ReadBytes
-            + WriteBytes
-            + Shl<Output = T>
-            + Shr<Output = T>
-            + BitAnd<Output = T>
-            + BitOr<Output = T>,
+        T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>,
         const BIT_OFFSET: usize,
         const BIT_SIZE: usize,
     >(
@@ -132,13 +120,7 @@ pub trait BitCodec {
     );
 
     fn write<
-        T: ToUsize
-            + ReadBytes
-            + WriteBytes
-            + Shl<Output = T>
-            + Shr<Output = T>
-            + BitAnd<Output = T>
-            + BitOr<Output = T>,
+        T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>,
         const BIT_OFFSET: usize,
         const BIT_SIZE: usize,
     >(
@@ -182,13 +164,7 @@ impl BitCodec for BitCodecLE {
     }
 
     unsafe fn write_aligned<
-        T: ToUsize
-            + ReadBytes
-            + WriteBytes
-            + Shl<Output = T>
-            + Shr<Output = T>
-            + BitAnd<Output = T>
-            + BitOr<Output = T>,
+        T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>,
         const BIT_OFFSET: usize,
         const BIT_SIZE: usize,
     >(
@@ -204,13 +180,7 @@ impl BitCodec for BitCodecLE {
     }
 
     fn write_unaligned<
-        T: ToUsize
-            + ReadBytes
-            + WriteBytes
-            + Shl<Output = T>
-            + Shr<Output = T>
-            + BitAnd<Output = T>
-            + BitOr<Output = T>,
+        T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>,
         const BIT_OFFSET: usize,
         const BIT_SIZE: usize,
     >(
@@ -252,13 +222,7 @@ impl BitCodec for BitCodecBE {
     }
 
     unsafe fn write_aligned<
-        T: ToUsize
-            + ReadBytes
-            + WriteBytes
-            + Shl<Output = T>
-            + Shr<Output = T>
-            + BitAnd<Output = T>
-            + BitOr<Output = T>,
+        T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>,
         const BIT_OFFSET: usize,
         const BIT_SIZE: usize,
     >(
@@ -274,13 +238,7 @@ impl BitCodec for BitCodecBE {
     }
 
     fn write_unaligned<
-        T: ToUsize
-            + ReadBytes
-            + WriteBytes
-            + Shl<Output = T>
-            + Shr<Output = T>
-            + BitAnd<Output = T>
-            + BitOr<Output = T>,
+        T: ToUsize + ReadBytes + WriteBytes + Shl<Output = T> + Shr<Output = T> + BitAnd<Output = T> + BitOr<Output = T>,
         const BIT_OFFSET: usize,
         const BIT_SIZE: usize,
     >(

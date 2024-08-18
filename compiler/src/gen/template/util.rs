@@ -40,8 +40,7 @@ fn guess_case_convention(s: &str) -> Convention {
     //Assume all strings are Rust identifiers following standard Rust conventions:
     // snake_case, PascalCase and SCREAMING_CASE.
     let upper1 = (s.as_bytes()[0] >= b'A' && s.as_bytes()[0] <= b'Z') || s.as_bytes()[0] == b'_';
-    let upper2 = (s.as_bytes()[s.as_bytes().len() - 1] >= b'A'
-        && s.as_bytes()[s.as_bytes().len() - 1] <= b'Z')
+    let upper2 = (s.as_bytes()[s.as_bytes().len() - 1] >= b'A' && s.as_bytes()[s.as_bytes().len() - 1] <= b'Z')
         || s.as_bytes()[s.as_bytes().len() - 1] == b'_';
     if upper1 && upper2 {
         Convention::ScreamingCase

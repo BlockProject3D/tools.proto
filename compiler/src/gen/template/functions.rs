@@ -44,9 +44,7 @@ impl<'fragment> Default for FunctionMap<'fragment> {
 
 impl<'fragment> FunctionMap<'fragment> {
     pub fn new() -> Self {
-        Self {
-            map: HashMap::new(),
-        }
+        Self { map: HashMap::new() }
     }
 
     pub fn add_defaults(&mut self) {

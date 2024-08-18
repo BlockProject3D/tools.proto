@@ -70,10 +70,8 @@ impl Generator for GeneratorSwift {
         let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(&proto, v));
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(&proto, v));
         let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(&proto, v));
-        let impl_from_slice_messages_code =
-            proto.messages.iter().map(|v| gen_message_from_slice_impl(&proto, v));
-        let impl_write_messages_code =
-            proto.messages.iter().map(|v| gen_message_write_impl(&proto, v));
+        let impl_from_slice_messages_code = proto.messages.iter().map(|v| gen_message_from_slice_impl(&proto, v));
+        let impl_write_messages_code = proto.messages.iter().map(|v| gen_message_write_impl(&proto, v));
         let decl_unions = proto.unions.iter().map(|v| gen_union_decl(&proto, v));
         Ok(vec![
             File::new(
@@ -81,11 +79,7 @@ impl Generator for GeneratorSwift {
                 format!("{}.structures.swift", proto.name),
                 (&imports, decl_structures),
             ),
-            File::new(
-                FileType::Enum,
-                format!("{}.enums.swift", proto.name),
-                B(decl_enums),
-            ),
+            File::new(FileType::Enum, format!("{}.enums.swift", proto.name), B(decl_enums)),
             File::new(
                 FileType::Message,
                 format!("{}.messages.swift", proto.name),

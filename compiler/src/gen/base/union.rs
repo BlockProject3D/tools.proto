@@ -125,14 +125,12 @@ fn gen_union_as_getters<T: TypeMapper>(
             let mut scope = template.scope();
             scope.var("name", &case.name);
             match &case.item_type {
-                Some(Referenced::Struct(v)) => scope
-                    .var("type_name", type_path_by_name.get(&v.name))
-                    .render("getters", &["struct"])
-                    .unwrap(),
-                Some(Referenced::Message(v)) => scope
-                    .var("type_name", type_path_by_name.get(&v.name))
-                    .render("getters", &["message"])
-                    .unwrap(),
+                Some(Referenced::Struct(v)) => {
+                    scope.var("type_name", type_path_by_name.get(&v.name)).render("getters", &["struct"]).unwrap()
+                }
+                Some(Referenced::Message(v)) => {
+                    scope.var("type_name", type_path_by_name.get(&v.name)).render("getters", &["message"]).unwrap()
+                }
                 None => scope.render("getters", &["none"]).unwrap(),
             }
         })
@@ -147,24 +145,12 @@ pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
 ) -> String {
     let generics = U::get_generics(u);
     template
-        .var(
-            "discriminant_raw_type",
-            U::get_field_type(u.discriminant.get_leaf().ty),
-        )
+        .var("discriminant_raw_type", U::get_field_type(u.discriminant.get_leaf().ty))
         .var("union_name", &u.name)
         .var("generics", generics)
-        .var(
-            "discriminant_path_mut",
-            U::gen_discriminant_path_mut(&u.discriminant),
-        )
-        .var(
-            "discriminant_path",
-            U::gen_discriminant_path(&u.discriminant),
-        )
-        .var(
-            "discriminant_type",
-            type_path_by_name.get(&u.discriminant.root.name),
-        );
+        .var("discriminant_path_mut", U::gen_discriminant_path_mut(&u.discriminant))
+        .var("discriminant_path", U::gen_discriminant_path(&u.discriminant))
+        .var("discriminant_type", type_path_by_name.get(&u.discriminant.root.name));
     let cases = u
         .cases
         .iter()

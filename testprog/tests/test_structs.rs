@@ -54,12 +54,7 @@ fn check_floats<T: AsRef<[u8]>>(floats: &Floats<T>) {
 fn numbers() {
     let mut nums = Numbers::new_on_stack();
     assert_eq!(nums.size(), 14);
-    nums.set_u_a(0x123456AB)
-        .set_a(-424242)
-        .set_u_b(0x1234)
-        .set_b(-4242)
-        .set_u_c(0x12)
-        .set_c(-42);
+    nums.set_u_a(0x123456AB).set_a(-424242).set_u_b(0x1234).set_b(-4242).set_u_c(0x12).set_c(-42);
     check_numbers(&nums);
 }
 

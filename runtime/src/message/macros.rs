@@ -33,20 +33,14 @@ macro_rules! generate_array_wrapper {
 
         impl<'a, B> $name<'a, B> {
             pub unsafe fn from_raw_parts(data: B, len: usize) -> $name<'a, B> {
-                Self(
-                    $crate::message::util::Array::<B, $t, $inner<&'a [u8]>>::from_raw_parts(
-                        data, len,
-                    ),
-                )
+                Self($crate::message::util::Array::<B, $t, $inner<&'a [u8]>>::from_raw_parts(data, len))
             }
 
             pub fn new(data: B) -> $name<'a, B> {
                 unsafe { Self::from_raw_parts(data, 0) }
             }
 
-            pub fn from_array(
-                inner: $crate::message::util::Array<B, $t, $inner<&'a [u8]>>,
-            ) -> Self {
+            pub fn from_array(inner: $crate::message::util::Array<B, $t, $inner<&'a [u8]>>) -> Self {
                 Self(inner)
             }
 
@@ -75,8 +69,7 @@ macro_rules! generate_array_wrapper {
             }
 
             pub fn from_parts(data: B, len: usize) -> Option<Self> {
-                $crate::message::util::Array::<B, $t, $inner<&'a [u8]>>::from_parts(data, len)
-                    .map(Self)
+                $crate::message::util::Array::<B, $t, $inner<&'a [u8]>>::from_parts(data, len).map(Self)
             }
 
             pub fn get(&self, index: usize) -> $inner<&[u8]> {
@@ -93,9 +86,7 @@ macro_rules! generate_array_wrapper {
                 self.0.get_mut(index)
             }
 
-            pub fn iter_mut<'b>(
-                &'b mut self,
-            ) -> $crate::message::util::array::IterMut<'b, $inner<&mut [u8]>> {
+            pub fn iter_mut<'b>(&'b mut self) -> $crate::message::util::array::IterMut<'b, $inner<&mut [u8]>> {
                 self.0.iter_mut()
             }
         }

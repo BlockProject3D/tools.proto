@@ -61,11 +61,7 @@ fn gen_message_array_type_decls(
         .join("")
 }
 
-fn gen_initializer(
-    template: &Template,
-    msg: &Message,
-    type_path_by_name: &TypePathMapper<SwiftTypeMapper>,
-) -> String {
+fn gen_initializer(template: &Template, msg: &Message, type_path_by_name: &TypePathMapper<SwiftTypeMapper>) -> String {
     let init_field_list = msg
         .fields
         .iter()
@@ -75,9 +71,7 @@ fn gen_initializer(
     let initializers = msg
         .fields
         .iter()
-        .map(|field| {
-            template.scope().var("name", &field.name).render("decl", &["initializer"]).unwrap()
-        })
+        .map(|field| template.scope().var("name", &field.name).render("decl", &["initializer"]).unwrap())
         .join("");
     template
         .scope()
@@ -88,10 +82,7 @@ fn gen_initializer(
 }
 
 pub fn gen_message_decl(proto: &Protocol, msg: &Message) -> String {
-    let type_path_by_name = TypePathMapper::new(
-        &proto.type_path_by_name,
-        SwiftTypeMapper::from_protocol(proto),
-    );
+    let type_path_by_name = TypePathMapper::new(&proto.type_path_by_name, SwiftTypeMapper::from_protocol(proto));
     let mut template_ext = Template::compile(TEMPLATE_EXT).unwrap();
     template_ext.var("proto_name", &proto.name).var("msg_name", &msg.name);
     let initializer = gen_initializer(&template_ext, msg, &type_path_by_name);

@@ -50,9 +50,11 @@ impl Referenced {
     }
 
     pub fn lookup(proto: &Protocol, reference_name: &str) -> Option<Self> {
-        proto.structs_by_name.get(reference_name).map(|v| Referenced::Struct(v.clone())).or_else(
-            || proto.messages_by_name.get(reference_name).map(|v| Referenced::Message(v.clone())),
-        )
+        proto
+            .structs_by_name
+            .get(reference_name)
+            .map(|v| Referenced::Struct(v.clone()))
+            .or_else(|| proto.messages_by_name.get(reference_name).map(|v| Referenced::Message(v.clone())))
     }
 }
 
@@ -116,10 +118,7 @@ impl FieldType {
     }
 
     pub fn is_string(&self) -> bool {
-        matches!(
-            self,
-            FieldType::VarcharString(_) | FieldType::NullTerminatedString
-        )
+        matches!(self, FieldType::VarcharString(_) | FieldType::NullTerminatedString)
     }
 }
 
@@ -146,20 +145,13 @@ impl Field {
     ) -> Result<Self, Error> {
         match value.info {
             MessageFieldType::Item { item_type } => {
-                let r = Referenced::lookup(proto, &item_type)
-                    .ok_or(Error::UndefinedReference(item_type))?;
+                let r = Referenced::lookup(proto, &item_type).ok_or(Error::UndefinedReference(item_type))?;
                 match r {
                     Referenced::Struct(r) => {
                         if r.fields.len() == 1
                             && r.fields[0].as_fixed().is_some()
-                            && r.fields[0]
-                                .as_fixed()
-                                .map(|v| v.view.is_transmute())
-                                .unwrap_or_default()
-                            && r.fields[0]
-                                .as_fixed()
-                                .map(|v| v.loc.bit_size % 8 == 0)
-                                .unwrap_or_default()
+                            && r.fields[0].as_fixed().map(|v| v.view.is_transmute()).unwrap_or_default()
+                            && r.fields[0].as_fixed().map(|v| v.loc.bit_size % 8 == 0).unwrap_or_default()
                         {
                             let fixed = unsafe { r.fields[0].as_fixed().unwrap_unchecked() };
                             Ok(Field {
@@ -195,8 +187,7 @@ impl Field {
                 }
             }
             MessageFieldType::List { max_len, item_type } => {
-                let r = Referenced::lookup(proto, &item_type)
-                    .ok_or(Error::UndefinedReference(item_type))?;
+                let r = Referenced::lookup(proto, &item_type).ok_or(Error::UndefinedReference(item_type))?;
                 let ty = FixedFieldType::from_max_value(max_len)?;
                 match r {
                     Referenced::Struct(item_type) => Ok(Field {
@@ -255,10 +246,7 @@ impl Field {
                     .enumerate()
                     .find_map(|(k, v)| if v.name == on { Some((k, v)) } else { None })
                     .ok_or(Error::UndefinedReference(on))?;
-                let r = proto
-                    .unions_by_name
-                    .get(&item_type)
-                    .ok_or(Error::UndefinedReference(item_type))?;
+                let r = proto.unions_by_name.get(&item_type).ok_or(Error::UndefinedReference(item_type))?;
                 match &on_field.ty {
                     FieldType::Ref(Referenced::Struct(v)) => {
                         if !Rc::ptr_eq(&r.discriminant.root, v) {
@@ -269,9 +257,7 @@ impl Field {
                 }
                 let on_name = on_field.name.clone();
                 if value.optional.unwrap_or_default() {
-                    eprintln!(
-                        "WARNING: ignoring unsupported optional flag on union message field!"
-                    );
+                    eprintln!("WARNING: ignoring unsupported optional flag on union message field!");
                 }
                 Ok(Field {
                     name: value.name,
@@ -312,10 +298,7 @@ impl Message {
         self.embedded.get()
     }
 
-    pub fn from_model(
-        proto: &Protocol,
-        value: crate::model::message::Message,
-    ) -> Result<Message, Error> {
+    pub fn from_model(proto: &Protocol, value: crate::model::message::Message) -> Result<Message, Error> {
         let mut fields = Vec::with_capacity(value.fields.len());
         let mut dyn_sized_elem_count = 0;
         let mut is_dyn_sized = false;
@@ -324,9 +307,7 @@ impl Message {
             if field.size.is_dyn_sized {
                 is_dyn_sized = true;
             }
-            if dyn_sized_elem_count > 0
-                && (field.size.is_dyn_sized || field.size.is_element_dyn_sized)
-            {
+            if dyn_sized_elem_count > 0 && (field.size.is_dyn_sized || field.size.is_element_dyn_sized) {
                 return Err(Error::VarsizeAfterPayload);
             }
             if field.size.is_element_dyn_sized {

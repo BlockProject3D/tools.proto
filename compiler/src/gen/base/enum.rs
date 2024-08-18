@@ -39,8 +39,9 @@ pub fn generate<'fragment, 'variable, U: Utilities>(
         .var("name", &e.name)
         .var_d("largest", e.largest)
         .var("repr_type", U::get_field_type(e.repr_type));
-    let mut code = e.variants.iter().map(|(k, v)| {
-        template.scope().var("key", k).var_d("value", v).render("enum", &["variant"]).unwrap()
-    });
+    let mut code = e
+        .variants
+        .iter()
+        .map(|(k, v)| template.scope().var("key", k).var_d("value", v).render("enum", &["variant"]).unwrap());
     template.var("variants", code.join("")).render("", &["enum"]).unwrap()
 }

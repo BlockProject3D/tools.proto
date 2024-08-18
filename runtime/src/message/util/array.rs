@@ -33,6 +33,8 @@ use crate::util::{FixedSize, ToUsize};
 use std::marker::PhantomData;
 use std::slice::{Chunks, ChunksMut};
 
+//TODO: Try implement Index and IndexMut.
+
 #[derive(Copy, Clone, Debug)]
 pub struct Array<B, T, Item> {
     data: B,
@@ -108,8 +110,8 @@ impl<'a, B: AsMut<[u8]>, T, I> Array<B, T, I> {
     }
 }
 
-impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FixedSize + FromSlice<'a, Output = Item>>
-    FromSlice<'a> for Array<&'a [u8], T, Item>
+impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FixedSize + FromSlice<'a, Output = Item>> FromSlice<'a>
+    for Array<&'a [u8], T, Item>
 {
     type Output = Array<&'a [u8], T, Item>;
 

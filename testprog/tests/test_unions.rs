@@ -31,8 +31,8 @@ use std::io::Write;
 use testprog::enums::{Header, Type};
 use testprog::unions::{Item, Value};
 use testprog::values::{
-    ValueDouble, ValueFloat, ValueInt16, ValueInt32, ValueInt64, ValueInt8, ValueString,
-    ValueUInt16, ValueUInt32, ValueUInt64, ValueUInt8,
+    ValueDouble, ValueFloat, ValueInt16, ValueInt32, ValueInt64, ValueInt8, ValueString, ValueUInt16, ValueUInt32,
+    ValueUInt64, ValueUInt8,
 };
 
 fn write_message(value: Value, out: &mut impl Write) {
@@ -64,30 +64,21 @@ fn item_numbers() {
         Value::Int8(ValueInt8::from(&mut value_buffer).set_data(-42).to_ref()),
         &mut buf,
     );
-    assert_eq!(
-        read_message(&buf, Type::Int8).as_int8().unwrap().get_data(),
-        -42
-    );
+    assert_eq!(read_message(&buf, Type::Int8).as_int8().unwrap().get_data(), -42);
 
     buf.clear();
     write_message(
         Value::Int16(ValueInt16::from(&mut value_buffer).set_data(-4242).to_ref()),
         &mut buf,
     );
-    assert_eq!(
-        read_message(&buf, Type::Int16).as_int16().unwrap().get_data(),
-        -4242
-    );
+    assert_eq!(read_message(&buf, Type::Int16).as_int16().unwrap().get_data(), -4242);
 
     buf.clear();
     write_message(
         Value::Int32(ValueInt32::from(&mut value_buffer).set_data(-424242).to_ref()),
         &mut buf,
     );
-    assert_eq!(
-        read_message(&buf, Type::Int32).as_int32().unwrap().get_data(),
-        -424242
-    );
+    assert_eq!(read_message(&buf, Type::Int32).as_int32().unwrap().get_data(), -424242);
 
     buf.clear();
     write_message(
@@ -104,20 +95,14 @@ fn item_numbers() {
         Value::UInt8(ValueUInt8::from(&mut value_buffer).set_data(42).to_ref()),
         &mut buf,
     );
-    assert_eq!(
-        read_message(&buf, Type::UInt8).as_u_int8().unwrap().get_data(),
-        42
-    );
+    assert_eq!(read_message(&buf, Type::UInt8).as_u_int8().unwrap().get_data(), 42);
 
     buf.clear();
     write_message(
         Value::UInt16(ValueUInt16::from(&mut value_buffer).set_data(4242).to_ref()),
         &mut buf,
     );
-    assert_eq!(
-        read_message(&buf, Type::UInt16).as_u_int16().unwrap().get_data(),
-        4242
-    );
+    assert_eq!(read_message(&buf, Type::UInt16).as_u_int16().unwrap().get_data(), 4242);
 
     buf.clear();
     write_message(
@@ -157,10 +142,7 @@ fn item_float() {
         Value::Float(ValueFloat::from(&mut value_buffer).set_data(42.42).to_ref()),
         &mut buf,
     );
-    assert_eq!(
-        read_message(&buf, Type::Float).as_float().unwrap().get_data(),
-        42.42
-    );
+    assert_eq!(read_message(&buf, Type::Float).as_float().unwrap().get_data(), 42.42);
 
     buf.clear();
     write_message(
@@ -177,12 +159,7 @@ fn item_float() {
 fn item_string() {
     let mut buf = Vec::with_capacity(256);
 
-    write_message(
-        Value::String(ValueString {
-            data: "this is a test",
-        }),
-        &mut buf,
-    );
+    write_message(Value::String(ValueString { data: "this is a test" }), &mut buf);
     assert_eq!(
         read_message(&buf, Type::String).as_string().unwrap().data,
         "this is a test"

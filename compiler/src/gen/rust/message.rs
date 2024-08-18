@@ -37,10 +37,7 @@ use itertools::Itertools;
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
 
-fn gen_message_array_type_decls(
-    msg: &Message,
-    type_path_by_name: &TypePathMapper<DefaultTypeMapper>,
-) -> String {
+fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMapper<DefaultTypeMapper>) -> String {
     let mut template = Template::compile(TEMPLATE_EXT).unwrap();
     template.var("msg_name", &msg.name);
     msg.fields
@@ -70,11 +67,7 @@ fn gen_message_array_type_decls(
 
 pub fn gen_message_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
     let type_path_by_name = TypePathMapper::new(type_path_by_name, DefaultTypeMapper);
-    let mut code = generate::<RustUtils, _>(
-        Template::compile(TEMPLATE).unwrap(),
-        msg,
-        &type_path_by_name,
-    );
+    let mut code = generate::<RustUtils, _>(Template::compile(TEMPLATE).unwrap(), msg, &type_path_by_name);
     code += "\n";
     code += &gen_message_array_type_decls(msg, &type_path_by_name);
     code

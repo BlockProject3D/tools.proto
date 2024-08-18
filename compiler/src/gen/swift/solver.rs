@@ -60,12 +60,7 @@ impl ImportResolver for SwiftImportSolver {
 
     fn get_full_type_path(&self, protocol: &str, type_name: &str) -> Option<String> {
         if let Some(import_path) = self.import_map.get(protocol).map(|(k, _)| k)? {
-            Some(format!(
-                "{}.{}{}",
-                import_path,
-                protocol.to_pascal_case(),
-                type_name
-            ))
+            Some(format!("{}.{}{}", import_path, protocol.to_pascal_case(), type_name))
         } else {
             Some(format!("{}{}", protocol.to_pascal_case(), type_name))
         }

@@ -51,14 +51,10 @@ impl<'a, T: FromSlice<'a, Output = T>> FromSlice<'a> for Optional<T> {
     }
 }
 
-impl<'a, T: FromSlice<'a, Output = T> + FromSliceWithOffsets<'a>> FromSliceWithOffsets<'a>
-    for Optional<T>
-{
+impl<'a, T: FromSlice<'a, Output = T> + FromSliceWithOffsets<'a>> FromSliceWithOffsets<'a> for Optional<T> {
     type Offsets = Option<T::Offsets>;
 
-    fn from_slice_with_offsets(
-        slice: &'a [u8],
-    ) -> crate::message::Result<Message<(Self::Output, Self::Offsets)>> {
+    fn from_slice_with_offsets(slice: &'a [u8]) -> crate::message::Result<Message<(Self::Output, Self::Offsets)>> {
         if slice.is_empty() {
             Err(Error::Truncated)
         } else {

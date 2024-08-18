@@ -62,9 +62,7 @@ trait Content1<I> {
     fn to_string(self) -> Option<String>;
 }
 
-impl<'a, H: AsRef<str>, B: Iterator<Item = &'a str>, F: AsRef<String>> Content3<&'a str>
-    for (H, B, F)
-{
+impl<'a, H: AsRef<str>, B: Iterator<Item = &'a str>, F: AsRef<String>> Content3<&'a str> for (H, B, F) {
     fn to_string(mut self) -> Option<String> {
         let data = self.1.join("\n");
         if data.is_empty() {

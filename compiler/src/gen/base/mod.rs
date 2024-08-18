@@ -55,10 +55,7 @@ pub struct TypePathMapper<'a, T: TypeMapper> {
 
 impl<'a, T: TypeMapper> TypePathMapper<'a, T> {
     pub fn new(type_path_map: &'a TypePathMap, mapper: T) -> Self {
-        Self {
-            type_path_map,
-            mapper,
-        }
+        Self { type_path_map, mapper }
     }
 
     pub fn get<'b>(&'b self, item_type: &'b str) -> Cow<'b, str> {

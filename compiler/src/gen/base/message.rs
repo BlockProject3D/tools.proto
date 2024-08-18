@@ -95,10 +95,6 @@ pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
     type_path_by_name: &TypePathMapper<T>,
 ) -> String {
     template.var("msg_name", &msg.name).var("generics", U::get_generics(msg));
-    let fields = msg
-        .fields
-        .iter()
-        .map(|v| gen_msg_field_decl::<U, T>(v, &template, type_path_by_name))
-        .join("");
+    let fields = msg.fields.iter().map(|v| gen_msg_field_decl::<U, T>(v, &template, type_path_by_name)).join("");
     template.scope().var("fields", fields).render("", &["decl"]).unwrap()
 }

@@ -31,7 +31,10 @@ use testprog::views::Floats;
 macro_rules! assert_feq {
     ($actual: expr, $expected: expr, $delta: expr) => {
         if ($actual - $expected).abs() > $delta {
-            panic!("assertion '(actual - expected) < delta' failed:\n actual: {}\n expected: {}\n delta: {}", $actual, $expected, $delta);
+            panic!(
+                "assertion '(actual - expected) < delta' failed:\n actual: {}\n expected: {}\n delta: {}",
+                $actual, $expected, $delta
+            );
         }
     };
 }

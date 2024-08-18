@@ -63,11 +63,7 @@ impl TypePathMap {
         }
     }
 
-    pub fn get_with_default_prefix<'a>(
-        &'a self,
-        item_type: &'a str,
-        default_prefix: &str,
-    ) -> Cow<'a, str> {
+    pub fn get_with_default_prefix<'a>(&'a self, item_type: &'a str, default_prefix: &str) -> Cow<'a, str> {
         match self.type_path_by_name.get(item_type) {
             None => Cow::Owned(format!("{default_prefix}{item_type}")),
             Some(v) => Cow::Borrowed(v),
