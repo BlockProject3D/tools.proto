@@ -155,7 +155,7 @@ impl crate::gen::base::message::Utilities for RustUtils {
     }
 
     fn get_payload_type_inline() -> &'static str {
-        "bp3d_proto::message::util::Buffer"
+        "bp3d_proto::message::payload::Buffer"
     }
 
     fn gen_struct_ref_type(type_name: &str) -> String {
