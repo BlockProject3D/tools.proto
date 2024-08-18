@@ -43,7 +43,7 @@ impl Write for Counter {
     }
 }
 
-pub struct SizeOf<Msg>(PhantomData<Msg>);
+struct SizeOf<Msg>(PhantomData<Msg>);
 
 impl<Msg: WriteTo<Input = Msg>> SizeOf<Msg> {
     pub fn get(msg: &Msg) -> crate::message::Result<usize> {

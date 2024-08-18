@@ -26,9 +26,24 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod interface;
-mod macros;
-pub mod payload;
-pub mod util;
+use crate::message::{Error, FromSlice, Message, WriteTo};
+use std::io::Write;
 
-pub use interface::*;
+pub struct Buffer;
+
+impl<'a> FromSlice<'a> for Buffer {
+    type Output = &'a [u8];
+
+    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
+        Ok(Message::new(slice.len(), slice))
+    }
+}
+
+impl WriteTo for Buffer {
+    type Input = [u8];
+
+    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {
+        out.write_all(input)?;
+        Ok(())
+    }
+}

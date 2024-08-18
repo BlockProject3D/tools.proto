@@ -29,37 +29,6 @@
 macro_rules! impl_list_base {
     ($t: ident) => {
         impl<B, T, Item> $t<B, T, Item> {
-            /// Creates a list or an array from raw parts.
-            /// This function assumes that data has the number of items specified by len.
-            ///
-            /// # Arguments
-            ///
-            /// * `data`: the data buffer.
-            /// * `len`: the number of items to be read from the buffer.
-            ///
-            /// # Safety
-            ///
-            /// This function assumes that data has the number of items specified by len.
-            /// For all list types (i.e. lists with dynamically sized items), a wrong length will
-            /// simply cause an error (truncated) to be returned if the actual buffer has not enough
-            /// bytes to contain all items.
-            ///
-            /// For all array types, (i.e. lists with fixed size items), a wrong length could result
-            /// in UB where the array iterator, getter or setter attempts to slice out of bounds
-            /// with a future optimization in release builds, currently it will result in a panic.
-            pub unsafe fn from_raw_parts(data: B, len: usize) -> $t<B, T, Item> {
-                $t {
-                    data,
-                    len,
-                    useless: PhantomData,
-                    useless1: PhantomData,
-                }
-            }
-
-            pub fn new(data: B) -> $t<B, T, Item> {
-                unsafe { $t::from_raw_parts(data, 0) }
-            }
-
             pub fn len(&self) -> usize {
                 self.len
             }
@@ -76,27 +45,6 @@ macro_rules! impl_list_base {
                 T::write_to(&T::Input::from_usize(input.len), &mut out)?;
                 out.write_all(input.data.as_ref())?;
                 Ok(())
-            }
-        }
-
-        impl<B: std::io::Write, T, I> $t<B, T, I> {
-            pub fn write_item<Item: WriteTo<Input = Item>>(&mut self, item: &Item) -> Result<(), Error> {
-                Item::write_to(item, &mut self.data)?;
-                self.len += 1;
-                Ok(())
-            }
-
-            pub fn write_items<Item: WriteTo<Input = Item>>(&mut self, items: &[Item]) -> Result<(), Error> {
-                for item in items {
-                    self.write_item(item)?;
-                }
-                Ok(())
-            }
-        }
-
-        impl<B: AsRef<[u8]>, T, Item> $t<B, T, Item> {
-            pub fn to_ref<Item1>(&self) -> $t<&[u8], T, Item1> {
-                unsafe { $t::from_raw_parts(self.data.as_ref(), self.len) }
             }
         }
     };

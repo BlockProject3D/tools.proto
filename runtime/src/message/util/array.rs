@@ -26,28 +26,26 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::message::util::list_base::impl_list_base;
+use crate::message::payload::list_base::impl_list_base;
 use crate::message::WriteTo;
 use crate::message::{Error, FromSlice, Message};
 use crate::util::{FixedSize, ToUsize};
 use std::marker::PhantomData;
+use std::ops::{Index, IndexMut};
 use std::slice::{Chunks, ChunksMut};
-
-//TODO: Try implement Index and IndexMut.
-
-#[derive(Copy, Clone, Debug)]
-pub struct Array<B, T, Item> {
-    data: B,
-    len: usize,
-    useless: PhantomData<T>,
-    useless1: PhantomData<Item>,
-}
-
-impl_list_base!(Array);
 
 pub struct IterMut<'a, Item> {
     data: ChunksMut<'a, u8>,
     useless: PhantomData<Item>,
+}
+
+impl<'a, Item> IterMut<'a, Item> {
+    pub fn new(chunks: ChunksMut<'a, u8>) -> Self {
+        Self {
+            data: chunks,
+            useless: PhantomData,
+        }
+    }
 }
 
 impl<'a, Item: From<&'a mut [u8]>> Iterator for IterMut<'a, Item> {
@@ -63,11 +61,64 @@ pub struct Iter<'a, Item> {
     useless: PhantomData<Item>,
 }
 
+impl<'a, Item> Iter<'a, Item> {
+    pub fn new(chunks: Chunks<'a, u8>) -> Self {
+        Self {
+            data: chunks,
+            useless: PhantomData,
+        }
+    }
+}
+
 impl<'a, Item: From<&'a [u8]>> Iterator for Iter<'a, Item> {
     type Item = Item;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.data.next().map(Item::from)
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct Array<B, T, Item> {
+    data: B,
+    len: usize,
+    useless: PhantomData<T>,
+    useless1: PhantomData<Item>,
+}
+
+impl<B, T, Item> Array<B, T, Item> {
+    /// Creates an array from raw parts.
+    /// This function assumes that data has the number of items specified by len.
+    ///
+    /// # Arguments
+    ///
+    /// * `data`: the data buffer.
+    /// * `len`: the number of items to be read from the buffer.
+    ///
+    /// # Safety
+    ///
+    /// A wrong length could result in UB where the array iterator, getter or setter attempts to
+    /// slice out of bounds with a future optimization in release builds, currently it will only
+    /// result in a panic.
+    pub unsafe fn from_raw_parts(data: B, len: usize) -> Array<B, T, Item> {
+        Array {
+            data,
+            len,
+            useless: PhantomData,
+            useless1: PhantomData,
+        }
+    }
+
+    pub fn new(data: B) -> Array<B, T, Item> {
+        unsafe { Array::from_raw_parts(data, 0) }
+    }
+}
+
+impl_list_base!(Array);
+
+impl<B: AsRef<[u8]>, T, Item> Array<B, T, Item> {
+    pub fn to_ref<Item1>(&self) -> Array<&[u8], T, Item1> {
+        unsafe { Array::from_raw_parts(self.data.as_ref(), self.len) }
     }
 }
 
@@ -80,39 +131,63 @@ impl<B: AsRef<[u8]>, T, Item: FixedSize> Array<B, T, Item> {
     }
 }
 
-impl<'a, B: AsRef<[u8]>, T, I> Array<B, T, I> {
-    pub fn get<Item: FixedSize + From<&'a [u8]>>(&'a self, index: usize) -> Item {
-        let start = index * Item::SIZE;
-        let end = start + Item::SIZE;
-        Item::from(&self.data.as_ref()[start..end])
+impl<'a, B: AsRef<[u8]>, T, Item: FixedSize> Array<B, T, Item> {
+    pub fn get(&'a self, index: usize) -> Option<&'a [u8]> {
+        if index >= self.len {
+            None
+        } else {
+            let start = index * Item::SIZE;
+            let end = start + Item::SIZE;
+            Some(&self.data.as_ref()[start..end])
+        }
     }
 
-    pub fn iter<Item: FixedSize + From<&'a [u8]>>(&'a self) -> Iter<'a, Item> {
-        Iter {
-            data: self.data.as_ref().chunks(Item::SIZE),
-            useless: PhantomData,
-        }
+    pub fn iter(&'a self) -> Chunks<'a, u8> {
+        self.data.as_ref().chunks(Item::SIZE)
     }
 }
 
-impl<'a, B: AsMut<[u8]>, T, I> Array<B, T, I> {
-    pub fn get_mut<Item: FixedSize + From<&'a mut [u8]>>(&'a mut self, index: usize) -> Item {
-        let start = index * Item::SIZE;
-        let end = start + Item::SIZE;
-        Item::from(&mut self.data.as_mut()[start..end])
+impl<'a, B: AsMut<[u8]>, T, Item: FixedSize> Array<B, T, Item> {
+    pub fn get_mut(&'a mut self, index: usize) -> Option<&'a mut [u8]> {
+        if index >= self.len {
+            None
+        } else {
+            let start = index * Item::SIZE;
+            let end = start + Item::SIZE;
+            Some(&mut self.data.as_mut()[start..end])
+        }
     }
 
-    pub fn iter_mut<Item: FixedSize + From<&'a mut [u8]>>(&'a mut self) -> IterMut<'a, Item> {
-        IterMut {
-            data: self.data.as_mut().chunks_mut(Item::SIZE),
-            useless: PhantomData,
-        }
+    pub fn iter_mut(&'a mut self) -> ChunksMut<'a, u8> {
+        self.data.as_mut().chunks_mut(Item::SIZE)
     }
 }
 
-impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FixedSize + FromSlice<'a, Output = Item>> FromSlice<'a>
-    for Array<&'a [u8], T, Item>
-{
+impl<B: AsRef<[u8]>, T, Item: FixedSize> Index<usize> for Array<B, T, Item> {
+    type Output = [u8];
+
+    fn index(&self, index: usize) -> &Self::Output {
+        if index >= self.len {
+            panic!("attempt to index item out of bounds, index={}, len={}", index, self.len)
+        }
+        let start = index * Item::SIZE;
+        let end = start + Item::SIZE;
+        &self.data.as_ref()[start..end]
+    }
+}
+
+impl<B: AsRef<[u8]> + AsMut<[u8]>, T, Item: FixedSize> IndexMut<usize> for Array<B, T, Item> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        if index >= self.len {
+            panic!("attempt to index item out of bounds, index={}, len={}", index, self.len)
+        }
+        let start = index * Item::SIZE;
+        let end = start + Item::SIZE;
+        &mut self.data.as_mut()[start..end]
+    }
+}
+
+impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FixedSize> FromSlice<'a> for Array<&'a [u8], T, Item> {
     type Output = Array<&'a [u8], T, Item>;
 
     fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {

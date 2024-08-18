@@ -53,16 +53,6 @@ macro_rules! generate_array_wrapper {
             }
         }
 
-        impl<'a, B: std::io::Write> $name<'a, B> {
-            pub fn write_item(&mut self, item: &$inner<&[u8]>) -> $crate::message::Result<()> {
-                self.0.write_item(item)
-            }
-
-            pub fn write_items(&mut self, items: &[$inner<&[u8]>]) -> $crate::message::Result<()> {
-                self.0.write_items(items)
-            }
-        }
-
         impl<'a, B: AsRef<[u8]>> $name<'a, B> {
             pub fn to_ref(&self) -> $crate::message::util::Array<&[u8], $t, $inner<&[u8]>> {
                 self.0.to_ref()
@@ -73,21 +63,29 @@ macro_rules! generate_array_wrapper {
             }
 
             pub fn get(&self, index: usize) -> $inner<&[u8]> {
-                self.0.get(index)
+                $inner::new(&self.0[index])
+            }
+
+            pub fn try_get(&self, index: usize) -> Option<$inner<&[u8]>> {
+                self.0.get(index).map($inner::new)
             }
 
             pub fn iter<'b>(&'b self) -> $crate::message::util::array::Iter<'b, $inner<&[u8]>> {
-                self.0.iter()
+                $crate::message::util::array::Iter::new(self.0.iter())
             }
         }
 
-        impl<'a, B: AsMut<[u8]>> $name<'a, B> {
+        impl<'a, B: AsRef<[u8]> + AsMut<[u8]>> $name<'a, B> {
             pub fn get_mut(&mut self, index: usize) -> $inner<&mut [u8]> {
-                self.0.get_mut(index)
+                $inner::new(&mut self.0[index])
+            }
+
+            pub fn try_get_mut(&mut self, index: usize) -> Option<$inner<&mut [u8]>> {
+                self.0.get_mut(index).map($inner::new)
             }
 
             pub fn iter_mut<'b>(&'b mut self) -> $crate::message::util::array::IterMut<'b, $inner<&mut [u8]>> {
-                self.0.iter_mut()
+                $crate::message::util::array::IterMut::new(self.0.iter_mut())
             }
         }
     };

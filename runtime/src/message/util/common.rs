@@ -136,22 +136,3 @@ impl<T: bytesutil::WriteTo> WriteTo for ValueBE<T> {
         Ok(())
     }
 }
-
-pub struct Buffer;
-
-impl<'a> FromSlice<'a> for Buffer {
-    type Output = &'a [u8];
-
-    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
-        Ok(Message::new(slice.len(), slice))
-    }
-}
-
-impl WriteTo for Buffer {
-    type Input = [u8];
-
-    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {
-        out.write_all(input)?;
-        Ok(())
-    }
-}

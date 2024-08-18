@@ -28,13 +28,10 @@
 
 pub mod array;
 mod common;
-pub mod list;
-mod list_base;
 mod size;
 mod string;
 
 pub use array::Array;
 pub use common::*;
-pub use list::List;
 pub use size::size_of;
 pub use string::*;

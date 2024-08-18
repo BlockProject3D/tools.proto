@@ -40,9 +40,9 @@ bp3d_proto::message::util::Array::<&'a [u8], {codec}, {type_name}<&'a [u8]>>
 #fragment pop
 
 #fragment push list:inline
-bp3d_proto::message::util::List::<&'a [u8], {codec}, {type_name}>
+bp3d_proto::message::payload::List::<&'a [u8], {codec}, {type_name}>
 #fragment pop
 
 #fragment push unsized:inline
-bp3d_proto::message::util::list::Unsized::<{codec}, {type_name}>
+bp3d_proto::message::payload::list::Unsized::<{codec}, {type_name}>
 #fragment pop

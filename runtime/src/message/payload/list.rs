@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::message::util::list_base::impl_list_base;
+use crate::message::payload::list_base::impl_list_base;
 use crate::message::{Error, FromSlice, FromSliceWithOffsets, Message, WriteTo};
 use crate::util::ToUsize;
 use std::marker::PhantomData;
@@ -39,7 +39,59 @@ pub struct List<B, T, Item> {
     useless1: PhantomData<Item>,
 }
 
+impl<B, T, Item> List<B, T, Item> {
+    /// Creates a list from raw parts.
+    /// This function assumes that data has the number of items specified by len.
+    /// A wrong length will simply cause an error (truncated) to be returned if the actual buffer
+    /// has not enough bytes to contain all items.
+    ///
+    /// # Arguments
+    ///
+    /// * `data`: the data buffer.
+    /// * `len`: the number of items to be read from the buffer.
+    ///
+    /// # Safety
+    ///
+    ///
+    /// For all array types, (i.e. lists with fixed size items), a wrong length could result
+    /// in UB where the array iterator, getter or setter attempts to slice out of bounds
+    /// with a future optimization in release builds, currently it will result in a panic.
+    pub fn from_raw_parts(data: B, len: usize) -> List<B, T, Item> {
+        List {
+            data,
+            len,
+            useless: PhantomData,
+            useless1: PhantomData,
+        }
+    }
+
+    pub fn new(data: B) -> List<B, T, Item> {
+        List::from_raw_parts(data, 0)
+    }
+}
+
+impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
+    pub fn to_ref<Item1>(&self) -> List<&[u8], T, Item1> {
+        List::from_raw_parts(self.data.as_ref(), self.len)
+    }
+}
+
 impl_list_base!(List);
+
+impl<B: std::io::Write, T, I> List<B, T, I> {
+    pub fn write_item<Item: WriteTo<Input = Item>>(&mut self, item: &Item) -> Result<(), Error> {
+        Item::write_to(item, &mut self.data)?;
+        self.len += 1;
+        Ok(())
+    }
+
+    pub fn write_items<Item: WriteTo<Input = Item>>(&mut self, items: &[Item]) -> Result<(), Error> {
+        for item in items {
+            self.write_item(item)?;
+        }
+        Ok(())
+    }
+}
 
 impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FromSlice<'a, Output = Item>> FromSlice<'a>
     for List<&'a [u8], T, Item>
@@ -57,9 +109,42 @@ impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FromSlice<'a, Output = Item>> 
             total_size += msg.size();
         }
         let data = &slice[control_size..control_size + total_size];
-        Ok(Message::new(total_size + control_size, unsafe {
-            List::from_raw_parts(data, len)
-        }))
+        Ok(Message::new(total_size + control_size, List::from_raw_parts(data, len)))
+    }
+}
+
+impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
+    pub fn iter(&self) -> Iter<Item> {
+        Iter {
+            data: self.data.as_ref(),
+            len: self.len,
+            useless: PhantomData,
+        }
+    }
+
+    pub fn iter_offsets(&self) -> IterOffsets<Item> {
+        IterOffsets {
+            data: self.data.as_ref(),
+            len: self.len,
+            useless: PhantomData,
+        }
+    }
+}
+
+pub struct Unsized<T, Item> {
+    useless: PhantomData<T>,
+    useless1: PhantomData<Item>,
+}
+
+impl<'a, T: FromSlice<'a, Output: ToUsize>, Item> FromSlice<'a> for Unsized<T, Item> {
+    type Output = List<&'a [u8], T, Item>;
+
+    fn from_slice(slice: &'a [u8]) -> crate::message::Result<Message<Self::Output>> {
+        let msg = T::from_slice(slice)?;
+        let control_size = msg.size();
+        let len = msg.into_inner().to_usize();
+        let data = &slice[control_size..];
+        Ok(Message::new(slice.len(), List::from_raw_parts(data, len)))
     }
 }
 
@@ -106,40 +191,5 @@ impl<'a, Item: FromSlice<'a, Output = Item> + FromSliceWithOffsets<'a>> Iterator
         self.data = &self.data[msg.size()..];
         self.len -= 1;
         Some(Ok(msg.into_inner()))
-    }
-}
-
-impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
-    pub fn iter(&self) -> Iter<Item> {
-        Iter {
-            data: self.data.as_ref(),
-            len: self.len,
-            useless: PhantomData,
-        }
-    }
-
-    pub fn iter_offsets(&self) -> IterOffsets<Item> {
-        IterOffsets {
-            data: self.data.as_ref(),
-            len: self.len,
-            useless: PhantomData,
-        }
-    }
-}
-
-pub struct Unsized<T, Item> {
-    useless: PhantomData<T>,
-    useless1: PhantomData<Item>,
-}
-
-impl<'a, T: FromSlice<'a, Output: ToUsize>, Item> FromSlice<'a> for Unsized<T, Item> {
-    type Output = List<&'a [u8], T, Item>;
-
-    fn from_slice(slice: &'a [u8]) -> crate::message::Result<Message<Self::Output>> {
-        let msg = T::from_slice(slice)?;
-        let control_size = msg.size();
-        let len = msg.into_inner().to_usize();
-        let data = &slice[control_size..];
-        Ok(Message::new(slice.len(), unsafe { List::from_raw_parts(data, len) }))
     }
 }
