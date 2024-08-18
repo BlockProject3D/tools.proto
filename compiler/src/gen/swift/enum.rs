@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::Protocol;
 use crate::compiler::r#enum::Enum;
+use crate::compiler::Protocol;
 use crate::gen::base::r#enum::generate;
 use crate::gen::swift::util::SwiftUtils;
 use crate::gen::template::Template;

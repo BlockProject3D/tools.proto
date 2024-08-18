@@ -27,12 +27,17 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::r#enum::Enum;
+use crate::gen::base::structure::Utilities;
 use crate::gen::template::Template;
 use itertools::Itertools;
-use crate::gen::base::structure::Utilities;
 
-pub fn generate<'fragment, 'variable, U: Utilities>(mut template: Template<'fragment, 'variable>, e: &'variable Enum) -> String {
-    template.var("name", &e.name).var_d("largest", e.largest)
+pub fn generate<'fragment, 'variable, U: Utilities>(
+    mut template: Template<'fragment, 'variable>,
+    e: &'variable Enum,
+) -> String {
+    template
+        .var("name", &e.name)
+        .var_d("largest", e.largest)
         .var("repr_type", U::get_field_type(e.repr_type));
     let mut code = e.variants.iter().map(|(k, v)| {
         template.scope().var("key", k).var_d("value", v).render("enum", &["variant"]).unwrap()

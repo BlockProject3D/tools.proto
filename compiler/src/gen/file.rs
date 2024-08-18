@@ -26,11 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use bp3d_util::path::PathExt;
+use itertools::Itertools;
 use std::borrow::Cow;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use bp3d_util::path::PathExt;
-use itertools::Itertools;
 
 pub struct B<T>(pub T);
 
@@ -62,7 +62,9 @@ trait Content1<I> {
     fn to_string(self) -> Option<String>;
 }
 
-impl<'a, H: AsRef<str>, B: Iterator<Item=&'a str>, F: AsRef<String>> Content3<&'a str> for (H, B, F) {
+impl<'a, H: AsRef<str>, B: Iterator<Item = &'a str>, F: AsRef<String>> Content3<&'a str>
+    for (H, B, F)
+{
     fn to_string(mut self) -> Option<String> {
         let data = self.1.join("\n");
         if data.is_empty() {
@@ -73,7 +75,7 @@ impl<'a, H: AsRef<str>, B: Iterator<Item=&'a str>, F: AsRef<String>> Content3<&'
     }
 }
 
-impl<H: AsRef<str>, B: Iterator<Item=String>, F: AsRef<String>> Content3<String> for (H, B, F) {
+impl<H: AsRef<str>, B: Iterator<Item = String>, F: AsRef<String>> Content3<String> for (H, B, F) {
     fn to_string(mut self) -> Option<String> {
         let data = self.1.join("\n");
         if data.is_empty() {
@@ -84,7 +86,7 @@ impl<H: AsRef<str>, B: Iterator<Item=String>, F: AsRef<String>> Content3<String>
     }
 }
 
-impl<'a, H: AsRef<str>, B: Iterator<Item=&'a str>> Content2<&'a str> for (H, B) {
+impl<'a, H: AsRef<str>, B: Iterator<Item = &'a str>> Content2<&'a str> for (H, B) {
     fn to_string(mut self) -> Option<String> {
         let data = self.1.join("\n");
         if data.is_empty() {
@@ -95,7 +97,7 @@ impl<'a, H: AsRef<str>, B: Iterator<Item=&'a str>> Content2<&'a str> for (H, B) 
     }
 }
 
-impl<H: AsRef<str>, B: Iterator<Item=String>> Content2<String> for (H, B) {
+impl<H: AsRef<str>, B: Iterator<Item = String>> Content2<String> for (H, B) {
     fn to_string(mut self) -> Option<String> {
         let data = self.1.join("\n");
         if data.is_empty() {
@@ -106,31 +108,40 @@ impl<H: AsRef<str>, B: Iterator<Item=String>> Content2<String> for (H, B) {
     }
 }
 
-impl<'a, B: Iterator<Item=&'a str>> Content1<&'a str> for B {
+impl<'a, B: Iterator<Item = &'a str>> Content1<&'a str> for B {
     fn to_string(mut self) -> Option<String> {
         Some(self.join("\n"))
     }
 }
 
-impl<B: Iterator<Item=String>> Content1<String> for B {
+impl<B: Iterator<Item = String>> Content1<String> for B {
     fn to_string(mut self) -> Option<String> {
         Some(self.join("\n"))
     }
 }
 
-impl<T: Iterator> Content for B<T> where T: Content1<T::Item> {
+impl<T: Iterator> Content for B<T>
+where
+    T: Content1<T::Item>,
+{
     fn to_string(self) -> Option<String> {
         <T as Content1<T::Item>>::to_string(self.0)
     }
 }
 
-impl<H, B: Iterator, F> Content for (H, B, F) where Self: Content3<B::Item> {
+impl<H, B: Iterator, F> Content for (H, B, F)
+where
+    Self: Content3<B::Item>,
+{
     fn to_string(self) -> Option<String> {
         <Self as Content3<B::Item>>::to_string(self)
     }
 }
 
-impl<H, B: Iterator> Content for (H, B) where Self: Content2<B::Item> {
+impl<H, B: Iterator> Content for (H, B)
+where
+    Self: Content2<B::Item>,
+{
     fn to_string(self) -> Option<String> {
         <Self as Content2<B::Item>>::to_string(self)
     }
@@ -165,7 +176,12 @@ impl File {
         self.ty
     }
 
-    pub fn write(self, out_directory: &Path, file_header: Option<&str>, extension: &str) -> std::io::Result<Option<PathBuf>> {
+    pub fn write(
+        self,
+        out_directory: &Path,
+        file_header: Option<&str>,
+        extension: &str,
+    ) -> std::io::Result<Option<PathBuf>> {
         if let Some(data) = self.data {
             if data.len() <= 1 {
                 return Ok(None);

@@ -27,13 +27,13 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::union::{DiscriminantField, Union};
-use crate::gen::base::union::{generate, Utilities};
-use itertools::Itertools;
 use crate::compiler::Protocol;
+use crate::gen::base::union::{generate, Utilities};
 use crate::gen::base::TypePathMapper;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
-use crate::gen::template::Template;
 use crate::gen::template::util::CaseConversion;
+use crate::gen::template::Template;
+use itertools::Itertools;
 
 const TEMPLATE: &[u8] = include_bytes!("./union.template");
 
@@ -70,7 +70,10 @@ impl Utilities for SwiftUtils {
 }
 
 pub fn gen_union_decl(proto: &Protocol, u: &Union) -> String {
-    let type_path_by_name = TypePathMapper::new(&proto.type_path_by_name, SwiftTypeMapper::from_protocol(proto));
+    let type_path_by_name = TypePathMapper::new(
+        &proto.type_path_by_name,
+        SwiftTypeMapper::from_protocol(proto),
+    );
     let mut template = Template::compile(TEMPLATE).unwrap();
     template.var("proto_name", &proto.name);
     generate::<SwiftUtils, _>(template, u, &type_path_by_name)

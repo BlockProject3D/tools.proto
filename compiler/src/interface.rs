@@ -27,11 +27,11 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::util::ImportResolver;
+use crate::gen::file::FileType;
 use crate::gen::Generator;
 use crate::{compiler, model, Error};
-use std::path::{Path, PathBuf};
 use bp3d_util::path::PathExt;
-use crate::gen::file::FileType;
+use std::path::{Path, PathBuf};
 
 pub trait ImportSolver {
     fn register(&mut self, base_import_path: String, protocol: compiler::Protocol);
@@ -68,7 +68,10 @@ impl Loader {
         Ok(())
     }
 
-    pub fn compile<'a, T: ImportResolver + ImportSolver>(self, solver: &mut T) -> Result<Protoc<'a>, Error> {
+    pub fn compile<'a, T: ImportResolver + ImportSolver>(
+        self,
+        solver: &mut T,
+    ) -> Result<Protoc<'a>, Error> {
         for (base_import_path, model) in self.imported_models {
             let compiled =
                 compiler::Protocol::from_model(model, solver).map_err(Error::Compiler)?;
@@ -110,7 +113,7 @@ impl<'a> Protoc<'a> {
             use_structs: true,
             use_messages: true,
             use_unions: true,
-            file_header: None
+            file_header: None,
         }
     }
 
@@ -152,9 +155,10 @@ impl<'a> Protoc<'a> {
     pub fn generate<T: Generator>(
         self,
         out_directory: impl AsRef<Path>,
-        params: T::Params
+        params: T::Params,
     ) -> Result<Vec<Proto>, Error> {
-        let file_header = self.file_header
+        let file_header = self
+            .file_header
             .map(|v| std::fs::read_to_string(v))
             .transpose()
             .map_err(Error::Io)?
@@ -177,7 +181,13 @@ impl<'a> Protoc<'a> {
             });
             let iter = files_iter
                 .into_iter()
-                .map(|v| v.write(&out_path, file_header.as_deref(), T::get_language_extension()))
+                .map(|v| {
+                    v.write(
+                        &out_path,
+                        file_header.as_deref(),
+                        T::get_language_extension(),
+                    )
+                })
                 .filter_map(|v| match v {
                     Ok(o) => o.map(Ok),
                     Err(e) => Some(Err(e)),
@@ -187,7 +197,10 @@ impl<'a> Protoc<'a> {
             let umbrella = T::generate_umbrella(&name, iter.iter().map(|v| &**v), &params)
                 .map_err(|e| Error::Generator(e.to_string()))?;
             let proto_path = if umbrella.len() > 1 {
-                let umbrella_path = out_path.join("umbrella").ensure_extension(T::get_language_extension()).to_path_buf();
+                let umbrella_path = out_path
+                    .join("umbrella")
+                    .ensure_extension(T::get_language_extension())
+                    .to_path_buf();
                 std::fs::write(&umbrella_path, umbrella).map_err(Error::Io)?;
                 umbrella_path
             } else {

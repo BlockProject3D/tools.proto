@@ -26,23 +26,23 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::borrow::Cow;
 use crate::compiler::message::Message;
-use crate::compiler::Protocol;
 use crate::compiler::structure::{FixedField, FixedFieldType};
 use crate::compiler::util::TypeMapper;
+use crate::compiler::Protocol;
 use crate::gen::base::message::StringType;
 use crate::gen::template::util::CaseConversion;
 use crate::model::protocol::Endianness;
+use std::borrow::Cow;
 
 pub struct SwiftTypeMapper<'a> {
-    proto_name: Cow<'a, str>
+    proto_name: Cow<'a, str>,
 }
 
 impl<'a> SwiftTypeMapper<'a> {
     pub fn from_protocol(proto: &'a Protocol) -> Self {
         Self {
-            proto_name: proto.name.to_pascal_case()
+            proto_name: proto.name.to_pascal_case(),
         }
     }
 }
@@ -130,14 +130,14 @@ impl crate::gen::base::message::Utilities for SwiftUtils {
     fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str {
         match endianness {
             Endianness::Little => gen_value_type!("BP3DProto.ValueLE<B, ", ty, ">"),
-            Endianness::Big => gen_value_type!("BP3DProto.ValueBE<B, ", ty, ">")
+            Endianness::Big => gen_value_type!("BP3DProto.ValueBE<B, ", ty, ">"),
         }
     }
 
     fn get_value_type_inline(endianness: Endianness, ty: FixedFieldType) -> &'static str {
         match endianness {
             Endianness::Little => gen_value_type!("BP3DProto.ValueLE<B, ", ty, ">"),
-            Endianness::Big => gen_value_type!("BP3DProto.ValueBE<B, ", ty, ">")
+            Endianness::Big => gen_value_type!("BP3DProto.ValueBE<B, ", ty, ">"),
         }
     }
 
@@ -156,7 +156,7 @@ impl crate::gen::base::message::Utilities for SwiftUtils {
     fn get_string_type_inline(ty: StringType) -> &'static str {
         match ty {
             StringType::Varchar => "BP3DProto.VarcharString",
-            StringType::NullTerminated => "BP3DProto.NullTerminatedString<B>"
+            StringType::NullTerminated => "BP3DProto.NullTerminatedString<B>",
         }
     }
 

@@ -26,12 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::collections::HashMap;
-use itertools::Itertools;
-use crate::compiler::Protocol;
 use crate::compiler::util::ImportResolver;
+use crate::compiler::Protocol;
 use crate::gen::template::util::CaseConversion;
 use crate::ImportSolver;
+use itertools::Itertools;
+use std::collections::HashMap;
 
 pub struct SwiftImportSolver {
     import_map: HashMap<String, (Option<String>, Protocol)>,
@@ -40,11 +40,11 @@ pub struct SwiftImportSolver {
 impl SwiftImportSolver {
     pub fn new() -> Self {
         Self {
-            import_map: HashMap::new()
+            import_map: HashMap::new(),
         }
     }
 
-    pub fn iter_imports(&self) -> impl Iterator<Item=&str> {
+    pub fn iter_imports(&self) -> impl Iterator<Item = &str> {
         self.import_map.values().filter_map(|(k, _)| k.as_deref())
     }
 
@@ -60,7 +60,12 @@ impl ImportResolver for SwiftImportSolver {
 
     fn get_full_type_path(&self, protocol: &str, type_name: &str) -> Option<String> {
         if let Some(import_path) = self.import_map.get(protocol).map(|(k, _)| k)? {
-            Some(format!("{}.{}{}", import_path, protocol.to_pascal_case(), type_name))
+            Some(format!(
+                "{}.{}{}",
+                import_path,
+                protocol.to_pascal_case(),
+                type_name
+            ))
         } else {
             Some(format!("{}{}", protocol.to_pascal_case(), type_name))
         }

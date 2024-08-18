@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::gen::SwiftImportSolver;
 use crate::gen::template::Template;
+use crate::gen::SwiftImportSolver;
 
 const TEMPLATE: &[u8] = include_bytes!("./imports.template");
 

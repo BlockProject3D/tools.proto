@@ -205,12 +205,12 @@ impl BitCodec for BitCodecLE {
 
     fn write_unaligned<
         T: ToUsize
-        + ReadBytes
-        + WriteBytes
-        + Shl<Output = T>
-        + Shr<Output = T>
-        + BitAnd<Output = T>
-        + BitOr<Output = T>,
+            + ReadBytes
+            + WriteBytes
+            + Shl<Output = T>
+            + Shr<Output = T>
+            + BitAnd<Output = T>
+            + BitOr<Output = T>,
         const BIT_OFFSET: usize,
         const BIT_SIZE: usize,
     >(
@@ -275,12 +275,12 @@ impl BitCodec for BitCodecBE {
 
     fn write_unaligned<
         T: ToUsize
-        + ReadBytes
-        + WriteBytes
-        + Shl<Output = T>
-        + Shr<Output = T>
-        + BitAnd<Output = T>
-        + BitOr<Output = T>,
+            + ReadBytes
+            + WriteBytes
+            + Shl<Output = T>
+            + Shr<Output = T>
+            + BitAnd<Output = T>
+            + BitOr<Output = T>,
         const BIT_OFFSET: usize,
         const BIT_SIZE: usize,
     >(

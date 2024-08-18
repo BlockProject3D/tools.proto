@@ -29,9 +29,9 @@
 use crate::compiler::message::Referenced;
 use crate::compiler::union::{DiscriminantField, Union};
 use crate::compiler::util::TypeMapper;
+use crate::gen::base::TypePathMapper;
 use crate::gen::template::Template;
 use itertools::Itertools;
-use crate::gen::base::TypePathMapper;
 
 pub trait Utilities: crate::gen::base::structure::Utilities {
     fn gen_discriminant_path(discriminant: &DiscriminantField) -> String;
@@ -113,7 +113,11 @@ fn gen_union_set_discriminant(u: &Union, template: &Template) -> String {
     template.scope().var("cases", cases).render("", &["setter"]).unwrap()
 }
 
-fn gen_union_as_getters<T: TypeMapper>(u: &Union, template: &Template, type_path_by_name: &TypePathMapper<T>) -> String {
+fn gen_union_as_getters<T: TypeMapper>(
+    u: &Union,
+    template: &Template,
+    type_path_by_name: &TypePathMapper<T>,
+) -> String {
     let cases = u
         .cases
         .iter()
@@ -143,7 +147,10 @@ pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
 ) -> String {
     let generics = U::get_generics(u);
     template
-        .var("discriminant_raw_type", U::get_field_type(u.discriminant.get_leaf().ty))
+        .var(
+            "discriminant_raw_type",
+            U::get_field_type(u.discriminant.get_leaf().ty),
+        )
         .var("union_name", &u.name)
         .var("generics", generics)
         .var(

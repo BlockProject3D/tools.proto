@@ -27,11 +27,11 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 mod base;
+pub mod file;
+mod interface;
 mod rust;
 mod swift;
 pub mod template;
-pub mod file;
-mod interface;
 
 pub use interface::*;
 

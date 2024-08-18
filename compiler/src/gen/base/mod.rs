@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::borrow::Cow;
 use crate::compiler::util::{TypeMapper, TypePathMap};
+use std::borrow::Cow;
 
 pub mod r#enum;
 pub mod message;
@@ -50,14 +50,14 @@ impl TypeMapper for DefaultTypeMapper {
 
 pub struct TypePathMapper<'a, T: TypeMapper> {
     type_path_map: &'a TypePathMap,
-    mapper: T
+    mapper: T,
 }
 
 impl<'a, T: TypeMapper> TypePathMapper<'a, T> {
     pub fn new(type_path_map: &'a TypePathMap, mapper: T) -> Self {
         Self {
             type_path_map,
-            mapper
+            mapper,
         }
     }
 

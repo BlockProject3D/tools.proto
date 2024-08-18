@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::Protocol;
 use crate::compiler::structure::Structure;
+use crate::compiler::Protocol;
 use crate::gen::base::structure::{generate, Templates};
 use crate::gen::base::TypePathMapper;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
@@ -37,7 +37,10 @@ const STRUCT_TEMPLATE: &[u8] = include_bytes!("./structure.template");
 const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("./structure.field.template");
 
 pub fn gen_structure_decl(proto: &Protocol, s: &Structure) -> String {
-    let type_path_by_name = TypePathMapper::new(&proto.type_path_by_name, SwiftTypeMapper::from_protocol(proto));
+    let type_path_by_name = TypePathMapper::new(
+        &proto.type_path_by_name,
+        SwiftTypeMapper::from_protocol(proto),
+    );
     let mut template = Template::compile(STRUCT_TEMPLATE).unwrap();
     let mut field_template = Template::compile(STRUCT_FIELD_TEMPLATE).unwrap();
     template.var("proto_name", &proto.name);

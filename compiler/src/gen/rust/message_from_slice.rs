@@ -36,5 +36,9 @@ use crate::gen::template::Template;
 const TEMPLATE: &[u8] = include_bytes!("./message.from_slice.template");
 
 pub fn gen_message_from_slice_impl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    generate::<RustUtils, _>(Template::compile(TEMPLATE).unwrap(), msg, &TypePathMapper::new(type_path_by_name, DefaultTypeMapper))
+    generate::<RustUtils, _>(
+        Template::compile(TEMPLATE).unwrap(),
+        msg,
+        &TypePathMapper::new(type_path_by_name, DefaultTypeMapper),
+    )
 }

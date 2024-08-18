@@ -41,7 +41,11 @@ pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap) -> Str
         template: Template::compile(STRUCT_TEMPLATE).unwrap(),
         field_template: Template::compile(STRUCT_FIELD_TEMPLATE).unwrap(),
     };
-    generate::<RustUtils, _>(templates, s, &TypePathMapper::new(type_path_by_name, DefaultTypeMapper))
+    generate::<RustUtils, _>(
+        templates,
+        s,
+        &TypePathMapper::new(type_path_by_name, DefaultTypeMapper),
+    )
 }
 
 #[cfg(test)]

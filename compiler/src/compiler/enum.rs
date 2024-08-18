@@ -26,9 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::compiler::structure::FixedFieldType;
 use crate::compiler::Error;
 use std::collections::HashMap;
-use crate::compiler::structure::FixedFieldType;
 
 #[derive(Clone, Debug)]
 pub struct Enum {

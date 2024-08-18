@@ -26,13 +26,13 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::ffi::OsString;
-use std::path::{Path, PathBuf};
-use bp3d_util::result::ResultExt;
-use clap::{Parser, ValueEnum};
-use bp3d_protoc::{Loader, Protoc};
 use bp3d_protoc::gen::{GeneratorRust, GeneratorSwift, SwiftImportSolver};
 use bp3d_protoc::util::SimpleImportSolver;
+use bp3d_protoc::{Loader, Protoc};
+use bp3d_util::result::ResultExt;
+use clap::{Parser, ValueEnum};
+use std::ffi::OsString;
+use std::path::{Path, PathBuf};
 
 #[derive(ValueEnum, Copy, Clone, Debug)]
 pub enum Generator {
@@ -40,7 +40,7 @@ pub enum Generator {
     Rust,
 
     /// The Swift code generator.
-    Swift
+    Swift,
 }
 
 #[derive(ValueEnum, Copy, Clone, Debug)]
@@ -50,7 +50,7 @@ pub enum Solver {
 
     /// The swift import solver which simplifies dealing with the distinction between foreign and
     /// local imports.
-    Swift
+    Swift,
 }
 
 #[derive(ValueEnum, Copy, Clone, Debug)]
@@ -71,7 +71,7 @@ pub enum Feature {
     UseMessages,
 
     /// The generated code needs unions.
-    UseUnions
+    UseUnions,
 }
 
 impl Feature {
@@ -82,7 +82,7 @@ impl Feature {
             Feature::UseEnums => protoc.set_use_enums(true),
             Feature::UseStructs => protoc.set_use_structs(true),
             Feature::UseMessages => protoc.set_use_messages(true),
-            Feature::UseUnions => protoc.set_use_unions(true)
+            Feature::UseUnions => protoc.set_use_unions(true),
         }
     }
 }
@@ -93,34 +93,34 @@ impl Feature {
 pub struct Args {
     /// List of imported protocols, each by pairs of path to the protocol description and import
     /// path.
-    #[clap(short='i', long="import", number_of_values=2)]
+    #[clap(short = 'i', long = "import", number_of_values = 2)]
     pub imports: Vec<OsString>,
     /// List of input protocol description files to compile.
     #[clap(required=true, num_args=1..)]
     pub inputs: Vec<PathBuf>,
     /// Output directory where to place the generated protocols (an additional directory is created
     /// for each protocol to be compiled).
-    #[clap(short='o', long="output")]
+    #[clap(short = 'o', long = "output")]
     pub output: Option<PathBuf>,
     /// Name of the code generator to use.
-    #[clap(short='g', long="generator", default_value="rust")]
+    #[clap(short = 'g', long = "generator", default_value = "rust")]
     pub generator: Generator,
     /// Name of the import solver to use.
-    #[clap(short='s', long="solver", default_value="simple")]
+    #[clap(short = 's', long = "solver", default_value = "simple")]
     pub solver: Solver,
     /// Features to enable, the default is to use the default set of features which includes
     /// everything except reading and writing messages.
-    #[clap(short='f', long="feature")]
+    #[clap(short = 'f', long = "feature")]
     pub features: Option<Vec<Feature>>,
     /// The separator to add between the import path of protocol and the type (the default value is
     /// '::', as used by Rust and C++).
-    #[clap(long="separator", default_value="::")]
+    #[clap(long = "separator", default_value = "::")]
     pub import_separator: String,
     /// The file header to include at the top of each generated file, each line in the file header
     /// is already formatted according to the line comments syntax of the chosen target generation
     /// language.
-    #[clap(long="header")]
-    pub file_header: Option<PathBuf>
+    #[clap(long = "header")]
+    pub file_header: Option<PathBuf>,
 }
 
 impl Args {
@@ -141,8 +141,9 @@ fn main() {
     let mut swift_solver = SwiftImportSolver::new();
     let mut protoc = match args.solver {
         Solver::Simple => loader.compile(&mut SimpleImportSolver::new(&args.import_separator)),
-        Solver::Swift => loader.compile(&mut swift_solver)
-    }.expect_exit("failed to compile protocols", 1);
+        Solver::Swift => loader.compile(&mut swift_solver),
+    }
+    .expect_exit("failed to compile protocols", 1);
     if let Some(features) = args.features {
         for f in features {
             protoc = f.apply(protoc);
@@ -152,7 +153,11 @@ fn main() {
         protoc = protoc.set_file_header(file_header);
     }
     match args.generator {
-        Generator::Rust => protoc.generate::<GeneratorRust>(args.output.unwrap_or(PathBuf::from("./")), ()),
-        Generator::Swift => protoc.generate::<GeneratorSwift>(args.output.unwrap_or(PathBuf::from("./")), swift_solver)
-    }.expect_exit("failed to generate protocols", 1);
+        Generator::Rust => {
+            protoc.generate::<GeneratorRust>(args.output.unwrap_or(PathBuf::from("./")), ())
+        }
+        Generator::Swift => protoc
+            .generate::<GeneratorSwift>(args.output.unwrap_or(PathBuf::from("./")), swift_solver),
+    }
+    .expect_exit("failed to generate protocols", 1);
 }

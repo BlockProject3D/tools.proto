@@ -69,13 +69,14 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                     frag_stack.push(Fragment {
                         name,
                         content: Vec::new(),
-                        mode: FragmentMode::from_str(mode).ok_or_else(|| Error::UnknownFragmentMode(mode.into()))?
+                        mode: FragmentMode::from_str(mode)
+                            .ok_or_else(|| Error::UnknownFragmentMode(mode.into()))?,
                     });
                 } else {
                     frag_stack.push(Fragment {
                         name: fragment,
                         content: Vec::new(),
-                        mode: FragmentMode::Default
+                        mode: FragmentMode::Default,
                     });
                 }
             } else if line.starts_with(b"#fragment pop") {
@@ -145,9 +146,13 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                 false => Cow::Owned(format!("{}.{}", path, name)),
                 true => Cow::Borrowed(name),
             };
-            let fragment = self.fragments.get(&*name)
+            let fragment = self
+                .fragments
+                .get(&*name)
                 .ok_or_else(|| Error::FragmentNotFound(String::from(&*name)))?;
-            let sub_rendered = fragment.content.iter()
+            let sub_rendered = fragment
+                .content
+                .iter()
                 .map(|v| match v {
                     Component::Constant(v) => Ok(Cow::Borrowed(*v)),
                     Component::Variable(v) => {

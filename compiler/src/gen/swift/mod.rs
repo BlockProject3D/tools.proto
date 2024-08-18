@@ -27,24 +27,27 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::Protocol;
-use crate::gen::swift::structure::gen_structure_decl;
-use crate::gen::{file::{File, FileType}, Generator};
-use bp3d_util::simple_error;
 use crate::gen::swift::message::gen_message_decl;
 use crate::gen::swift::message_from_slice::gen_message_from_slice_impl;
 use crate::gen::swift::message_write::gen_message_write_impl;
 use crate::gen::swift::r#enum::gen_enum_decl;
+use crate::gen::swift::structure::gen_structure_decl;
 use crate::gen::swift::union::gen_union_decl;
+use crate::gen::{
+    file::{File, FileType},
+    Generator,
+};
+use bp3d_util::simple_error;
 
-mod structure;
-mod util;
 mod r#enum;
+mod imports;
 mod message;
 mod message_from_slice;
 mod message_write;
-mod union;
 mod solver;
-mod imports;
+mod structure;
+mod union;
+mod util;
 
 simple_error! {
     pub Error {
@@ -52,9 +55,9 @@ simple_error! {
     }
 }
 
-pub use solver::SwiftImportSolver;
 use crate::gen::file::B;
 use crate::gen::swift::imports::gen_imports;
+pub use solver::SwiftImportSolver;
 
 pub struct GeneratorSwift;
 
@@ -64,27 +67,45 @@ impl Generator for GeneratorSwift {
 
     fn generate(proto: Protocol, params: &SwiftImportSolver) -> Result<Vec<File>, Self::Error> {
         let imports = gen_imports(params);
-        let decl_structures = proto
-            .structs
-            .iter()
-            .map(|v| gen_structure_decl(&proto, v));
-        let decl_enums =
-            proto.enums.iter().map(|v| gen_enum_decl(&proto, v));
-        let decl_messages_code =
-            proto.messages.iter().map(|v| gen_message_decl(&proto, v));
-        let impl_from_slice_messages_code = proto.messages.iter()
-            .map(|v| gen_message_from_slice_impl(&proto, v));
-        let impl_write_messages_code = proto.messages.iter()
-            .map(|v| gen_message_write_impl(&proto, v));
-        let decl_unions =
-            proto.unions.iter().map(|v| gen_union_decl(&proto, v));
+        let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(&proto, v));
+        let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(&proto, v));
+        let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(&proto, v));
+        let impl_from_slice_messages_code =
+            proto.messages.iter().map(|v| gen_message_from_slice_impl(&proto, v));
+        let impl_write_messages_code =
+            proto.messages.iter().map(|v| gen_message_write_impl(&proto, v));
+        let decl_unions = proto.unions.iter().map(|v| gen_union_decl(&proto, v));
         Ok(vec![
-            File::new(FileType::Structure, format!("{}.structures.swift", proto.name), (&imports, decl_structures)),
-            File::new(FileType::Enum, format!("{}.enums.swift", proto.name), B(decl_enums)),
-            File::new(FileType::Message, format!("{}.messages.swift", proto.name), (&imports, decl_messages_code)),
-            File::new(FileType::MessageWriting, format!("{}.messages_write.swift", proto.name), (&imports, impl_write_messages_code)),
-            File::new(FileType::MessageReading, format!("{}.messages_from_slice.swift", proto.name), (&imports, impl_from_slice_messages_code)),
-            File::new(FileType::Union, format!("{}.unions.swift", proto.name), (&imports, decl_unions))
+            File::new(
+                FileType::Structure,
+                format!("{}.structures.swift", proto.name),
+                (&imports, decl_structures),
+            ),
+            File::new(
+                FileType::Enum,
+                format!("{}.enums.swift", proto.name),
+                B(decl_enums),
+            ),
+            File::new(
+                FileType::Message,
+                format!("{}.messages.swift", proto.name),
+                (&imports, decl_messages_code),
+            ),
+            File::new(
+                FileType::MessageWriting,
+                format!("{}.messages_write.swift", proto.name),
+                (&imports, impl_write_messages_code),
+            ),
+            File::new(
+                FileType::MessageReading,
+                format!("{}.messages_from_slice.swift", proto.name),
+                (&imports, impl_from_slice_messages_code),
+            ),
+            File::new(
+                FileType::Union,
+                format!("{}.unions.swift", proto.name),
+                (&imports, decl_unions),
+            ),
         ])
     }
 

@@ -36,6 +36,7 @@ mod union;
 mod util;
 
 use crate::compiler::Protocol;
+use crate::gen::file::B;
 use crate::gen::rust::message::gen_message_decl;
 use crate::gen::rust::message_from_slice::gen_message_from_slice_impl;
 use crate::gen::rust::message_offsets::gen_message_offsets_decl;
@@ -43,10 +44,12 @@ use crate::gen::rust::message_write::gen_message_write_impl;
 use crate::gen::rust::r#enum::gen_enum_decl;
 use crate::gen::rust::structure::gen_structure_decl;
 use crate::gen::rust::union::gen_union_decl;
-use crate::gen::{file::{File, FileType}, Generator};
+use crate::gen::{
+    file::{File, FileType},
+    Generator,
+};
 use bp3d_util::simple_error;
 use std::path::Path;
-use crate::gen::file::B;
 
 simple_error! {
     pub Error {
@@ -63,25 +66,16 @@ impl Generator for GeneratorRust {
     fn generate(proto: Protocol, _: &()) -> Result<Vec<File>, Self::Error> {
         let decl_messages_code =
             proto.messages.iter().map(|v| gen_message_decl(v, &proto.type_path_by_name));
-        let impl_from_slice_messages_code = proto
-            .messages
-            .iter()
-            .map(|v| gen_message_from_slice_impl(v, &proto.type_path_by_name));
-        let impl_write_messages_code = proto
-            .messages
-            .iter()
-            .map(|v| gen_message_write_impl(v, &proto.type_path_by_name));
-        let decl_structures = proto
-            .structs
-            .iter()
-            .map(|v| gen_structure_decl(v, &proto.type_path_by_name));
+        let impl_from_slice_messages_code =
+            proto.messages.iter().map(|v| gen_message_from_slice_impl(v, &proto.type_path_by_name));
+        let impl_write_messages_code =
+            proto.messages.iter().map(|v| gen_message_write_impl(v, &proto.type_path_by_name));
+        let decl_structures =
+            proto.structs.iter().map(|v| gen_structure_decl(v, &proto.type_path_by_name));
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(v));
-        let decl_unions =
-            proto.unions.iter().map(|v| gen_union_decl(v, &proto.type_path_by_name));
-        let decl_messages_code_offsets = proto
-            .messages
-            .iter()
-            .map(|v| gen_message_offsets_decl(v, &proto.type_path_by_name));
+        let decl_unions = proto.unions.iter().map(|v| gen_union_decl(v, &proto.type_path_by_name));
+        let decl_messages_code_offsets =
+            proto.messages.iter().map(|v| gen_message_offsets_decl(v, &proto.type_path_by_name));
         Ok(vec![
             File::new(FileType::Message, "messages.rs", B(decl_messages_code)),
             File::new(
@@ -108,7 +102,7 @@ impl Generator for GeneratorRust {
     fn generate_umbrella<'a>(
         proto_name: &str,
         files: impl Iterator<Item = &'a Path>,
-        _: &()
+        _: &(),
     ) -> Result<String, Self::Error> {
         let mut code = format!("pub mod {} {{\n", proto_name);
         for file in files {

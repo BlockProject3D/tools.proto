@@ -26,10 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::path::Path;
-use itertools::Itertools;
 use crate::compiler::Protocol;
 use crate::gen::file::File;
+use itertools::Itertools;
+use std::path::Path;
 
 pub trait Generator {
     type Error: std::error::Error;
@@ -40,7 +40,7 @@ pub trait Generator {
     fn generate_umbrella<'a>(
         _: &str,
         _: impl Iterator<Item = &'a Path>,
-        _: &Self::Params
+        _: &Self::Params,
     ) -> Result<String, Self::Error> {
         Ok(String::new())
     }

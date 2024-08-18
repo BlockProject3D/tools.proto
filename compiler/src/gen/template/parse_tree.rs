@@ -68,7 +68,7 @@ impl<'a> Component<'a> {
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum FragmentMode {
     Inline,
-    Default
+    Default,
 }
 
 impl FragmentMode {
@@ -76,7 +76,7 @@ impl FragmentMode {
         match name {
             "inline" => Some(FragmentMode::Inline),
             "Default" => Some(FragmentMode::Default),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -84,7 +84,7 @@ impl FragmentMode {
 pub struct Fragment<'a> {
     pub(crate) name: &'a str,
     pub(crate) content: Vec<Component<'a>>,
-    pub(crate) mode: FragmentMode
+    pub(crate) mode: FragmentMode,
 }
 
 pub struct Token<'a> {
