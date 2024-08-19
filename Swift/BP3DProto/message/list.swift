@@ -91,6 +91,15 @@ public struct Array<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: Fr
         return Item.Output(self.buffer[pos...end]);
     }
 
+    public func get(_ index: Int) -> Item.Output? where Item.Output: FromBuffer, Item.Output.Buffer == Buffer {
+        if index >= count {
+            return nil;
+        }
+        let pos = index * Item.Output.size;
+        let end = pos + Item.Output.size;
+        return Item.Output(self.buffer[pos...end]);
+    }
+
     public func toArray() -> [Item.Output] where Item.Output: FromBuffer, Item.Output.Buffer == Buffer {
         var arr: [Item.Output] = [];
         arr.reserveCapacity(count);
