@@ -55,6 +55,13 @@ fn gen_message_array_type_decls(
                         .render("", &["decl_array"])
                         .unwrap(),
                 ),
+                FieldType::List(v) => Some(
+                    scope
+                        .var("item_type", type_path_by_name.get(&v.item_type.name))
+                        .var("codec", SwiftUtils::get_value_type(field.endianness, v.ty))
+                        .render("", &["decl_list"])
+                        .unwrap(),
+                ),
                 _ => None,
             }
         })

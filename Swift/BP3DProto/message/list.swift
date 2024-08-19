@@ -29,31 +29,78 @@
 import Foundation
 
 public struct List<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: FromSlice where T.Output: Scalar, T.Buffer == Buffer, Item.Buffer == Buffer {
-    public typealias Output = [Item.Output];
+    var buffer: Buffer;
+    var _count: Int;
 
-    public static func from(slice: Buffer) throws -> Message<[Item.Output]> {
+    public var count: Int {
+        _count
+    }
+
+    init(_ buffer: Buffer, count: Int) {
+        self._count = count;
+        self.buffer = buffer;
+    }
+
+    public typealias Output = List<Buffer, T, Item>;
+
+    public static func from(slice: Buffer) throws -> Message<List<Buffer, T, Item>> {
         let msg = try T.from(slice: slice);
         var data = slice[msg.size...];
         var totalSize = msg.size;
-        var items: [Item.Output] = [];
-        items.reserveCapacity(Int(msg.data.toUInt()));
         for _ in 0...msg.data.toUInt() - 1 {
             let item = try Item.from(slice: data);
             totalSize += item.size;
-            items.append(item.data);
-            data = data[item.size...]
+            data = data[item.size...];
         }
-        return Message(size: totalSize, data: items);
+        return Message(size: totalSize, data: List(data, count: Int(msg.data.toUInt())));
+    }
+
+    public func toArray() throws -> [Item.Output] {
+        var data = buffer;
+        var items: [Item.Output] = [];
+        items.reserveCapacity(_count);
+        for _ in 0..._count - 1 {
+            let item = try Item.from(slice: data);
+            items.append(item.data);
+            data = data[item.size...];
+        }
+        return items;
     }
 }
 
-extension List: WriteTo where T: WriteTo, T.Input: Scalar, Item: WriteTo {
-    public typealias Input = [Item.Input]
+extension List: WriteTo where T: WriteTo, T.Input: Scalar {
+    public init(_ buffer: Buffer) {
+        self.buffer = buffer;
+        self._count = 0;
+    }
 
-    public static func write<B>(input: [Item.Input], to out: inout B) throws where B : WritableBuffer {
-        try T.write(input: T.Input(fromUInt: UInt(input.count)), to: &out);
-        for item in input {
-            try Item.write(input: item, to: &out);
+    public typealias Input = List<Buffer, T, Item>;
+
+    public static func write<B>(input: List<Buffer, T, Item>, to out: inout B) throws where B : WritableBuffer {
+        try T.write(input: T.Input(fromUInt: UInt(input._count)), to: &out);
+        out.write(bytes: input.buffer.toData());
+    }
+}
+
+extension List where Item: WriteTo, Buffer: WritableBuffer {
+    public mutating func writeItem(_ item: Item.Input) throws {
+        try Item.write(input: item, to: &buffer);
+        self._count += 1;
+    }
+
+    public mutating func writeItems(_ items: [Item.Input]) throws {
+        for item in items {
+            try self.writeItem(item);
         }
+    }
+}
+
+public struct UnsizedList<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: FromSlice where T.Output: Scalar, T.Buffer == Buffer, Item.Buffer == Buffer {
+    public typealias Output = List<Buffer, T, Item>;
+
+    public static func from(slice: Buffer) throws -> Message<List<Buffer, T, Item>> {
+        let msg = try T.from(slice: slice);
+        let data = slice[msg.size...];
+        return Message(size: slice.size, data: List(data, count: Int(msg.data.toUInt())));
     }
 }

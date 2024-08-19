@@ -45,5 +45,5 @@ BP3DProto.List<B, {codec}, {type_name}<B>>
 #fragment pop
 
 #fragment push unsized:inline
-BP3DProto.List<B, {codec}, {type_name}<B>>
+BP3DProto.UnsizedList<B, {codec}, {type_name}<B>>
 #fragment pop
