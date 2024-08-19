@@ -42,7 +42,7 @@ final class ArraysTests: XCTestCase {
         var msg_buffer = DataBuffer();
         do {
             let buffer = DataBuffer(size: 12);
-            let arr = ArraysMsgItemsType(buffer);
+            let arr = ArraysMsgItems(buffer);
             arr[0].setId(3).setCount(1024).setSlot(10);
             arr[1].setId(2).setCount(1023).setSlot(9);
             arr[2].setId(1).setCount(16).setSlot(8);
@@ -79,7 +79,7 @@ final class ArraysTests: XCTestCase {
         var msg_buffer = DataBuffer();
         do {
             let buffer = DataBuffer(size: 12);
-            let arr = ArraysMsg1ItemsType(buffer);
+            let arr = ArraysMsg1Items(buffer);
             arr[0].setId(3).setCount(1024).setSlot(10);
             arr[1].setId(2).setCount(1023).setSlot(9);
             arr[2].setId(1).setCount(16).setSlot(8);

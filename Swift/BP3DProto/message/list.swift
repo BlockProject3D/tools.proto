@@ -52,7 +52,7 @@ public struct List<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: Fro
             totalSize += item.size;
             data = data[item.size...];
         }
-        return Message(size: totalSize, data: List(data, count: Int(msg.data.toUInt())));
+        return Message(size: totalSize, data: List(slice[msg.size...], count: Int(msg.data.toUInt())));
     }
 
     public func toArray() throws -> [Item.Output] {
