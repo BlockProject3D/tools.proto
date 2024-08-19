@@ -36,7 +36,7 @@ public struct List<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: Fro
         _count
     }
 
-    init(_ buffer: Buffer, count: Int) {
+    public init(_ buffer: Buffer, count: Int) {
         self._count = count;
         self.buffer = buffer;
     }
