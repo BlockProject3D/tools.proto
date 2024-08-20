@@ -38,7 +38,7 @@ macro_rules! impl_list_base {
             }
         }
 
-        impl<B: AsRef<[u8]>, T: WriteTo<Input: ToUsize + Sized>, Item> WriteTo for $t<B, T, Item> {
+        impl<B: AsRef<[u8]>, T: WriteTo<Input: ToUsize + std::marker::Sized>, Item> WriteTo for $t<B, T, Item> {
             type Input = $t<B, T, Item>;
 
             fn write_to<W: std::io::Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {

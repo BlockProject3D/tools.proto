@@ -82,7 +82,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                     .scope()
                     .var("codec", U::get_value_type(field.endianness, v.ty))
                     .var("type_name", type_path_by_name.get(&v.item_type.name))
-                    .render("", &["unsized"])
+                    .render("", &["unsized_list"])
                     .unwrap(),
             ),
             true => gen_optional::<U>(
@@ -96,6 +96,12 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
             ),
         },
         FieldType::Payload => gen_optional::<U>(field.optional, U::get_payload_type_inline()),
+        FieldType::SizedList(v) => gen_optional::<U>(field.optional, template.scope()
+            .var("codec", U::get_value_type(field.endianness, v.ty))
+            .var("type_name", type_path_by_name.get(&v.item_type.name))
+            .var("size_codec", U::get_value_type(field.endianness, v.size_ty))
+            .render("", &["sized_list"])
+            .unwrap())
     };
     msg_type
 }

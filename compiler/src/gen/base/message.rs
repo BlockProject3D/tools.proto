@@ -81,6 +81,12 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
             .render("", &["list"])
             .unwrap(),
         FieldType::Payload => U::get_payload_type().into(),
+        FieldType::SizedList(v) => scope
+            .var("codec", U::get_value_type(field.endianness, v.ty))
+            .var("type_name", type_path_by_name.get(&v.item_type.name))
+            .var("size_codec", U::get_value_type(field.endianness, v.size_ty))
+            .render("", &["sized_list"])
+            .unwrap()
     };
     let msg_type = match field.optional {
         true => U::gen_option_type(&msg_type),

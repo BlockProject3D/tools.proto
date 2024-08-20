@@ -28,12 +28,15 @@
 
 use serde::Deserialize;
 
+//TODO: Implement a FixedList (i.e. a List type with a header containing both a number of items and
+// a total size in bytes).
+
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
 pub enum MessageFieldType {
     Item { item_type: String },
-    List { max_len: usize, item_type: String },
+    List { max_len: usize, item_type: String, max_size: Option<usize> },
     String { max_len: Option<usize> },
     Payload,
     Union { on: String, item_type: String },

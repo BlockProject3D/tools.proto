@@ -76,6 +76,13 @@ pub struct ListField {
 }
 
 #[derive(Clone, Debug)]
+pub struct SizedListField {
+    pub ty: FixedFieldType,
+    pub item_type: Rc<Message>,
+    pub size_ty: FixedFieldType
+}
+
+#[derive(Clone, Debug)]
 pub struct FixedField {
     pub ty: FixedFieldType,
 }
@@ -96,6 +103,7 @@ pub enum FieldType {
     Array(ArrayField),
     Union(UnionField),
     List(ListField),
+    SizedList(SizedListField),
     Payload,
 }
 
@@ -186,7 +194,7 @@ impl Field {
                     }),
                 }
             }
-            MessageFieldType::List { max_len, item_type } => {
+            MessageFieldType::List { max_len, item_type, max_size } => {
                 let r = Referenced::lookup(proto, &item_type).ok_or(Error::UndefinedReference(item_type))?;
                 let ty = FixedFieldType::from_max_value(max_len)?;
                 match r {
@@ -201,17 +209,31 @@ impl Field {
                         endianness: proto.endianness,
                     }),
                     Referenced::Message(item_type) => {
-                        item_type.embedded.set(true);
-                        Ok(Field {
-                            name: value.name,
-                            ty: FieldType::List(ListField { ty, item_type }),
-                            optional: value.optional.unwrap_or_default(),
-                            size: SizeInfo {
-                                is_element_dyn_sized: true,
-                                is_dyn_sized: true,
-                            },
-                            endianness: proto.endianness,
-                        })
+                        if let Some(max_size) = max_size {
+                            let size_ty = FixedFieldType::from_max_value(max_size)?;
+                            Ok(Field {
+                                name: value.name,
+                                ty: FieldType::SizedList(SizedListField { ty, item_type, size_ty }),
+                                optional: value.optional.unwrap_or_default(),
+                                size: SizeInfo {
+                                    is_element_dyn_sized: true,
+                                    is_dyn_sized: false,
+                                },
+                                endianness: proto.endianness,
+                            })
+                        } else {
+                            item_type.embedded.set(true);
+                            Ok(Field {
+                                name: value.name,
+                                ty: FieldType::List(ListField { ty, item_type }),
+                                optional: value.optional.unwrap_or_default(),
+                                size: SizeInfo {
+                                    is_element_dyn_sized: true,
+                                    is_dyn_sized: true,
+                                },
+                                endianness: proto.endianness,
+                            })
+                        }
                     }
                 }
             }

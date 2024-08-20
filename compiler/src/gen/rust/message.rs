@@ -59,6 +59,13 @@ fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMappe
                         .render("", &["decl_list"])
                         .unwrap(),
                 ),
+                FieldType::SizedList(v) => Some(
+                    template
+                        .var("item_type", type_path_by_name.get(&v.item_type.name))
+                        .var("codec", RustUtils::get_value_type(field.endianness, v.ty))
+                        .render("", &["decl_list"])
+                        .unwrap(),
+                ),
                 _ => None,
             }
         })

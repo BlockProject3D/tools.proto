@@ -44,6 +44,10 @@ BP3DProto.Array<B, {codec}, {type_name}<B>>
 BP3DProto.List<B, {codec}, {type_name}<B>>
 #fragment pop
 
-#fragment push unsized:inline
+#fragment push unsized_list:inline
 BP3DProto.UnsizedList<B, {codec}, {type_name}<B>>
+#fragment pop
+
+#fragment push sized_list:inline
+BP3DProto.SizedList<B, {codec}, {size_codec}, {type_name}<B>>
 #fragment pop
