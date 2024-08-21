@@ -37,4 +37,4 @@
 ../../target/debug/protoc --header ../../LICENSE.txt -g swift ../../testprog/src/values.json5
 ../../target/debug/protoc --header ../../LICENSE.txt -i ../../testprog/src/enums.json5 Self -i ../../testprog/src/values.json5 Self -s swift -g swift ../../testprog/src/unions.json5
 ../../target/debug/protoc --header ../../LICENSE.txt -g swift ../../testprog/src/arrays.json5
-../../target/debug/protoc --header ../../LICENSE.txt -i ../../testprog/src/enums.json5 Self -i ../../testprog/src/values.json5 Self -i ../../testprog/src/unions.json5 Self -s swift -g swift ../../testprog/src/lists.json5
+../../target/debug/protoc --header ../../LICENSE.txt -i ../../testprog/src/enums.json5 Self -i ../../testprog/src/values.json5 Self -i ../../testprog/src/unions.json5 Self -s swift -g swift ../../testprog/src/lists.json5 ../../testprog/src/lists2.json5
