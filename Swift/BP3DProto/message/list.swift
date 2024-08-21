@@ -95,12 +95,47 @@ extension List where Item: WriteTo, Buffer: WritableBuffer {
     }
 }
 
-public struct UnsizedList<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: FromSlice where T.Output: Scalar, T.Buffer == Buffer, Item.Buffer == Buffer {
+public struct UnsizedList<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: FromSlice where
+    T.Output: Scalar,
+    T.Buffer == Buffer,
+    Item.Buffer == Buffer
+{
     public typealias Output = List<Buffer, T, Item>;
 
     public static func from(slice: Buffer) throws -> Message<List<Buffer, T, Item>> {
         let msg = try T.from(slice: slice);
         let data = slice[msg.size...];
         return Message(size: slice.size, data: List(data, count: Int(msg.data.toUInt())));
+    }
+}
+
+public struct SizedList<Buffer: BP3DProto.Buffer, T: FromSlice, S: FromSlice, Item: FromSlice>: FromSlice where
+    T.Output: Scalar,
+    S.Output: Scalar,
+    T.Buffer == Buffer,
+    S.Buffer == Buffer,
+    Item.Buffer == Buffer
+{
+    public typealias Output = List<Buffer, T, Item>;
+
+    public static func from(slice: Buffer) throws -> Message<List<Buffer, T, Item>> {
+        let msg = try T.from(slice: slice);
+        var control_size = msg.size;
+        let len = msg.data.toUInt();
+        let msg1 = try S.from(slice: slice[control_size...]);
+        control_size += msg1.size;
+        let total_size = control_size + Int(msg1.data.toUInt());
+        let data = slice[control_size...total_size];
+        return Message(size: total_size, data: List(data, count: Int(len)));
+    }
+}
+
+extension SizedList: WriteTo where T: WriteTo, S: WriteTo, T.Input: Scalar, S.Input: Scalar {
+    public typealias Input = List<Buffer, T, Item>;
+
+    public static func write<B>(input: List<Buffer, T, Item>, to out: inout B) throws where B : WritableBuffer {
+        try T.write(input: T.Input(fromUInt: UInt(input._count)), to: &out);
+        try S.write(input: S.Input(fromUInt: UInt(input.buffer.size)), to: &out);
+        out.write(bytes: input.buffer.toData());
     }
 }

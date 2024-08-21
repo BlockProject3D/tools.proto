@@ -28,9 +28,6 @@
 
 use serde::Deserialize;
 
-//TODO: Implement a FixedList (i.e. a List type with a header containing both a number of items and
-// a total size in bytes).
-
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
