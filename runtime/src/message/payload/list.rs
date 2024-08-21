@@ -26,10 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::io::Write;
 use crate::message::payload::list_base::impl_list_base;
 use crate::message::{Error, FromSlice, FromSliceWithOffsets, Message, WriteTo};
 use crate::util::ToUsize;
+use std::io::Write;
 use std::marker::PhantomData;
 
 #[derive(Copy, Clone, Debug)]
@@ -153,10 +153,12 @@ pub struct Sized<B, T, S, Item> {
     useless: PhantomData<T>,
     useless1: PhantomData<S>,
     useless2: PhantomData<Item>,
-    useless3: PhantomData<B>
+    useless3: PhantomData<B>,
 }
 
-impl<'a, B, T: FromSlice<'a, Output: ToUsize>, S: FromSlice<'a, Output: ToUsize>, Item> FromSlice<'a> for Sized<B, T, S, Item> {
+impl<'a, B, T: FromSlice<'a, Output: ToUsize>, S: FromSlice<'a, Output: ToUsize>, Item> FromSlice<'a>
+    for Sized<B, T, S, Item>
+{
     type Output = List<&'a [u8], T, Item>;
 
     fn from_slice(slice: &'a [u8]) -> crate::message::Result<Message<Self::Output>> {
@@ -171,7 +173,13 @@ impl<'a, B, T: FromSlice<'a, Output: ToUsize>, S: FromSlice<'a, Output: ToUsize>
     }
 }
 
-impl<B: AsRef<[u8]>, T: WriteTo<Input: ToUsize + std::marker::Sized>, S: WriteTo<Input: ToUsize + std::marker::Sized>, Item> WriteTo for Sized<B, T, S, Item> {
+impl<
+        B: AsRef<[u8]>,
+        T: WriteTo<Input: ToUsize + std::marker::Sized>,
+        S: WriteTo<Input: ToUsize + std::marker::Sized>,
+        Item,
+    > WriteTo for Sized<B, T, S, Item>
+{
     type Input = List<B, T, Item>;
 
     fn write_to<W: Write>(input: &Self::Input, mut out: W) -> crate::message::Result<()> {

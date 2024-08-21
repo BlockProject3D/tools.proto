@@ -79,7 +79,7 @@ pub struct ListField {
 pub struct SizedListField {
     pub ty: FixedFieldType,
     pub item_type: Rc<Message>,
-    pub size_ty: FixedFieldType
+    pub size_ty: FixedFieldType,
 }
 
 #[derive(Clone, Debug)]
@@ -194,7 +194,11 @@ impl Field {
                     }),
                 }
             }
-            MessageFieldType::List { max_len, item_type, max_size } => {
+            MessageFieldType::List {
+                max_len,
+                item_type,
+                max_size,
+            } => {
                 let r = Referenced::lookup(proto, &item_type).ok_or(Error::UndefinedReference(item_type))?;
                 let ty = FixedFieldType::from_max_value(max_len)?;
                 match r {
