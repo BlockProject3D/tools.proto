@@ -45,6 +45,12 @@ pub struct TypePathMap {
     type_path_by_name: HashMap<String, String>,
 }
 
+impl Default for TypePathMap {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TypePathMap {
     pub fn new() -> Self {
         Self {

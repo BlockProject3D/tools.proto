@@ -230,8 +230,8 @@ pub struct Templates<'fragment, 'variable> {
     pub template: Template<'fragment, 'variable>,
 }
 
-pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
-    templates: Templates<'fragment, 'variable>,
+pub fn generate<'variable, U: Utilities, T: TypeMapper>(
+    templates: Templates<'_, 'variable>,
     s: &'variable Structure,
     type_path_by_name: &TypePathMapper<T>,
 ) -> String {

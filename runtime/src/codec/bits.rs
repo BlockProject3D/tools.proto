@@ -230,7 +230,7 @@ impl BitCodec for BitCodecBE {
         value: T,
     ) {
         let mask: usize = (1 << BIT_SIZE) - 1;
-        let reset_mask = !(mask << 8 - (BIT_SIZE % 8) - BIT_OFFSET);
+        let reset_mask = !(mask << (8 - (BIT_SIZE % 8) - BIT_OFFSET));
         let original = T::read_bytes_be(buffer);
         let clean = original & T::from_usize(reset_mask);
         let value = (value & T::from_usize(mask)) << T::from_usize(8 - (BIT_SIZE % 8) - BIT_OFFSET);

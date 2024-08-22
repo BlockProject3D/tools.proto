@@ -80,7 +80,7 @@ fn gen_initializer(template: &Template, msg: &Message, type_path_by_name: &TypeP
         .fields
         .iter()
         .map(|field| gen_msg_field_decl::<SwiftUtils, _>(field, template, type_path_by_name))
-        .map(|v| format!("{}", &v[..v.len() - 1]))
+        .map(|v| v[..v.len() - 1].to_string())
         .join(", ");
     let initializers = msg
         .fields

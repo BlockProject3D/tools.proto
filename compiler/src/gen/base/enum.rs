@@ -31,8 +31,8 @@ use crate::gen::base::structure::Utilities;
 use crate::gen::template::Template;
 use itertools::Itertools;
 
-pub fn generate<'fragment, 'variable, U: Utilities>(
-    mut template: Template<'fragment, 'variable>,
+pub fn generate<'variable, U: Utilities>(
+    mut template: Template<'_, 'variable>,
     e: &'variable Enum,
 ) -> String {
     template

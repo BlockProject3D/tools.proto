@@ -37,6 +37,12 @@ pub struct SwiftImportSolver {
     import_map: HashMap<String, (Option<String>, Protocol)>,
 }
 
+impl Default for SwiftImportSolver {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SwiftImportSolver {
     pub fn new() -> Self {
         Self {

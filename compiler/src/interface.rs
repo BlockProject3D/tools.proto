@@ -42,6 +42,12 @@ pub struct Loader {
     imported_models: Vec<(String, model::Protocol)>,
 }
 
+impl Default for Loader {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Loader {
     pub fn new() -> Self {
         Self {
@@ -151,7 +157,7 @@ impl<'a> Protoc<'a> {
     ) -> Result<Vec<Proto>, Error> {
         let file_header = self
             .file_header
-            .map(|v| std::fs::read_to_string(v))
+            .map(std::fs::read_to_string)
             .transpose()
             .map_err(Error::Io)?
             .map(|v| T::generate_file_header(v.lines()));

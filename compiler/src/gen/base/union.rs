@@ -138,8 +138,8 @@ fn gen_union_as_getters<T: TypeMapper>(
     template.scope().var("cases", cases).render("", &["getters"]).unwrap()
 }
 
-pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
-    mut template: Template<'fragment, 'variable>,
+pub fn generate<'variable, U: Utilities, T: TypeMapper>(
+    mut template: Template<'_, 'variable>,
     u: &'variable Union,
     type_path_by_name: &'variable TypePathMapper<T>,
 ) -> String {

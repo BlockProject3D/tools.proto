@@ -156,8 +156,8 @@ pub fn generate_from_slice_impl<U: Utilities, T: TypeMapper>(
         .unwrap()
 }
 
-pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
-    mut template: Template<'fragment, 'variable>,
+pub fn generate<'variable, U: Utilities, T: TypeMapper>(
+    mut template: Template<'_, 'variable>,
     msg: &'variable Message,
     type_path_by_name: &TypePathMapper<T>,
 ) -> String {

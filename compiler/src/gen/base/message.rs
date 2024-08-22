@@ -95,8 +95,8 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
     scope.var("type", msg_type).render("decl", &["field"]).unwrap()
 }
 
-pub fn generate<'fragment, 'variable, U: Utilities, T: TypeMapper>(
-    mut template: Template<'fragment, 'variable>,
+pub fn generate<'variable, U: Utilities, T: TypeMapper>(
+    mut template: Template<'_, 'variable>,
     msg: &'variable Message,
     type_path_by_name: &TypePathMapper<T>,
 ) -> String {

@@ -30,6 +30,7 @@ use itertools::Itertools;
 use regex::Regex;
 use std::borrow::Cow;
 
+#[allow(clippy::enum_variant_names)]
 enum Convention {
     PascalCase,
     SnakeCase,
