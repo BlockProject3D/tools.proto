@@ -31,10 +31,7 @@ use crate::gen::base::structure::Utilities;
 use crate::gen::template::Template;
 use itertools::Itertools;
 
-pub fn generate<'variable, U: Utilities>(
-    mut template: Template<'_, 'variable>,
-    e: &'variable Enum,
-) -> String {
+pub fn generate<'variable, U: Utilities>(mut template: Template<'_, 'variable>, e: &'variable Enum) -> String {
     template
         .var("name", &e.name)
         .var_d("largest", e.largest)
