@@ -3,6 +3,10 @@ impl<T> {name}<T> {{
     pub fn new(data: T) -> Self {{
         Self {{ data }}
     }}
+
+    pub fn into_inner(self) -> T {{
+        self.data
+    }}
 }}
 
 impl {name}<[u8; {byte_size}]> {{
@@ -26,6 +30,18 @@ impl<'a, T: AsRef<[u8]>> {name}<T> {{
 impl<'a, T: AsMut<[u8]>> {name}<T> {{
     pub fn to_mut(&'a mut self) -> {name}<&'a mut [u8]> {{
         {name} {{ data: self.data.as_mut() }}
+    }}
+}}
+
+impl<T: AsRef<[u8]>> AsRef<[u8]> for {name}<T> {{
+    fn as_ref(&self) -> &[u8] {{
+        self.data.as_ref()
+    }}
+}}
+
+impl<T: AsMut<[u8]>> AsMut<[u8]> for {name}<T> {{
+    fn as_mut(&mut self) -> &mut [u8] {{
+        self.data.as_mut()
     }}
 }}
 
