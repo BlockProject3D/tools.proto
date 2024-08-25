@@ -13,3 +13,4 @@ categories = ["network-programming", "parsing"]
 [dependencies]
 bp3d-util = { version = "1.0.0", features = ["simple-error"] }
 bytesutil = "0.7.0"
+tokio = { version = "1.39.3", features = ["full"], optional = true }

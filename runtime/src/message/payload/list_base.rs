@@ -38,12 +38,21 @@ macro_rules! impl_list_base {
             }
         }
 
-        impl<'a, B: AsRef<[u8]>, T: WriteTo<'a, Input: ToUsize + std::marker::Sized>, Item> WriteTo<'a> for $t<B, T, Item> {
+        impl<'a, B: AsRef<[u8]>, T: WriteTo<'a, Input: ToUsize>, Item> WriteTo<'a> for $t<B, T, Item> {
             type Input = $t<B, T, Item>;
 
             fn write_to<W: std::io::Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {
                 T::write_to(&T::Input::from_usize(input.len), &mut out)?;
                 out.write_all(input.data.as_ref())?;
+                Ok(())
+            }
+        }
+
+        #[cfg(feature = "tokio")]
+        impl<'a, B: AsRef<[u8]>, T: crate::message::WriteToAsync<'a, Input: ToUsize>, Item> crate::message::WriteToAsync<'a> for $t<B, T, Item> {
+            async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input, mut out: W) -> crate::message::Result<()> {
+                T::write_to_async(&T::Input::from_usize(input.len), &mut out).await?;
+                out.write_all(input.data.as_ref()).await?;
                 Ok(())
             }
         }

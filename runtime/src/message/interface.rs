@@ -92,3 +92,8 @@ pub trait WriteTo<'a> {
 
     fn write_to<W: std::io::Write>(input: &Self::Input, out: W) -> Result<()>;
 }
+
+#[cfg(feature = "tokio")]
+pub trait WriteToAsync<'a>: WriteTo<'a> {
+    fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input, out: W) -> impl std::future::Future<Output = Result<()>>;
+}

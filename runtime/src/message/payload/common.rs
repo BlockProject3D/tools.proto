@@ -47,3 +47,11 @@ impl<'a> WriteTo<'a> for Buffer {
         Ok(())
     }
 }
+
+#[cfg(feature = "tokio")]
+impl<'a> crate::message::WriteToAsync<'a> for Buffer {
+    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input, mut out: W) -> Result<(), Error> {
+        out.write_all(input).await?;
+        Ok(())
+    }
+}
