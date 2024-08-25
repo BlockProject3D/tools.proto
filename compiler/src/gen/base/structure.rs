@@ -28,7 +28,7 @@
 
 use crate::compiler::structure::{Field, FieldView, FixedField, FixedFieldType, Structure};
 use crate::compiler::util::TypeMapper;
-use crate::gen::base::TypePathMapper;
+use crate::gen::base::map::TypePathMapper;
 use crate::gen::template::{Scope, Template};
 use crate::model::protocol::Endianness;
 use itertools::Itertools;
@@ -227,7 +227,7 @@ fn gen_structure_setters<U: Utilities, T: TypeMapper>(
 
 pub struct Templates<'fragment, 'variable> {
     pub field_template: Template<'fragment, 'variable>,
-    pub template: Template<'fragment, 'variable>,
+    pub template: Template<'fragment, 'variable>
 }
 
 pub fn generate<'variable, U: Utilities, T: TypeMapper>(
@@ -242,5 +242,6 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     let mut code = template.render("", &["decl", "new", "fixed_size", "write_to", "from_slice"]).unwrap();
     code += &gen_structure_getters::<U, T>(s, &field_template, type_path_by_name);
     code += &gen_structure_setters::<U, T>(s, &field_template, type_path_by_name);
+    //code += template.render;
     code
 }

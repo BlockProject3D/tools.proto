@@ -29,7 +29,7 @@
 use crate::compiler::structure::Structure;
 use crate::compiler::Protocol;
 use crate::gen::base::structure::{generate, Templates};
-use crate::gen::base::TypePathMapper;
+use crate::gen::base::map::TypePathMapper;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::Template;
 

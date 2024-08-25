@@ -29,7 +29,7 @@
 use crate::compiler::message::Message;
 use crate::compiler::Protocol;
 use crate::gen::base::message_write::generate;
-use crate::gen::base::TypePathMapper;
+use crate::gen::base::map::TypePathMapper;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::Template;
 

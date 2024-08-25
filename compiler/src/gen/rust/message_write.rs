@@ -29,7 +29,7 @@
 use crate::compiler::message::Message;
 use crate::compiler::util::TypePathMap;
 use crate::gen::base::message_write::generate;
-use crate::gen::base::{DefaultTypeMapper, TypePathMapper};
+use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 

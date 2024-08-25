@@ -30,7 +30,7 @@ use crate::compiler::message::{Field, Message};
 use crate::compiler::util::TypeMapper;
 use crate::gen::base::message::Utilities;
 use crate::gen::base::message_from_slice::generate_field_type_inline;
-use crate::gen::base::TypePathMapper;
+use crate::gen::base::map::TypePathMapper;
 use crate::gen::template::Template;
 use itertools::Itertools;
 

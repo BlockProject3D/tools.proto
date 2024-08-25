@@ -29,7 +29,7 @@
 use crate::compiler::union::{DiscriminantField, Union};
 use crate::compiler::util::TypePathMap;
 use crate::gen::base::union::{generate, Utilities};
-use crate::gen::base::{DefaultTypeMapper, TypePathMapper};
+use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 use itertools::Itertools;

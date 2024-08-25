@@ -26,19 +26,32 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::Message;
-use crate::compiler::util::TypePathMap;
-use crate::gen::base::message_from_slice::generate;
-use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
-use crate::gen::rust::util::RustUtils;
-use crate::gen::template::Template;
+use std::borrow::Cow;
+use crate::compiler::util::{TypeMapper, TypePathMap};
 
-const TEMPLATE: &[u8] = include_bytes!("./message.from_slice.template");
+pub struct DefaultTypeMapper;
 
-pub fn gen_message_from_slice_impl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    generate::<RustUtils, _>(
-        Template::compile(TEMPLATE).unwrap(),
-        msg,
-        &TypePathMapper::new(type_path_by_name, DefaultTypeMapper),
-    )
+impl TypeMapper for DefaultTypeMapper {
+    fn map_local_type<'a>(&self, item_type: &'a str) -> Cow<'a, str> {
+        item_type.into()
+    }
+
+    fn map_foreign_type<'a>(&self, item_type: &'a str) -> Cow<'a, str> {
+        item_type.into()
+    }
+}
+
+pub struct TypePathMapper<'a, T: TypeMapper> {
+    type_path_map: &'a TypePathMap,
+    mapper: T,
+}
+
+impl<'a, T: TypeMapper> TypePathMapper<'a, T> {
+    pub fn new(type_path_map: &'a TypePathMap, mapper: T) -> Self {
+        Self { type_path_map, mapper }
+    }
+
+    pub fn get<'b>(&'b self, item_type: &'b str) -> Cow<'b, str> {
+        self.type_path_map.get(&self.mapper, item_type)
+    }
 }

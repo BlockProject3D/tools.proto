@@ -26,39 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::util::{TypeMapper, TypePathMap};
-use std::borrow::Cow;
-
 pub mod r#enum;
 pub mod message;
 pub mod message_from_slice;
 pub mod message_write;
 pub mod structure;
 pub mod union;
-
-pub struct DefaultTypeMapper;
-
-impl TypeMapper for DefaultTypeMapper {
-    fn map_local_type<'a>(&self, item_type: &'a str) -> Cow<'a, str> {
-        item_type.into()
-    }
-
-    fn map_foreign_type<'a>(&self, item_type: &'a str) -> Cow<'a, str> {
-        item_type.into()
-    }
-}
-
-pub struct TypePathMapper<'a, T: TypeMapper> {
-    type_path_map: &'a TypePathMap,
-    mapper: T,
-}
-
-impl<'a, T: TypeMapper> TypePathMapper<'a, T> {
-    pub fn new(type_path_map: &'a TypePathMap, mapper: T) -> Self {
-        Self { type_path_map, mapper }
-    }
-
-    pub fn get<'b>(&'b self, item_type: &'b str) -> Cow<'b, str> {
-        self.type_path_map.get(&self.mapper, item_type)
-    }
-}
+pub mod map;

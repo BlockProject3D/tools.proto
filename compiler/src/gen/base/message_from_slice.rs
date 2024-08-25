@@ -29,7 +29,7 @@
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypeMapper;
 use crate::gen::base::message::{StringType, Utilities};
-use crate::gen::base::TypePathMapper;
+use crate::gen::base::map::TypePathMapper;
 use crate::gen::template::Template;
 use itertools::Itertools;
 use std::borrow::Cow;
