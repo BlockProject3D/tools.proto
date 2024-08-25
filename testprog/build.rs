@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use bp3d_protoc::gen::RustParams;
 use bp3d_protoc::generate_rust;
 
 fn main() {
@@ -44,6 +45,7 @@ fn main() {
             Ok(())
         },
         |protoc| protoc.set_reads_messages(true).set_writes_messages(true),
+        RustParams::default()
     );
     generate_rust(
         |loader| {
@@ -53,6 +55,7 @@ fn main() {
             Ok(())
         },
         |protoc| protoc.set_reads_messages(true).set_writes_messages(true),
+        RustParams::default()
     );
     generate_rust(
         |loader| {
@@ -64,5 +67,6 @@ fn main() {
             Ok(())
         },
         |protoc| protoc.set_reads_messages(true).set_writes_messages(true),
+        RustParams::default()
     );
 }

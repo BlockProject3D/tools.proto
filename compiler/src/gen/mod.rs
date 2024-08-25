@@ -36,5 +36,6 @@ pub mod template;
 pub use interface::*;
 
 pub use rust::GeneratorRust;
+pub use rust::Params as RustParams;
 pub use swift::GeneratorSwift;
 pub use swift::SwiftImportSolver;

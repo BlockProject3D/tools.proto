@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::gen::GeneratorRust;
+use crate::gen::{GeneratorRust, RustParams};
 use crate::util::SimpleImportSolver;
 use crate::{Error, Loader, Protoc};
 
@@ -45,6 +45,7 @@ use crate::{Error, Loader, Protoc};
 pub fn generate_rust<F: FnOnce(&mut Loader) -> Result<(), Error>, F1: FnOnce(Protoc) -> Protoc>(
     load_fn: F,
     configure_fn: F1,
+    params: RustParams
 ) {
     let mut loader = Loader::new();
     let res = load_fn(&mut loader);
@@ -57,7 +58,7 @@ pub fn generate_rust<F: FnOnce(&mut Loader) -> Result<(), Error>, F1: FnOnce(Pro
     };
     let protoc = configure_fn(protoc);
     let out_dir = std::env::var("OUT_DIR").unwrap();
-    let generated = match protoc.generate::<GeneratorRust>(out_dir, ()) {
+    let generated = match protoc.generate::<GeneratorRust>(out_dir, params) {
         Err(e) => panic!("Failed to generate Rust code: {}", e),
         Ok(v) => v,
     };

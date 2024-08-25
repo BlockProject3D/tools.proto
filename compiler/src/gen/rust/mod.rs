@@ -57,13 +57,25 @@ simple_error! {
     }
 }
 
+#[derive(Default)]
+pub struct Params {
+    enable_write_async: bool
+}
+
+impl Params {
+    pub fn enable_write_async(mut self, flag: bool) -> Self {
+        self.enable_write_async = flag;
+        self
+    }
+}
+
 pub struct GeneratorRust;
 
 impl Generator for GeneratorRust {
     type Error = Error;
-    type Params = ();
+    type Params = Params;
 
-    fn generate(proto: Protocol, _: &()) -> Result<Vec<File>, Self::Error> {
+    fn generate(proto: Protocol, _: &Params) -> Result<Vec<File>, Self::Error> {
         let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(v, &proto.type_path_by_name));
         let impl_from_slice_messages_code =
             proto.messages.iter().map(|v| gen_message_from_slice_impl(v, &proto.type_path_by_name));
@@ -100,7 +112,7 @@ impl Generator for GeneratorRust {
     fn generate_umbrella<'a>(
         proto_name: &str,
         files: impl Iterator<Item = &'a Path>,
-        _: &(),
+        _: &Params,
     ) -> Result<String, Self::Error> {
         let mut code = format!("pub mod {} {{\n", proto_name);
         for file in files {

@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::gen::{GeneratorRust, GeneratorSwift, SwiftImportSolver};
+use bp3d_protoc::gen::{GeneratorRust, GeneratorSwift, RustParams, SwiftImportSolver};
 use bp3d_protoc::util::SimpleImportSolver;
 use bp3d_protoc::{Loader, Protoc};
 use bp3d_util::result::ResultExt;
@@ -153,7 +153,7 @@ fn main() {
         protoc = protoc.set_file_header(file_header);
     }
     match args.generator {
-        Generator::Rust => protoc.generate::<GeneratorRust>(args.output.unwrap_or(PathBuf::from("./")), ()),
+        Generator::Rust => protoc.generate::<GeneratorRust>(args.output.unwrap_or(PathBuf::from("./")), RustParams::default()),
         Generator::Swift => protoc.generate::<GeneratorSwift>(args.output.unwrap_or(PathBuf::from("./")), swift_solver),
     }
     .expect_exit("failed to generate protocols", 1);
