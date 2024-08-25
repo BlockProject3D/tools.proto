@@ -26,12 +26,13 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod base;
+pub mod base;
 pub mod file;
 mod interface;
 mod rust;
 mod swift;
 pub mod template;
+pub mod hook;
 
 pub use interface::*;
 

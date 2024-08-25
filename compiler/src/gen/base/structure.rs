@@ -32,6 +32,7 @@ use crate::gen::base::map::TypePathMapper;
 use crate::gen::template::{Scope, Template};
 use crate::model::protocol::Endianness;
 use itertools::Itertools;
+use crate::gen::hook::{Render, TemplateHooks};
 
 pub trait Utilities {
     fn get_field_type(field_type: FixedFieldType) -> &'static str;
@@ -234,14 +235,17 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     templates: Templates<'_, 'variable>,
     s: &'variable Structure,
     type_path_by_name: &TypePathMapper<T>,
+    hooks: &TemplateHooks
 ) -> String {
     let mut template = templates.template;
     let mut field_template = templates.field_template;
     field_template.var("struct_name", &s.name);
     template.var("name", &s.name).var_d("byte_size", s.byte_size);
     let mut code = template.render("", &["decl", "new", "fixed_size", "write_to", "from_slice"]).unwrap();
+    for frag in hooks.get_fragments("ext") {
+        code += &template.render_frag(frag).unwrap();
+    }
     code += &gen_structure_getters::<U, T>(s, &field_template, type_path_by_name);
     code += &gen_structure_setters::<U, T>(s, &field_template, type_path_by_name);
-    //code += template.render;
     code
 }

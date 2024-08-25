@@ -33,6 +33,7 @@ use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 use itertools::Itertools;
+use crate::gen::hook::TemplateHooks;
 
 const TEMPLATE: &[u8] = include_bytes!("./union.template");
 
@@ -77,5 +78,6 @@ pub fn gen_union_decl(u: &Union, type_path_by_name: &TypePathMap) -> String {
         Template::compile(TEMPLATE).unwrap(),
         u,
         &TypePathMapper::new(type_path_by_name, DefaultTypeMapper),
+        &TemplateHooks::default()
     )
 }
