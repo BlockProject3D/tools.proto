@@ -45,14 +45,14 @@ impl Write for Counter {
 
 struct SizeOf<Msg>(PhantomData<Msg>);
 
-impl<Msg: WriteTo<Input = Msg>> SizeOf<Msg> {
-    pub fn get(msg: &Msg) -> crate::message::Result<usize> {
+impl<'a, Msg: WriteTo<'a, Input = Msg>> SizeOf<Msg> {
+    pub fn get(msg: &'a Msg) -> crate::message::Result<usize> {
         let mut counter = Counter(0);
         Msg::write_to(msg, &mut counter)?;
         Ok(counter.0)
     }
 }
 
-pub fn size_of<Msg: WriteTo<Input = Msg>>(msg: &Msg) -> crate::message::Result<usize> {
+pub fn size_of<'a, Msg: WriteTo<'a, Input = Msg>>(msg: &'a Msg) -> crate::message::Result<usize> {
     SizeOf::<Msg>::get(msg)
 }

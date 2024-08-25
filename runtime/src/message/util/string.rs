@@ -51,8 +51,8 @@ impl<'a> FromSlice<'a> for NullTerminatedString {
     }
 }
 
-impl WriteTo for NullTerminatedString {
-    type Input = str;
+impl<'a> WriteTo<'a> for NullTerminatedString {
+    type Input = &'a str;
 
     fn write_to<W: Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {
         out.write_all(input.as_bytes())?;
@@ -75,8 +75,8 @@ impl<'a, T: FromSlice<'a, Output: ToUsize>> FromSlice<'a> for VarcharString<T> {
     }
 }
 
-impl<T: WriteTo<Input: ToUsize + Sized>> WriteTo for VarcharString<T> {
-    type Input = str;
+impl<'a, T: WriteTo<'a, Input: ToUsize + Sized>> WriteTo<'a> for VarcharString<T> {
+    type Input = &'a str;
 
     fn write_to<W: Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {
         T::write_to(&T::Input::from_usize(input.len()), &mut out)?;

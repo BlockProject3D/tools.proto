@@ -80,13 +80,13 @@ impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
 impl_list_base!(List);
 
 impl<B: std::io::Write, T, I> List<B, T, I> {
-    pub fn write_item<Item: WriteTo<Input = Item>>(&mut self, item: &Item) -> Result<(), Error> {
+    pub fn write_item<'a, Item: WriteTo<'a, Input = Item>>(&mut self, item: &Item) -> Result<(), Error> {
         Item::write_to(item, &mut self.data)?;
         self.len += 1;
         Ok(())
     }
 
-    pub fn write_items<Item: WriteTo<Input = Item>>(&mut self, items: &[Item]) -> Result<(), Error> {
+    pub fn write_items<'a, Item: WriteTo<'a, Input = Item>>(&mut self, items: &[Item]) -> Result<(), Error> {
         for item in items {
             self.write_item(item)?;
         }
@@ -173,12 +173,12 @@ impl<'a, B, T: FromSlice<'a, Output: ToUsize>, S: FromSlice<'a, Output: ToUsize>
     }
 }
 
-impl<
+impl<'a,
         B: AsRef<[u8]>,
-        T: WriteTo<Input: ToUsize + std::marker::Sized>,
-        S: WriteTo<Input: ToUsize + std::marker::Sized>,
+        T: WriteTo<'a, Input: ToUsize + std::marker::Sized>,
+        S: WriteTo<'a, Input: ToUsize + std::marker::Sized>,
         Item,
-    > WriteTo for Sized<B, T, S, Item>
+    > WriteTo<'a> for Sized<B, T, S, Item>
 {
     type Input = List<B, T, Item>;
 

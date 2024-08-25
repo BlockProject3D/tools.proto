@@ -87,8 +87,8 @@ pub trait FromSliceWithOffsets<'a>: FromSlice<'a> {
     fn from_slice_with_offsets(slice: &'a [u8]) -> Result<Message<(Self::Output, Self::Offsets)>>;
 }
 
-pub trait WriteTo {
-    type Input: ?Sized;
+pub trait WriteTo<'a> {
+    type Input: Sized;
 
     fn write_to<W: std::io::Write>(input: &Self::Input, out: W) -> Result<()>;
 }

@@ -1,5 +1,5 @@
 #fragment push impl
-impl{generics} bp3d_proto::message::WriteTo for {msg_name}{generics} {{
+impl<'a> bp3d_proto::message::WriteTo<'a> for {msg_name}{generics} {{
     type Input = Self;
 
     fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {{
@@ -8,7 +8,7 @@ impl{generics} bp3d_proto::message::WriteTo for {msg_name}{generics} {{
         {type}::write_to(&input.{name}, &mut out)?;
 #fragment pop
 #fragment push field_string
-        {type}::write_to(input.{name}, &mut out)?;
+        {type}::write_to(&input.{name}, &mut out)?;
 #fragment pop
 #fragment push field_union
         {type}::write_to(&input.{name}, &input.{on_name}, &mut out)?;

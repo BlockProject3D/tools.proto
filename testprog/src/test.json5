@@ -47,7 +47,8 @@
                     info: {
                         type: "string",
                         max_len: 32
-                    }
+                    },
+                    optional: true
                 },
                 {
                     name: "p1",

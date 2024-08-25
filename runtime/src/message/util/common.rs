@@ -33,10 +33,10 @@ use std::marker::PhantomData;
 
 pub struct Optional<T>(PhantomData<T>);
 
-impl<'a, T: FromSlice<'a, Output = T>> FromSlice<'a> for Optional<T> {
-    type Output = Option<T>;
+impl<'a, T: FromSlice<'a>> FromSlice<'a> for Optional<T> {
+    type Output = Option<T::Output>;
 
-    fn from_slice(slice: &'a [u8]) -> Result<Message<Option<T>>, Error> {
+    fn from_slice(slice: &'a [u8]) -> Result<Message<Option<T::Output>>, Error> {
         if slice.is_empty() {
             Err(Error::Truncated)
         } else {
@@ -51,7 +51,7 @@ impl<'a, T: FromSlice<'a, Output = T>> FromSlice<'a> for Optional<T> {
     }
 }
 
-impl<'a, T: FromSlice<'a, Output = T> + FromSliceWithOffsets<'a>> FromSliceWithOffsets<'a> for Optional<T> {
+impl<'a, T: FromSlice<'a> + FromSliceWithOffsets<'a>> FromSliceWithOffsets<'a> for Optional<T> {
     type Offsets = Option<T::Offsets>;
 
     fn from_slice_with_offsets(slice: &'a [u8]) -> crate::message::Result<Message<(Self::Output, Self::Offsets)>> {
@@ -71,8 +71,8 @@ impl<'a, T: FromSlice<'a, Output = T> + FromSliceWithOffsets<'a>> FromSliceWithO
     }
 }
 
-impl<T: WriteTo<Input = T>> WriteTo for Optional<T> {
-    type Input = Option<T>;
+impl<'a, T: WriteTo<'a>> WriteTo<'a> for Optional<T> {
+    type Input = Option<T::Input>;
 
     fn write_to<W: Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {
         match input {
@@ -105,7 +105,7 @@ impl<'a, T: ReadBytes> FromSlice<'a> for ValueLE<T> {
     }
 }
 
-impl<T: bytesutil::WriteTo> WriteTo for ValueLE<T> {
+impl<'a, T: bytesutil::WriteTo> WriteTo<'a> for ValueLE<T> {
     type Input = T;
 
     fn write_to<W: Write>(input: &Self::Input, out: W) -> Result<(), Error> {
@@ -128,7 +128,7 @@ impl<'a, T: ReadBytes> FromSlice<'a> for ValueBE<T> {
     }
 }
 
-impl<T: bytesutil::WriteTo> WriteTo for ValueBE<T> {
+impl<'a, T: bytesutil::WriteTo> WriteTo<'a> for ValueBE<T> {
     type Input = T;
 
     fn write_to<W: Write>(input: &Self::Input, out: W) -> Result<(), Error> {

@@ -37,7 +37,7 @@ fn write_message<W: Write>(out: W) {
             p1: 42,
         }),
         s1: "a test",
-        s2: "hello world",
+        s2: Some("hello world"),
     };
     Test::write_to(&msg, out).unwrap();
 }
@@ -50,7 +50,7 @@ fn test() {
     assert_eq!(msg.p1.unwrap().p1, 42);
     assert_eq!(msg.p1.unwrap().s1, "this is a test");
     assert_eq!(msg.s1, "a test");
-    assert_eq!(msg.s2, "hello world");
+    assert_eq!(msg.s2, Some("hello world"));
     println!("{:?}", msg);
 }
 
@@ -62,12 +62,12 @@ fn test_offsets() {
     assert_eq!(msg.p1.unwrap().p1, 42);
     assert_eq!(msg.p1.unwrap().s1, "this is a test");
     assert_eq!(msg.s1, "a test");
-    assert_eq!(msg.s2, "hello world");
+    assert_eq!(msg.s2, Some("hello world"));
     assert_eq!(offsets.s1.start, 0);
     assert_eq!(offsets.s1.size(), 7);
     assert_eq!(offsets.s2.start, 7);
-    assert_eq!(offsets.s2.size(), 12);
-    assert_eq!(offsets.p1.start, 19);
+    assert_eq!(offsets.s2.size(), 13);
+    assert_eq!(offsets.p1.start, 20);
     assert_eq!(offsets.p1.size(), 20);
     assert_eq!(offsets.p1_offsets.unwrap().s1.start, 0);
     assert_eq!(offsets.p1_offsets.unwrap().s1.size(), 15);

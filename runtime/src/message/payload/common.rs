@@ -39,8 +39,8 @@ impl<'a> FromSlice<'a> for Buffer {
     }
 }
 
-impl WriteTo for Buffer {
-    type Input = [u8];
+impl<'a> WriteTo<'a> for Buffer {
+    type Input = &'a [u8];
 
     fn write_to<W: Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {
         out.write_all(input)?;
