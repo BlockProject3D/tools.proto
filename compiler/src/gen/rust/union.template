@@ -92,7 +92,7 @@ impl<'a> {union_name}{generics} {{
 {fragment}
 #fragment push content
     pub async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self, discriminant: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
-        use bp3d_proto::message::WriteTo;
+        use bp3d_proto::message::WriteToAsync;
         let discriminant = discriminant.{discriminant_path};
         match input {{
 {cases}
