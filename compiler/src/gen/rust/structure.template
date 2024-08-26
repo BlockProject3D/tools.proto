@@ -72,6 +72,15 @@ impl<'a> bp3d_proto::message::WriteTo<'a> for {name}<&'a [u8]> {{
 }}
 #fragment pop
 
+#fragment push write_to_async
+impl<'a> bp3d_proto::message::WriteToAsync<'a> for {name}<&'a [u8]> {{
+    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {{
+        out.write_all(&input.data[..<Self as bp3d_proto::util::FixedSize>::SIZE]).await?;
+        Ok(())
+    }}
+}}
+#fragment pop
+
 #fragment push from_slice
 impl<'a> bp3d_proto::message::FromSlice<'a> for {name}<&'a [u8]> {{
     type Output = Self;

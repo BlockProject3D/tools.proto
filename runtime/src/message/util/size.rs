@@ -28,7 +28,6 @@
 
 use crate::message::WriteTo;
 use std::io::Write;
-use std::marker::PhantomData;
 
 struct Counter(usize);
 
@@ -43,16 +42,8 @@ impl Write for Counter {
     }
 }
 
-struct SizeOf<Msg>(PhantomData<Msg>);
-
-impl<'a, Msg: WriteTo<'a, Input = Msg>> SizeOf<Msg> {
-    pub fn get(msg: &'a Msg) -> crate::message::Result<usize> {
-        let mut counter = Counter(0);
-        Msg::write_to(msg, &mut counter)?;
-        Ok(counter.0)
-    }
-}
-
-pub fn size_of<'a, Msg: WriteTo<'a, Input = Msg>>(msg: &'a Msg) -> crate::message::Result<usize> {
-    SizeOf::<Msg>::get(msg)
+pub fn size_of<'a, Msg: WriteTo<'a, Input = Msg>>(msg: &Msg) -> crate::message::Result<usize> {
+    let mut counter = Counter(0);
+    Msg::write_to(msg, &mut counter)?;
+    Ok(counter.0)
 }

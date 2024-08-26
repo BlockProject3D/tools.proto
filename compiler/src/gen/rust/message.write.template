@@ -18,6 +18,24 @@ impl<'a> bp3d_proto::message::WriteTo<'a> for {msg_name}{generics} {{
 }}
 #fragment pop
 
+#fragment push impl_async
+impl<'a> bp3d_proto::message::WriteToAsync<'a> for {msg_name}{generics} {{
+    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {{
+{fields}
+#fragment push field
+        {type}::write_to_async(&input.{name}, &mut out).await?;
+#fragment pop
+#fragment push field_string
+        {type}::write_to_async(&input.{name}, &mut out).await?;
+#fragment pop
+#fragment push field_union
+        {type}::write_to_async(&input.{name}, &input.{on_name}, &mut out).await?;
+#fragment pop
+        Ok(())
+    }}
+}}
+#fragment pop
+
 #fragment push varchar:inline
 bp3d_proto::message::util::VarcharString::<{codec}>
 #fragment pop

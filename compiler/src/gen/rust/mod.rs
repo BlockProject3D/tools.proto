@@ -75,15 +75,15 @@ impl Generator for GeneratorRust {
     type Error = Error;
     type Params = Params;
 
-    fn generate(proto: Protocol, _: &Params) -> Result<Vec<File>, Self::Error> {
+    fn generate(proto: Protocol, params: &Params) -> Result<Vec<File>, Self::Error> {
         let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(v, &proto.type_path_by_name));
         let impl_from_slice_messages_code =
             proto.messages.iter().map(|v| gen_message_from_slice_impl(v, &proto.type_path_by_name));
         let impl_write_messages_code =
-            proto.messages.iter().map(|v| gen_message_write_impl(v, &proto.type_path_by_name));
-        let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(v, &proto.type_path_by_name));
+            proto.messages.iter().map(|v| gen_message_write_impl(v, &proto.type_path_by_name, params));
+        let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(v, &proto.type_path_by_name, params));
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(v));
-        let decl_unions = proto.unions.iter().map(|v| gen_union_decl(v, &proto.type_path_by_name));
+        let decl_unions = proto.unions.iter().map(|v| gen_union_decl(v, &proto.type_path_by_name, params));
         let decl_messages_code_offsets =
             proto.messages.iter().map(|v| gen_message_offsets_decl(v, &proto.type_path_by_name));
         Ok(vec![

@@ -34,6 +34,7 @@ use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 use itertools::Itertools;
 use crate::gen::hook::TemplateHooks;
+use crate::gen::RustParams;
 
 const TEMPLATE: &[u8] = include_bytes!("./union.template");
 
@@ -73,11 +74,15 @@ impl Utilities for RustUtils {
     }
 }
 
-pub fn gen_union_decl(u: &Union, type_path_by_name: &TypePathMap) -> String {
+pub fn gen_union_decl(u: &Union, type_path_by_name: &TypePathMap, params: &RustParams) -> String {
+    let mut hooks = TemplateHooks::new();
+    if params.enable_write_async {
+        hooks.hook("write_to", "write_to_async");
+    }
     generate::<RustUtils, _>(
         Template::compile(TEMPLATE).unwrap(),
         u,
         &TypePathMapper::new(type_path_by_name, DefaultTypeMapper),
-        &TemplateHooks::default()
+        &hooks
     )
 }

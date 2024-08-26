@@ -87,6 +87,35 @@ impl<'a> {union_name}{generics} {{
 }}
 #fragment pop
 
+#fragment push write_to_async
+impl<'a> {union_name}{generics} {{
+{fragment}
+#fragment push content
+    pub async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self, discriminant: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
+        use bp3d_proto::message::WriteTo;
+        let discriminant = discriminant.{discriminant_path};
+        match input {{
+{cases}
+#fragment push case
+            Self::{name}(v) => if discriminant == {case} {{
+                {type_name}::write_to_async(v, &mut out).await?
+            }} else {{
+                return Err(bp3d_proto::message::Error::InvalidUnionDiscriminant(discriminant as _))
+            }},
+#fragment pop
+            _ => ()
+        }};
+        Ok(())
+    }}
+#fragment pop
+#fragment push none
+    pub async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(_: &Self, _: &{discriminant_type}<&'a [u8]>, _: W) -> bp3d_proto::message::Result<()> {{
+        Ok(())
+    }}
+#fragment pop
+}}
+#fragment pop
+
 #fragment push from_slice
 impl<'a> {union_name}{generics} {{
 {fragment}

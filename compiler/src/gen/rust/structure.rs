@@ -28,21 +28,26 @@
 
 use crate::compiler::structure::Structure;
 use crate::compiler::util::TypePathMap;
-use crate::gen::hook::TemplateHooks;
+use crate::gen::hook::{Fragment, TemplateHooks};
 use crate::gen::base::structure::{generate, Templates};
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::rust::util::RustUtils;
+use crate::gen::RustParams;
 use crate::gen::template::Template;
 
 const STRUCT_TEMPLATE: &[u8] = include_bytes!("./structure.template");
 const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("./structure.field.template");
 
-pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap) -> String {
+pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap, params: &RustParams) -> String {
     let templates = Templates {
         template: Template::compile(STRUCT_TEMPLATE).unwrap(),
         field_template: Template::compile(STRUCT_FIELD_TEMPLATE).unwrap(),
     };
-    generate::<RustUtils, _>(templates, s, &TypePathMapper::new(type_path_by_name, DefaultTypeMapper), &TemplateHooks::default())
+    let mut hooks = TemplateHooks::new();
+    if params.enable_write_async {
+        hooks.hook("ext", Fragment::new("", &["write_to_async"]));
+    }
+    generate::<RustUtils, _>(templates, s, &TypePathMapper::new(type_path_by_name, DefaultTypeMapper), &hooks)
 }
 
 #[cfg(test)]

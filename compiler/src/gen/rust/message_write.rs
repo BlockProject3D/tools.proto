@@ -31,15 +31,26 @@ use crate::compiler::util::TypePathMap;
 use crate::gen::base::message_write::generate;
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::rust::util::RustUtils;
+use crate::gen::RustParams;
 use crate::gen::template::Template;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.write.template");
 
-pub fn gen_message_write_impl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    generate::<RustUtils, _>(
+pub fn gen_message_write_impl(msg: &Message, type_path_by_name: &TypePathMap, params: &RustParams) -> String {
+    let type_path_by_name = TypePathMapper::new(type_path_by_name, DefaultTypeMapper);
+    let mut code = generate::<RustUtils, _>(
         Template::compile(TEMPLATE).unwrap(),
         msg,
-        &TypePathMapper::new(type_path_by_name, DefaultTypeMapper),
+        &type_path_by_name,
         "impl"
-    )
+    );
+    if params.enable_write_async {
+        code += &generate::<RustUtils, _>(
+            Template::compile(TEMPLATE).unwrap(),
+            msg,
+            &type_path_by_name,
+            "impl_async"
+        );
+    }
+    code
 }
