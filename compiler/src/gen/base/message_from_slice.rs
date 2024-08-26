@@ -26,95 +26,20 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::{Field, FieldType, Message, Referenced};
+use crate::compiler::message::{Field, Message};
 use crate::compiler::util::TypeMapper;
-use crate::gen::base::message::{StringType, Utilities};
+use crate::gen::base::message::Utilities;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::template::Template;
 use itertools::Itertools;
-use std::borrow::Cow;
-
-fn gen_optional<'a, U: Utilities>(optional: bool, type_name: impl Into<Cow<'a, str>>) -> Cow<'a, str> {
-    if optional {
-        U::gen_option_type_inline(&type_name.into()).into()
-    } else {
-        type_name.into()
-    }
-}
-
-pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
-    msg: &Message,
-    field: &'a Field,
-    template: &Template,
-    type_path_by_name: &'a TypePathMapper<T>,
-) -> Cow<'a, str> {
-    let msg_type = match &field.ty {
-        FieldType::Fixed(ty) => gen_optional::<U>(field.optional, U::get_value_type_inline(field.endianness, ty.ty)),
-        FieldType::Ref(v) => match v {
-            Referenced::Struct(v) => gen_optional::<U>(field.optional, type_path_by_name.get(&v.name)),
-            Referenced::Message(v) => gen_optional::<U>(field.optional, type_path_by_name.get(&v.name)),
-        },
-        FieldType::NullTerminatedString => {
-            gen_optional::<U>(field.optional, U::get_string_type_inline(StringType::NullTerminated))
-        }
-        FieldType::VarcharString(v) => gen_optional::<U>(
-            field.optional,
-            template
-                .scope()
-                .var("codec", U::get_value_type(field.endianness, v.ty))
-                .render("", &["varchar"])
-                .unwrap(),
-        ),
-        FieldType::Array(v) => gen_optional::<U>(
-            field.optional,
-            template
-                .scope()
-                .var("codec", U::get_value_type(field.endianness, v.ty))
-                .var("type_name", type_path_by_name.get(&v.item_type.name))
-                .render("", &["array"])
-                .unwrap(),
-        ),
-        FieldType::Union(v) => gen_optional::<U>(field.optional, type_path_by_name.get(&v.r.name)),
-        FieldType::List(v) => match msg.is_embedded() {
-            false => gen_optional::<U>(
-                field.optional,
-                template
-                    .scope()
-                    .var("codec", U::get_value_type(field.endianness, v.ty))
-                    .var("type_name", type_path_by_name.get(&v.item_type.name))
-                    .render("", &["unsized_list"])
-                    .unwrap(),
-            ),
-            true => gen_optional::<U>(
-                field.optional,
-                template
-                    .scope()
-                    .var("codec", U::get_value_type(field.endianness, v.ty))
-                    .var("type_name", type_path_by_name.get(&v.item_type.name))
-                    .render("", &["list"])
-                    .unwrap(),
-            ),
-        },
-        FieldType::Payload => gen_optional::<U>(field.optional, U::get_payload_type_inline()),
-        FieldType::SizedList(v) => gen_optional::<U>(
-            field.optional,
-            template
-                .scope()
-                .var("codec", U::get_value_type(field.endianness, v.ty))
-                .var("type_name", type_path_by_name.get(&v.item_type.name))
-                .var("size_codec", U::get_value_type(field.endianness, v.size_ty))
-                .render("", &["sized_list"])
-                .unwrap(),
-        ),
-    };
-    msg_type
-}
+use crate::gen::base::message_common::generate_field_type_inline;
 
 fn gen_field_from_slice_impl<U: Utilities, T: TypeMapper>(
     msg: &Message,
     field: &Field,
     template: &Template,
     type_path_by_name: &TypePathMapper<T>,
+    function: &str
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
@@ -125,11 +50,11 @@ fn gen_field_from_slice_impl<U: Utilities, T: TypeMapper>(
     }
     scope.var("type", msg_type);
     if union.is_some() {
-        scope.render("impl", &["field_union"]).unwrap()
+        scope.render(function, &["field_union"]).unwrap()
     } else if field.ty.is_message_reference() {
-        scope.render("impl", &["field_msg"]).unwrap()
+        scope.render(function, &["field_msg"]).unwrap()
     } else {
-        scope.render("impl", &["field"]).unwrap()
+        scope.render(function, &["field"]).unwrap()
     }
 }
 
@@ -137,22 +62,23 @@ pub fn generate_from_slice_impl<U: Utilities, T: TypeMapper>(
     msg: &Message,
     template: &Template,
     type_path_by_name: &TypePathMapper<T>,
+    function: &str
 ) -> String {
     let fields = msg
         .fields
         .iter()
-        .map(|field| gen_field_from_slice_impl::<U, T>(msg, field, template, type_path_by_name))
+        .map(|field| gen_field_from_slice_impl::<U, T>(msg, field, template, type_path_by_name, function))
         .join("");
     let field_names = msg
         .fields
         .iter()
-        .map(|field| template.scope().var("name", &field.name).render("impl", &["field_name"]).unwrap())
+        .map(|field| template.scope().var("name", &field.name).render(function, &["field_name"]).unwrap())
         .join("");
     template
         .scope()
         .var("fields", fields)
         .var("field_names", field_names)
-        .render("", &["impl"])
+        .render("", &[function])
         .unwrap()
 }
 
@@ -160,7 +86,8 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     mut template: Template<'_, 'variable>,
     msg: &'variable Message,
     type_path_by_name: &TypePathMapper<T>,
+    function: &str
 ) -> String {
     template.var("msg_name", &msg.name).var("generics", U::get_generics(msg));
-    generate_from_slice_impl::<U, T>(msg, &template, type_path_by_name)
+    generate_from_slice_impl::<U, T>(msg, &template, type_path_by_name, function)
 }

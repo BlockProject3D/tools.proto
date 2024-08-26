@@ -67,6 +67,6 @@ pub fn gen_message_offsets_decl(msg: &Message, type_path_by_name: &TypePathMap) 
         .join("");
     let mut code = template.var("fields", fields).render("", &["decl"]).unwrap();
     code += "\n";
-    code += &generate_from_slice_impl::<RustUtils, _>(msg, &template, &type_path_by_name);
+    code += &generate_from_slice_impl::<RustUtils, _>(msg, &template, &type_path_by_name, "impl");
     code
 }

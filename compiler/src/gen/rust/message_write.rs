@@ -40,5 +40,6 @@ pub fn gen_message_write_impl(msg: &Message, type_path_by_name: &TypePathMap) ->
         Template::compile(TEMPLATE).unwrap(),
         msg,
         &TypePathMapper::new(type_path_by_name, DefaultTypeMapper),
+        "impl"
     )
 }

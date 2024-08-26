@@ -42,5 +42,5 @@ pub fn gen_message_from_slice_impl(proto: &Protocol, msg: &Message) -> String {
     let mut template = Template::compile_with_function_map(TEMPLATE, functions).unwrap();
     template.var("proto_name", &proto.name);
     let type_path_by_name = TypePathMapper::new(&proto.type_path_by_name, SwiftTypeMapper::from_protocol(proto));
-    generate::<SwiftUtils, _>(template, msg, &type_path_by_name)
+    generate::<SwiftUtils, _>(template, msg, &type_path_by_name, "impl")
 }

@@ -27,7 +27,6 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::collections::HashMap;
-use std::ops::Index;
 use crate::gen::template::{Error, Scope, Template};
 
 pub trait Render {
@@ -70,44 +69,13 @@ impl<'b> Fragment<'b> {
     }
 }
 
-pub struct Function<'b> {
-    map: HashMap<&'b str, Fragment<'b>>
-}
-
-impl<'b> Default for Function<'b> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl<'b> Function<'b> {
-    pub fn new() -> Self {
-        Self {
-            map: HashMap::new()
-        }
-    }
-
-    pub fn fragment(mut self, name: &'b str, path: &'b str, fragments: &'b [&'b str]) -> Self {
-        self.map.insert(name, Fragment::new(path, fragments));
-        self
-    }
-}
-
-impl<'b> Index<&str> for Function<'b> {
-    type Output = Fragment<'b>;
-
-    fn index(&self, index: &str) -> &Self::Output {
-        &self.map[index]
-    }
-}
-
 pub enum Hook<'a> {
     Fragment(Fragment<'a>),
-    Function(Function<'a>)
+    Function(&'a str)
 }
 
-impl<'a> From<Function<'a>> for Hook<'a> {
-    fn from(value: Function<'a>) -> Self {
+impl<'a> From<&'a str> for Hook<'a> {
+    fn from(value: &'a str) -> Self {
         Self::Function(value)
     }
 }
@@ -148,10 +116,10 @@ impl<'a> TemplateHooks<'a> {
         })
     }
 
-    pub fn get_functions(&self, name: &str) -> impl Iterator<Item=&Function> {
+    pub fn get_functions(&self, name: &str) -> impl Iterator<Item=&str> {
         self.map.get(name).map(|v| v.iter()).unwrap_or([].iter()).filter_map(|v| match v {
             Hook::Fragment(_) => None,
-            Hook::Function(v) => Some(v)
+            Hook::Function(v) => Some(*v)
         })
     }
 }

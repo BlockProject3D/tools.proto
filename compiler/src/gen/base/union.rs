@@ -32,8 +32,7 @@ use crate::compiler::util::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::template::Template;
 use itertools::Itertools;
-use crate::gen::hook::{Function, RenderToVar, TemplateHooks};
-use crate::gen::hook::Render;
+use crate::gen::hook::TemplateHooks;
 
 pub trait Utilities: crate::gen::base::structure::Utilities {
     fn gen_discriminant_path(discriminant: &DiscriminantField) -> String;
@@ -45,7 +44,7 @@ fn gen_union_from_slice_impl<T: TypeMapper>(
     u: &Union,
     template: &Template,
     type_path_by_name: &TypePathMapper<T>,
-    function: &Function
+    function: &str
 ) -> String {
     let cases = u
         .cases
@@ -54,10 +53,10 @@ fn gen_union_from_slice_impl<T: TypeMapper>(
             let mut scope = template.scope();
             scope.var("name", &case.name).var_d("case", case.case);
             match &case.item_type {
-                None => scope.render_frag(&function["none.case"]).unwrap(),
+                None => scope.render(function, &["none.case"]).unwrap(),
                 Some(item_type) => scope
                     .var("type_name", type_path_by_name.get(item_type.name()))
-                    .render_frag(&function["content.case"])
+                    .render(function, &["content.case"])
                     .unwrap(),
             }
         })
@@ -65,18 +64,18 @@ fn gen_union_from_slice_impl<T: TypeMapper>(
     let mut scope = template.scope();
     scope.var("cases", cases);
     if u.has_content() {
-        scope.render_frag_to_var(&function["content"], "fragment").unwrap();
+        scope.render_to_var(function, &["content"], "fragment").unwrap();
     } else {
-        scope.render_frag_to_var(&function["none"], "fragment").unwrap();
+        scope.render_to_var(function, &["none"], "fragment").unwrap();
     }
-    scope.render_frag(&function["main"]).unwrap()
+    scope.render("", &[function]).unwrap()
 }
 
 fn gen_union_write_to_impl<T: TypeMapper>(
     u: &Union,
     template: &Template,
     type_path_by_name: &TypePathMapper<T>,
-    function: &Function
+    function: &str
 ) -> String {
     let mut scope = template.scope();
     if u.has_content() {
@@ -89,16 +88,16 @@ fn gen_union_write_to_impl<T: TypeMapper>(
                 case.item_type.as_ref().map(|item_type| {
                     scope
                         .var("type_name", type_path_by_name.get(item_type.name()))
-                        .render_frag(&function["case"])
+                        .render(function, &["content.case"])
                         .unwrap()
                 })
             })
             .join("");
-        scope.var("cases", cases).render_frag_to_var(&function["content"], "fragment").unwrap();
+        scope.var("cases", cases).render_to_var(function, &["content"], "fragment").unwrap();
     } else {
-        scope.render_frag_to_var(&function["none"], "fragment").unwrap();
+        scope.render_to_var(function, &["none"], "fragment").unwrap();
     }
-    scope.render_frag(&function["main"]).unwrap()
+    scope.render("", &[function]).unwrap()
 }
 
 fn gen_union_set_discriminant(u: &Union, template: &Template) -> String {
@@ -176,22 +175,11 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
         })
         .join("");
     let mut code = template.scope().var("cases", cases).render("", &["decl"]).unwrap();
-    let func = Function::new()
-        .fragment("none.case", "from_slice.none", &["case"])
-        .fragment("content.case", "from_slice.content", &["case"])
-        .fragment("content", "from_slice", &["content"])
-        .fragment("none", "from_slice", &["none"])
-        .fragment("main", "", &["from_slice"]);
-    code += &gen_union_from_slice_impl::<T>(u, &template, type_path_by_name, &func);
+    code += &gen_union_from_slice_impl::<T>(u, &template, type_path_by_name, "from_slice");
     for func in hooks.get_functions("from_slice") {
         code += &gen_union_from_slice_impl::<T>(u, &template, type_path_by_name, func);
     }
-    let func = Function::new()
-        .fragment("case", "write_to.content", &["case"])
-        .fragment("content", "write_to", &["content"])
-        .fragment("none", "write_to", &["none"])
-        .fragment("main", "", &["write_to"]);
-    code += &gen_union_write_to_impl::<T>(u, &template, type_path_by_name, &func);
+    code += &gen_union_write_to_impl::<T>(u, &template, type_path_by_name, "write_to");
     for func in hooks.get_functions("write_to") {
         code += &gen_union_write_to_impl::<T>(u, &template, type_path_by_name, func);
     }

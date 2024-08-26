@@ -40,5 +40,6 @@ pub fn gen_message_from_slice_impl(msg: &Message, type_path_by_name: &TypePathMa
         Template::compile(TEMPLATE).unwrap(),
         msg,
         &TypePathMapper::new(type_path_by_name, DefaultTypeMapper),
+        "impl"
     )
 }

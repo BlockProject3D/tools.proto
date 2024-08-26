@@ -33,3 +33,4 @@ pub mod message_write;
 pub mod structure;
 pub mod union;
 pub mod map;
+mod message_common;
