@@ -27,6 +27,22 @@ impl<'a, T: AsRef<[u8]>> {name}<T> {{
     }}
 }}
 
+impl<T: AsRef<[u8]>> {name}<T> {{
+    pub fn copy_to_stack(&self) -> {name}<[u8; {byte_size}]> {{
+        if self.data.as_ref().len() < {byte_size} {{
+            panic!("attempt to copy a too small buffer");
+        }}
+        use std::mem::MaybeUninit;
+        let mut data: [MaybeUninit<u8>; {byte_size}] = unsafe {{ MaybeUninit::uninit().assume_init() }};
+        #[allow(clippy::missing_transmute_annotations)]
+        unsafe {{
+            std::ptr::copy_nonoverlapping(self.data.as_ref().as_ptr(), std::mem::transmute(data.as_mut_ptr()), {byte_size});
+        }}
+        #[allow(clippy::missing_transmute_annotations)]
+        {name} {{ data: unsafe {{ std::mem::transmute(data) }} }}
+    }}
+}}
+
 impl<'a, T: AsMut<[u8]>> {name}<T> {{
     pub fn to_mut(&'a mut self) -> {name}<&'a mut [u8]> {{
         {name} {{ data: self.data.as_mut() }}
