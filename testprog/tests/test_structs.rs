@@ -36,7 +36,7 @@ fn check_numbers<T: AsRef<[u8]>>(nums: &Numbers<T>) {
     assert_eq!(nums.get_b(), -4242);
     assert_eq!(nums.get_u_c(), 0x12);
     assert_eq!(nums.get_c(), -42);
-    let copy = nums.copy_to_stack();
+    let copy = nums.copy_on_stack();
     check_numbers(&copy);
 }
 

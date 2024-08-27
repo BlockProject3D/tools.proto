@@ -28,7 +28,7 @@ impl<'a, T: AsRef<[u8]>> {name}<T> {{
 }}
 
 impl<T: AsRef<[u8]>> {name}<T> {{
-    pub fn copy_to_stack(&self) -> {name}<[u8; {byte_size}]> {{
+    pub fn copy_on_stack(&self) -> {name}<[u8; {byte_size}]> {{
         if self.data.as_ref().len() < {byte_size} {{
             panic!("attempt to copy a too small buffer");
         }}
