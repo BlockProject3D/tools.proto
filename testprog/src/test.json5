@@ -1,19 +1,5 @@
 {
     name: "test",
-    structs: [
-        {
-            name: "IntContainer",
-            fields: [
-                {
-                    name: "test_int",
-                    info: {
-                        type: "unsigned",
-                        bits: 32
-                    }
-                }
-            ]
-        }
-    ],
     messages: [
         {
             name: "Test1",
@@ -27,8 +13,8 @@
                 {
                     name: "p1",
                     info: {
-                        type: "item",
-                        item_type: "IntContainer"
+                        type: "unsigned",
+                        bits: 32
                     }
                 }
             ]

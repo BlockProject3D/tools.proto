@@ -34,6 +34,7 @@ use crate::model::message::MessageFieldType;
 use crate::model::protocol::Endianness;
 use std::cell::Cell;
 use std::rc::Rc;
+use crate::model::structure::StructFieldType;
 
 #[derive(Clone, Debug)]
 pub enum Referenced {
@@ -307,6 +308,19 @@ impl Field {
                 },
                 endianness: proto.endianness,
             }),
+            MessageFieldType::Unsigned { bits } => {
+                let ty = FixedFieldType::from_model(StructFieldType::Unsigned { bits })?;
+                Ok(Field {
+                    name: value.name,
+                    ty: FieldType::Fixed(FixedField { ty }),
+                    optional: value.optional.unwrap_or_default(),
+                    size: SizeInfo {
+                        is_dyn_sized: false,
+                        is_element_dyn_sized: false,
+                    },
+                    endianness: proto.endianness,
+                })
+            }
         }
     }
 }

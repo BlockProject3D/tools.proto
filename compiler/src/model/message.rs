@@ -48,6 +48,9 @@ pub enum MessageFieldType {
         on: String,
         item_type: String,
     },
+    Unsigned {
+        bits: usize
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
