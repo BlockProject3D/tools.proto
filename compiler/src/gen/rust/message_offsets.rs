@@ -40,13 +40,13 @@ const TEMPLATE: &[u8] = include_bytes!("./message.offsets.template");
 fn gen_message_offset_field(
     field: &Field,
     template: &Template,
-    type_path_by_name: &TypePathMapper<DefaultTypeMapper>,
+    type_path_map: &TypePathMapper<DefaultTypeMapper>,
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
     match &field.ty {
         FieldType::Ref(Referenced::Message(v)) => {
-            scope.var("type_name", type_path_by_name.get(&v.name));
+            scope.var("type_name", type_path_map.get(v));
             match field.optional {
                 true => scope.render("decl", &["field", "msg_optional"]).unwrap(),
                 false => scope.render("decl", &["field", "msg"]).unwrap(),
@@ -56,17 +56,17 @@ fn gen_message_offset_field(
     }
 }
 
-pub fn gen_message_offsets_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    let type_path_by_name = TypePathMapper::new(type_path_by_name, DefaultTypeMapper);
+pub fn gen_message_offsets_decl(msg: &Message, type_path_map: &TypePathMap) -> String {
+    let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let mut template = Template::compile(TEMPLATE).unwrap();
     template.var("msg_name", &msg.name).var("generics", RustUtils::get_generics(msg));
     let fields = msg
         .fields
         .iter()
-        .map(|field| gen_message_offset_field(field, &template, &type_path_by_name))
+        .map(|field| gen_message_offset_field(field, &template, &type_path_map))
         .join("");
     let mut code = template.var("fields", fields).render("", &["decl"]).unwrap();
     code += "\n";
-    code += &generate_from_slice_impl::<RustUtils, _>(msg, &template, &type_path_by_name, "impl");
+    code += &generate_from_slice_impl::<RustUtils, _>(msg, &template, &type_path_map, "impl");
     code
 }

@@ -38,7 +38,7 @@ use crate::gen::template::Template;
 const STRUCT_TEMPLATE: &[u8] = include_bytes!("./structure.template");
 const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("./structure.field.template");
 
-pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap, params: &RustParams) -> String {
+pub fn gen_structure_decl(s: &Structure, type_path_map: &TypePathMap, params: &RustParams) -> String {
     let templates = Templates {
         template: Template::compile(STRUCT_TEMPLATE).unwrap(),
         field_template: Template::compile(STRUCT_FIELD_TEMPLATE).unwrap(),
@@ -47,7 +47,7 @@ pub fn gen_structure_decl(s: &Structure, type_path_by_name: &TypePathMap, params
     if params.enable_write_async {
         hooks.hook("ext", Fragment::new("", &["write_to_async"]));
     }
-    generate::<RustUtils, _>(templates, s, &TypePathMapper::new(type_path_by_name, DefaultTypeMapper), &hooks)
+    generate::<RustUtils, _>(templates, s, &TypePathMapper::new(type_path_map, DefaultTypeMapper), &hooks)
 }
 
 #[cfg(test)]

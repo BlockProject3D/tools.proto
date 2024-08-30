@@ -29,6 +29,7 @@
 use crate::compiler::structure::FixedFieldType;
 use crate::compiler::Error;
 use std::collections::HashMap;
+use crate::compiler::util::Name;
 
 #[derive(Clone, Debug)]
 pub struct Enum {
@@ -56,5 +57,11 @@ impl Enum {
             variants_map,
             largest,
         })
+    }
+}
+
+impl Name for Enum {
+    fn name(&self) -> &str {
+        &self.name
     }
 }

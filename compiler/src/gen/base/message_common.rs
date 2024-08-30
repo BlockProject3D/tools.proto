@@ -45,13 +45,13 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
     msg: &Message,
     field: &'a Field,
     template: &Template,
-    type_path_by_name: &'a TypePathMapper<T>,
+    type_path_map: &'a TypePathMapper<T>,
 ) -> Cow<'a, str> {
     let msg_type = match &field.ty {
         FieldType::Fixed(ty) => gen_optional::<U>(field.optional, U::get_value_type_inline(field.endianness, ty.ty)),
         FieldType::Ref(v) => match v {
-            Referenced::Struct(v) => gen_optional::<U>(field.optional, type_path_by_name.get(&v.name)),
-            Referenced::Message(v) => gen_optional::<U>(field.optional, type_path_by_name.get(&v.name)),
+            Referenced::Struct(v) => gen_optional::<U>(field.optional, type_path_map.get(v)),
+            Referenced::Message(v) => gen_optional::<U>(field.optional, type_path_map.get(v)),
         },
         FieldType::NullTerminatedString => {
             gen_optional::<U>(field.optional, U::get_string_type_inline(StringType::NullTerminated))
@@ -69,18 +69,18 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
             template
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
-                .var("type_name", type_path_by_name.get(&v.item_type.name))
+                .var("type_name", type_path_map.get(&v.item_type))
                 .render("", &["array"])
                 .unwrap(),
         ),
-        FieldType::Union(v) => gen_optional::<U>(field.optional, type_path_by_name.get(&v.r.name)),
+        FieldType::Union(v) => gen_optional::<U>(field.optional, type_path_map.get(&v.r)),
         FieldType::List(v) => match msg.is_embedded() {
             false => gen_optional::<U>(
                 field.optional,
                 template
                     .scope()
                     .var("codec", U::get_value_type(field.endianness, v.ty))
-                    .var("type_name", type_path_by_name.get(&v.item_type.name))
+                    .var("type_name", type_path_map.get(&v.item_type))
                     .render("", &["unsized_list"])
                     .unwrap(),
             ),
@@ -89,7 +89,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                 template
                     .scope()
                     .var("codec", U::get_value_type(field.endianness, v.ty))
-                    .var("type_name", type_path_by_name.get(&v.item_type.name))
+                    .var("type_name", type_path_map.get(&v.item_type))
                     .render("", &["list"])
                     .unwrap(),
             ),
@@ -100,7 +100,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
             template
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
-                .var("type_name", type_path_by_name.get(&v.item_type.name))
+                .var("type_name", type_path_map.get(&v.item_type))
                 .var("size_codec", U::get_value_type(field.endianness, v.size_ty))
                 .render("", &["sized_list"])
                 .unwrap(),

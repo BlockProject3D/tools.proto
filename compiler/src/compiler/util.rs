@@ -29,6 +29,8 @@
 use crate::compiler::Protocol;
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::ops::Deref;
+use std::rc::Rc;
 
 pub trait ImportResolver {
     fn get_protocol_by_name(&self, name: &str) -> Option<&Protocol>;
@@ -40,9 +42,29 @@ pub trait TypeMapper {
     fn map_foreign_type<'a>(&self, item_type: &'a str) -> Cow<'a, str>;
 }
 
+pub trait Name {
+    fn name(&self) -> &str;
+}
+
+pub trait PtrKey {
+    fn ptr_key(&self) -> usize;
+}
+
+impl<K> PtrKey for Rc<K> {
+    fn ptr_key(&self) -> usize {
+        &**self as *const K as usize
+    }
+}
+
+impl<K: Name> Name for Rc<K> {
+    fn name(&self) -> &str {
+        self.deref().name()
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct TypePathMap {
-    type_path_by_name: HashMap<String, String>,
+    type_path_by_addr: HashMap<usize, String>,
 }
 
 impl Default for TypePathMap {
@@ -54,24 +76,24 @@ impl Default for TypePathMap {
 impl TypePathMap {
     pub fn new() -> Self {
         Self {
-            type_path_by_name: HashMap::new(),
+            type_path_by_addr: HashMap::new(),
         }
     }
 
-    pub fn add(&mut self, name: String, type_path: String) {
-        self.type_path_by_name.insert(name, type_path);
+    pub fn add<K: PtrKey>(&mut self, key: &K, type_path: String) {
+        self.type_path_by_addr.insert(key.ptr_key(), type_path);
     }
 
-    pub fn get<'a, T: TypeMapper>(&'a self, mapper: &T, item_type: &'a str) -> Cow<'a, str> {
-        match self.type_path_by_name.get(item_type) {
-            None => mapper.map_local_type(item_type),
+    pub fn get<'a, K: PtrKey + Name, T: TypeMapper>(&'a self, mapper: &T, item_type: &'a K) -> Cow<'a, str> {
+        match self.type_path_by_addr.get(&item_type.ptr_key()) {
+            None => mapper.map_local_type(item_type.name()),
             Some(v) => mapper.map_foreign_type(v),
         }
     }
 
-    pub fn get_with_default_prefix<'a>(&'a self, item_type: &'a str, default_prefix: &str) -> Cow<'a, str> {
-        match self.type_path_by_name.get(item_type) {
-            None => Cow::Owned(format!("{default_prefix}{item_type}")),
+    pub fn get_with_default_prefix<'a, K: PtrKey + Name>(&'a self, item_type: &'a K, default_prefix: &str) -> Cow<'a, str> {
+        match self.type_path_by_addr.get(&item_type.ptr_key()) {
+            None => Cow::Owned(format!("{default_prefix}{}", item_type.name())),
             Some(v) => Cow::Borrowed(v),
         }
     }
@@ -86,3 +108,14 @@ impl ImportResolver for () {
         None
     }
 }
+
+macro_rules! try2 {
+    ($value: expr => $err: expr) => {
+        match $value {
+            Some(v) => v,
+            None => return Err($err)
+        }
+    };
+}
+
+pub(crate) use try2;

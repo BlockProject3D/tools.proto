@@ -34,6 +34,7 @@ use crate::model::message::MessageFieldType;
 use crate::model::protocol::Endianness;
 use std::cell::Cell;
 use std::rc::Rc;
+use crate::compiler::util::{Name, PtrKey};
 use crate::model::structure::StructFieldType;
 
 #[derive(Clone, Debug)]
@@ -42,14 +43,25 @@ pub enum Referenced {
     Message(Rc<Message>),
 }
 
-impl Referenced {
-    pub fn name(&self) -> &str {
+impl Name for Referenced {
+    fn name(&self) -> &str {
         match self {
             Referenced::Struct(v) => &v.name,
             Referenced::Message(v) => &v.name,
         }
     }
+}
 
+impl PtrKey for Referenced {
+    fn ptr_key(&self) -> usize {
+        match self {
+            Referenced::Struct(v) => v.ptr_key(),
+            Referenced::Message(v) => v.ptr_key()
+        }
+    }
+}
+
+impl Referenced {
     pub fn lookup(proto: &Protocol, reference_name: &str) -> Option<Self> {
         proto
             .structs_by_name
@@ -367,5 +379,11 @@ impl Message {
             },
             embedded: Cell::new(false),
         })
+    }
+}
+
+impl Name for Message {
+    fn name(&self) -> &str {
+        &self.name
     }
 }

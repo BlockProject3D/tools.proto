@@ -30,6 +30,7 @@ use crate::compiler::message::{Referenced, SizeInfo};
 use crate::compiler::structure::{Field, FieldView, FixedField, Structure};
 use crate::compiler::{Error, Protocol};
 use std::rc::Rc;
+use crate::compiler::util::Name;
 
 #[derive(Clone, Debug)]
 pub struct UnionField {
@@ -186,5 +187,11 @@ impl Union {
                 is_dyn_sized,
             },
         })
+    }
+}
+
+impl Name for Union {
+    fn name(&self) -> &str {
+        &self.name
     }
 }

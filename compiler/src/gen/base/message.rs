@@ -57,33 +57,33 @@ pub trait Utilities: crate::gen::base::structure::Utilities {
 pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
     field: &Field,
     template: &Template,
-    type_path_by_name: &TypePathMapper<T>,
+    type_path_map: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
     let msg_type = match &field.ty {
         FieldType::Fixed(ty) => U::get_field_type(ty.ty).into(),
         FieldType::Ref(v) => match v {
-            Referenced::Struct(v) => U::gen_struct_ref_type(&type_path_by_name.get(&v.name)),
-            Referenced::Message(v) => U::gen_message_ref_type(&type_path_by_name.get(&v.name)),
+            Referenced::Struct(v) => U::gen_struct_ref_type(&type_path_map.get(v)),
+            Referenced::Message(v) => U::gen_message_ref_type(&type_path_map.get(v)),
         },
         FieldType::NullTerminatedString => U::get_string_type(StringType::NullTerminated).into(),
         FieldType::VarcharString(_) => U::get_string_type(StringType::Varchar).into(),
         FieldType::Array(v) => scope
             .var("codec", U::get_value_type(field.endianness, v.ty))
-            .var("type_name", type_path_by_name.get(&v.item_type.name))
+            .var("type_name", type_path_map.get(&v.item_type))
             .render("", &["array"])
             .unwrap(),
-        FieldType::Union(v) => U::gen_union_ref_type(&type_path_by_name.get(&v.r.name)),
+        FieldType::Union(v) => U::gen_union_ref_type(&type_path_map.get(&v.r)),
         FieldType::List(v) => scope
             .var("codec", U::get_value_type(field.endianness, v.ty))
-            .var("type_name", type_path_by_name.get(&v.item_type.name))
+            .var("type_name", type_path_map.get(&v.item_type))
             .render("", &["list"])
             .unwrap(),
         FieldType::Payload => U::get_payload_type().into(),
         FieldType::SizedList(v) => scope
             .var("codec", U::get_value_type(field.endianness, v.ty))
-            .var("type_name", type_path_by_name.get(&v.item_type.name))
+            .var("type_name", type_path_map.get(&v.item_type))
             .var("size_codec", U::get_value_type(field.endianness, v.size_ty))
             .render("", &["sized_list"])
             .unwrap(),
@@ -98,9 +98,9 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
 pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     mut template: Template<'_, 'variable>,
     msg: &'variable Message,
-    type_path_by_name: &TypePathMapper<T>,
+    type_path_map: &TypePathMapper<T>,
 ) -> String {
     template.var("msg_name", &msg.name).var("generics", U::get_generics(msg));
-    let fields = msg.fields.iter().map(|v| gen_msg_field_decl::<U, T>(v, &template, type_path_by_name)).join("");
+    let fields = msg.fields.iter().map(|v| gen_msg_field_decl::<U, T>(v, &template, type_path_map)).join("");
     template.scope().var("fields", fields).render("", &["decl"]).unwrap()
 }

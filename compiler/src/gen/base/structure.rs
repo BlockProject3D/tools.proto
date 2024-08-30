@@ -46,7 +46,7 @@ pub trait Utilities {
 fn gen_field_getter<U: Utilities, T: TypeMapper>(
     field: &Field,
     template: &Template,
-    type_path_by_name: &TypePathMapper<T>,
+    type_path_map: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
     scope
@@ -73,7 +73,7 @@ fn gen_field_getter<U: Utilities, T: TypeMapper>(
                     .unwrap();
             }
             let mut code = scope.render("getters", &["fixed"]).unwrap();
-            code += &gen_field_view_getter::<U, T>(v, &scope, type_path_by_name);
+            code += &gen_field_view_getter::<U, T>(v, &scope, type_path_map);
             code
         }
         Field::Array(v) => scope
@@ -83,7 +83,7 @@ fn gen_field_getter<U: Utilities, T: TypeMapper>(
             .render("getters", &["array"])
             .unwrap(),
         Field::Struct(v) => {
-            scope.var("type_name", type_path_by_name.get(&v.r.name)).render("getters", &["struct"]).unwrap()
+            scope.var("type_name", type_path_map.get(&v.r)).render("getters", &["struct"]).unwrap()
         }
     }
 }
@@ -91,7 +91,7 @@ fn gen_field_getter<U: Utilities, T: TypeMapper>(
 fn gen_field_setter<U: Utilities, T: TypeMapper>(
     field: &Field,
     template: &Template,
-    type_path_by_name: &TypePathMapper<T>,
+    type_path_map: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
     scope
@@ -118,7 +118,7 @@ fn gen_field_setter<U: Utilities, T: TypeMapper>(
                     .unwrap();
             }
             let mut code = scope.render("setters", &["fixed"]).unwrap();
-            code += &gen_field_view_setter::<U, T>(v, &scope, type_path_by_name);
+            code += &gen_field_view_setter::<U, T>(v, &scope, type_path_map);
             code
         }
         Field::Array(v) => scope
@@ -128,7 +128,7 @@ fn gen_field_setter<U: Utilities, T: TypeMapper>(
             .render("setters", &["array"])
             .unwrap(),
         Field::Struct(v) => {
-            scope.var("type_name", type_path_by_name.get(&v.r.name)).render("setters", &["struct"]).unwrap()
+            scope.var("type_name", type_path_map.get(&v.r)).render("setters", &["struct"]).unwrap()
         }
     }
 }
@@ -136,7 +136,7 @@ fn gen_field_setter<U: Utilities, T: TypeMapper>(
 fn gen_field_view_getter<U: Utilities, T: TypeMapper>(
     field: &FixedField,
     scope: &Scope,
-    type_path_by_name: &TypePathMapper<T>,
+    type_path_map: &TypePathMapper<T>,
 ) -> String {
     let mut scope = scope.clone();
     match &field.view {
@@ -147,7 +147,7 @@ fn gen_field_view_getter<U: Utilities, T: TypeMapper>(
             .render("getters", &["view_float"])
             .unwrap(),
         FieldView::Enum(e) => scope
-            .var("view_type", type_path_by_name.get(&e.name))
+            .var("view_type", type_path_map.get(e))
             .var_d("enum_largest", e.largest)
             .render("getters", &["view_enum"])
             .unwrap(),
@@ -175,7 +175,7 @@ fn gen_field_view_getter<U: Utilities, T: TypeMapper>(
 fn gen_field_view_setter<U: Utilities, T: TypeMapper>(
     field: &FixedField,
     scope: &Scope,
-    type_path_by_name: &TypePathMapper<T>,
+    type_path_map: &TypePathMapper<T>,
 ) -> String {
     let mut scope = scope.clone();
     match &field.view {
@@ -186,7 +186,7 @@ fn gen_field_view_setter<U: Utilities, T: TypeMapper>(
             .render("setters", &["view_float"])
             .unwrap(),
         FieldView::Enum(e) => scope
-            .var("view_type", type_path_by_name.get(&e.name))
+            .var("view_type", type_path_map.get(e))
             .var_d("enum_largest", e.largest)
             .render("setters", &["view_enum"])
             .unwrap(),
@@ -209,20 +209,20 @@ fn gen_field_view_setter<U: Utilities, T: TypeMapper>(
 fn gen_structure_getters<U: Utilities, T: TypeMapper>(
     s: &Structure,
     template: &Template,
-    type_path_by_name: &TypePathMapper<T>,
+    type_path_map: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
-    let fields = s.fields.iter().map(|v| gen_field_getter::<U, T>(v, template, type_path_by_name)).join("");
+    let fields = s.fields.iter().map(|v| gen_field_getter::<U, T>(v, template, type_path_map)).join("");
     scope.var("fields", fields).render("", &["getters"]).unwrap()
 }
 
 fn gen_structure_setters<U: Utilities, T: TypeMapper>(
     s: &Structure,
     template: &Template,
-    type_path_by_name: &TypePathMapper<T>,
+    type_path_map: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
-    let fields = s.fields.iter().map(|v| gen_field_setter::<U, T>(v, template, type_path_by_name)).join("");
+    let fields = s.fields.iter().map(|v| gen_field_setter::<U, T>(v, template, type_path_map)).join("");
     scope.var("fields", fields).render("", &["setters"]).unwrap()
 }
 
@@ -234,7 +234,7 @@ pub struct Templates<'fragment, 'variable> {
 pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     templates: Templates<'_, 'variable>,
     s: &'variable Structure,
-    type_path_by_name: &TypePathMapper<T>,
+    type_path_map: &TypePathMapper<T>,
     hooks: &TemplateHooks
 ) -> String {
     let mut template = templates.template;
@@ -245,7 +245,7 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     for frag in hooks.get_fragments("ext") {
         code += &template.render_frag(frag).unwrap();
     }
-    code += &gen_structure_getters::<U, T>(s, &field_template, type_path_by_name);
-    code += &gen_structure_setters::<U, T>(s, &field_template, type_path_by_name);
+    code += &gen_structure_getters::<U, T>(s, &field_template, type_path_map);
+    code += &gen_structure_setters::<U, T>(s, &field_template, type_path_map);
     code
 }

@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::borrow::Cow;
-use crate::compiler::util::{TypeMapper, TypePathMap};
+use crate::compiler::util::{Name, PtrKey, TypeMapper, TypePathMap};
 
 pub struct DefaultTypeMapper;
 
@@ -51,7 +51,7 @@ impl<'a, T: TypeMapper> TypePathMapper<'a, T> {
         Self { type_path_map, mapper }
     }
 
-    pub fn get<'b>(&'b self, item_type: &'b str) -> Cow<'b, str> {
+    pub fn get<'b, K: PtrKey + Name>(&'b self, item_type: &'b K) -> Cow<'b, str> {
         self.type_path_map.get(&self.mapper, item_type)
     }
 }

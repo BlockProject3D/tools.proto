@@ -38,12 +38,12 @@ fn gen_field_write_impl<U: Utilities, T: TypeMapper>(
     msg: &Message,
     field: &Field,
     template: &Template,
-    type_path_by_name: &TypePathMapper<T>,
+    type_path_map: &TypePathMapper<T>,
     function: &str
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
-    let msg_type = generate_field_type_inline::<U, T>(msg, field, template, type_path_by_name);
+    let msg_type = generate_field_type_inline::<U, T>(msg, field, template, type_path_map);
     let union = field.ty.as_union();
     if let Some(v) = union {
         scope.var("on_name", &v.on_name);
@@ -61,14 +61,14 @@ fn gen_field_write_impl<U: Utilities, T: TypeMapper>(
 pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     mut template: Template<'_, 'variable>,
     msg: &'variable Message,
-    type_path_by_name: &TypePathMapper<T>,
+    type_path_map: &TypePathMapper<T>,
     function: &str
 ) -> String {
     template.var("msg_name", &msg.name).var("generics", U::get_generics(msg));
     let fields = msg
         .fields
         .iter()
-        .map(|field| gen_field_write_impl::<U, T>(msg, field, &template, type_path_by_name, function))
+        .map(|field| gen_field_write_impl::<U, T>(msg, field, &template, type_path_map, function))
         .join("");
     template.var("fields", fields).render("", &[function]).unwrap()
 }

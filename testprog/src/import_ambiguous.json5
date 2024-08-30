@@ -1,0 +1,28 @@
+{
+    name: "import_ambiguous",
+    imports: [
+        { protocol: "bits", type: "Numbers" },
+        { protocol: "bits2", type: "Numbers" }
+    ],
+    structs: [
+        {
+            name: "Master",
+            fields: [
+                {
+                    name: "bits",
+                    info: {
+                        type: "struct",
+                        item_type: "bits::Numbers"
+                    }
+                },
+                {
+                    name: "bits2",
+                    info: {
+                        type: "struct",
+                        item_type: "bits2::Numbers"
+                    }
+                }
+            ]
+        }
+    ]
+}

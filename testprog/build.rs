@@ -69,4 +69,14 @@ fn main() {
         |protoc| protoc.set_reads_messages(true).set_writes_messages(true),
         RustParams::default()
     );
+    generate_rust(
+        |loader| {
+            loader.import("./src/bits.json5", "crate::bits")?;
+            loader.import("./src/bits2.json5", "crate::bits2")?;
+            loader.load("./src/import_ambiguous.json5")?;
+            Ok(())
+        },
+        |protoc| protoc.set_reads_messages(false).set_writes_messages(false),
+        RustParams::default()
+    );
 }

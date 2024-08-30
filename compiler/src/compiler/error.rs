@@ -38,6 +38,7 @@ simple_error! {
         UnsupportedViewType(SimpleType) => "unsupported view for type: {:?}",
         MissingBitSize => "missing bits specifier on a structure field",
         UndefinedReference(String) => "undefined reference to '{}'",
+        UnresolvedImport(String) => "unresolved import to '{}'",
         UnalignedArrayCodec => "unaligned array in structure",
         SolverError => "failed to resolve imported type",
         ZeroEnum => "enums must have at least 1 variant",

@@ -1,10 +1,10 @@
 // Copyright (c) 2024, BlockProject 3D
-// 
+//
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
-// 
+//
 //     * Redistributions of source code must retain the above copyright notice,
 //       this list of conditions and the following disclaimer.
 //     * Redistributions in binary form must reproduce the above copyright notice,
@@ -13,7 +13,7 @@
 //     * Neither the name of BlockProject 3D nor the names of its contributors
 //       may be used to endorse or promote products derived from this software
 //       without specific prior written permission.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -26,33 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import Foundation;
-import BP3DProto;
+use bp3d_proto::util::Size;
+use testprog::import_ambiguous::Master;
 
-public struct TestTest1<B: BP3DProto.Buffer> {
-    public let s1: String;
-    public let p1: UInt32;
-
-    public init(s1: String, p1: UInt32) {
-        self.s1 = s1;
-        self.p1 = p1;
-
-    }
-
+#[test]
+fn basic() {
+    let master = Master::new_on_stack();
+    assert_eq!(master.size(), testprog::bits::SIZE_NUMBERS + testprog::bits2::SIZE_NUMBERS);
+    
 }
-
-
-public struct TestTest<B: BP3DProto.Buffer> {
-    public let s1: String;
-    public let s2: String?;
-    public let p1: TestTest1<B>?;
-
-    public init(s1: String, s2: String?, p1: TestTest1<B>?) {
-        self.s1 = s1;
-        self.s2 = s2;
-        self.p1 = p1;
-
-    }
-
-}
-

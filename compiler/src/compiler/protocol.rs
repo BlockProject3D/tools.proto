@@ -31,16 +31,17 @@ use crate::compiler::message::Message;
 use crate::compiler::r#enum::Enum;
 use crate::compiler::structure::Structure;
 use crate::compiler::union::Union;
-use crate::compiler::util::{ImportResolver, TypePathMap};
+use crate::compiler::util::{ImportResolver, Name, PtrKey, TypePathMap};
 use crate::model::protocol::Endianness;
 use std::collections::HashMap;
 use std::rc::Rc;
+use bp3d_debug::trace;
 
 #[derive(Clone, Debug)]
 pub struct Protocol {
     pub name: String,
     pub endianness: Endianness,
-    pub type_path_by_name: TypePathMap,
+    pub type_path_map: TypePathMap,
     pub structs_by_name: HashMap<String, Rc<Structure>>,
     pub messages_by_name: HashMap<String, Rc<Message>>,
     pub enums_by_name: HashMap<String, Rc<Enum>>,
@@ -51,12 +52,53 @@ pub struct Protocol {
     pub unions: Vec<Rc<Union>>,
 }
 
+#[derive(Copy, Clone)]
+enum Import<'a> {
+    Struct(&'a Rc<Structure>),
+    Enum(&'a Rc<Enum>),
+    Union(&'a Rc<Union>),
+    Message(&'a Rc<Message>)
+}
+
+impl<'a> Name for Import<'a> {
+    fn name(&self) -> &str {
+        match self {
+            Import::Struct(v) => v.name(),
+            Import::Enum(v) => v.name(),
+            Import::Union(v) => v.name(),
+            Import::Message(v) => v.name()
+        }
+    }
+}
+
+impl<'a> PtrKey for Import<'a> {
+    fn ptr_key(&self) -> usize {
+        match self {
+            Import::Struct(v) => v.ptr_key(),
+            Import::Enum(v) => v.ptr_key(),
+            Import::Union(v) => v.ptr_key(),
+            Import::Message(v) => v.ptr_key()
+        }
+    }
+}
+
+impl<'a> Import<'a> {
+    pub fn insert(self, type_name: String, proto: &mut Protocol) {
+        match self {
+            Import::Struct(v) => { proto.structs_by_name.insert(type_name, v.clone()); },
+            Import::Enum(v) => { proto.enums_by_name.insert(type_name, v.clone()); },
+            Import::Union(v) => { proto.unions_by_name.insert(type_name, v.clone()); },
+            Import::Message(v) => { proto.messages_by_name.insert(type_name, v.clone()); }
+        }
+    }
+}
+
 impl Protocol {
     pub fn from_model<T: ImportResolver>(value: crate::model::Protocol, solver: &T) -> Result<Self, Error> {
         let mut proto = Protocol {
             name: value.name,
             endianness: value.endianness.unwrap_or(Endianness::Little),
-            type_path_by_name: TypePathMap::new(),
+            type_path_map: TypePathMap::new(),
             structs_by_name: HashMap::new(),
             messages_by_name: HashMap::new(),
             enums_by_name: HashMap::new(),
@@ -66,51 +108,39 @@ impl Protocol {
             enums: Vec::new(),
             unions: Vec::new(),
         };
-        if let Some(imports) = value.imports {
-            for v in imports {
+        if let Some(mut imports) = value.imports {
+            let mut solved_imports = Vec::new();
+            while let Some(v) = imports.pop() {
+                trace!({protocol=&*v.protocol} {type=&*v.type_name}, "Solving import");
                 let r = solver.get_protocol_by_name(&v.protocol);
                 let r = match r {
                     Some(r) => r,
                     None => return Err(Error::UndefinedReference(v.protocol)),
                 };
-                match r.structs_by_name.get(&v.type_name) {
-                    None => match r.enums_by_name.get(&v.type_name) {
-                        None => match r.unions_by_name.get(&v.type_name) {
-                            Some(vv) => {
-                                let type_path =
-                                    solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
-                                proto.unions_by_name.insert(v.type_name, vv.clone());
-                                proto.type_path_by_name.add(vv.name.clone(), type_path);
-                            }
-                            None => {
-                                let msg = r
-                                    .messages_by_name
-                                    .get(&v.type_name)
-                                    .ok_or(Error::UndefinedReference(format!("{}::{}", v.protocol, v.type_name)))?;
-                                let type_path =
-                                    solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
-                                proto.messages_by_name.insert(v.type_name, msg.clone());
-                                proto.type_path_by_name.add(msg.name.clone(), type_path);
-                            }
-                        },
-                        Some(vv) => {
-                            let type_path =
-                                solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
-                            proto.enums_by_name.insert(v.type_name, vv.clone());
-                            proto.type_path_by_name.add(vv.name.clone(), type_path);
-                        }
-                    },
-                    Some(vv) => {
-                        let type_path =
-                            solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
-                        proto.structs_by_name.insert(v.type_name, vv.clone());
-                        proto.type_path_by_name.add(vv.name.clone(), type_path);
-                    }
+                let ty = r.structs_by_name.get(&v.type_name).map(Import::Struct)
+                    .or_else(|| r.messages_by_name.get(&v.type_name).map(Import::Message))
+                    .or_else(|| r.unions_by_name.get(&v.type_name).map(Import::Union))
+                    .or_else(|| r.enums_by_name.get(&v.type_name).map(Import::Enum))
+                    .ok_or(Error::UnresolvedImport(format!("{}::{}", v.protocol, v.type_name)))?;
+                let type_path = solver.get_full_type_path(&v.protocol, &v.type_name)
+                    .ok_or(Error::SolverError)?;
+                solved_imports.push(ty);
+                let count1 = imports.iter().filter(|vv| vv.type_name == v.type_name).count();
+                let count2 = solved_imports.iter().filter(|vv| vv.name() == v.type_name).count();
+                let is_ambiguous = count1 > 0 || count2 > 1;
+                proto.type_path_map.add(&ty, type_path);
+                if is_ambiguous {
+                    trace!({protocol=&*v.protocol} {type=&*v.type_name}, "Import is ambiguous, import it as {}::{}", v.protocol, v.type_name);
+                    ty.insert(format!("{}::{}", v.protocol, v.type_name), &mut proto);
+                } else {
+                    trace!({protocol=&*v.protocol} {type=&*v.type_name}, "Import is not ambiguous");
+                    ty.insert(v.type_name, &mut proto);
                 }
             }
         }
         if let Some(enums) = value.enums {
             for v in enums {
+                trace!({model=?&v}, "Compiling enum");
                 let v = Rc::new(Enum::from_model(v)?);
                 proto.enums_by_name.insert(v.name.clone(), v.clone());
                 proto.enums.push(v);
@@ -118,6 +148,7 @@ impl Protocol {
         }
         if let Some(structs) = value.structs {
             for v in structs {
+                trace!({model=?&v}, "Compiling structure");
                 let v = Rc::new(Structure::from_model(&proto, v)?);
                 proto.structs_by_name.insert(v.name.clone(), v.clone());
                 proto.structs.push(v);
@@ -125,6 +156,7 @@ impl Protocol {
         }
         if let Some(unions) = value.unions {
             for v in unions {
+                trace!({model=?&v}, "Compiling union");
                 let v = Rc::new(Union::from_model(&proto, v)?);
                 proto.unions_by_name.insert(v.name.clone(), v.clone());
                 proto.unions.push(v);
@@ -132,6 +164,7 @@ impl Protocol {
         }
         if let Some(messages) = value.messages {
             for v in messages {
+                trace!({model=?&v}, "Compiling message");
                 let v = Rc::new(Message::from_model(&proto, v)?);
                 proto.messages_by_name.insert(v.name.clone(), v.clone());
                 proto.messages.push(v);

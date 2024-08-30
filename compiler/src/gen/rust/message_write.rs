@@ -36,19 +36,19 @@ use crate::gen::template::Template;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.write.template");
 
-pub fn gen_message_write_impl(msg: &Message, type_path_by_name: &TypePathMap, params: &RustParams) -> String {
-    let type_path_by_name = TypePathMapper::new(type_path_by_name, DefaultTypeMapper);
+pub fn gen_message_write_impl(msg: &Message, type_path_map: &TypePathMap, params: &RustParams) -> String {
+    let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let mut code = generate::<RustUtils, _>(
         Template::compile(TEMPLATE).unwrap(),
         msg,
-        &type_path_by_name,
+        &type_path_map,
         "impl"
     );
     if params.enable_write_async {
         code += &generate::<RustUtils, _>(
             Template::compile(TEMPLATE).unwrap(),
             msg,
-            &type_path_by_name,
+            &type_path_map,
             "impl_async"
         );
     }

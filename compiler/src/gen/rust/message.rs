@@ -37,7 +37,7 @@ use itertools::Itertools;
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
 
-fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMapper<DefaultTypeMapper>) -> String {
+fn gen_message_array_type_decls(msg: &Message, type_path_map: &TypePathMapper<DefaultTypeMapper>) -> String {
     let mut template = Template::compile(TEMPLATE_EXT).unwrap();
     template.var("msg_name", &msg.name);
     msg.fields
@@ -47,21 +47,21 @@ fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMappe
             match &field.ty {
                 FieldType::Array(v) => Some(
                     template
-                        .var("item_type", type_path_by_name.get(&v.item_type.name))
+                        .var("item_type", type_path_map.get(&v.item_type))
                         .var("codec", RustUtils::get_value_type(field.endianness, v.ty))
                         .render("", &["decl_array"])
                         .unwrap(),
                 ),
                 FieldType::List(v) => Some(
                     template
-                        .var("item_type", type_path_by_name.get(&v.item_type.name))
+                        .var("item_type", type_path_map.get(&v.item_type))
                         .var("codec", RustUtils::get_value_type(field.endianness, v.ty))
                         .render("", &["decl_list"])
                         .unwrap(),
                 ),
                 FieldType::SizedList(v) => Some(
                     template
-                        .var("item_type", type_path_by_name.get(&v.item_type.name))
+                        .var("item_type", type_path_map.get(&v.item_type))
                         .var("codec", RustUtils::get_value_type(field.endianness, v.ty))
                         .render("", &["decl_list"])
                         .unwrap(),
@@ -72,10 +72,10 @@ fn gen_message_array_type_decls(msg: &Message, type_path_by_name: &TypePathMappe
         .join("")
 }
 
-pub fn gen_message_decl(msg: &Message, type_path_by_name: &TypePathMap) -> String {
-    let type_path_by_name = TypePathMapper::new(type_path_by_name, DefaultTypeMapper);
-    let mut code = generate::<RustUtils, _>(Template::compile(TEMPLATE).unwrap(), msg, &type_path_by_name);
+pub fn gen_message_decl(msg: &Message, type_path_map: &TypePathMap) -> String {
+    let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
+    let mut code = generate::<RustUtils, _>(Template::compile(TEMPLATE).unwrap(), msg, &type_path_map);
     code += "\n";
-    code += &gen_message_array_type_decls(msg, &type_path_by_name);
+    code += &gen_message_array_type_decls(msg, &type_path_map);
     code
 }

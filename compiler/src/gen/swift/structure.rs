@@ -38,7 +38,7 @@ const STRUCT_TEMPLATE: &[u8] = include_bytes!("./structure.template");
 const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("./structure.field.template");
 
 pub fn gen_structure_decl(proto: &Protocol, s: &Structure) -> String {
-    let type_path_by_name = TypePathMapper::new(&proto.type_path_by_name, SwiftTypeMapper::from_protocol(proto));
+    let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
     let mut template = Template::compile(STRUCT_TEMPLATE).unwrap();
     let mut field_template = Template::compile(STRUCT_FIELD_TEMPLATE).unwrap();
     template.var("proto_name", &proto.name);
@@ -47,5 +47,5 @@ pub fn gen_structure_decl(proto: &Protocol, s: &Structure) -> String {
         template,
         field_template,
     };
-    generate::<SwiftUtils, _>(templates, s, &type_path_by_name, &TemplateHooks::default())
+    generate::<SwiftUtils, _>(templates, s, &type_path_map, &TemplateHooks::default())
 }

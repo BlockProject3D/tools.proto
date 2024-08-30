@@ -32,6 +32,8 @@ use crate::compiler::Protocol;
 use crate::model::protocol::Endianness;
 use crate::model::structure::{SimpleType, StructFieldType, StructFieldView};
 use std::rc::Rc;
+use bp3d_debug::trace;
+use crate::compiler::util::{try2, Name};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FixedFieldType {
@@ -289,7 +291,8 @@ impl Field {
     ) -> Result<(Self, usize), Error> {
         match value.info {
             StructFieldType::Struct { item_type } => {
-                let r = proto.structs_by_name.get(&item_type).ok_or(Error::UndefinedReference(item_type))?;
+                let r = try2!(proto.structs_by_name.get(&item_type) => Error::UndefinedReference(item_type));
+                trace!("Solved reference {} => {:?}", item_type, r);
                 Ok((
                     Self::Struct(StructField {
                         name: value.name,
@@ -365,5 +368,11 @@ impl Structure {
                 last_bit_offset / 8
             },
         })
+    }
+}
+
+impl Name for Structure {
+    fn name(&self) -> &str {
+        &self.name
     }
 }
