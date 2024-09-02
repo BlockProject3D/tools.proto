@@ -29,6 +29,15 @@
 use bp3d_proto::util::Size;
 use testprog::structs::{Flags, Floats, Master, Numbers};
 
+fn check_numbers1<T: AsRef<[u8]>>(nums: &Numbers<T>) {
+    assert_eq!(nums.get_u_a(), 0x123456AB);
+    assert_eq!(nums.get_a(), -424242);
+    assert_eq!(nums.get_u_b(), 0x1234);
+    assert_eq!(nums.get_b(), -4242);
+    assert_eq!(nums.get_u_c(), 0x12);
+    assert_eq!(nums.get_c(), -42);
+}
+
 fn check_numbers<T: AsRef<[u8]>>(nums: &Numbers<T>) {
     assert_eq!(nums.get_u_a(), 0x123456AB);
     assert_eq!(nums.get_a(), -424242);
@@ -37,7 +46,7 @@ fn check_numbers<T: AsRef<[u8]>>(nums: &Numbers<T>) {
     assert_eq!(nums.get_u_c(), 0x12);
     assert_eq!(nums.get_c(), -42);
     let copy = nums.copy_on_stack();
-    check_numbers(&copy);
+    check_numbers1(&copy);
 }
 
 fn check_flags<T: AsRef<[u8]>>(flags: &Flags<T>) {
