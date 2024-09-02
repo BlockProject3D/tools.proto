@@ -64,10 +64,6 @@ impl Utilities for SwiftUtils {
             })
             .join(".")
     }
-
-    fn get_generics(_: &Union) -> &str {
-        ""
-    }
 }
 
 pub fn gen_union_decl(proto: &Protocol, u: &Union) -> String {

@@ -88,6 +88,6 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     type_path_map: &TypePathMapper<T>,
     function: &str
 ) -> String {
-    template.var("msg_name", &msg.name).var("generics", U::get_generics(msg));
+    template.var("msg_name", &msg.name);
     generate_from_slice_impl::<U, T>(msg, &template, type_path_map, function)
 }

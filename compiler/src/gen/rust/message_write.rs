@@ -38,8 +38,10 @@ const TEMPLATE: &[u8] = include_bytes!("./message.write.template");
 
 pub fn gen_message_write_impl(msg: &Message, type_path_map: &TypePathMap, params: &RustParams) -> String {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
+    let mut template = Template::compile(TEMPLATE).unwrap();
+    template.var("generics", RustUtils::get_generics(msg));
     let mut code = generate::<RustUtils, _>(
-        Template::compile(TEMPLATE).unwrap(),
+        template,
         msg,
         &type_path_map,
         "impl"

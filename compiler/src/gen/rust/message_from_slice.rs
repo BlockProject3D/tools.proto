@@ -36,8 +36,10 @@ use crate::gen::template::Template;
 const TEMPLATE: &[u8] = include_bytes!("./message.from_slice.template");
 
 pub fn gen_message_from_slice_impl(msg: &Message, type_path_map: &TypePathMap) -> String {
+    let mut template = Template::compile(TEMPLATE).unwrap();
+    template.var("generics", RustUtils::get_generics(msg));
     generate::<RustUtils, _>(
-        Template::compile(TEMPLATE).unwrap(),
+        template,
         msg,
         &TypePathMapper::new(type_path_map, DefaultTypeMapper),
         "impl"

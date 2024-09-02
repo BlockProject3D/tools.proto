@@ -64,7 +64,7 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     type_path_map: &TypePathMapper<T>,
     function: &str
 ) -> String {
-    template.var("msg_name", &msg.name).var("generics", U::get_generics(msg));
+    template.var("msg_name", &msg.name);
     let fields = msg
         .fields
         .iter()

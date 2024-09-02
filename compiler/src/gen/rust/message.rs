@@ -74,7 +74,9 @@ fn gen_message_array_type_decls(msg: &Message, type_path_map: &TypePathMapper<De
 
 pub fn gen_message_decl(msg: &Message, type_path_map: &TypePathMap) -> String {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
-    let mut code = generate::<RustUtils, _>(Template::compile(TEMPLATE).unwrap(), msg, &type_path_map);
+    let mut template = Template::compile(TEMPLATE).unwrap();
+    template.var("generics", RustUtils::get_generics(msg));
+    let mut code = generate::<RustUtils, _>(template, msg, &type_path_map);
     code += "\n";
     code += &gen_message_array_type_decls(msg, &type_path_map);
     code

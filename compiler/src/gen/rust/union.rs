@@ -66,13 +66,13 @@ impl Utilities for RustUtils {
             })
             .join(".")
     }
+}
 
-    fn get_generics(u: &Union) -> &str {
-        if u.cases.iter().any(|v| v.item_type.is_some()) {
-            "<'a>"
-        } else {
-            ""
-        }
+fn get_generics(u: &Union) -> &str {
+    if u.cases.iter().any(|v| v.item_type.is_some()) {
+        "<'a>"
+    } else {
+        ""
     }
 }
 
@@ -82,8 +82,10 @@ pub fn gen_union_decl(u: &Union, type_path_map: &TypePathMap, params: &RustParam
     if params.enable_write_async {
         hooks.hook("write_to", "write_to_async");
     }
+    let mut template = Template::compile(TEMPLATE).unwrap();
+    template.var("generics", get_generics(u));
     generate::<RustUtils, _>(
-        Template::compile(TEMPLATE).unwrap(),
+        template,
         u,
         &TypePathMapper::new(type_path_map, DefaultTypeMapper),
         &hooks

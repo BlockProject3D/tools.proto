@@ -51,6 +51,28 @@ macro_rules! gen_value_type {
 
 pub struct RustUtils;
 
+impl RustUtils {
+    pub fn get_generics(msg: &Message) -> &str {
+        let has_lifetime = msg.fields.iter().any(|v| {
+            matches!(
+                v.ty,
+                FieldType::Ref(_)
+                    | FieldType::NullTerminatedString
+                    | FieldType::VarcharString(_)
+                    | FieldType::Array(_)
+                    | FieldType::Union(_)
+                    | FieldType::List(_)
+                    | FieldType::Payload
+            )
+        });
+        if has_lifetime {
+            "<'a>"
+        } else {
+            ""
+        }
+    }
+}
+
 impl crate::gen::base::structure::Utilities for RustUtils {
     fn get_field_type(field_type: FixedFieldType) -> &'static str {
         gen_value_type!("", field_type, "")
@@ -97,26 +119,6 @@ impl crate::gen::base::structure::Utilities for RustUtils {
 }
 
 impl crate::gen::base::message::Utilities for RustUtils {
-    fn get_generics(msg: &Message) -> &str {
-        let has_lifetime = msg.fields.iter().any(|v| {
-            matches!(
-                v.ty,
-                FieldType::Ref(_)
-                    | FieldType::NullTerminatedString
-                    | FieldType::VarcharString(_)
-                    | FieldType::Array(_)
-                    | FieldType::Union(_)
-                    | FieldType::List(_)
-                    | FieldType::Payload
-            )
-        });
-        if has_lifetime {
-            "<'a>"
-        } else {
-            ""
-        }
-    }
-
     fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str {
         match endianness {
             Endianness::Little => gen_value_type!("bp3d_proto::message::util::ValueLE<", ty, ">"),

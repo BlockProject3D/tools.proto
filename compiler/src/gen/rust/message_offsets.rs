@@ -28,7 +28,6 @@
 
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
-use crate::gen::base::message::Utilities;
 use crate::gen::base::message_from_slice::generate_from_slice_impl;
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::rust::util::RustUtils;

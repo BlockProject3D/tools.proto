@@ -37,7 +37,6 @@ use crate::gen::hook::TemplateHooks;
 pub trait Utilities: crate::gen::base::structure::Utilities {
     fn gen_discriminant_path(discriminant: &DiscriminantField) -> String;
     fn gen_discriminant_path_mut(discriminant: &DiscriminantField) -> String;
-    fn get_generics(u: &Union) -> &str;
 }
 
 fn gen_union_from_slice_impl<T: TypeMapper>(
@@ -170,11 +169,9 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     type_path_map: &'variable TypePathMapper<T>,
     hooks: &TemplateHooks
 ) -> String {
-    let generics = U::get_generics(u);
     template
         .var("discriminant_raw_type", U::get_field_type(u.discriminant.get_leaf().ty))
         .var("union_name", &u.name)
-        .var("generics", generics)
         .var("discriminant_path_mut", U::gen_discriminant_path_mut(&u.discriminant))
         .var("discriminant_path", U::gen_discriminant_path(&u.discriminant))
         .var("discriminant_type", type_path_map.get(&u.discriminant.root));

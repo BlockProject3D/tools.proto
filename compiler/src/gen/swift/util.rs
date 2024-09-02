@@ -26,7 +26,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::Message;
 use crate::compiler::structure::{FixedField, FixedFieldType};
 use crate::compiler::util::TypeMapper;
 use crate::compiler::Protocol;
@@ -123,10 +122,6 @@ impl crate::gen::base::structure::Utilities for SwiftUtils {
 }
 
 impl crate::gen::base::message::Utilities for SwiftUtils {
-    fn get_generics(_: &Message) -> &str {
-        ""
-    }
-
     fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str {
         match endianness {
             Endianness::Little => gen_value_type!("BP3DProto.ValueLE<B, ", ty, ">"),
