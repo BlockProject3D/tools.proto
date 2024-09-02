@@ -14,6 +14,26 @@ pub enum {union_name}{generics} {{
 }}
 #fragment pop
 
+#fragment push from_value
+{cases}
+#fragment push struct
+impl<'a> bp3d_proto::util::FromValue<{type_name}<&'a [u8]>> for {union_name}<'a> {{
+    fn from_value(value: {type_name}<&'a [u8]>) -> Self {{
+        Self::{name}(value)
+    }}
+}}
+#fragment pop
+#fragment push message
+impl<'a> bp3d_proto::util::FromValue<{type_name}<'a>> for {union_name}<'a> {{
+    fn from_value(value: {type_name}<'a>) -> Self {{
+        Self::{name}(value)
+    }}
+}}
+#fragment pop
+#fragment push none
+#fragment pop
+#fragment pop
+
 #fragment push getters
 impl{generics} {union_name}{generics} {{
 {cases}

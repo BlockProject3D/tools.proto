@@ -28,6 +28,7 @@
 
 use bp3d_proto::message::{FromSlice, WriteTo};
 use std::io::Write;
+use bp3d_proto::util::IntoUnion;
 use testprog::enums::{Header, Type};
 use testprog::unions::{Item, Value};
 use testprog::values::{
@@ -61,14 +62,14 @@ fn item_numbers() {
     let mut value_buffer: [u8; 8] = [0; 8];
 
     write_message(
-        Value::Int8(ValueInt8::from(&mut value_buffer).set_data(-42).to_ref()),
+        ValueInt8::from(&mut value_buffer).set_data(-42).to_ref().into_union(),
         &mut buf,
     );
     assert_eq!(read_message(&buf, Type::Int8).as_int8().unwrap().get_data(), -42);
 
     buf.clear();
     write_message(
-        Value::Int16(ValueInt16::from(&mut value_buffer).set_data(-4242).to_ref()),
+        ValueInt16::from(&mut value_buffer).set_data(-4242).to_ref().into_union(),
         &mut buf,
     );
     assert_eq!(read_message(&buf, Type::Int16).as_int16().unwrap().get_data(), -4242);

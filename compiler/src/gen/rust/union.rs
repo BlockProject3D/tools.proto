@@ -36,6 +36,8 @@ use itertools::Itertools;
 use crate::gen::hook::TemplateHooks;
 use crate::gen::RustParams;
 
+//TODO: Implement FromValue and IntoUnion for future generic based unions
+
 const TEMPLATE: &[u8] = include_bytes!("./union.template");
 
 impl Utilities for RustUtils {
@@ -76,6 +78,7 @@ impl Utilities for RustUtils {
 
 pub fn gen_union_decl(u: &Union, type_path_map: &TypePathMap, params: &RustParams) -> String {
     let mut hooks = TemplateHooks::new();
+    hooks.hook("decl", "from_value");
     if params.enable_write_async {
         hooks.hook("write_to", "write_to_async");
     }

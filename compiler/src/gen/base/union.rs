@@ -141,6 +141,29 @@ fn gen_union_as_getters<T: TypeMapper>(
     template.scope().var("cases", cases).render("", &["getters"]).unwrap()
 }
 
+fn gen_decl<T: TypeMapper>(u: &Union, template: &Template, type_path_map: &TypePathMapper<T>, function: &str) -> String {
+    let cases = u
+        .cases
+        .iter()
+        .map(|case| match &case.item_type {
+            None => template.scope().var("name", &case.name).render(function, &["none"]).unwrap(),
+            Some(Referenced::Struct(v)) => template
+                .scope()
+                .var("name", &case.name)
+                .var("type_name", type_path_map.get(v))
+                .render(function, &["struct"])
+                .unwrap(),
+            Some(Referenced::Message(v)) => template
+                .scope()
+                .var("name", &case.name)
+                .var("type_name", type_path_map.get(v))
+                .render(function, &["message"])
+                .unwrap(),
+        })
+        .join("");
+    template.scope().var("cases", cases).render("", &[function]).unwrap()
+}
+
 pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     mut template: Template<'_, 'variable>,
     u: &'variable Union,
@@ -155,26 +178,10 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
         .var("discriminant_path_mut", U::gen_discriminant_path_mut(&u.discriminant))
         .var("discriminant_path", U::gen_discriminant_path(&u.discriminant))
         .var("discriminant_type", type_path_map.get(&u.discriminant.root));
-    let cases = u
-        .cases
-        .iter()
-        .map(|case| match &case.item_type {
-            None => template.scope().var("name", &case.name).render("decl", &["none"]).unwrap(),
-            Some(Referenced::Struct(v)) => template
-                .scope()
-                .var("name", &case.name)
-                .var("type_name", type_path_map.get(v))
-                .render("decl", &["struct"])
-                .unwrap(),
-            Some(Referenced::Message(v)) => template
-                .scope()
-                .var("name", &case.name)
-                .var("type_name", type_path_map.get(v))
-                .render("decl", &["message"])
-                .unwrap(),
-        })
-        .join("");
-    let mut code = template.scope().var("cases", cases).render("", &["decl"]).unwrap();
+    let mut code = gen_decl(u, &template, type_path_map, "decl");
+    for func in hooks.get_functions("decl") {
+        code += &gen_decl(u, &template, type_path_map, func);
+    }
     code += &gen_union_from_slice_impl::<T>(u, &template, type_path_map, "from_slice");
     for func in hooks.get_functions("from_slice") {
         code += &gen_union_from_slice_impl::<T>(u, &template, type_path_map, func);
