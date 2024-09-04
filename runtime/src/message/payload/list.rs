@@ -80,13 +80,13 @@ impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
 impl_list_base!(List);
 
 impl<B: Write, T, I> List<B, T, I> {
-    pub fn write_item<'a, Item: WriteTo<'a, Input = Item>>(&mut self, item: &Item) -> Result<(), Error> {
+    pub fn write_item<'a, Item: WriteTo<Input<'a> = Item>>(&mut self, item: &Item) -> Result<(), Error> {
         Item::write_to(item, &mut self.data)?;
         self.len += 1;
         Ok(())
     }
 
-    pub fn write_items<'a, Item: WriteTo<'a, Input = Item>>(&mut self, items: &[Item]) -> Result<(), Error> {
+    pub fn write_items<'a, Item: WriteTo<Input<'a> = Item>>(&mut self, items: &[Item]) -> Result<(), Error> {
         for item in items {
             self.write_item(item)?;
         }
@@ -173,16 +173,16 @@ impl<'a, B, T: FromSlice<'a, Output: ToUsize>, S: FromSlice<'a, Output: ToUsize>
     }
 }
 
-impl<'a,
+impl<
         B: AsRef<[u8]>,
-        T: WriteTo<'a, Input: ToUsize>,
-        S: WriteTo<'a, Input: ToUsize>,
+        T: WriteTo<Input<'static>: ToUsize>,
+        S: WriteTo<Input<'static>: ToUsize>,
         Item,
-    > WriteTo<'a> for Sized<B, T, S, Item>
+    > WriteTo for Sized<B, T, S, Item>
 {
-    type Input = List<B, T, Item>;
+    type Input<'b> = List<B, T, Item>;
 
-    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> crate::message::Result<()> {
+    fn write_to<W: Write>(input: &Self::Input<'_>, mut out: W) -> crate::message::Result<()> {
         T::write_to(&T::Input::from_usize(input.len), &mut out)?;
         S::write_to(&S::Input::from_usize(input.data.as_ref().len()), &mut out)?;
         out.write_all(input.data.as_ref())?;
@@ -191,8 +191,8 @@ impl<'a,
 }
 
 #[cfg(feature = "tokio")]
-impl<'a, B: AsRef<[u8]>, T: crate::message::WriteToAsync<'a, Input: ToUsize>, S: crate::message::WriteToAsync<'a, Input: ToUsize>, Item> crate::message::WriteToAsync<'a> for Sized<B, T, S, Item> {
-    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input, mut out: W) -> crate::message::Result<()> {
+impl<B: AsRef<[u8]>, T: crate::message::WriteToAsync<Input<'static>: ToUsize>, S: crate::message::WriteToAsync<Input<'static>: ToUsize>, Item> crate::message::WriteToAsync for Sized<B, T, S, Item> {
+    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> crate::message::Result<()> {
         T::write_to_async(&T::Input::from_usize(input.len), &mut out).await?;
         S::write_to_async(&S::Input::from_usize(input.data.as_ref().len()), &mut out).await?;
         out.write_all(input.data.as_ref()).await?;

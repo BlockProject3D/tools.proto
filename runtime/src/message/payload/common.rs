@@ -39,18 +39,18 @@ impl<'a> FromSlice<'a> for Buffer {
     }
 }
 
-impl<'a> WriteTo<'a> for Buffer {
-    type Input = &'a [u8];
+impl WriteTo for Buffer {
+    type Input<'a> = &'a [u8];
 
-    fn write_to<W: Write>(input: &Self::Input, mut out: W) -> Result<(), Error> {
+    fn write_to<W: Write>(input: &Self::Input<'_>, mut out: W) -> Result<(), Error> {
         out.write_all(input)?;
         Ok(())
     }
 }
 
 #[cfg(feature = "tokio")]
-impl<'a> crate::message::WriteToAsync<'a> for Buffer {
-    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input, mut out: W) -> Result<(), Error> {
+impl crate::message::WriteToAsync for Buffer {
+    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> Result<(), Error> {
         out.write_all(input).await?;
         Ok(())
     }

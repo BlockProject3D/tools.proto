@@ -170,8 +170,4 @@ impl crate::gen::base::message::Utilities for SwiftUtils {
     fn gen_message_ref_type(type_name: &str) -> String {
         format!("{}<B>", type_name)
     }
-
-    fn gen_union_ref_type(type_name: &str) -> String {
-        format!("{}<B>", type_name)
-    }
 }

@@ -14,3 +14,5 @@ categories = ["network-programming", "parsing"]
 bp3d-util = { version = "1.0.0", features = ["simple-error"] }
 bytesutil = "0.7.0"
 tokio = { version = "1.39.3", features = ["full"], optional = true }
+
+#TODO: Try to add support for no_std

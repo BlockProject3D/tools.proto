@@ -87,13 +87,66 @@ pub trait FromSliceWithOffsets<'a>: FromSlice<'a> {
     fn from_slice_with_offsets(slice: &'a [u8]) -> Result<Message<(Self::Output, Self::Offsets)>>;
 }
 
-pub trait WriteTo<'a> {
-    type Input: Sized;
+pub trait FromSliceWithDiscriminant<'a, D> {
+    type Output: Sized;
 
-    fn write_to<W: std::io::Write>(input: &Self::Input, out: W) -> Result<()>;
+    fn from_slice_with_discriminant(slice: &'a [u8], discriminant: &D) -> Result<Message<Self::Output>>;
+}
+
+impl<'a, D, T: FromSlice<'a>> FromSliceWithDiscriminant<'a, D> for T {
+    type Output = T::Output;
+
+    fn from_slice_with_discriminant(slice: &'a [u8], _: &D) -> Result<Message<Self::Output>> {
+        T::from_slice(slice)
+    }
+}
+
+pub trait WriteTo {
+    type Input<'a>: Sized;
+
+    fn write_to<W: std::io::Write>(input: &Self::Input<'_>, out: W) -> Result<()>;
 }
 
 #[cfg(feature = "tokio")]
-pub trait WriteToAsync<'a>: WriteTo<'a> {
-    fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input, out: W) -> impl std::future::Future<Output = Result<()>>;
+pub trait WriteToAsync: WriteTo {
+    fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, out: W) -> impl std::future::Future<Output = Result<()>>;
+}
+
+pub trait WriteToWithDiscriminant<D> {
+    type Input<'a>: Sized;
+
+    fn write_to_with_discriminant<W: std::io::Write>(input: &Self::Input<'_>, discriminant: &D, out: W) -> Result<()>;
+}
+
+#[cfg(feature = "tokio")]
+pub trait WriteToWithDiscriminantAsync<D>: WriteToWithDiscriminant<D> {
+    fn write_to_with_discriminant_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, discriminant: &D, out: W) -> impl std::future::Future<Output = Result<()>>;
+}
+
+pub trait WriteSelf {
+    fn write_self<W: std::io::Write>(&self, out: W) -> Result<()>;
+}
+
+pub trait WriteSelfWithDiscriminant<D> {
+    fn write_self_with_discriminant<W: std::io::Write>(&self, discriminant: &D, out: W) -> Result<()>;
+}
+
+impl<'a, T: WriteTo<Input<'a>=T>> WriteSelf for T {
+    fn write_self<W: std::io::Write>(&self, out: W) -> Result<()> {
+        T::write_to(self, out)
+    }
+}
+
+impl<'a, D, T: WriteToWithDiscriminant<D, Input<'a>=T>> WriteSelfWithDiscriminant<D> for T {
+    fn write_self_with_discriminant<W: std::io::Write>(&self, discriminant: &D, out: W) -> Result<()> {
+        T::write_to_with_discriminant(self, discriminant, out)
+    }
+}
+
+impl<D, T: WriteSelf> WriteToWithDiscriminant<D> for T {
+    type Input<'b> = T;
+
+    fn write_to_with_discriminant<W: std::io::Write>(input: &Self::Input<'_>, _: &D, out: W) -> Result<()> {
+        input.write_self(out)
+    }
 }

@@ -50,7 +50,6 @@ pub trait Utilities: crate::gen::base::structure::Utilities {
     fn get_payload_type_inline() -> &'static str;
     fn gen_struct_ref_type(type_name: &str) -> String;
     fn gen_message_ref_type(type_name: &str) -> String;
-    fn gen_union_ref_type(type_name: &str) -> String;
 }
 
 pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
@@ -73,7 +72,10 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
             .var("type_name", type_path_map.get(&v.item_type))
             .render("", &["array"])
             .unwrap(),
-        FieldType::Union(v) => U::gen_union_ref_type(&type_path_map.get(&v.r)),
+        FieldType::Union(v) => scope
+            .var("type_name", type_path_map.get(&v.r))
+            .render("", &["union"])
+            .unwrap(),
         FieldType::List(v) => scope
             .var("codec", U::get_value_type(field.endianness, v.ty))
             .var("type_name", type_path_map.get(&v.item_type))

@@ -19,3 +19,7 @@ pub struct {msg_name}{generics} {{
 #fragment push sized_list:inline
 {msg_name}{name:to_pascal_case}Type<'a>
 #fragment pop
+
+#fragment push union:inline
+T{name}
+#fragment pop

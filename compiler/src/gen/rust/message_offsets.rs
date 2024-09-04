@@ -30,7 +30,7 @@ use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::TypePathMap;
 use crate::gen::base::message_from_slice::generate_from_slice_impl;
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
-use crate::gen::rust::util::RustUtils;
+use crate::gen::rust::util::{gen_where_clause, RustUtils};
 use crate::gen::template::Template;
 use itertools::Itertools;
 
@@ -58,7 +58,9 @@ fn gen_message_offset_field(
 pub fn gen_message_offsets_decl(msg: &Message, type_path_map: &TypePathMap) -> String {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("msg_name", &msg.name).var("generics", RustUtils::get_generics(msg));
+    let where_clauses = msg.fields.iter().map(|field| gen_where_clause(&template, field, &type_path_map, "impl")).join("");
+    template.var("msg_name", &msg.name).var("generics", RustUtils::get_generics(msg, &type_path_map).to_string())
+        .var("where_clauses", where_clauses);
     let fields = msg
         .fields
         .iter()

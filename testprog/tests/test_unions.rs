@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto::message::{FromSlice, WriteTo};
+use bp3d_proto::message::{FromSlice, WriteSelf, WriteTo};
 use std::io::Write;
 use bp3d_proto::util::IntoUnion;
 use testprog::enums::{Header, Type};
@@ -39,6 +39,17 @@ use testprog::values::{
 fn write_message(value: Value, out: &mut impl Write) {
     let mut header = Header::new_on_stack();
     value.set_discriminant(&mut header);
+    let item = Item {
+        header: header.to_ref(),
+        name: "test",
+        value,
+    };
+    Item::write_to(&item, out).unwrap();
+}
+
+fn write_message_fast<T: WriteSelf>(value: T, ty: Type, out: &mut impl Write) {
+    let mut header = Header::new_on_stack();
+    header.set_type(ty);
     let item = Item {
         header: header.to_ref(),
         name: "test",
@@ -75,15 +86,15 @@ fn item_numbers() {
     assert_eq!(read_message(&buf, Type::Int16).as_int16().unwrap().get_data(), -4242);
 
     buf.clear();
-    write_message(
-        Value::Int32(ValueInt32::from(&mut value_buffer).set_data(-424242).to_ref()),
+    write_message_fast(
+        ValueInt32::from(&mut value_buffer).set_data(-424242).to_ref(), Type::Int32,
         &mut buf,
     );
     assert_eq!(read_message(&buf, Type::Int32).as_int32().unwrap().get_data(), -424242);
 
     buf.clear();
-    write_message(
-        Value::Int64(ValueInt64::from(&mut value_buffer).set_data(-42424242).to_ref()),
+    write_message_fast(
+        ValueInt64::from(&mut value_buffer).set_data(-42424242).to_ref(), Type::Int64,
         &mut buf,
     );
     assert_eq!(

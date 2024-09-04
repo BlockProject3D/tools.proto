@@ -1,6 +1,11 @@
 #fragment push impl
-impl<'a> bp3d_proto::message::WriteTo<'a> for {msg_name}{generics} {{
-    type Input = Self;
+impl{generics} bp3d_proto::message::WriteTo for {msg_name}{generics}
+#fragment push where
+    where T{name}: bp3d_proto::message::WriteToWithDiscriminant<{discriminant_type}<&'a [u8]>, Input<'a>=T{name}>,
+#fragment pop
+{where_clauses}
+{{
+    type Input<'b> = Self;
 
     fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {{
 {fields}
@@ -11,7 +16,7 @@ impl<'a> bp3d_proto::message::WriteTo<'a> for {msg_name}{generics} {{
         {type}::write_to(&input.{name}, &mut out)?;
 #fragment pop
 #fragment push field_union
-        {type}::write_to(&input.{name}, &input.{on_name}, &mut out)?;
+        T{name}::write_to_with_discriminant(&input.{name}, &input.{on_name}, &mut out)?;
 #fragment pop
         Ok(())
     }}
@@ -19,7 +24,12 @@ impl<'a> bp3d_proto::message::WriteTo<'a> for {msg_name}{generics} {{
 #fragment pop
 
 #fragment push impl_async
-impl<'a> bp3d_proto::message::WriteToAsync<'a> for {msg_name}{generics} {{
+impl{generics} bp3d_proto::message::WriteToAsync for {msg_name}{generics}
+#fragment push where
+    where T{name}: bp3d_proto::message::WriteToWithDiscriminantAsync<{discriminant_type}<&'a [u8]>, Input<'a>=T{name}>,
+#fragment pop
+{where_clauses}
+{{
     async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {{
 {fields}
 #fragment push field
@@ -29,7 +39,7 @@ impl<'a> bp3d_proto::message::WriteToAsync<'a> for {msg_name}{generics} {{
         {type}::write_to_async(&input.{name}, &mut out).await?;
 #fragment pop
 #fragment push field_union
-        {type}::write_to_async(&input.{name}, &input.{on_name}, &mut out).await?;
+        T{name}::write_to_with_discriminant_async(&input.{name}, &input.{on_name}, &mut out).await?;
 #fragment pop
         Ok(())
     }}

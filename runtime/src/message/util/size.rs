@@ -42,7 +42,7 @@ impl Write for Counter {
     }
 }
 
-pub fn size_of<'a, Msg: WriteTo<'a, Input = Msg>>(msg: &Msg) -> crate::message::Result<usize> {
+pub fn size_of<'a, Msg: WriteTo<Input<'a> = Msg>>(msg: &Msg) -> crate::message::Result<usize> {
     let mut counter = Counter(0);
     Msg::write_to(msg, &mut counter)?;
     Ok(counter.0)
