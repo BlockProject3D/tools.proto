@@ -36,8 +36,6 @@ use itertools::Itertools;
 use crate::gen::hook::TemplateHooks;
 use crate::gen::RustParams;
 
-//TODO: Implement FromValue and IntoUnion for future generic based unions
-
 const TEMPLATE: &[u8] = include_bytes!("./union.template");
 
 impl Utilities for RustUtils {
