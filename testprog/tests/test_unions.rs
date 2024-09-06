@@ -28,7 +28,7 @@
 
 use bp3d_proto::message::{FromSlice, WriteSelf, WriteTo};
 use std::io::Write;
-use bp3d_proto::util::IntoUnion;
+use bp3d_proto::union::IntoUnion;
 use testprog::enums::{Header, Type};
 use testprog::unions::{Item, Value};
 use testprog::values::{

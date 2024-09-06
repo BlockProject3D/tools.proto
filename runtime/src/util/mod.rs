@@ -78,17 +78,3 @@ macro_rules! transmute {
         unsafe { std::mem::transmute::<$src, $dst>($value) }
     };
 }
-
-pub trait FromValue<T> {
-    fn from_value(value: T) -> Self;
-}
-
-pub trait IntoUnion<U> {
-    fn into_union(self) -> U;
-}
-
-impl<T, U: FromValue<T>> IntoUnion<U> for T{
-    fn into_union(self) -> U {
-        U::from_value(self)
-    }
-}

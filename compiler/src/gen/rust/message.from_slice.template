@@ -1,7 +1,7 @@
 #fragment push impl
 impl{generics} bp3d_proto::message::FromSlice<'a> for {msg_name}{generics}
 #fragment push where
-    where T{name}: bp3d_proto::message::FromSliceWithDiscriminant<'a, {discriminant_type}<&'a [u8]>, Output=T{name}>,
+    where T{name}: bp3d_proto::union::UFromSlice<'a, {discriminant_type}<&'a [u8]>, Output=T{name}>,
 #fragment pop
 {where_clauses}
 {{
@@ -21,7 +21,7 @@ impl{generics} bp3d_proto::message::FromSlice<'a> for {msg_name}{generics}
         let {name} = {name}_msg.into_inner();
 #fragment pop
 #fragment push field_union
-        let {name}_msg = T{name}::from_slice_with_discriminant(&slice[byte_offset..], &{on_name})?;
+        let {name}_msg = T{name}::u_from_slice(&slice[byte_offset..], &{on_name})?;
         byte_offset += {name}_msg.size();
         let {name} = {name}_msg.into_inner();
 #fragment pop

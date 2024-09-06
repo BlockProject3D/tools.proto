@@ -17,14 +17,14 @@ pub enum {union_name}{generics} {{
 #fragment push from_value
 {cases}
 #fragment push struct
-impl<'a> bp3d_proto::util::FromValue<{type_name}<&'a [u8]>> for {union_name}<'a> {{
+impl<'a> bp3d_proto::union::FromValue<{type_name}<&'a [u8]>> for {union_name}<'a> {{
     fn from_value(value: {type_name}<&'a [u8]>) -> Self {{
         Self::{name}(value)
     }}
 }}
 #fragment pop
 #fragment push message
-impl<'a> bp3d_proto::util::FromValue<{type_name}<'a>> for {union_name}<'a> {{
+impl<'a> bp3d_proto::union::FromValue<{type_name}<'a>> for {union_name}<'a> {{
     fn from_value(value: {type_name}<'a>) -> Self {{
         Self::{name}(value)
     }}
@@ -79,11 +79,11 @@ impl{generics} {union_name}{generics} {{
 #fragment pop
 
 #fragment push write_to
-impl<'a> bp3d_proto::message::WriteToWithDiscriminant<{discriminant_type}<&'a [u8]>> for {union_name}{generics} {{
+impl<'a> bp3d_proto::union::UWriteTo<{discriminant_type}<&'a [u8]>> for {union_name}{generics} {{
     type Input<'b> = Self;
 {fragment}
 #fragment push content
-    fn write_to_with_discriminant<W: std::io::Write>(input: &Self, discriminant: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
+    fn u_write_to<W: std::io::Write>(input: &Self, discriminant: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
         use bp3d_proto::message::WriteTo;
         let discriminant = discriminant.{discriminant_path};
         match input {{
@@ -101,7 +101,7 @@ impl<'a> bp3d_proto::message::WriteToWithDiscriminant<{discriminant_type}<&'a [u
     }}
 #fragment pop
 #fragment push none
-    fn write_to_with_discriminant<W: std::io::Write>(_: &Self, _: &{discriminant_type}<&'a [u8]>, _: W) -> bp3d_proto::message::Result<()> {{
+    fn u_write_to<W: std::io::Write>(_: &Self, _: &{discriminant_type}<&'a [u8]>, _: W) -> bp3d_proto::message::Result<()> {{
         Ok(())
     }}
 #fragment pop
@@ -109,10 +109,10 @@ impl<'a> bp3d_proto::message::WriteToWithDiscriminant<{discriminant_type}<&'a [u
 #fragment pop
 
 #fragment push write_to_async
-impl<'a> bp3d_proto::message::WriteToWithDiscriminantAsync<'a, {discriminant_type}<&'a [u8]>> for {union_name}{generics} {{
+impl<'a> bp3d_proto::union::UWriteToAsync<{discriminant_type}<&'a [u8]>> for {union_name}{generics} {{
 {fragment}
 #fragment push content
-    async fn write_to_with_discriminant_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self, discriminant: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
+    async fn u_write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, discriminant: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
         use bp3d_proto::message::WriteToAsync;
         let discriminant = discriminant.{discriminant_path};
         match input {{
@@ -130,7 +130,7 @@ impl<'a> bp3d_proto::message::WriteToWithDiscriminantAsync<'a, {discriminant_typ
     }}
 #fragment pop
 #fragment push none
-    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(_: &Self, _: &{discriminant_type}<&'a [u8]>, _: W) -> bp3d_proto::message::Result<()> {{
+    async fn u_write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(_: &Self, _: &{discriminant_type}<&'a [u8]>, _: W) -> bp3d_proto::message::Result<()> {{
         Ok(())
     }}
 #fragment pop
@@ -138,11 +138,11 @@ impl<'a> bp3d_proto::message::WriteToWithDiscriminantAsync<'a, {discriminant_typ
 #fragment pop
 
 #fragment push from_slice
-impl<'a> bp3d_proto::message::FromSliceWithDiscriminant<'a, {discriminant_type}<&'a [u8]>> for {union_name}{generics} {{
+impl<'a> bp3d_proto::union::UFromSlice<'a, {discriminant_type}<&'a [u8]>> for {union_name}{generics} {{
     type Output = Self;
 {fragment}
 #fragment push content
-    fn from_slice_with_discriminant(slice: &'a [u8], discriminant: &{discriminant_type}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
+    fn u_from_slice(slice: &'a [u8], discriminant: &{discriminant_type}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
         use bp3d_proto::message::FromSlice;
         let discriminant = discriminant.{discriminant_path};
         match discriminant {{
@@ -155,7 +155,7 @@ impl<'a> bp3d_proto::message::FromSliceWithDiscriminant<'a, {discriminant_type}<
     }}
 #fragment pop
 #fragment push none
-    fn from_slice_with_discriminant(_: &'a [u8], discriminant: &{discriminant_type}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
+    fn u_from_slice(_: &'a [u8], discriminant: &{discriminant_type}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
         let discriminant = discriminant.{discriminant_path};
         match discriminant {{
 {cases}

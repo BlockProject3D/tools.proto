@@ -17,7 +17,7 @@ pub struct {msg_name}Offsets {{
 #fragment push impl
 impl{generics} bp3d_proto::message::FromSliceWithOffsets<'a> for {msg_name}{generics}
 #fragment push where
-    where T{name}: bp3d_proto::message::FromSliceWithDiscriminant<'a, {discriminant_type}<&'a [u8]>, Output=T{name}>,
+    where T{name}: bp3d_proto::union::UFromSlice<'a, {discriminant_type}<&'a [u8]>, Output=T{name}>,
 #fragment pop
 {where_clauses}
 {{
@@ -44,7 +44,7 @@ impl{generics} bp3d_proto::message::FromSliceWithOffsets<'a> for {msg_name}{gene
         offsets.{name}_offsets = {name}_offsets;
 #fragment pop
 #fragment push field_union
-        let {name}_msg = T{name}::from_slice_with_discriminant(&slice[byte_offset..], &{on_name})?;
+        let {name}_msg = T{name}::u_from_slice(&slice[byte_offset..], &{on_name})?;
         offsets.{name}.start = byte_offset;
         byte_offset += {name}_msg.size();
         offsets.{name}.end = byte_offset;

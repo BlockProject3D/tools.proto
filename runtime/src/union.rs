@@ -26,40 +26,51 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use itertools::Itertools;
-use crate::compiler::message::Message;
-use crate::compiler::util::TypePathMap;
-use crate::gen::base::message_write::generate;
-use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
-use crate::gen::rust::util::{gen_where_clause, RustUtils};
-use crate::gen::RustParams;
-use crate::gen::template::Template;
+use crate::message::{FromSlice, Message, WriteSelf};
 
-const TEMPLATE: &[u8] = include_bytes!("./message.write.template");
+pub trait FromValue<T> {
+    fn from_value(value: T) -> Self;
+}
 
-pub fn gen_message_write_impl(msg: &Message, type_path_map: &TypePathMap, params: &RustParams) -> String {
-    let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
-    let mut template = Template::compile(TEMPLATE).unwrap();
-    let where_clauses = msg.fields.iter().map(|field| gen_where_clause(&template, field, &type_path_map, "impl")).join("");
-    template.var("generics", RustUtils::get_generics(msg, &type_path_map).to_string())
-        .var("where_clauses", where_clauses);
-    let mut code = generate::<RustUtils, _>(
-        template,
-        msg,
-        &type_path_map,
-        "impl"
-    );
-    if params.enable_write_async {
-        let mut template = Template::compile(TEMPLATE).unwrap();
-        let where_clauses = msg.fields.iter().map(|field| gen_where_clause(&template, field, &type_path_map, "impl_async")).join("");
-        template.var("generics", RustUtils::get_generics(msg, &type_path_map).to_string())
-            .var("where_clauses", where_clauses);
-        code += &generate::<RustUtils, _>(
-            template,
-            msg,
-            &type_path_map,
-            "impl_async"
-        );
+pub trait IntoUnion<U> {
+    fn into_union(self) -> U;
+}
+
+pub trait UFromSlice<'a, D> {
+    type Output: Sized;
+
+    fn u_from_slice(slice: &'a [u8], discriminant: &D) -> crate::message::Result<Message<Self::Output>>;
+}
+
+pub trait UWriteTo<D> {
+    type Input<'a>: Sized;
+
+    fn u_write_to<W: std::io::Write>(input: &Self::Input<'_>, discriminant: &D, out: W) -> crate::message::Result<()>;
+}
+
+#[cfg(feature = "tokio")]
+pub trait UWriteToAsync<D>: UWriteTo<D> {
+    fn u_write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, discriminant: &D, out: W) -> impl std::future::Future<Output =crate::message::Result<()>>;
+}
+
+impl<D, T: WriteSelf> UWriteTo<D> for T {
+    type Input<'b> = T;
+
+    fn u_write_to<W: std::io::Write>(input: &Self::Input<'_>, _: &D, out: W) -> crate::message::Result<()> {
+        input.write_self(out)
     }
-    code
+}
+
+impl<T, U: FromValue<T>> IntoUnion<U> for T{
+    fn into_union(self) -> U {
+        U::from_value(self)
+    }
+}
+
+impl<'a, D, T: FromSlice<'a>> UFromSlice<'a, D> for T {
+    type Output = T::Output;
+
+    fn u_from_slice(slice: &'a [u8], _: &D) -> crate::message::Result<Message<Self::Output>> {
+        T::from_slice(slice)
+    }
 }
