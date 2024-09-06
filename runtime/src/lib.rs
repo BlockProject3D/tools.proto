@@ -28,5 +28,5 @@
 
 pub mod codec;
 pub mod message;
-pub mod util;
 pub mod union;
+pub mod util;

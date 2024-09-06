@@ -72,10 +72,7 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
             .var("type_name", type_path_map.get(&v.item_type))
             .render("", &["array"])
             .unwrap(),
-        FieldType::Union(v) => scope
-            .var("type_name", type_path_map.get(&v.r))
-            .render("", &["union"])
-            .unwrap(),
+        FieldType::Union(v) => scope.var("type_name", type_path_map.get(&v.r)).render("", &["union"]).unwrap(),
         FieldType::List(v) => scope
             .var("codec", U::get_value_type(field.endianness, v.ty))
             .var("type_name", type_path_map.get(&v.item_type))

@@ -30,9 +30,9 @@ use crate::compiler::message::Referenced;
 use crate::compiler::union::{DiscriminantField, Union};
 use crate::compiler::util::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
+use crate::gen::hook::TemplateHooks;
 use crate::gen::template::Template;
 use itertools::Itertools;
-use crate::gen::hook::TemplateHooks;
 
 pub trait Utilities: crate::gen::base::structure::Utilities {
     fn gen_discriminant_path(discriminant: &DiscriminantField) -> String;
@@ -43,7 +43,7 @@ fn gen_union_from_slice_impl<T: TypeMapper>(
     u: &Union,
     template: &Template,
     type_path_map: &TypePathMapper<T>,
-    function: &str
+    function: &str,
 ) -> String {
     let cases = u
         .cases
@@ -53,10 +53,9 @@ fn gen_union_from_slice_impl<T: TypeMapper>(
             scope.var("name", &case.name).var_d("case", case.case);
             match &case.item_type {
                 None => scope.render(function, &["none.case"]).unwrap(),
-                Some(item_type) => scope
-                    .var("type_name", type_path_map.get(item_type))
-                    .render(function, &["content.case"])
-                    .unwrap(),
+                Some(item_type) => {
+                    scope.var("type_name", type_path_map.get(item_type)).render(function, &["content.case"]).unwrap()
+                }
             }
         })
         .join("");
@@ -74,7 +73,7 @@ fn gen_union_write_to_impl<T: TypeMapper>(
     u: &Union,
     template: &Template,
     type_path_map: &TypePathMapper<T>,
-    function: &str
+    function: &str,
 ) -> String {
     let mut scope = template.scope();
     if u.has_content() {
@@ -85,10 +84,7 @@ fn gen_union_write_to_impl<T: TypeMapper>(
                 let mut scope = template.scope();
                 scope.var("name", &case.name).var_d("case", case.case);
                 case.item_type.as_ref().map(|item_type| {
-                    scope
-                        .var("type_name", type_path_map.get(item_type))
-                        .render(function, &["content.case"])
-                        .unwrap()
+                    scope.var("type_name", type_path_map.get(item_type)).render(function, &["content.case"]).unwrap()
                 })
             })
             .join("");
@@ -115,11 +111,7 @@ fn gen_union_set_discriminant(u: &Union, template: &Template) -> String {
     template.scope().var("cases", cases).render("", &["setter"]).unwrap()
 }
 
-fn gen_union_as_getters<T: TypeMapper>(
-    u: &Union,
-    template: &Template,
-    type_path_map: &TypePathMapper<T>,
-) -> String {
+fn gen_union_as_getters<T: TypeMapper>(u: &Union, template: &Template, type_path_map: &TypePathMapper<T>) -> String {
     let cases = u
         .cases
         .iter()
@@ -140,7 +132,12 @@ fn gen_union_as_getters<T: TypeMapper>(
     template.scope().var("cases", cases).render("", &["getters"]).unwrap()
 }
 
-fn gen_decl<T: TypeMapper>(u: &Union, template: &Template, type_path_map: &TypePathMapper<T>, function: &str) -> String {
+fn gen_decl<T: TypeMapper>(
+    u: &Union,
+    template: &Template,
+    type_path_map: &TypePathMapper<T>,
+    function: &str,
+) -> String {
     let cases = u
         .cases
         .iter()
@@ -167,7 +164,7 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     mut template: Template<'_, 'variable>,
     u: &'variable Union,
     type_path_map: &'variable TypePathMapper<T>,
-    hooks: &TemplateHooks
+    hooks: &TemplateHooks,
 ) -> String {
     template
         .var("discriminant_raw_type", U::get_field_type(u.discriminant.get_leaf().ty))

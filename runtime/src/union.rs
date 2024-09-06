@@ -50,7 +50,11 @@ pub trait UWriteTo<D> {
 
 #[cfg(feature = "tokio")]
 pub trait UWriteToAsync<D>: UWriteTo<D> {
-    fn u_write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, discriminant: &D, out: W) -> impl std::future::Future<Output =crate::message::Result<()>>;
+    fn u_write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(
+        input: &Self::Input<'_>,
+        discriminant: &D,
+        out: W,
+    ) -> impl std::future::Future<Output = crate::message::Result<()>>;
 }
 
 impl<D, T: WriteSelf> UWriteTo<D> for T {
@@ -61,7 +65,7 @@ impl<D, T: WriteSelf> UWriteTo<D> for T {
     }
 }
 
-impl<T, U: FromValue<T>> IntoUnion<U> for T{
+impl<T, U: FromValue<T>> IntoUnion<U> for T {
     fn into_union(self) -> U {
         U::from_value(self)
     }

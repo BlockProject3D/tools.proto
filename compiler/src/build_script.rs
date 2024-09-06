@@ -45,7 +45,7 @@ use crate::{Error, Loader, Protoc};
 pub fn generate_rust<F: FnOnce(&mut Loader) -> Result<(), Error>, F1: FnOnce(Protoc) -> Protoc>(
     load_fn: F,
     configure_fn: F1,
-    params: RustParams
+    params: RustParams,
 ) {
     let mut loader = Loader::new();
     let res = load_fn(&mut loader);

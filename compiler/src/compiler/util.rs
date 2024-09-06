@@ -91,7 +91,11 @@ impl TypePathMap {
         }
     }
 
-    pub fn get_with_default_prefix<'a, K: PtrKey + Name>(&'a self, item_type: &'a K, default_prefix: &str) -> Cow<'a, str> {
+    pub fn get_with_default_prefix<'a, K: PtrKey + Name>(
+        &'a self,
+        item_type: &'a K,
+        default_prefix: &str,
+    ) -> Cow<'a, str> {
         match self.type_path_by_addr.get(&item_type.ptr_key()) {
             None => Cow::Owned(format!("{default_prefix}{}", item_type.name())),
             Some(v) => Cow::Borrowed(v),
@@ -113,7 +117,7 @@ macro_rules! try2 {
     ($value: expr => $err: expr) => {
         match $value {
             Some(v) => v,
-            None => return Err($err)
+            None => return Err($err),
         }
     };
 }

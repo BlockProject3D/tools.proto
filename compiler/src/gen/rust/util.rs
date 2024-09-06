@@ -26,8 +26,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::borrow::Cow;
-use itertools::Itertools;
 use crate::compiler::message::{Field, FieldType, Message};
 use crate::compiler::structure::{FixedField, FixedFieldType};
 use crate::compiler::util::TypeMapper;
@@ -35,6 +33,8 @@ use crate::gen::base::map::TypePathMapper;
 use crate::gen::base::message::StringType;
 use crate::gen::template::Template;
 use crate::model::protocol::Endianness;
+use itertools::Itertools;
+use std::borrow::Cow;
 
 macro_rules! gen_value_type {
     ($prefix: literal, $ty: expr, $suffix: literal) => {
@@ -61,23 +61,20 @@ pub struct Generic<'a> {
 
 pub struct Generics<T> {
     lifetime: bool,
-    data: T
+    data: T,
 }
 
 impl<T> Generics<T> {
     pub fn new(lifetime: bool, data: T) -> Self {
-        Self {
-            lifetime,
-            data
-        }
+        Self { lifetime, data }
     }
 }
 
-impl<'a, T: Iterator<Item=Generic<'a>>> Generics<T> {
+impl<'a, T: Iterator<Item = Generic<'a>>> Generics<T> {
     pub fn to_string(self) -> Cow<'a, str> {
         let mut generics = self.data.map(|v| match &v.default {
             None => v.name,
-            Some(_) => v.name
+            Some(_) => v.name,
         });
         if let Some(value) = generics.next() {
             let str = generics.join(", ");
@@ -97,7 +94,7 @@ impl<'a, T: Iterator<Item=Generic<'a>>> Generics<T> {
     pub fn to_string_with_defaults(self) -> Cow<'a, str> {
         let mut generics = self.data.map(|v| match &v.default {
             None => v.name,
-            Some(v1) => format!("{}={}", v.name, v1).into()
+            Some(v1) => format!("{}={}", v.name, v1).into(),
         });
         if let Some(value) = generics.next() {
             let str = generics.join(", ");
@@ -118,7 +115,10 @@ impl<'a, T: Iterator<Item=Generic<'a>>> Generics<T> {
 pub struct RustUtils;
 
 impl RustUtils {
-    pub fn get_generics<'a, T: TypeMapper>(msg: &'a Message, type_path_map: &'a TypePathMapper<T>) -> Generics<impl Iterator<Item=Generic<'a>>> {
+    pub fn get_generics<'a, T: TypeMapper>(
+        msg: &'a Message,
+        type_path_map: &'a TypePathMapper<T>,
+    ) -> Generics<impl Iterator<Item = Generic<'a>>> {
         let has_lifetime = msg.fields.iter().any(|v| {
             matches!(
                 v.ty,
@@ -134,9 +134,9 @@ impl RustUtils {
         let unions = msg.fields.iter().filter_map(|v| match &v.ty {
             FieldType::Union(u) => Some(Generic {
                 name: format!("T{}", v.name).into(),
-                default: Some(format!("{}<'a>", type_path_map.get(&u.r)).into())
+                default: Some(format!("{}<'a>", type_path_map.get(&u.r)).into()),
             }),
-            _ => None
+            _ => None,
         });
         Generics::new(has_lifetime, unions)
     }
@@ -238,13 +238,20 @@ impl crate::gen::base::message::Utilities for RustUtils {
     }
 }
 
-pub fn gen_where_clause<T: TypeMapper>(template: &Template, field: &Field, type_path_map: &TypePathMapper<T>, function: &str) -> String {
+pub fn gen_where_clause<T: TypeMapper>(
+    template: &Template,
+    field: &Field,
+    type_path_map: &TypePathMapper<T>,
+    function: &str,
+) -> String {
     match &field.ty {
-        FieldType::Union(v) => template.scope()
+        FieldType::Union(v) => template
+            .scope()
             .var("name", &field.name)
             .var("type_name", type_path_map.get(&v.r))
             .var("discriminant_type", type_path_map.get(&v.r.discriminant.root))
-            .render(function, &["where"]).unwrap(),
-        _ => "".into()
+            .render(function, &["where"])
+            .unwrap(),
+        _ => "".into(),
     }
 }

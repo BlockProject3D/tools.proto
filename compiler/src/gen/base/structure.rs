@@ -29,10 +29,10 @@
 use crate::compiler::structure::{Field, FieldView, FixedField, FixedFieldType, Structure};
 use crate::compiler::util::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
+use crate::gen::hook::{Render, TemplateHooks};
 use crate::gen::template::{Scope, Template};
 use crate::model::protocol::Endianness;
 use itertools::Itertools;
-use crate::gen::hook::{Render, TemplateHooks};
 
 pub trait Utilities {
     fn get_field_type(field_type: FixedFieldType) -> &'static str;
@@ -82,9 +82,7 @@ fn gen_field_getter<U: Utilities, T: TypeMapper>(
             .var_d("bit_size", v.item_bit_size())
             .render("getters", &["array"])
             .unwrap(),
-        Field::Struct(v) => {
-            scope.var("type_name", type_path_map.get(&v.r)).render("getters", &["struct"]).unwrap()
-        }
+        Field::Struct(v) => scope.var("type_name", type_path_map.get(&v.r)).render("getters", &["struct"]).unwrap(),
     }
 }
 
@@ -127,9 +125,7 @@ fn gen_field_setter<U: Utilities, T: TypeMapper>(
             .var_d("bit_size", v.item_bit_size())
             .render("setters", &["array"])
             .unwrap(),
-        Field::Struct(v) => {
-            scope.var("type_name", type_path_map.get(&v.r)).render("setters", &["struct"]).unwrap()
-        }
+        Field::Struct(v) => scope.var("type_name", type_path_map.get(&v.r)).render("setters", &["struct"]).unwrap(),
     }
 }
 
@@ -228,14 +224,14 @@ fn gen_structure_setters<U: Utilities, T: TypeMapper>(
 
 pub struct Templates<'fragment, 'variable> {
     pub field_template: Template<'fragment, 'variable>,
-    pub template: Template<'fragment, 'variable>
+    pub template: Template<'fragment, 'variable>,
 }
 
 pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     templates: Templates<'_, 'variable>,
     s: &'variable Structure,
     type_path_map: &TypePathMapper<T>,
-    hooks: &TemplateHooks
+    hooks: &TemplateHooks,
 ) -> String {
     let mut template = templates.template;
     let mut field_template = templates.field_template;

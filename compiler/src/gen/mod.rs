@@ -28,11 +28,11 @@
 
 pub mod base;
 pub mod file;
+pub mod hook;
 mod interface;
 mod rust;
 mod swift;
 pub mod template;
-pub mod hook;
 
 pub use interface::*;
 

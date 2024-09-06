@@ -29,13 +29,13 @@
 use crate::compiler::error::Error;
 use crate::compiler::structure::{FixedFieldType, Structure};
 use crate::compiler::union::Union;
+use crate::compiler::util::{Name, PtrKey};
 use crate::compiler::Protocol;
 use crate::model::message::MessageFieldType;
 use crate::model::protocol::Endianness;
+use crate::model::structure::StructFieldType;
 use std::cell::Cell;
 use std::rc::Rc;
-use crate::compiler::util::{Name, PtrKey};
-use crate::model::structure::StructFieldType;
 
 #[derive(Clone, Debug)]
 pub enum Referenced {
@@ -56,7 +56,7 @@ impl PtrKey for Referenced {
     fn ptr_key(&self) -> usize {
         match self {
             Referenced::Struct(v) => v.ptr_key(),
-            Referenced::Message(v) => v.ptr_key()
+            Referenced::Message(v) => v.ptr_key(),
         }
     }
 }

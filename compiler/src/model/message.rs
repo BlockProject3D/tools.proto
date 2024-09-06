@@ -49,8 +49,8 @@ pub enum MessageFieldType {
         item_type: String,
     },
     Unsigned {
-        bits: usize
-    }
+        bits: usize,
+    },
 }
 
 #[derive(Clone, Debug, Deserialize)]

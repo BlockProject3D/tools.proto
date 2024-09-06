@@ -28,9 +28,9 @@
 
 use crate::compiler::message::{Field, Message};
 use crate::compiler::util::TypeMapper;
+use crate::gen::base::map::TypePathMapper;
 use crate::gen::base::message::Utilities;
 use crate::gen::base::message_common::generate_field_type_inline;
-use crate::gen::base::map::TypePathMapper;
 use crate::gen::template::Template;
 use itertools::Itertools;
 
@@ -39,7 +39,7 @@ fn gen_field_write_impl<U: Utilities, T: TypeMapper>(
     field: &Field,
     template: &Template,
     type_path_map: &TypePathMapper<T>,
-    function: &str
+    function: &str,
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
@@ -62,7 +62,7 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     mut template: Template<'_, 'variable>,
     msg: &'variable Message,
     type_path_map: &TypePathMapper<T>,
-    function: &str
+    function: &str,
 ) -> String {
     template.var("msg_name", &msg.name);
     let fields = msg

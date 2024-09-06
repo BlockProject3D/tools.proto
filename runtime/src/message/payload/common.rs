@@ -50,7 +50,10 @@ impl WriteTo for Buffer {
 
 #[cfg(feature = "tokio")]
 impl crate::message::WriteToAsync for Buffer {
-    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> Result<(), Error> {
+    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(
+        input: &Self::Input<'_>,
+        mut out: W,
+    ) -> Result<(), Error> {
         out.write_all(input).await?;
         Ok(())
     }

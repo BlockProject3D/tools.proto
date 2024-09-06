@@ -28,13 +28,13 @@
 
 use crate::compiler::union::{DiscriminantField, Union};
 use crate::compiler::util::TypePathMap;
-use crate::gen::base::union::{generate, Utilities};
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
+use crate::gen::base::union::{generate, Utilities};
+use crate::gen::hook::TemplateHooks;
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
-use itertools::Itertools;
-use crate::gen::hook::TemplateHooks;
 use crate::gen::RustParams;
+use itertools::Itertools;
 
 const TEMPLATE: &[u8] = include_bytes!("./union.template");
 
@@ -86,6 +86,6 @@ pub fn gen_union_decl(u: &Union, type_path_map: &TypePathMap, params: &RustParam
         template,
         u,
         &TypePathMapper::new(type_path_map, DefaultTypeMapper),
-        &hooks
+        &hooks,
     )
 }

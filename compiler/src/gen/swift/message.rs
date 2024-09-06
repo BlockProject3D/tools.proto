@@ -28,8 +28,8 @@
 
 use crate::compiler::message::{FieldType, Message};
 use crate::compiler::Protocol;
-use crate::gen::base::message::{gen_msg_field_decl, generate, Utilities};
 use crate::gen::base::map::TypePathMapper;
+use crate::gen::base::message::{gen_msg_field_decl, generate, Utilities};
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::Template;
 use itertools::Itertools;

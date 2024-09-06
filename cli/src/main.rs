@@ -153,7 +153,9 @@ fn main() {
         protoc = protoc.set_file_header(file_header);
     }
     match args.generator {
-        Generator::Rust => protoc.generate::<GeneratorRust>(args.output.unwrap_or(PathBuf::from("./")), RustParams::default()),
+        Generator::Rust => {
+            protoc.generate::<GeneratorRust>(args.output.unwrap_or(PathBuf::from("./")), RustParams::default())
+        }
         Generator::Swift => protoc.generate::<GeneratorSwift>(args.output.unwrap_or(PathBuf::from("./")), swift_solver),
     }
     .expect_exit("failed to generate protocols", 1);

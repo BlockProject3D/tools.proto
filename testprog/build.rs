@@ -45,7 +45,7 @@ fn main() {
             Ok(())
         },
         |protoc| protoc.set_reads_messages(true).set_writes_messages(true),
-        RustParams::default()
+        RustParams::default(),
     );
     generate_rust(
         |loader| {
@@ -55,7 +55,7 @@ fn main() {
             Ok(())
         },
         |protoc| protoc.set_reads_messages(true).set_writes_messages(true),
-        RustParams::default()
+        RustParams::default(),
     );
     generate_rust(
         |loader| {
@@ -67,7 +67,7 @@ fn main() {
             Ok(())
         },
         |protoc| protoc.set_reads_messages(true).set_writes_messages(true),
-        RustParams::default()
+        RustParams::default(),
     );
     generate_rust(
         |loader| {
@@ -77,6 +77,6 @@ fn main() {
             Ok(())
         },
         |protoc| protoc.set_reads_messages(false).set_writes_messages(false),
-        RustParams::default()
+        RustParams::default(),
     );
 }

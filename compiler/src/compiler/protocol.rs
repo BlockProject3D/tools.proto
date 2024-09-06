@@ -33,9 +33,9 @@ use crate::compiler::structure::Structure;
 use crate::compiler::union::Union;
 use crate::compiler::util::{ImportResolver, Name, PtrKey, TypePathMap};
 use crate::model::protocol::Endianness;
+use bp3d_debug::trace;
 use std::collections::HashMap;
 use std::rc::Rc;
-use bp3d_debug::trace;
 
 #[derive(Clone, Debug)]
 pub struct Protocol {
@@ -57,7 +57,7 @@ enum Import<'a> {
     Struct(&'a Rc<Structure>),
     Enum(&'a Rc<Enum>),
     Union(&'a Rc<Union>),
-    Message(&'a Rc<Message>)
+    Message(&'a Rc<Message>),
 }
 
 impl<'a> Name for Import<'a> {
@@ -66,7 +66,7 @@ impl<'a> Name for Import<'a> {
             Import::Struct(v) => v.name(),
             Import::Enum(v) => v.name(),
             Import::Union(v) => v.name(),
-            Import::Message(v) => v.name()
+            Import::Message(v) => v.name(),
         }
     }
 }
@@ -77,7 +77,7 @@ impl<'a> PtrKey for Import<'a> {
             Import::Struct(v) => v.ptr_key(),
             Import::Enum(v) => v.ptr_key(),
             Import::Union(v) => v.ptr_key(),
-            Import::Message(v) => v.ptr_key()
+            Import::Message(v) => v.ptr_key(),
         }
     }
 }
@@ -85,10 +85,18 @@ impl<'a> PtrKey for Import<'a> {
 impl<'a> Import<'a> {
     pub fn insert(self, type_name: String, proto: &mut Protocol) {
         match self {
-            Import::Struct(v) => { proto.structs_by_name.insert(type_name, v.clone()); },
-            Import::Enum(v) => { proto.enums_by_name.insert(type_name, v.clone()); },
-            Import::Union(v) => { proto.unions_by_name.insert(type_name, v.clone()); },
-            Import::Message(v) => { proto.messages_by_name.insert(type_name, v.clone()); }
+            Import::Struct(v) => {
+                proto.structs_by_name.insert(type_name, v.clone());
+            }
+            Import::Enum(v) => {
+                proto.enums_by_name.insert(type_name, v.clone());
+            }
+            Import::Union(v) => {
+                proto.unions_by_name.insert(type_name, v.clone());
+            }
+            Import::Message(v) => {
+                proto.messages_by_name.insert(type_name, v.clone());
+            }
         }
     }
 }
@@ -117,13 +125,15 @@ impl Protocol {
                     Some(r) => r,
                     None => return Err(Error::UndefinedReference(v.protocol)),
                 };
-                let ty = r.structs_by_name.get(&v.type_name).map(Import::Struct)
+                let ty = r
+                    .structs_by_name
+                    .get(&v.type_name)
+                    .map(Import::Struct)
                     .or_else(|| r.messages_by_name.get(&v.type_name).map(Import::Message))
                     .or_else(|| r.unions_by_name.get(&v.type_name).map(Import::Union))
                     .or_else(|| r.enums_by_name.get(&v.type_name).map(Import::Enum))
                     .ok_or(Error::UnresolvedImport(format!("{}::{}", v.protocol, v.type_name)))?;
-                let type_path = solver.get_full_type_path(&v.protocol, &v.type_name)
-                    .ok_or(Error::SolverError)?;
+                let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
                 solved_imports.push(ty);
                 let count1 = imports.iter().filter(|vv| vv.type_name == v.type_name).count();
                 let count2 = solved_imports.iter().filter(|vv| vv.name() == v.type_name).count();

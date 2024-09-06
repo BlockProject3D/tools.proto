@@ -28,12 +28,12 @@
 
 use crate::compiler::error::Error;
 use crate::compiler::r#enum::Enum;
+use crate::compiler::util::{try2, Name};
 use crate::compiler::Protocol;
 use crate::model::protocol::Endianness;
 use crate::model::structure::{SimpleType, StructFieldType, StructFieldView};
-use std::rc::Rc;
 use bp3d_debug::trace;
-use crate::compiler::util::{try2, Name};
+use std::rc::Rc;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FixedFieldType {

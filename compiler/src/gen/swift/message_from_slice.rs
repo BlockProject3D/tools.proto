@@ -28,8 +28,8 @@
 
 use crate::compiler::message::Message;
 use crate::compiler::Protocol;
-use crate::gen::base::message_from_slice::generate;
 use crate::gen::base::map::TypePathMapper;
+use crate::gen::base::message_from_slice::generate;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::{FunctionMap, Template};
 use std::borrow::Cow;

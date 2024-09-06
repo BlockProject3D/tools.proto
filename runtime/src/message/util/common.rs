@@ -88,7 +88,10 @@ impl<T: WriteTo> WriteTo for Optional<T> {
 
 #[cfg(feature = "tokio")]
 impl<T: crate::message::WriteToAsync> crate::message::WriteToAsync for Optional<T> {
-    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> crate::message::Result<()> {
+    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(
+        input: &Self::Input<'_>,
+        mut out: W,
+    ) -> crate::message::Result<()> {
         match input {
             None => out.write_all(&[0x0]).await?,
             Some(v) => {
@@ -130,7 +133,10 @@ impl<T: bytesutil::WriteTo> WriteTo for ValueLE<T> {
 
 #[cfg(feature = "tokio")]
 impl<T: bytesutil::WriteTo + bytesutil::WriteBytes> crate::message::WriteToAsync for ValueLE<T> {
-    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> crate::message::Result<()> {
+    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(
+        input: &Self::Input<'_>,
+        mut out: W,
+    ) -> crate::message::Result<()> {
         let mut buffer = [0; 8];
         T::write_bytes_le(input, &mut buffer);
         out.write_all(&buffer[..size_of::<T>()]).await?;
@@ -163,7 +169,10 @@ impl<T: bytesutil::WriteTo> WriteTo for ValueBE<T> {
 
 #[cfg(feature = "tokio")]
 impl<T: bytesutil::WriteTo + bytesutil::WriteBytes> crate::message::WriteToAsync for ValueBE<T> {
-    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> crate::message::Result<()> {
+    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(
+        input: &Self::Input<'_>,
+        mut out: W,
+    ) -> crate::message::Result<()> {
         let mut buffer = [0; 8];
         T::write_bytes_be(input, &mut buffer);
         out.write_all(&buffer[..size_of::<T>()]).await?;

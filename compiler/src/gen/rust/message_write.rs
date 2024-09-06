@@ -26,40 +26,37 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use itertools::Itertools;
 use crate::compiler::message::Message;
 use crate::compiler::util::TypePathMap;
-use crate::gen::base::message_write::generate;
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
+use crate::gen::base::message_write::generate;
 use crate::gen::rust::util::{gen_where_clause, RustUtils};
-use crate::gen::RustParams;
 use crate::gen::template::Template;
+use crate::gen::RustParams;
+use itertools::Itertools;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.write.template");
 
 pub fn gen_message_write_impl(msg: &Message, type_path_map: &TypePathMap, params: &RustParams) -> String {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let mut template = Template::compile(TEMPLATE).unwrap();
-    let where_clauses = msg.fields.iter().map(|field| gen_where_clause(&template, field, &type_path_map, "impl")).join("");
-    template.var("generics", RustUtils::get_generics(msg, &type_path_map).to_string())
+    let where_clauses =
+        msg.fields.iter().map(|field| gen_where_clause(&template, field, &type_path_map, "impl")).join("");
+    template
+        .var("generics", RustUtils::get_generics(msg, &type_path_map).to_string())
         .var("where_clauses", where_clauses);
-    let mut code = generate::<RustUtils, _>(
-        template,
-        msg,
-        &type_path_map,
-        "impl"
-    );
+    let mut code = generate::<RustUtils, _>(template, msg, &type_path_map, "impl");
     if params.enable_write_async {
         let mut template = Template::compile(TEMPLATE).unwrap();
-        let where_clauses = msg.fields.iter().map(|field| gen_where_clause(&template, field, &type_path_map, "impl_async")).join("");
-        template.var("generics", RustUtils::get_generics(msg, &type_path_map).to_string())
+        let where_clauses = msg
+            .fields
+            .iter()
+            .map(|field| gen_where_clause(&template, field, &type_path_map, "impl_async"))
+            .join("");
+        template
+            .var("generics", RustUtils::get_generics(msg, &type_path_map).to_string())
             .var("where_clauses", where_clauses);
-        code += &generate::<RustUtils, _>(
-            template,
-            msg,
-            &type_path_map,
-            "impl_async"
-        );
+        code += &generate::<RustUtils, _>(template, msg, &type_path_map, "impl_async");
     }
     code
 }

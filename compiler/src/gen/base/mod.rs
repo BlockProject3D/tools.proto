@@ -27,10 +27,10 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 pub mod r#enum;
+pub mod map;
 pub mod message;
+mod message_common;
 pub mod message_from_slice;
 pub mod message_write;
 pub mod structure;
 pub mod union;
-pub mod map;
-mod message_common;

@@ -59,7 +59,7 @@ simple_error! {
 
 #[derive(Default)]
 pub struct Params {
-    enable_write_async: bool
+    enable_write_async: bool,
 }
 
 impl Params {

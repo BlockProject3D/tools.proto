@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::collections::HashMap;
 use crate::gen::template::{Error, Scope, Template};
+use std::collections::HashMap;
 
 pub trait Render {
     fn render_frag(&self, fragment: &Fragment) -> Result<String, Error>;
@@ -57,21 +57,18 @@ impl<'a, 'fragment, 'variable> RenderToVar<'variable> for Scope<'a, 'fragment, '
 
 pub struct Fragment<'b> {
     path: &'b str,
-    fragments: &'b [&'b str]
+    fragments: &'b [&'b str],
 }
 
 impl<'b> Fragment<'b> {
     pub fn new(path: &'b str, fragments: &'b [&'b str]) -> Self {
-        Self {
-            path,
-            fragments
-        }
+        Self { path, fragments }
     }
 }
 
 pub enum Hook<'a> {
     Fragment(Fragment<'a>),
-    Function(&'a str)
+    Function(&'a str),
 }
 
 impl<'a> From<&'a str> for Hook<'a> {
@@ -87,7 +84,7 @@ impl<'a> From<Fragment<'a>> for Hook<'a> {
 }
 
 pub struct TemplateHooks<'a> {
-    map: HashMap<&'a str, Vec<Hook<'a>>>
+    map: HashMap<&'a str, Vec<Hook<'a>>>,
 }
 
 impl<'a> Default for TemplateHooks<'a> {
@@ -98,9 +95,7 @@ impl<'a> Default for TemplateHooks<'a> {
 
 impl<'a> TemplateHooks<'a> {
     pub fn new() -> Self {
-        Self {
-            map: HashMap::new()
-        }
+        Self { map: HashMap::new() }
     }
 
     pub fn hook(&mut self, name: &'a str, hook: impl Into<Hook<'a>>) -> &mut Self {
@@ -109,17 +104,17 @@ impl<'a> TemplateHooks<'a> {
         self
     }
 
-    pub fn get_fragments(&self, name: &str) -> impl Iterator<Item=&Fragment> {
+    pub fn get_fragments(&self, name: &str) -> impl Iterator<Item = &Fragment> {
         self.map.get(name).map(|v| v.iter()).unwrap_or([].iter()).filter_map(|v| match v {
             Hook::Fragment(v) => Some(v),
-            Hook::Function(_) => None
+            Hook::Function(_) => None,
         })
     }
 
-    pub fn get_functions(&self, name: &str) -> impl Iterator<Item=&str> {
+    pub fn get_functions(&self, name: &str) -> impl Iterator<Item = &str> {
         self.map.get(name).map(|v| v.iter()).unwrap_or([].iter()).filter_map(|v| match v {
             Hook::Fragment(_) => None,
-            Hook::Function(v) => Some(*v)
+            Hook::Function(v) => Some(*v),
         })
     }
 }

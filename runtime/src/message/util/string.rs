@@ -63,7 +63,10 @@ impl WriteTo for NullTerminatedString {
 
 #[cfg(feature = "tokio")]
 impl crate::message::WriteToAsync for NullTerminatedString {
-    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> crate::message::Result<()> {
+    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(
+        input: &Self::Input<'_>,
+        mut out: W,
+    ) -> crate::message::Result<()> {
         out.write_all(input.as_bytes()).await?;
         out.write_all(&[0x0]).await?;
         Ok(())
@@ -96,7 +99,10 @@ impl<T: WriteTo<Input<'static>: ToUsize>> WriteTo for VarcharString<T> {
 
 #[cfg(feature = "tokio")]
 impl<T: crate::message::WriteToAsync<Input<'static>: ToUsize>> crate::message::WriteToAsync for VarcharString<T> {
-    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> crate::message::Result<()> {
+    async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(
+        input: &Self::Input<'_>,
+        mut out: W,
+    ) -> crate::message::Result<()> {
         T::write_to_async(&T::Input::from_usize(input.len()), &mut out).await?;
         out.write_all(input.as_bytes()).await?;
         Ok(())

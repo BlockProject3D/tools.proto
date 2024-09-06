@@ -95,7 +95,10 @@ pub trait WriteTo {
 
 #[cfg(feature = "tokio")]
 pub trait WriteToAsync: WriteTo {
-    fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, out: W) -> impl std::future::Future<Output = Result<()>>;
+    fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(
+        input: &Self::Input<'_>,
+        out: W,
+    ) -> impl std::future::Future<Output = Result<()>>;
 }
 
 pub trait WriteSelf {
@@ -105,10 +108,13 @@ pub trait WriteSelf {
 
 #[cfg(feature = "tokio")]
 pub trait WriteSelfAsync {
-    fn write_self_async<W: tokio::io::AsyncWriteExt + Unpin>(&self, out: W) -> impl std::future::Future<Output=Result<()>>;
+    fn write_self_async<W: tokio::io::AsyncWriteExt + Unpin>(
+        &self,
+        out: W,
+    ) -> impl std::future::Future<Output = Result<()>>;
 }
 
-impl<'a, T: WriteTo<Input<'a>=T>> WriteSelf for T {
+impl<'a, T: WriteTo<Input<'a> = T>> WriteSelf for T {
     fn write_self<W: std::io::Write>(&self, out: W) -> Result<()> {
         T::write_to(self, out)
     }
@@ -119,7 +125,10 @@ impl<'a, T: WriteTo<Input<'a>=T>> WriteSelf for T {
 }
 
 #[cfg(feature = "tokio")]
-impl<T> WriteSelfAsync for T where for<'a> T: WriteToAsync<Input<'a> = T> {
+impl<T> WriteSelfAsync for T
+where
+    for<'a> T: WriteToAsync<Input<'a> = T>,
+{
     async fn write_self_async<W: tokio::io::AsyncWriteExt + Unpin>(&self, out: W) -> Result<()> {
         T::write_to_async(self, out).await
     }

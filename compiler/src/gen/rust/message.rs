@@ -28,8 +28,8 @@
 
 use crate::compiler::message::{FieldType, Message};
 use crate::compiler::util::TypePathMap;
-use crate::gen::base::message::{generate, Utilities};
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
+use crate::gen::base::message::{generate, Utilities};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 use itertools::Itertools;
@@ -75,7 +75,10 @@ fn gen_message_array_type_decls(msg: &Message, type_path_map: &TypePathMapper<De
 pub fn gen_message_decl(msg: &Message, type_path_map: &TypePathMap) -> String {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("generics", RustUtils::get_generics(msg, &type_path_map).to_string_with_defaults());
+    template.var(
+        "generics",
+        RustUtils::get_generics(msg, &type_path_map).to_string_with_defaults(),
+    );
     let mut code = generate::<RustUtils, _>(template, msg, &type_path_map);
     code += "\n";
     code += &gen_message_array_type_decls(msg, &type_path_map);

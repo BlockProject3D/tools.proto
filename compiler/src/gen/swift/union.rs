@@ -28,13 +28,13 @@
 
 use crate::compiler::union::{DiscriminantField, Union};
 use crate::compiler::Protocol;
-use crate::gen::base::union::{generate, Utilities};
 use crate::gen::base::map::TypePathMapper;
+use crate::gen::base::union::{generate, Utilities};
+use crate::gen::hook::TemplateHooks;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::util::CaseConversion;
 use crate::gen::template::Template;
 use itertools::Itertools;
-use crate::gen::hook::TemplateHooks;
 
 const TEMPLATE: &[u8] = include_bytes!("./union.template");
 

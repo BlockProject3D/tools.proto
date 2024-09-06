@@ -27,9 +27,9 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::structure::FixedFieldType;
+use crate::compiler::util::Name;
 use crate::compiler::Error;
 use std::collections::HashMap;
-use crate::compiler::util::Name;
 
 #[derive(Clone, Debug)]
 pub struct Enum {

@@ -49,8 +49,13 @@ macro_rules! impl_list_base {
         }
 
         #[cfg(feature = "tokio")]
-        impl<B: AsRef<[u8]>, T: crate::message::WriteToAsync<Input<'static>: ToUsize>, Item> crate::message::WriteToAsync for $t<B, T, Item> {
-            async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> crate::message::Result<()> {
+        impl<B: AsRef<[u8]>, T: crate::message::WriteToAsync<Input<'static>: ToUsize>, Item>
+            crate::message::WriteToAsync for $t<B, T, Item>
+        {
+            async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(
+                input: &Self::Input<'_>,
+                mut out: W,
+            ) -> crate::message::Result<()> {
                 T::write_to_async(&T::Input::from_usize(input.len), &mut out).await?;
                 out.write_all(input.data.as_ref()).await?;
                 Ok(())
