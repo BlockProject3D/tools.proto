@@ -27,10 +27,11 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::gen::template::parse_tree::{Component, Fragment, FragmentMode, Token};
-use crate::gen::template::{Error, FunctionMap};
+use crate::gen::template::Error;
 use itertools::Itertools;
 use std::borrow::Cow;
 use std::collections::HashMap;
+use crate::gen::template::options::Options;
 
 pub struct Template<'fragment, 'variable> {
     fragments: HashMap<String, Fragment<'fragment>>,
@@ -39,10 +40,10 @@ pub struct Template<'fragment, 'variable> {
 
 impl<'fragment, 'variable> Template<'fragment, 'variable> {
     pub fn compile(data: &'fragment [u8]) -> Result<Self, Error> {
-        Self::compile_with_function_map(data, FunctionMap::default())
+        Self::compile_with_options(data, &Options::default())
     }
 
-    pub fn compile_with_function_map(data: &'fragment [u8], function_map: FunctionMap) -> Result<Self, Error> {
+    pub fn compile_with_options(data: &'fragment [u8], options: &Options) -> Result<Self, Error> {
         let mut fragments = HashMap::new();
         let mut frag_stack = Vec::new();
         let lines = data.split(|v| *v == b'\n');
@@ -81,7 +82,10 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                 }
                 let combined_name = frag_stack.iter().map(|v| v.name).join(".");
                 //SAFETY: this is fine because the fragment stack must not be empty at this point.
-                let fragment = unsafe { frag_stack.pop().unwrap_unchecked() };
+                let mut fragment = unsafe { frag_stack.pop().unwrap_unchecked() };
+                if options.is_fragment_disabled(&combined_name) {
+                    fragment.content.clear();
+                }
                 fragments.insert(combined_name, fragment);
             } else {
                 let cur_fragment = frag_stack.last_mut().ok_or(Error::NoFragment)?;
@@ -101,7 +105,7 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                                 cur_fragment.content.push(component);
                             }
                         } else if let Some(component) =
-                            token.pop()?.map(|v| Component::parse_variable(&function_map, v))
+                            token.pop()?.map(|v| Component::parse_variable(options.functions(), v))
                         {
                             cur_fragment.content.push(component?);
                         }

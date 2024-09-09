@@ -26,14 +26,45 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod core;
-mod error;
-mod functions;
-mod parse_tree;
-pub mod util;
-mod options;
+use std::collections::HashSet;
+use crate::gen::template::functions::FunctionMap;
 
-pub use core::Scope;
-pub use core::Template;
-pub use error::Error;
-pub use options::Options;
+pub struct Options<'a> {
+    function_map: FunctionMap<'a>,
+    disabled_fragments: HashSet<&'a str>
+}
+
+impl<'a> Default for Options<'a> {
+    fn default() -> Self {
+        Self {
+            function_map: FunctionMap::default(),
+            disabled_fragments: HashSet::new()
+        }
+    }
+}
+
+impl<'a> Options<'a> {
+    pub fn new(function_map: FunctionMap<'a>) -> Self {
+        Self {
+            function_map,
+            disabled_fragments: HashSet::new()
+        }
+    }
+
+    pub fn functions_mut(&mut self) -> &mut FunctionMap<'a> {
+        &mut self.function_map
+    }
+
+    pub fn functions(&self) -> &FunctionMap<'a> {
+        &self.function_map
+    }
+
+    pub fn disable(&mut self, fragment: &'a str) -> &mut Self {
+        self.disabled_fragments.insert(fragment);
+        self
+    }
+
+    pub fn is_fragment_disabled(&self, name: &str) -> bool {
+        self.disabled_fragments.contains(name)
+    }
+}

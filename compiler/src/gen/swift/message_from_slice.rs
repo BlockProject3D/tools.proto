@@ -31,15 +31,15 @@ use crate::compiler::Protocol;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::base::message_from_slice::generate;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
-use crate::gen::template::{FunctionMap, Template};
+use crate::gen::template::{Options, Template};
 use std::borrow::Cow;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.from_slice.template");
 
 pub fn gen_message_from_slice_impl(proto: &Protocol, msg: &Message) -> String {
-    let mut functions = FunctionMap::default();
-    functions.add("remove_leading_coma", |v| Cow::Borrowed(&v[..v.len() - 2]));
-    let mut template = Template::compile_with_function_map(TEMPLATE, functions).unwrap();
+    let mut options = Options::default();
+    options.functions_mut().add("remove_leading_coma", |v| Cow::Borrowed(&v[..v.len() - 2]));
+    let mut template = Template::compile_with_options(TEMPLATE, &options).unwrap();
     template.var("proto_name", &proto.name);
     let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
     generate::<SwiftUtils, _>(template, msg, &type_path_map, "impl")

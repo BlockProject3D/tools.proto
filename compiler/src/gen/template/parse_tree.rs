@@ -26,8 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::gen::template::{Error, FunctionMap};
+use crate::gen::template::Error;
 use std::borrow::Cow;
+use crate::gen::template::functions::FunctionMap;
 
 pub struct Variable<'a> {
     pub name: &'a str,
