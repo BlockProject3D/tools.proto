@@ -1,32 +1,19 @@
 #fragment push new
+#[allow(dead_code)]
 impl<T> {name}<T> {{
-    pub fn new(data: T) -> Self {{
-        Self {{ data }}
-    }}
-
     pub fn into_inner(self) -> T {{
         self.data
     }}
 }}
 
+#[allow(dead_code)]
 impl {name}<[u8; {byte_size}]> {{
     pub fn new_on_stack() -> Self {{
         Self {{ data: [0; {byte_size}] }}
     }}
 }}
 
-impl<T> From<T> for {name}<T> {{
-    fn from(data: T) -> Self {{
-        Self {{ data }}
-    }}
-}}
-
-impl<'a, T: AsRef<[u8]>> {name}<T> {{
-    pub fn to_ref(&'a self) -> {name}<&'a [u8]> {{
-        {name} {{ data: self.data.as_ref() }}
-    }}
-}}
-
+#[allow(dead_code)]
 impl<T: AsRef<[u8]>> {name}<T> {{
     pub fn copy_on_stack(&self) -> {name}<[u8; {byte_size}]> {{
         if self.data.as_ref().len() < {byte_size} {{
@@ -43,6 +30,20 @@ impl<T: AsRef<[u8]>> {name}<T> {{
     }}
 }}
 
+impl<T> From<T> for {name}<T> {{
+    fn from(data: T) -> Self {{
+        Self {{ data }}
+    }}
+}}
+
+#[allow(dead_code)]
+impl<'a, T: AsRef<[u8]>> {name}<T> {{
+    pub fn to_ref(&'a self) -> {name}<&'a [u8]> {{
+        {name} {{ data: self.data.as_ref() }}
+    }}
+}}
+
+#[allow(dead_code)]
 impl<'a, T: AsMut<[u8]>> {name}<T> {{
     pub fn to_mut(&'a mut self) -> {name}<&'a mut [u8]> {{
         {name} {{ data: self.data.as_mut() }}
@@ -61,6 +62,7 @@ impl<T: AsMut<[u8]>> AsMut<[u8]> for {name}<T> {{
     }}
 }}
 
+#[allow(dead_code)]
 pub const SIZE_{name:to_screaming_case}: usize = {byte_size};
 #fragment pop
 
@@ -105,7 +107,7 @@ impl<'a> bp3d_proto::message::FromSlice<'a> for {name}<&'a [u8]> {{
         if slice.len() < <Self as bp3d_proto::util::FixedSize>::SIZE {{
             Err(bp3d_proto::message::Error::Truncated)
         }} else {{
-            Ok(bp3d_proto::message::Message::new(<Self as bp3d_proto::util::FixedSize>::SIZE, Self::new(&slice[..<Self as bp3d_proto::util::FixedSize>::SIZE])))
+            Ok(bp3d_proto::message::Message::new(<Self as bp3d_proto::util::FixedSize>::SIZE, Self::from(&slice[..<Self as bp3d_proto::util::FixedSize>::SIZE])))
         }}
     }}
 }}

@@ -63,11 +63,11 @@ macro_rules! generate_array_wrapper {
             }
 
             pub fn get(&self, index: usize) -> $inner<&[u8]> {
-                $inner::new(&self.0[index])
+                $inner::from(&self.0[index])
             }
 
             pub fn try_get(&self, index: usize) -> Option<$inner<&[u8]>> {
-                self.0.get(index).map($inner::new)
+                self.0.get(index).map($inner::from)
             }
 
             pub fn iter<'b>(&'b self) -> $crate::message::util::array::Iter<'b, $inner<&[u8]>> {
@@ -77,11 +77,11 @@ macro_rules! generate_array_wrapper {
 
         impl<'a, B: AsRef<[u8]> + AsMut<[u8]>> $name<'a, B> {
             pub fn get_mut(&mut self, index: usize) -> $inner<&mut [u8]> {
-                $inner::new(&mut self.0[index])
+                $inner::from(&mut self.0[index])
             }
 
             pub fn try_get_mut(&mut self, index: usize) -> Option<$inner<&mut [u8]>> {
-                self.0.get_mut(index).map($inner::new)
+                self.0.get_mut(index).map($inner::from)
             }
 
             pub fn iter_mut<'b>(&'b mut self) -> $crate::message::util::array::IterMut<'b, $inner<&mut [u8]>> {

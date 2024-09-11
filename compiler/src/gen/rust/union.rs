@@ -27,12 +27,12 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::union::{DiscriminantField, Union};
-use crate::compiler::util::TypePathMap;
+use crate::compiler::util::{Name, TypePathMap};
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::base::union::{generate, Utilities};
 use crate::gen::hook::TemplateHooks;
 use crate::gen::rust::util::RustUtils;
-use crate::gen::template::Template;
+use crate::gen::template::{Options, Template};
 use crate::gen::RustParams;
 use itertools::Itertools;
 
@@ -80,7 +80,14 @@ pub fn gen_union_decl(u: &Union, type_path_map: &TypePathMap, params: &RustParam
     if params.enable_write_async {
         hooks.hook("write_to", "write_to_async");
     }
-    let mut template = Template::compile(TEMPLATE).unwrap();
+    let mut options = Options::default();
+    if params.disable_read.contains(u.name()) {
+        options.disable("from_slice").disable("getters");
+    }
+    if params.disable_write.contains(u.name()) {
+        options.disable("write_to").disable("write_to_async").disable("setter");
+    }
+    let mut template = Template::compile_with_options(TEMPLATE, &options).unwrap();
     template.var("generics", get_generics(u));
     generate::<RustUtils, _>(
         template,

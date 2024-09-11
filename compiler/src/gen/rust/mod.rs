@@ -35,6 +35,7 @@ pub mod structure;
 mod union;
 mod util;
 
+use std::collections::HashSet;
 use crate::compiler::Protocol;
 use crate::gen::file::B;
 use crate::gen::rust::message::gen_message_decl;
@@ -60,11 +61,23 @@ simple_error! {
 #[derive(Default)]
 pub struct Params {
     enable_write_async: bool,
+    disable_read: HashSet<&'static str>,
+    disable_write: HashSet<&'static str>
 }
 
 impl Params {
     pub fn enable_write_async(mut self, flag: bool) -> Self {
         self.enable_write_async = flag;
+        self
+    }
+
+    pub fn disable_read(mut self, name: &'static str) -> Self {
+        self.disable_read.insert(name);
+        self
+    }
+
+    pub fn disable_write(mut self, name: &'static str) -> Self {
+        self.disable_write.insert(name);
         self
     }
 }

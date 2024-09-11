@@ -27,21 +27,28 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::structure::Structure;
-use crate::compiler::util::TypePathMap;
+use crate::compiler::util::{Name, TypePathMap};
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::base::structure::{generate, Templates};
 use crate::gen::hook::{Fragment, TemplateHooks};
 use crate::gen::rust::util::RustUtils;
-use crate::gen::template::Template;
+use crate::gen::template::{Options, Template};
 use crate::gen::RustParams;
 
 const STRUCT_TEMPLATE: &[u8] = include_bytes!("./structure.template");
 const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("./structure.field.template");
 
 pub fn gen_structure_decl(s: &Structure, type_path_map: &TypePathMap, params: &RustParams) -> String {
+    let mut options = Options::default();
+    if params.disable_read.contains(s.name()) {
+        options.disable("from_slice").disable("getters");
+    }
+    if params.disable_write.contains(s.name()) {
+        options.disable("write_to").disable("write_to_async").disable("setters");
+    }
     let templates = Templates {
-        template: Template::compile(STRUCT_TEMPLATE).unwrap(),
-        field_template: Template::compile(STRUCT_FIELD_TEMPLATE).unwrap(),
+        template: Template::compile_with_options(STRUCT_TEMPLATE, &options).unwrap(),
+        field_template: Template::compile_with_options(STRUCT_FIELD_TEMPLATE, &options).unwrap(),
     };
     let mut hooks = TemplateHooks::new();
     if params.enable_write_async {
