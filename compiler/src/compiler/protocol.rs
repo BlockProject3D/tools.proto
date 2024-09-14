@@ -31,26 +31,25 @@ use crate::compiler::message::Message;
 use crate::compiler::r#enum::Enum;
 use crate::compiler::structure::Structure;
 use crate::compiler::union::Union;
-use crate::compiler::util::{ImportResolver, Name, PtrKey, TypePathMap};
 use crate::model::protocol::Endianness;
 use bp3d_debug::trace;
-use std::collections::HashMap;
 use std::rc::Rc;
+use crate::compiler::util::imports::ImportResolver;
+use crate::compiler::util::store::{name_index, ObjectStore};
+use crate::compiler::util::types::{Name, PtrKey, TypePathMap};
 
 #[derive(Clone, Debug)]
 pub struct Protocol {
     pub name: String,
     pub endianness: Endianness,
     pub type_path_map: TypePathMap,
-    pub structs_by_name: HashMap<String, Rc<Structure>>,
-    pub messages_by_name: HashMap<String, Rc<Message>>,
-    pub enums_by_name: HashMap<String, Rc<Enum>>,
-    pub unions_by_name: HashMap<String, Rc<Union>>,
-    pub structs: Vec<Rc<Structure>>,
-    pub messages: Vec<Rc<Message>>,
-    pub enums: Vec<Rc<Enum>>,
-    pub unions: Vec<Rc<Union>>,
+    pub structs: ObjectStore<Structure>,
+    pub messages: ObjectStore<Message>,
+    pub enums: ObjectStore<Enum>,
+    pub unions: ObjectStore<Union>,
 }
+
+name_index!(Protocol => name);
 
 #[derive(Copy, Clone)]
 enum Import<'a> {
@@ -86,16 +85,16 @@ impl<'a> Import<'a> {
     pub fn insert(self, type_name: String, proto: &mut Protocol) {
         match self {
             Import::Struct(v) => {
-                proto.structs_by_name.insert(type_name, v.clone());
+                proto.structs.insert_import(type_name, v.clone());
             }
             Import::Enum(v) => {
-                proto.enums_by_name.insert(type_name, v.clone());
+                proto.enums.insert_import(type_name, v.clone());
             }
             Import::Union(v) => {
-                proto.unions_by_name.insert(type_name, v.clone());
+                proto.unions.insert_import(type_name, v.clone());
             }
             Import::Message(v) => {
-                proto.messages_by_name.insert(type_name, v.clone());
+                proto.messages.insert_import(type_name, v.clone());
             }
         }
     }
@@ -107,14 +106,10 @@ impl Protocol {
             name: value.name,
             endianness: value.endianness.unwrap_or(Endianness::Little),
             type_path_map: TypePathMap::new(),
-            structs_by_name: HashMap::new(),
-            messages_by_name: HashMap::new(),
-            enums_by_name: HashMap::new(),
-            unions_by_name: HashMap::new(),
-            structs: Vec::new(),
-            messages: Vec::new(),
-            enums: Vec::new(),
-            unions: Vec::new(),
+            structs: ObjectStore::new(),
+            messages: ObjectStore::new(),
+            enums: ObjectStore::new(),
+            unions: ObjectStore::new(),
         };
         if let Some(mut imports) = value.imports {
             let mut solved_imports = Vec::new();
@@ -126,12 +121,12 @@ impl Protocol {
                     None => return Err(Error::UndefinedReference(v.protocol)),
                 };
                 let ty = r
-                    .structs_by_name
+                    .structs
                     .get(&v.type_name)
                     .map(Import::Struct)
-                    .or_else(|| r.messages_by_name.get(&v.type_name).map(Import::Message))
-                    .or_else(|| r.unions_by_name.get(&v.type_name).map(Import::Union))
-                    .or_else(|| r.enums_by_name.get(&v.type_name).map(Import::Enum))
+                    .or_else(|| r.messages.get(&v.type_name).map(Import::Message))
+                    .or_else(|| r.unions.get(&v.type_name).map(Import::Union))
+                    .or_else(|| r.enums.get(&v.type_name).map(Import::Enum))
                     .ok_or(Error::UnresolvedImport(format!("{}::{}", v.protocol, v.type_name)))?;
                 let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
                 solved_imports.push(ty);
@@ -152,32 +147,28 @@ impl Protocol {
             for v in enums {
                 trace!({model=?&v}, "Compiling enum");
                 let v = Rc::new(Enum::from_model(v)?);
-                proto.enums_by_name.insert(v.name.clone(), v.clone());
-                proto.enums.push(v);
+                proto.enums.insert(v);
             }
         }
         if let Some(structs) = value.structs {
             for v in structs {
                 trace!({model=?&v}, "Compiling structure");
                 let v = Rc::new(Structure::from_model(&proto, v)?);
-                proto.structs_by_name.insert(v.name.clone(), v.clone());
-                proto.structs.push(v);
+                proto.structs.insert(v);
             }
         }
         if let Some(unions) = value.unions {
             for v in unions {
                 trace!({model=?&v}, "Compiling union");
                 let v = Rc::new(Union::from_model(&proto, v)?);
-                proto.unions_by_name.insert(v.name.clone(), v.clone());
-                proto.unions.push(v);
+                proto.unions.insert(v);
             }
         }
         if let Some(messages) = value.messages {
             for v in messages {
                 trace!({model=?&v}, "Compiling message");
                 let v = Rc::new(Message::from_model(&proto, v)?);
-                proto.messages_by_name.insert(v.name.clone(), v.clone());
-                proto.messages.push(v);
+                proto.messages.insert(v);
             }
         }
         Ok(proto)

@@ -28,12 +28,13 @@
 
 use crate::compiler::error::Error;
 use crate::compiler::r#enum::Enum;
-use crate::compiler::util::{try2, Name};
 use crate::compiler::Protocol;
 use crate::model::protocol::Endianness;
 use crate::model::structure::{SimpleType, StructFieldType, StructFieldView};
 use bp3d_debug::trace;
 use std::rc::Rc;
+use crate::compiler::util::store::name_index;
+use crate::compiler::util::try2;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FixedFieldType {
@@ -181,7 +182,7 @@ impl FieldView {
                 if ty != SimpleType::Unsigned {
                     return Err(Error::UnsupportedViewType(ty));
                 }
-                let r = proto.enums_by_name.get(&name).ok_or(Error::UndefinedReference(name))?;
+                let r = proto.enums.get(&name).ok_or(Error::UndefinedReference(name))?;
                 Ok(FieldView::Enum(r.clone()))
             }
             Some(StructFieldView::FloatRange { min, max }) => {
@@ -291,7 +292,7 @@ impl Field {
     ) -> Result<(Self, usize), Error> {
         match value.info {
             StructFieldType::Struct { item_type } => {
-                let r = try2!(proto.structs_by_name.get(&item_type) => Error::UndefinedReference(item_type));
+                let r = try2!(proto.structs.get(&item_type) => Error::UndefinedReference(item_type));
                 trace!("Solved reference {} => {:?}", item_type, r);
                 Ok((
                     Self::Struct(StructField {
@@ -371,8 +372,4 @@ impl Structure {
     }
 }
 
-impl Name for Structure {
-    fn name(&self) -> &str {
-        &self.name
-    }
-}
+name_index!(Structure => name);

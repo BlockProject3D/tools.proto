@@ -27,12 +27,12 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::message::{FieldType, Message};
-use crate::compiler::util::TypePathMap;
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::base::message::{generate, Utilities};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 use itertools::Itertools;
+use crate::compiler::util::types::TypePathMap;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");

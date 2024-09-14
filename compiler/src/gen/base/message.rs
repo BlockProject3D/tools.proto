@@ -28,11 +28,11 @@
 
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::structure::FixedFieldType;
-use crate::compiler::util::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::template::Template;
 use crate::model::protocol::Endianness;
 use itertools::Itertools;
+use crate::compiler::util::types::TypeMapper;
 
 pub enum StringType {
     Varchar,

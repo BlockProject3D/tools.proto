@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::structure::Structure;
-use crate::compiler::util::{Name, TypePathMap};
+use crate::compiler::util::types::{Name, TypePathMap};
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::base::structure::{generate, Templates};
 use crate::gen::hook::{Fragment, TemplateHooks};

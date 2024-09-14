@@ -27,12 +27,12 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
-use crate::compiler::util::TypePathMap;
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::base::message_from_slice::generate_from_slice_impl;
 use crate::gen::rust::util::{gen_where_clause, RustUtils};
 use crate::gen::template::Template;
 use itertools::Itertools;
+use crate::compiler::util::types::TypePathMap;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.offsets.template");
 

@@ -28,11 +28,11 @@
 
 use crate::compiler::message::Referenced;
 use crate::compiler::union::{DiscriminantField, Union};
-use crate::compiler::util::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::hook::TemplateHooks;
 use crate::gen::template::Template;
 use itertools::Itertools;
+use crate::compiler::util::types::TypeMapper;
 
 pub trait Utilities: crate::gen::base::structure::Utilities {
     fn gen_discriminant_path(discriminant: &DiscriminantField) -> String;

@@ -27,12 +27,12 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::structure::{Field, FieldView, FixedField, FixedFieldType, Structure};
-use crate::compiler::util::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::hook::{Render, TemplateHooks};
 use crate::gen::template::{Scope, Template};
 use crate::model::protocol::Endianness;
 use itertools::Itertools;
+use crate::compiler::util::types::TypeMapper;
 
 pub trait Utilities {
     fn get_field_type(field_type: FixedFieldType) -> &'static str;

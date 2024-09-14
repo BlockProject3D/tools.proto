@@ -26,12 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::util::ImportResolver;
 use crate::compiler::Protocol;
 use crate::gen::template::util::CaseConversion;
 use crate::ImportSolver;
 use itertools::Itertools;
 use std::collections::HashMap;
+use crate::compiler::util::imports::ImportResolver;
 
 pub struct SwiftImportSolver {
     import_map: HashMap<String, (Option<String>, Protocol)>,

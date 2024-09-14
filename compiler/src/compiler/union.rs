@@ -28,9 +28,9 @@
 
 use crate::compiler::message::{Referenced, SizeInfo};
 use crate::compiler::structure::{Field, FieldView, FixedField, Structure};
-use crate::compiler::util::Name;
 use crate::compiler::{Error, Protocol};
 use std::rc::Rc;
+use crate::compiler::util::store::name_index;
 
 #[derive(Clone, Debug)]
 pub struct UnionField {
@@ -114,7 +114,7 @@ impl DiscriminantField {
     pub fn from_model(proto: &Protocol, discriminant: String) -> Result<Self, Error> {
         let mut parts = discriminant.split(".");
         let name = parts.next().ok_or(Error::InvalidUnionDiscriminant)?;
-        let mut leaf = proto.structs_by_name.get(name).ok_or_else(|| Error::UndefinedReference(name.into()))?;
+        let mut leaf = proto.structs.get(name).ok_or_else(|| Error::UndefinedReference(name.into()))?;
         let root = leaf;
         let mut index_list = Vec::new();
         for sub in parts {
@@ -190,8 +190,4 @@ impl Union {
     }
 }
 
-impl Name for Union {
-    fn name(&self) -> &str {
-        &self.name
-    }
-}
+name_index!(Union => name);

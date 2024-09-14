@@ -26,12 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::util::ImportResolver;
 use crate::gen::file::FileType;
 use crate::gen::Generator;
 use crate::{compiler, model, Error};
 use bp3d_util::path::PathExt;
 use std::path::{Path, PathBuf};
+use crate::compiler::util::imports::ImportResolver;
 
 pub trait ImportSolver {
     fn register(&mut self, base_import_path: String, protocol: compiler::Protocol);

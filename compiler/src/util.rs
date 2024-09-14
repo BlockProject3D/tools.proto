@@ -26,10 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::util::ImportResolver;
 use crate::compiler::Protocol;
 use crate::ImportSolver;
 use std::collections::HashMap;
+use crate::compiler::util::imports::ImportResolver;
 
 pub struct SimpleImportSolver<'a> {
     import_map: HashMap<String, (String, Protocol)>,

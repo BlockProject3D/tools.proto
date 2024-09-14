@@ -27,6 +27,8 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //TODO: Support for static sized unions in structures
+//TODO: Support for offset in bits in structure fields
+//TODO: Support for padding in structure fields
 
 pub mod message;
 pub mod protocol;

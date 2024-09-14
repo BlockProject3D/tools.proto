@@ -26,49 +26,60 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::{Field, Message};
-use crate::gen::base::map::TypePathMapper;
-use crate::gen::base::message::Utilities;
-use crate::gen::base::message_common::generate_field_type_inline;
-use crate::gen::template::Template;
-use itertools::Itertools;
-use crate::compiler::util::types::TypeMapper;
+use std::collections::HashMap;
+use std::rc::Rc;
+use bp3d_util::index_map::IndexMap;
 
-fn gen_field_write_impl<U: Utilities, T: TypeMapper>(
-    msg: &Message,
-    field: &Field,
-    template: &Template,
-    type_path_map: &TypePathMapper<T>,
-    function: &str,
-) -> String {
-    let mut scope = template.scope();
-    scope.var("name", &field.name);
-    let msg_type = generate_field_type_inline::<U, T>(msg, field, template, type_path_map);
-    let union = field.ty.as_union();
-    if let Some(v) = union {
-        scope.var("on_name", &v.on_name);
+#[derive(Clone, Debug)]
+pub struct ObjectStore<T> {
+    objects: Vec<Rc<T>>,
+    objects_by_name: IndexMap<Rc<T>>,
+    objects_imports: HashMap<String, Rc<T>>
+}
+
+impl<T: bp3d_util::index_map::Index<Key=str>> ObjectStore<T> {
+    pub fn new() -> Self {
+        Self {
+            objects: Vec::new(),
+            objects_by_name: IndexMap::new(),
+            objects_imports: HashMap::new()
+        }
     }
-    scope.var("type", msg_type);
-    if union.is_some() {
-        scope.render(function, &["field_union"]).unwrap()
-    } else if field.ty.is_string() {
-        scope.render(function, &["field_string"]).unwrap()
-    } else {
-        scope.render(function, &["field"]).unwrap()
+
+    pub fn iter(&self) -> impl Iterator<Item=&Rc<T>> {
+        self.objects.iter()
+    }
+
+    pub fn get(&self, name: &str) -> Option<&Rc<T>> {
+        self.objects_by_name.get(name).or_else(|| self.objects_imports.get(name))
+    }
+
+    pub fn insert(&mut self, obj: Rc<T>) {
+        self.objects_by_name.insert(obj.clone());
+        self.objects.push(obj);
+    }
+
+    pub fn insert_import(&mut self, import_name: String, obj: Rc<T>) {
+        self.objects_imports.insert(import_name, obj);
     }
 }
 
-pub fn generate<'variable, U: Utilities, T: TypeMapper>(
-    mut template: Template<'_, 'variable>,
-    msg: &'variable Message,
-    type_path_map: &TypePathMapper<T>,
-    function: &str,
-) -> String {
-    template.var("msg_name", &msg.name);
-    let fields = msg
-        .fields
-        .iter()
-        .map(|field| gen_field_write_impl::<U, T>(msg, field, &template, type_path_map, function))
-        .join("");
-    template.var("fields", fields).render("", &[function]).unwrap()
+macro_rules! name_index {
+    ($t: ty => $key: ident) => {
+        impl crate::compiler::util::types::Name for $t {
+            fn name(&self) -> &str {
+                &*self.$key
+            }
+        }
+
+        impl bp3d_util::index_map::Index for $t {
+            type Key = str;
+
+            fn index(&self) -> &Self::Key {
+                &*self.$key
+            }
+        }
+    };
 }
+
+pub(crate) use name_index;

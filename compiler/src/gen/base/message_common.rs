@@ -27,11 +27,11 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
-use crate::compiler::util::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::base::message::{StringType, Utilities};
 use crate::gen::template::Template;
 use std::borrow::Cow;
+use crate::compiler::util::types::TypeMapper;
 
 fn gen_optional<'a, U: Utilities>(optional: bool, type_name: impl Into<Cow<'a, str>>) -> Cow<'a, str> {
     if optional {

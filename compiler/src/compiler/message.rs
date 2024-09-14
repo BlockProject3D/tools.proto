@@ -29,13 +29,14 @@
 use crate::compiler::error::Error;
 use crate::compiler::structure::{FixedFieldType, Structure};
 use crate::compiler::union::Union;
-use crate::compiler::util::{Name, PtrKey};
+use crate::compiler::util::store::name_index;
 use crate::compiler::Protocol;
 use crate::model::message::MessageFieldType;
 use crate::model::protocol::Endianness;
 use crate::model::structure::StructFieldType;
 use std::cell::Cell;
 use std::rc::Rc;
+use crate::compiler::util::types::{Name, PtrKey};
 
 #[derive(Clone, Debug)]
 pub enum Referenced {
@@ -64,10 +65,10 @@ impl PtrKey for Referenced {
 impl Referenced {
     pub fn lookup(proto: &Protocol, reference_name: &str) -> Option<Self> {
         proto
-            .structs_by_name
+            .structs
             .get(reference_name)
             .map(|v| Referenced::Struct(v.clone()))
-            .or_else(|| proto.messages_by_name.get(reference_name).map(|v| Referenced::Message(v.clone())))
+            .or_else(|| proto.messages.get(reference_name).map(|v| Referenced::Message(v.clone())))
     }
 }
 
@@ -285,7 +286,7 @@ impl Field {
                     .enumerate()
                     .find_map(|(k, v)| if v.name == on { Some((k, v)) } else { None })
                     .ok_or(Error::UndefinedReference(on))?;
-                let r = proto.unions_by_name.get(&item_type).ok_or(Error::UndefinedReference(item_type))?;
+                let r = proto.unions.get(&item_type).ok_or(Error::UndefinedReference(item_type))?;
                 match &on_field.ty {
                     FieldType::Ref(Referenced::Struct(v)) => {
                         if !Rc::ptr_eq(&r.discriminant.root, v) {
@@ -382,8 +383,4 @@ impl Message {
     }
 }
 
-impl Name for Message {
-    fn name(&self) -> &str {
-        &self.name
-    }
-}
+name_index!(Message => name);

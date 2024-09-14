@@ -27,12 +27,12 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::structure::{FixedField, FixedFieldType};
-use crate::compiler::util::TypeMapper;
 use crate::compiler::Protocol;
 use crate::gen::base::message::StringType;
 use crate::gen::template::util::CaseConversion;
 use crate::model::protocol::Endianness;
 use std::borrow::Cow;
+use crate::compiler::util::types::TypeMapper;
 
 pub struct SwiftTypeMapper<'a> {
     proto_name: Cow<'a, str>,

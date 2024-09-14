@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::structure::FixedFieldType;
-use crate::compiler::util::Name;
+use crate::compiler::util::store::name_index;
 use crate::compiler::Error;
 use std::collections::HashMap;
 
@@ -60,8 +60,4 @@ impl Enum {
     }
 }
 
-impl Name for Enum {
-    fn name(&self) -> &str {
-        &self.name
-    }
-}
+name_index!(Enum => name);
