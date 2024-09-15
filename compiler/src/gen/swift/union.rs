@@ -69,6 +69,6 @@ impl Utilities for SwiftUtils {
 pub fn gen_union_decl(proto: &Protocol, u: &Union) -> String {
     let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
     let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("proto_name", &proto.name);
+    template.var("proto_name", proto.name());
     generate::<SwiftUtils, _>(template, u, &type_path_map, &TemplateHooks::default())
 }

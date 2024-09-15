@@ -40,7 +40,7 @@ pub fn gen_message_from_slice_impl(proto: &Protocol, msg: &Message) -> String {
     let mut options = Options::default();
     options.functions_mut().add("remove_leading_coma", |v| Cow::Borrowed(&v[..v.len() - 2]));
     let mut template = Template::compile_with_options(TEMPLATE, &options).unwrap();
-    template.var("proto_name", &proto.name);
+    template.var("proto_name", proto.name());
     let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
     generate::<SwiftUtils, _>(template, msg, &type_path_map, "impl")
 }

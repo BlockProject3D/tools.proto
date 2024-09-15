@@ -28,59 +28,19 @@
 
 use crate::compiler::Protocol;
 use crate::gen::template::util::CaseConversion;
-use crate::ImportSolver;
-use itertools::Itertools;
-use std::collections::HashMap;
-use crate::compiler::util::imports::ImportResolver;
+use crate::compiler::util::imports::ImportSolver;
 
-pub struct SwiftImportSolver {
-    import_map: HashMap<String, (Option<String>, Protocol)>,
-}
-
-impl Default for SwiftImportSolver {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl SwiftImportSolver {
-    pub fn new() -> Self {
-        Self {
-            import_map: HashMap::new(),
-        }
-    }
-
-    pub fn iter_imports(&self) -> impl Iterator<Item = &str> {
-        self.import_map.values().filter_map(|(k, _)| k.as_deref())
-    }
-
-    pub fn gen_import_list(&self) -> String {
-        self.iter_imports().map(|v| format!("import {};", v)).join("\n")
-    }
-}
-
-impl ImportResolver for SwiftImportSolver {
-    fn get_protocol_by_name(&self, name: &str) -> Option<&Protocol> {
-        self.import_map.get(name).map(|(_, v)| v)
-    }
-
-    fn get_full_type_path(&self, protocol: &str, type_name: &str) -> Option<String> {
-        if let Some(import_path) = self.import_map.get(protocol).map(|(k, _)| k)? {
-            Some(format!("{}.{}{}", import_path, protocol.to_pascal_case(), type_name))
-        } else {
-            Some(format!("{}{}", protocol.to_pascal_case(), type_name))
-        }
-    }
-}
+pub struct SwiftImportSolver;
 
 impl ImportSolver for SwiftImportSolver {
-    /// base_import_path is assumed to be the module name containing the protocol, Self if the
-    /// module is not external (so not to be imported).
-    fn register(&mut self, base_import_path: String, protocol: Protocol) {
-        if base_import_path == "Self" {
-            self.import_map.insert(protocol.name.clone(), (None, protocol));
+    fn get_full_type_path(&self, protocol: &Protocol, type_name: &str) -> Option<String> {
+        // package is assumed to be the module name containing the protocol, Self if the
+        // module is not external (so not to be imported).
+        let package_name = protocol.package();
+        if package_name != "Self" {
+            Some(format!("{}.{}{}", package_name, protocol.name().to_pascal_case(), type_name))
         } else {
-            self.import_map.insert(protocol.name.clone(), (Some(base_import_path), protocol));
+            Some(format!("{}{}", protocol.name().to_pascal_case(), type_name))
         }
     }
 }

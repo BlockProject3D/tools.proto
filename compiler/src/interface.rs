@@ -31,12 +31,10 @@ use crate::gen::Generator;
 use crate::{compiler, model, Error};
 use bp3d_util::path::PathExt;
 use std::path::{Path, PathBuf};
-use crate::compiler::util::imports::ImportResolver;
+use bp3d_debug::trace;
+use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
 
-pub trait ImportSolver {
-    fn register(&mut self, base_import_path: String, protocol: compiler::Protocol);
-}
-
+#[deprecated(note = "Use interface2")]
 pub struct Loader {
     models: Vec<model::Protocol>,
     imported_models: Vec<(String, model::Protocol)>,
@@ -70,26 +68,30 @@ impl Loader {
         Ok(())
     }
 
-    pub fn compile<'a, T: ImportResolver + ImportSolver>(self, solver: &mut T) -> Result<Protoc<'a>, Error> {
+    pub fn compile<'a, T: ImportSolver>(self, solver: &T) -> Result<Protoc<'a>, Error> {
+        let mut protocols = ProtocolStore::new(solver);
         for (base_import_path, model) in self.imported_models {
-            let compiled = compiler::Protocol::from_model(model, solver).map_err(Error::Compiler)?;
-            solver.register(base_import_path, compiled);
+            let compiled = compiler::Protocol::from_model(model, &protocols, &base_import_path).map_err(Error::Compiler)?;
+            protocols.insert(compiled);
         }
+        trace!("Imported protocols: {:?}", protocols);
         let models = self
             .models
             .into_iter()
-            .map(|model| compiler::Protocol::from_model(model, solver))
+            .map(|model| compiler::Protocol::from_model(model, &protocols, ""))
             .collect::<Result<Vec<compiler::Protocol>, compiler::Error>>()
             .map_err(Error::Compiler)?;
         Ok(Protoc::new(models))
     }
 }
 
+#[deprecated(note = "Use interface2")]
 pub struct Proto {
     pub name: String,
     pub path: PathBuf,
 }
 
+#[deprecated(note = "Use interface2")]
 pub struct Protoc<'a> {
     protocols: Vec<compiler::Protocol>,
     file_header: Option<&'a Path>,
@@ -153,7 +155,7 @@ impl<'a> Protoc<'a> {
     pub fn generate<T: Generator>(
         self,
         out_directory: impl AsRef<Path>,
-        params: T::Params,
+        params: T::Params<'a>,
     ) -> Result<Vec<Proto>, Error> {
         let file_header = self
             .file_header
@@ -163,7 +165,7 @@ impl<'a> Protoc<'a> {
             .map(|v| T::generate_file_header(v.lines()));
         let mut generated_protocols = Vec::new();
         for proto in self.protocols {
-            let name = proto.name.clone();
+            let name = String::from(proto.name());
             let files = T::generate(proto, &params).map_err(|e| Error::Generator(e.to_string()))?;
             let out_path = out_directory.as_ref().join(&name);
             if !out_path.exists() {

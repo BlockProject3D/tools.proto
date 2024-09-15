@@ -26,19 +26,56 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::fmt::{Debug, Formatter, Write};
+use bp3d_util::index_map::IndexMap;
 use crate::compiler::Protocol;
 
-pub trait ImportResolver {
-    fn get_protocol_by_name(&self, name: &str) -> Option<&Protocol>;
-    fn get_full_type_path(&self, protocol: &str, type_name: &str) -> Option<String>;
+pub trait ImportSolver {
+    fn get_full_type_path(&self, protocol: &Protocol, type_name: &str) -> Option<String>;
 }
 
-impl ImportResolver for () {
-    fn get_protocol_by_name(&self, _: &str) -> Option<&Protocol> {
+impl ImportSolver for () {
+    fn get_full_type_path(&self, _: &Protocol, _: &str) -> Option<String> {
         None
     }
+}
 
-    fn get_full_type_path(&self, _: &str, _: &str) -> Option<String> {
-        None
+pub struct ProtocolStore<'a, T> {
+    map: IndexMap<Protocol>,
+    solver: &'a T
+}
+
+impl<'a, T: ImportSolver> ProtocolStore<'a, T> {
+    pub fn new(solver: &'a T) -> Self {
+        Self {
+            map: IndexMap::new(),
+            solver
+        }
+    }
+
+    pub fn insert(&mut self, protocol: Protocol) {
+        self.map.insert(protocol)
+    }
+
+    pub fn get(&self, full_name: &str) -> Option<&Protocol> {
+        self.map.get(full_name)
+    }
+
+    pub fn get_full_type_path(&self, protocol: &Protocol, type_name: &str) -> Option<String> {
+        self.solver.get_full_type_path(protocol, type_name)
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item=&Protocol> {
+        self.map.iter()
+    }
+}
+
+impl<'a, T> Debug for ProtocolStore<'a, T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("ProtocolStore { solver: ")?;
+        f.write_str(std::any::type_name::<T>())?;
+        f.write_str(", map: ")?;
+        self.map.fmt(f)?;
+        f.write_str(" }")
     }
 }

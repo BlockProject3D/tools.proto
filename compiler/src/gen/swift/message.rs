@@ -98,10 +98,10 @@ fn gen_initializer(template: &Template, msg: &Message, type_path_map: &TypePathM
 pub fn gen_message_decl(proto: &Protocol, msg: &Message) -> String {
     let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
     let mut template_ext = Template::compile(TEMPLATE_EXT).unwrap();
-    template_ext.var("proto_name", &proto.name).var("msg_name", &msg.name);
+    template_ext.var("proto_name", proto.name()).var("msg_name", &msg.name);
     let initializer = gen_initializer(&template_ext, msg, &type_path_map);
     let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("proto_name", &proto.name).var("initializer", initializer);
+    template.var("proto_name", proto.name()).var("initializer", initializer);
     let mut code = generate::<SwiftUtils, _>(template, msg, &type_path_map);
     code += "\n";
     code += &gen_message_array_type_decls(&template_ext, msg, &type_path_map);

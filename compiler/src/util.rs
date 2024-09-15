@@ -27,43 +27,21 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::Protocol;
-use crate::ImportSolver;
-use std::collections::HashMap;
-use crate::compiler::util::imports::ImportResolver;
+use crate::compiler::util::imports::ImportSolver;
 
 pub struct SimpleImportSolver<'a> {
-    import_map: HashMap<String, (String, Protocol)>,
     separator: &'a str,
-}
-
-impl<'a> ImportSolver for SimpleImportSolver<'a> {
-    fn register(&mut self, base_import_path: String, protocol: Protocol) {
-        self.import_map.insert(protocol.name.clone(), (base_import_path, protocol));
-    }
 }
 
 impl<'a> SimpleImportSolver<'a> {
     pub fn new(separator: &'a str) -> Self {
-        Self {
-            import_map: HashMap::new(),
-            separator,
-        }
+        Self { separator }
     }
 }
 
-impl<'a> Default for SimpleImportSolver<'a> {
-    fn default() -> Self {
-        Self::new("::")
-    }
-}
-
-impl<'a> ImportResolver for SimpleImportSolver<'a> {
-    fn get_protocol_by_name(&self, name: &str) -> Option<&Protocol> {
-        self.import_map.get(name).map(|(_, v)| v)
-    }
-
-    fn get_full_type_path(&self, protocol: &str, type_name: &str) -> Option<String> {
-        let import_path = self.import_map.get(protocol).map(|(k, _)| k)?;
+impl<'a> ImportSolver for SimpleImportSolver<'a> {
+    fn get_full_type_path(&self, protocol: &Protocol, type_name: &str) -> Option<String> {
+        let import_path = protocol.package();
         Some(format!("{}{}{}", import_path, self.separator, type_name))
     }
 }

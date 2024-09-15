@@ -34,13 +34,13 @@ use crate::compiler::union::Union;
 use crate::model::protocol::Endianness;
 use bp3d_debug::trace;
 use std::rc::Rc;
-use crate::compiler::util::imports::ImportResolver;
-use crate::compiler::util::store::{name_index, ObjectStore};
+use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
+use crate::compiler::util::store::ObjectStore;
 use crate::compiler::util::types::{Name, PtrKey, TypePathMap};
 
 #[derive(Clone, Debug)]
 pub struct Protocol {
-    pub name: String,
+    pub full_name: String,
     pub endianness: Endianness,
     pub type_path_map: TypePathMap,
     pub structs: ObjectStore<Structure>,
@@ -49,7 +49,13 @@ pub struct Protocol {
     pub unions: ObjectStore<Union>,
 }
 
-name_index!(Protocol => name);
+impl bp3d_util::index_map::Index for Protocol {
+    type Key = str;
+
+    fn index(&self) -> &Self::Key {
+        &self.full_name
+    }
+}
 
 #[derive(Copy, Clone)]
 enum Import<'a> {
@@ -101,21 +107,42 @@ impl<'a> Import<'a> {
 }
 
 impl Protocol {
-    pub fn from_model<T: ImportResolver>(value: crate::model::Protocol, solver: &T) -> Result<Self, Error> {
+    pub fn name(&self) -> &str {
+        if let Some(id) = self.full_name.rfind("::") {
+            &self.full_name[id + 2..]
+        } else {
+            &self.full_name
+        }
+    }
+
+    pub fn package(&self) -> &str {
+        if let Some(id) = self.full_name.rfind("::") {
+            &self.full_name[..id]
+        } else {
+            ""
+        }
+    }
+
+    pub fn from_model<T: ImportSolver>(value: crate::model::Protocol, protocols: &ProtocolStore<T>, package: &str) -> Result<Self, Error> {
+        let full_name = if package.is_empty() {
+            value.name
+        } else {
+            format!("{}::{}", package, value.name)
+        };
         let mut proto = Protocol {
-            name: value.name,
+            full_name,
             endianness: value.endianness.unwrap_or(Endianness::Little),
             type_path_map: TypePathMap::new(),
             structs: ObjectStore::new(),
             messages: ObjectStore::new(),
             enums: ObjectStore::new(),
-            unions: ObjectStore::new(),
+            unions: ObjectStore::new()
         };
         if let Some(mut imports) = value.imports {
             let mut solved_imports = Vec::new();
             while let Some(v) = imports.pop() {
                 trace!({protocol=&*v.protocol} {type=&*v.type_name}, "Solving import");
-                let r = solver.get_protocol_by_name(&v.protocol);
+                let r = protocols.get(&v.protocol);
                 let r = match r {
                     Some(r) => r,
                     None => return Err(Error::UndefinedReference(v.protocol)),
@@ -128,7 +155,7 @@ impl Protocol {
                     .or_else(|| r.unions.get(&v.type_name).map(Import::Union))
                     .or_else(|| r.enums.get(&v.type_name).map(Import::Enum))
                     .ok_or(Error::UnresolvedImport(format!("{}::{}", v.protocol, v.type_name)))?;
-                let type_path = solver.get_full_type_path(&v.protocol, &v.type_name).ok_or(Error::SolverError)?;
+                let type_path = protocols.get_full_type_path(r, &v.type_name).ok_or(Error::SolverError)?;
                 solved_imports.push(ty);
                 let count1 = imports.iter().filter(|vv| vv.type_name == v.type_name).count();
                 let count2 = solved_imports.iter().filter(|vv| vv.name() == v.type_name).count();

@@ -49,8 +49,8 @@ fn main() {
     );
     generate_rust(
         |loader| {
-            loader.import("./src/enums.json5", "crate::enums")?;
-            loader.import("./src/values.json5", "crate::values")?;
+            loader.import("./src/enums.json5", "")?;
+            loader.import("./src/values.json5", "")?;
             loader.load("./src/unions.json5")?;
             Ok(())
         },
@@ -59,9 +59,9 @@ fn main() {
     );
     generate_rust(
         |loader| {
-            loader.import("./src/enums.json5", "crate::enums")?;
-            loader.import("./src/values.json5", "crate::values")?;
-            loader.import("./src/unions.json5", "crate::unions")?;
+            loader.import("./src/enums.json5", "")?;
+            loader.import("./src/values.json5", "")?;
+            loader.import("./src/unions.json5", "")?;
             loader.load("./src/lists.json5")?;
             loader.load("./src/lists2.json5")?;
             Ok(())
@@ -71,8 +71,8 @@ fn main() {
     );
     generate_rust(
         |loader| {
-            loader.import("./src/bits.json5", "crate::bits")?;
-            loader.import("./src/bits2.json5", "crate::bits2")?;
+            loader.import("./src/bits.json5", "")?;
+            loader.import("./src/bits2.json5", "")?;
             loader.load("./src/import_ambiguous.json5")?;
             Ok(())
         },

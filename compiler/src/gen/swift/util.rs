@@ -41,7 +41,7 @@ pub struct SwiftTypeMapper<'a> {
 impl<'a> SwiftTypeMapper<'a> {
     pub fn from_protocol(proto: &'a Protocol) -> Self {
         Self {
-            proto_name: proto.name.to_pascal_case(),
+            proto_name: proto.name().to_pascal_case(),
         }
     }
 }

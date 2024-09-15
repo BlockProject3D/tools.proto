@@ -36,6 +36,6 @@ const TEMPLATE: &[u8] = include_bytes!("./enum.template");
 
 pub fn gen_enum_decl(proto: &Protocol, e: &Enum) -> String {
     let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("proto_name", &proto.name);
+    template.var("proto_name", proto.name());
     generate::<SwiftUtils>(template, e)
 }

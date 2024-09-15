@@ -26,8 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::gen::{GeneratorRust, RustParams};
-use crate::util::SimpleImportSolver;
+use crate::gen::{GeneratorRust, RustParams, RustImportSolver};
 use crate::{Error, Loader, Protoc};
 
 /// A simple function to quickly generate protocols in Rust for use with the Cargo build system.
@@ -52,7 +51,7 @@ pub fn generate_rust<F: FnOnce(&mut Loader) -> Result<(), Error>, F1: FnOnce(Pro
     if let Err(e) = res {
         panic!("Failed to load protocols: {}", e);
     }
-    let protoc = match loader.compile(&mut SimpleImportSolver::new("::")) {
+    let protoc = match loader.compile(&RustImportSolver) {
         Err(e) => panic!("Failed to compile protocols: {}", e),
         Ok(v) => v,
     };

@@ -58,14 +58,15 @@ simple_error! {
 use crate::gen::file::B;
 use crate::gen::swift::imports::gen_imports;
 pub use solver::SwiftImportSolver;
+use crate::compiler::util::imports::ProtocolStore;
 
 pub struct GeneratorSwift;
 
 impl Generator for GeneratorSwift {
     type Error = Error;
-    type Params = SwiftImportSolver;
+    type Params<'a> = ProtocolStore<'a, SwiftImportSolver>;
 
-    fn generate(proto: Protocol, params: &SwiftImportSolver) -> Result<Vec<File>, Self::Error> {
+    fn generate(proto: Protocol, params: &ProtocolStore<SwiftImportSolver>) -> Result<Vec<File>, Self::Error> {
         let imports = gen_imports(params);
         let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(&proto, v));
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(&proto, v));
@@ -76,28 +77,28 @@ impl Generator for GeneratorSwift {
         Ok(vec![
             File::new(
                 FileType::Structure,
-                format!("{}.structures.swift", proto.name),
+                format!("{}.structures.swift", proto.name()),
                 (&imports, decl_structures),
             ),
-            File::new(FileType::Enum, format!("{}.enums.swift", proto.name), B(decl_enums)),
+            File::new(FileType::Enum, format!("{}.enums.swift", proto.name()), B(decl_enums)),
             File::new(
                 FileType::Message,
-                format!("{}.messages.swift", proto.name),
+                format!("{}.messages.swift", proto.name()),
                 (&imports, decl_messages_code),
             ),
             File::new(
                 FileType::MessageWriting,
-                format!("{}.messages_write.swift", proto.name),
+                format!("{}.messages_write.swift", proto.name()),
                 (&imports, impl_write_messages_code),
             ),
             File::new(
                 FileType::MessageReading,
-                format!("{}.messages_from_slice.swift", proto.name),
+                format!("{}.messages_from_slice.swift", proto.name()),
                 (&imports, impl_from_slice_messages_code),
             ),
             File::new(
                 FileType::Union,
-                format!("{}.unions.swift", proto.name),
+                format!("{}.unions.swift", proto.name()),
                 (&imports, decl_unions),
             ),
         ])

@@ -26,18 +26,17 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::Message;
 use crate::compiler::Protocol;
-use crate::gen::base::map::TypePathMapper;
-use crate::gen::base::message_write::generate;
-use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
-use crate::gen::template::Template;
+use crate::compiler::util::imports::ImportSolver;
 
-const TEMPLATE: &[u8] = include_bytes!("./message.write.template");
+pub struct RustImportSolver;
 
-pub fn gen_message_write_impl(proto: &Protocol, msg: &Message) -> String {
-    let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
-    let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("proto_name", proto.name());
-    generate::<SwiftUtils, _>(template, msg, &type_path_map, "impl")
+impl<'a> ImportSolver for RustImportSolver {
+    fn get_full_type_path(&self, protocol: &Protocol, type_name: &str) -> Option<String> {
+        if protocol.package().is_empty() {
+            Some(format!("crate::{}::{}", protocol.full_name, type_name))
+        } else {
+            Some(format!("{}::{}", protocol.full_name, type_name))
+        }
+    }
 }

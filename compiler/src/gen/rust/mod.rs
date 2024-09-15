@@ -34,6 +34,9 @@ mod message_write;
 pub mod structure;
 mod union;
 mod util;
+mod solver;
+
+pub use solver::RustImportSolver;
 
 use std::collections::HashSet;
 use crate::compiler::Protocol;
@@ -86,7 +89,7 @@ pub struct GeneratorRust;
 
 impl Generator for GeneratorRust {
     type Error = Error;
-    type Params = Params;
+    type Params<'a> = Params;
 
     fn generate(proto: Protocol, params: &Params) -> Result<Vec<File>, Self::Error> {
         let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(v, &proto.type_path_map));

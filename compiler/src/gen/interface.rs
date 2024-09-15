@@ -33,14 +33,14 @@ use std::path::Path;
 
 pub trait Generator {
     type Error: std::error::Error;
-    type Params;
+    type Params<'a>;
 
-    fn generate(proto: Protocol, params: &Self::Params) -> Result<Vec<File>, Self::Error>;
+    fn generate(proto: Protocol, params: &Self::Params<'_>) -> Result<Vec<File>, Self::Error>;
 
     fn generate_umbrella<'a>(
         _: &str,
         _: impl Iterator<Item = &'a Path>,
-        _: &Self::Params,
+        _: &Self::Params<'_>,
     ) -> Result<String, Self::Error> {
         Ok(String::new())
     }

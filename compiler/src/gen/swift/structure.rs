@@ -41,8 +41,8 @@ pub fn gen_structure_decl(proto: &Protocol, s: &Structure) -> String {
     let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
     let mut template = Template::compile(STRUCT_TEMPLATE).unwrap();
     let mut field_template = Template::compile(STRUCT_FIELD_TEMPLATE).unwrap();
-    template.var("proto_name", &proto.name);
-    field_template.var("proto_name", &proto.name);
+    template.var("proto_name", proto.name());
+    field_template.var("proto_name", proto.name());
     let templates = Templates {
         template,
         field_template,
