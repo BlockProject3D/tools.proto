@@ -26,46 +26,52 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::gen::{GeneratorRust, RustParams, RustImportSolver};
-use crate::{Error, Loader, Protoc};
+use std::collections::HashMap;
+use std::path::Path;
+use serde::{Deserialize};
 
-/// A simple function to quickly generate protocols in Rust for use with the Cargo build system.
-///
-/// # Arguments
-///
-/// * `load_fn`: a function which loads and imports all required protocols to compile and generate
-///              Rust code for.
-/// * `configure_fn`: a configuration function to configure the [Protoc](Protoc) for generating.
-///
-/// # Panics
-///
-/// This function panics in case the loader, compiler or generator failed and the protocol Rust code
-/// could not be generated.
-pub fn generate_rust<F: FnOnce(&mut Loader) -> Result<(), Error>, F1: FnOnce(Protoc) -> Protoc>(
-    load_fn: F,
-    configure_fn: F1,
-    params: RustParams,
-) {
-    let mut loader = Loader::new();
-    let res = load_fn(&mut loader);
-    if let Err(e) = res {
-        panic!("Failed to load protocols: {}", e);
-    }
-    let protoc = match loader.compile(&RustImportSolver) {
-        Err(e) => panic!("Failed to compile protocols: {}", e),
-        Ok(v) => v,
-    };
-    let protoc = configure_fn(protoc);
-    let out_dir = std::env::var("OUT_DIR").unwrap();
-    let generated = match protoc.generate::<GeneratorRust>(out_dir, params) {
-        Err(e) => panic!("Failed to generate Rust code: {}", e),
-        Ok(v) => v,
-    };
-    for proto in generated {
-        println!(
-            "cargo::rustc-env=BP3D_PROTOC_{}={}",
-            proto.name.to_ascii_uppercase(),
-            proto.path.display()
-        );
-    }
+#[derive(Deserialize)]
+#[serde(rename_all="kebab-case")]
+pub struct RustParams<'a> {
+    #[serde(borrow)]
+    pub disable_read: Option<Vec<&'a str>>,
+    pub disable_write: Option<Vec<&'a str>>
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all="kebab-case")]
+pub struct Params<T> {
+    pub write_messages: Option<bool>,
+    pub read_messages: Option<bool>,
+    pub use_enums: Option<bool>,
+    pub use_structs: Option<bool>,
+    pub use_messages: Option<bool>,
+    pub use_unions: Option<bool>,
+    #[serde(flatten)]
+    pub inner: T
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all="kebab-case")]
+pub struct Package<'a> {
+    pub name: &'a str,
+    pub path: &'a Path,
+    pub file_header: Option<&'a Path>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all="kebab-case")]
+pub struct Dependency<'a> {
+    pub path: &'a Path,
+    pub package: &'a str
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all="kebab-case")]
+pub struct Config<'a, T> {
+    #[serde(borrow)]
+    pub package: Package<'a>,
+    #[serde(flatten)]
+    pub options: Option<HashMap<&'a str, Params<T>>>,
+    pub dependency: Option<Vec<Dependency<'a>>>
 }

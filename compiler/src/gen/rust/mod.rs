@@ -62,24 +62,24 @@ simple_error! {
 }
 
 #[derive(Default)]
-pub struct Params {
+pub struct Params<'a> {
     enable_write_async: bool,
-    disable_read: HashSet<&'static str>,
-    disable_write: HashSet<&'static str>
+    disable_read: HashSet<&'a str>,
+    disable_write: HashSet<&'a str>
 }
 
-impl Params {
+impl<'a> Params<'a> {
     pub fn enable_write_async(mut self, flag: bool) -> Self {
         self.enable_write_async = flag;
         self
     }
 
-    pub fn disable_read(mut self, name: &'static str) -> Self {
+    pub fn disable_read(mut self, name: &'a str) -> Self {
         self.disable_read.insert(name);
         self
     }
 
-    pub fn disable_write(mut self, name: &'static str) -> Self {
+    pub fn disable_write(mut self, name: &'a str) -> Self {
         self.disable_write.insert(name);
         self
     }
@@ -89,9 +89,9 @@ pub struct GeneratorRust;
 
 impl Generator for GeneratorRust {
     type Error = Error;
-    type Params<'a> = Params;
+    type Params<'a> = Params<'a>;
 
-    fn generate(proto: Protocol, params: &Params) -> Result<Vec<File>, Self::Error> {
+    fn generate(proto: &Protocol, params: &Params) -> Result<Vec<File>, Self::Error> {
         let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(v, &proto.type_path_map));
         let impl_from_slice_messages_code =
             proto.messages.iter().map(|v| gen_message_from_slice_impl(v, &proto.type_path_map));

@@ -66,7 +66,7 @@ impl Generator for GeneratorSwift {
     type Error = Error;
     type Params<'a> = ProtocolStore<'a, SwiftImportSolver>;
 
-    fn generate(proto: Protocol, params: &ProtocolStore<SwiftImportSolver>) -> Result<Vec<File>, Self::Error> {
+    fn generate(proto: &Protocol, params: &ProtocolStore<SwiftImportSolver>) -> Result<Vec<File>, Self::Error> {
         let imports = gen_imports(params);
         let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(&proto, v));
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(&proto, v));

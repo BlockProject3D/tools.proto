@@ -1,0 +1,14 @@
+[package]
+name = ""
+path = "src"
+#file-header = "path/to/file/header"
+
+[import_ambiguous]
+reads-messages = false
+writes-messages = false
+#disable-read = ["Name1", "Name2"]
+#disable-write = ["Name1", "Name2"]
+
+#[[dependency]]
+#path = "/path/to/json.json5"
+#package = "rust::crate::module::path"

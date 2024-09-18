@@ -166,7 +166,7 @@ impl<'a> Protoc<'a> {
         let mut generated_protocols = Vec::new();
         for proto in self.protocols {
             let name = String::from(proto.name());
-            let files = T::generate(proto, &params).map_err(|e| Error::Generator(e.to_string()))?;
+            let files = T::generate(&proto, &params).map_err(|e| Error::Generator(e.to_string()))?;
             let out_path = out_directory.as_ref().join(&name);
             if !out_path.exists() {
                 std::fs::create_dir(&out_path).map_err(Error::Io)?;

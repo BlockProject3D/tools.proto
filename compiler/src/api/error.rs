@@ -32,6 +32,9 @@ simple_error! {
         Io(std::io::Error) => "io error: {}",
         Model(json5::Error) => "model parse error: {}",
         Compiler(crate::compiler::Error) => "compiler error: {}",
-        Generator(String) => "generator error: {}"
+        Generator(String) => "generator error: {}",
+        ProtocolNotFound(String) => "attempt to generate unknown protocol: {}",
+        SolverMaxIterations => "reached maximum number of iterations when solving import order...",
+        Config(toml::de::Error) => "error parsing config: {}"
     }
 }

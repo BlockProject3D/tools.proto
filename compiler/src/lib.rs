@@ -26,14 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod build_script;
 pub mod compiler;
-mod error;
 pub mod gen;
 mod interface;
 mod model;
 pub mod util;
+pub mod api;
 
-pub use build_script::generate_rust;
-pub use error::Error;
+pub use api::error::Error;
 pub use interface::*;

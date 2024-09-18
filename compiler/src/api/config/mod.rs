@@ -26,28 +26,5 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::Protocol;
-use crate::gen::file::File;
-use itertools::Itertools;
-use std::path::Path;
-
-pub trait Generator {
-    type Error: std::error::Error;
-    type Params<'a>;
-
-    fn generate(proto: &Protocol, params: &Self::Params<'_>) -> Result<Vec<File>, Self::Error>;
-
-    fn generate_umbrella<'a>(
-        _: &str,
-        _: impl Iterator<Item = &'a Path>,
-        _: &Self::Params<'_>,
-    ) -> Result<String, Self::Error> {
-        Ok(String::new())
-    }
-
-    fn generate_file_header<'a>(lines: impl Iterator<Item = &'a str>) -> String {
-        lines.map(|v| String::from("// ") + v).join("\n") + "\n\n"
-    }
-
-    fn get_language_extension() -> &'static str;
-}
+pub mod model;
+pub mod core;

@@ -26,57 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::gen::RustParams;
-use bp3d_protoc::generate_rust;
+use bp3d_protoc::api::generate_rust;
 
 fn main() {
-    generate_rust(
-        |loader| {
-            loader.load("./src/test.json5")?;
-            loader.load("./src/structs.json5")?;
-            loader.load("./src/bits.json5")?;
-            loader.load("./src/bits2.json5")?;
-            loader.load("./src/views.json5")?;
-            loader.load("./src/struct_arrays.json5")?;
-            loader.load("./src/enums.json5")?;
-            loader.load("./src/values.json5")?;
-            loader.load("./src/unions2.json5")?;
-            loader.load("./src/arrays.json5")?;
-            Ok(())
-        },
-        |protoc| protoc.set_reads_messages(true).set_writes_messages(true),
-        RustParams::default(),
-    );
-    generate_rust(
-        |loader| {
-            loader.import("./src/enums.json5", "")?;
-            loader.import("./src/values.json5", "")?;
-            loader.load("./src/unions.json5")?;
-            Ok(())
-        },
-        |protoc| protoc.set_reads_messages(true).set_writes_messages(true),
-        RustParams::default(),
-    );
-    generate_rust(
-        |loader| {
-            loader.import("./src/enums.json5", "")?;
-            loader.import("./src/values.json5", "")?;
-            loader.import("./src/unions.json5", "")?;
-            loader.load("./src/lists.json5")?;
-            loader.load("./src/lists2.json5")?;
-            Ok(())
-        },
-        |protoc| protoc.set_reads_messages(true).set_writes_messages(true),
-        RustParams::default(),
-    );
-    generate_rust(
-        |loader| {
-            loader.import("./src/bits.json5", "")?;
-            loader.import("./src/bits2.json5", "")?;
-            loader.load("./src/import_ambiguous.json5")?;
-            Ok(())
-        },
-        |protoc| protoc.set_reads_messages(false).set_writes_messages(false),
-        RustParams::default(),
-    );
+    generate_rust("./protoc.toml").unwrap();
 }
