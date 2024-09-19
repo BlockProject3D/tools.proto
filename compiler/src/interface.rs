@@ -28,7 +28,8 @@
 
 use crate::gen::file::FileType;
 use crate::gen::Generator;
-use crate::{compiler, model, Error};
+use crate::{compiler, model};
+use crate::api::core::Error;
 use bp3d_util::path::PathExt;
 use std::path::{Path, PathBuf};
 use bp3d_debug::trace;

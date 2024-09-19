@@ -28,7 +28,8 @@
 
 use std::path::Path;
 use bp3d_debug::{error, trace};
-use crate::{compiler, model, Error};
+use crate::{compiler, model};
+use crate::api::core::Error;
 use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
 
 pub struct Loader<'a> {

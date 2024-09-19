@@ -30,9 +30,10 @@ use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 use bp3d_util::index_map::IndexMap;
 use bp3d_util::path::PathExt;
-use crate::{compiler, Error};
+use crate::compiler;
 use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
 use crate::gen::file::FileType;
+use crate::api::core::Error;
 
 pub struct Context<'a> {
     items: IndexMap<Item<'a>>

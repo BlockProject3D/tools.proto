@@ -26,11 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod loader;
-pub mod generator;
 pub mod config;
-pub mod error;
 mod build_script;
+pub mod core;
 
 pub use build_script::generate_rust;
-pub use error::Error;

@@ -26,11 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod compiler;
-pub mod gen;
-mod interface;
-mod model;
-pub mod util;
-pub mod api;
+//! This module contains the core low-level interface to the protocol compiler/generator.
 
-pub use interface::*;
+pub mod loader;
+pub mod generator;
+mod error;
+
+pub use error::Error;

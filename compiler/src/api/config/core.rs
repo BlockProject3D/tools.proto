@@ -28,10 +28,10 @@
 
 use serde::Deserialize;
 use crate::api::config::model::Config;
-use crate::api::loader::Loader;
-use crate::api::Error;
-use crate::api::generator::{Context, Generator, Params};
+use crate::api::core::loader::Loader;
+use crate::api::core::generator::{Context, Generator, Params};
 use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
+use crate::api::core::Error;
 
 pub fn parse<'a, T: Deserialize<'a>>(data: &'a str) -> Result<Config<'a, T>, toml::de::Error> {
     toml::from_str(data)
