@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::path::Path;
-use crate::api::core::Error;
+use crate::api::tools::Error;
 use crate::api::tools::{GenTools, Rust};
 
 /// A simple function to quickly generate protocols in Rust for use with the Cargo build system.

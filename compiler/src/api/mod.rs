@@ -26,9 +26,16 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#[cfg(feature = "api-config")]
 pub mod config;
+
+#[cfg(feature = "api-rust")]
 mod build_script;
+
 pub mod core;
+
+#[cfg(feature = "api-tools")]
 pub mod tools;
 
+#[cfg(feature = "api-rust")]
 pub use build_script::generate_rust;

@@ -29,11 +29,8 @@
 use bp3d_util::simple_error;
 simple_error! {
     pub Error {
-        Io(std::io::Error) => "io error: {}",
-        Model(json5::Error) => "model parse error: {}",
-        Compiler(crate::compiler::Error) => "compiler error: {}",
-        Generator(String) => "generator error: {}",
-        ProtocolNotFound(String) => "attempt to generate unknown protocol: {}",
-        SolverMaxIterations => "reached maximum number of iterations when solving import order..."
+        Io(std::io::Error) => "error loading config: {}",
+        Config(toml::de::Error) => "error parsing config: {}",
+        (impl From) Core(crate::api::core::Error) => "core error: {}"
     }
 }

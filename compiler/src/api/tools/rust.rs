@@ -29,7 +29,7 @@
 use crate::api::config;
 use crate::api::config::model;
 use crate::api::config::model::Config;
-use crate::api::core::Error;
+use crate::api::tools::Error;
 use crate::api::core::generator::{Context, Generator};
 use crate::api::tools::GenTools;
 use crate::gen::{GeneratorRust, RustImportSolver, RustParams};

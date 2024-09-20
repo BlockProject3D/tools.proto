@@ -30,14 +30,23 @@ pub mod base;
 pub mod file;
 pub mod hook;
 mod interface;
-mod rust;
-mod swift;
 pub mod template;
 
 pub use interface::*;
 
+#[cfg(feature = "gen-rust")]
+mod rust;
+
+#[cfg(feature = "gen-swift")]
+mod swift;
+
+#[cfg(feature = "gen-rust")]
 pub use rust::GeneratorRust;
+#[cfg(feature = "gen-rust")]
 pub use rust::Params as RustParams;
-pub use swift::GeneratorSwift;
-pub use swift::SwiftImportSolver;
+#[cfg(feature = "gen-rust")]
 pub use rust::RustImportSolver;
+#[cfg(feature = "gen-swift")]
+pub use swift::GeneratorSwift;
+#[cfg(feature = "gen-swift")]
+pub use swift::SwiftImportSolver;

@@ -6,5 +6,5 @@ publish = false
 
 [dependencies]
 clap = { version = "4.5.15", features = ["derive"] }
-bp3d-protoc = { version = "1.0.0-rc.1.0.0", path = "../compiler" }
+bp3d-protoc = { version = "1.0.0-rc.1.0.0", path = "../compiler", features = ["gen-rust", "gen-swift"] }
 bp3d-util = { version = "1.0.0", features = ["result"] }
