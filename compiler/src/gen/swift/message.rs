@@ -26,54 +26,16 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::{FieldType, Message};
+use crate::compiler::message::Message;
 use crate::compiler::Protocol;
 use crate::gen::base::map::TypePathMapper;
-use crate::gen::base::message::{gen_msg_field_decl, generate, Utilities};
+use crate::gen::base::message::{gen_message_array_type_decls, gen_msg_field_decl, generate};
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::Template;
 use itertools::Itertools;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
-
-fn gen_message_array_type_decls(
-    template: &Template,
-    msg: &Message,
-    type_path_map: &TypePathMapper<SwiftTypeMapper>,
-) -> String {
-    let mut scope = template.scope();
-    msg.fields
-        .iter()
-        .filter_map(|field| {
-            scope.var("name", &field.name);
-            match &field.ty {
-                FieldType::Array(v) => Some(
-                    scope
-                        .var("item_type", type_path_map.get(&v.item_type))
-                        .var("codec", SwiftUtils::get_value_type(field.endianness, v.ty))
-                        .render("", &["decl_array"])
-                        .unwrap(),
-                ),
-                FieldType::List(v) => Some(
-                    scope
-                        .var("item_type", type_path_map.get(&v.item_type))
-                        .var("codec", SwiftUtils::get_value_type(field.endianness, v.ty))
-                        .render("", &["decl_list"])
-                        .unwrap(),
-                ),
-                FieldType::SizedList(v) => Some(
-                    scope
-                        .var("item_type", type_path_map.get(&v.item_type))
-                        .var("codec", SwiftUtils::get_value_type(field.endianness, v.ty))
-                        .render("", &["decl_list"])
-                        .unwrap(),
-                ),
-                _ => None,
-            }
-        })
-        .join("")
-}
 
 fn gen_initializer(template: &Template, msg: &Message, type_path_map: &TypePathMapper<SwiftTypeMapper>) -> String {
     let init_field_list = msg
@@ -104,6 +66,6 @@ pub fn gen_message_decl(proto: &Protocol, msg: &Message) -> String {
     template.var("proto_name", proto.name()).var("initializer", initializer);
     let mut code = generate::<SwiftUtils, _>(template, msg, &type_path_map);
     code += "\n";
-    code += &gen_message_array_type_decls(&template_ext, msg, &type_path_map);
+    code += &gen_message_array_type_decls::<SwiftUtils, _>(&template_ext, msg, &type_path_map);
     code
 }

@@ -26,61 +26,27 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::{FieldType, Message};
+use crate::compiler::message::Message;
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
-use crate::gen::base::message::{generate, Utilities};
+use crate::gen::base::message::{gen_message_array_type_decls, generate};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
-use itertools::Itertools;
 use crate::compiler::util::types::TypePathMap;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
 
-fn gen_message_array_type_decls(msg: &Message, type_path_map: &TypePathMapper<DefaultTypeMapper>) -> String {
-    let mut template = Template::compile(TEMPLATE_EXT).unwrap();
-    template.var("msg_name", &msg.name);
-    msg.fields
-        .iter()
-        .filter_map(|field| {
-            template.var("name", &field.name);
-            match &field.ty {
-                FieldType::Array(v) => Some(
-                    template
-                        .var("item_type", type_path_map.get(&v.item_type))
-                        .var("codec", RustUtils::get_value_type(field.endianness, v.ty))
-                        .render("", &["decl_array"])
-                        .unwrap(),
-                ),
-                FieldType::List(v) => Some(
-                    template
-                        .var("item_type", type_path_map.get(&v.item_type))
-                        .var("codec", RustUtils::get_value_type(field.endianness, v.ty))
-                        .render("", &["decl_list"])
-                        .unwrap(),
-                ),
-                FieldType::SizedList(v) => Some(
-                    template
-                        .var("item_type", type_path_map.get(&v.item_type))
-                        .var("codec", RustUtils::get_value_type(field.endianness, v.ty))
-                        .render("", &["decl_list"])
-                        .unwrap(),
-                ),
-                _ => None,
-            }
-        })
-        .join("")
-}
-
 pub fn gen_message_decl(msg: &Message, type_path_map: &TypePathMap) -> String {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let mut template = Template::compile(TEMPLATE).unwrap();
+    let mut template_ext = Template::compile(TEMPLATE_EXT).unwrap();
+    template_ext.var("msg_name", &msg.name);
     template.var(
         "generics",
         RustUtils::get_generics(msg, &type_path_map).to_string_with_defaults(),
     );
     let mut code = generate::<RustUtils, _>(template, msg, &type_path_map);
     code += "\n";
-    code += &gen_message_array_type_decls(msg, &type_path_map);
+    code += &gen_message_array_type_decls::<RustUtils, _>(&template_ext, msg, &type_path_map);
     code
 }

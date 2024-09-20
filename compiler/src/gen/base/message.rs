@@ -93,6 +93,44 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
     scope.var("type", msg_type).render("decl", &["field"]).unwrap()
 }
 
+pub fn gen_message_array_type_decls<U: Utilities, T: TypeMapper>(
+    template: &Template,
+    msg: &Message,
+    type_path_map: &TypePathMapper<T>,
+) -> String {
+    let mut scope = template.scope();
+    msg.fields
+        .iter()
+        .filter_map(|field| {
+            scope.var("name", &field.name);
+            match &field.ty {
+                FieldType::Array(v) => Some(
+                    scope
+                        .var("item_type", type_path_map.get(&v.item_type))
+                        .var("codec", U::get_value_type(field.endianness, v.ty))
+                        .render("", &["decl_array"])
+                        .unwrap(),
+                ),
+                FieldType::List(v) => Some(
+                    scope
+                        .var("item_type", type_path_map.get(&v.item_type))
+                        .var("codec", U::get_value_type(field.endianness, v.ty))
+                        .render("", &["decl_list"])
+                        .unwrap(),
+                ),
+                FieldType::SizedList(v) => Some(
+                    scope
+                        .var("item_type", type_path_map.get(&v.item_type))
+                        .var("codec", U::get_value_type(field.endianness, v.ty))
+                        .render("", &["decl_list"])
+                        .unwrap(),
+                ),
+                _ => None,
+            }
+        })
+        .join("")
+}
+
 pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     mut template: Template<'_, 'variable>,
     msg: &'variable Message,
