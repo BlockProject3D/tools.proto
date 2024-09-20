@@ -26,9 +26,30 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod config;
-mod build_script;
-pub mod core;
-pub mod tools;
+use crate::api::config;
+use crate::api::config::model::Config;
+use crate::api::core::Error;
+use crate::api::core::generator::{Context, Generator};
+use crate::api::tools::GenTools;
+use crate::gen::{GeneratorSwift, SwiftImportSolver};
 
-pub use build_script::generate_rust;
+pub struct Swift;
+
+impl GenTools for Swift {
+    type Params<'a> = ();
+    type Generator = GeneratorSwift;
+    type Solver = SwiftImportSolver;
+
+    fn new_solver() -> Self::Solver {
+        SwiftImportSolver
+    }
+
+    fn new_generator() -> Self::Generator {
+        GeneratorSwift
+    }
+
+    fn generate<'a, 'b>(generator: &'b Generator<'a, Self::Solver, Self::Generator>, context: &mut Context<'b>, config: &Config<Self::Params<'a>>) -> Result<(), Error> {
+        let protocols = generator.protocols();
+        config::core::generate(generator, context, config, |_| None, protocols)
+    }
+}

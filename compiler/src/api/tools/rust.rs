@@ -26,9 +26,47 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod config;
-mod build_script;
-pub mod core;
-pub mod tools;
+use crate::api::config;
+use crate::api::config::model;
+use crate::api::config::model::Config;
+use crate::api::core::Error;
+use crate::api::core::generator::{Context, Generator};
+use crate::api::tools::GenTools;
+use crate::gen::{GeneratorRust, RustImportSolver, RustParams};
 
-pub use build_script::generate_rust;
+pub struct Rust;
+
+impl GenTools for Rust {
+    type Params<'a> = model::RustParams<'a>;
+    type Generator = GeneratorRust;
+    type Solver = RustImportSolver;
+
+    fn new_solver() -> Self::Solver {
+        RustImportSolver
+    }
+
+    fn new_generator() -> Self::Generator {
+        GeneratorRust
+    }
+
+    fn generate<'a, 'b>(generator: &'b Generator<'a, Self::Solver, Self::Generator>, context: &mut Context<'b>, config: &Config<Self::Params<'a>>) -> Result<(), Error> {
+        config::core::generate(generator, context, config, |v| {
+            if v.disable_write.is_none() && v.disable_read.is_none() {
+                return None;
+            }
+            let mut params = RustParams::default();
+            if let Some(v) = &v.disable_read {
+                for v in v {
+                    params = params.disable_read(v);
+                }
+            }
+            if let Some(v) = &v.disable_write {
+                for v in v {
+                    params = params.disable_write(v);
+                }
+            }
+            Some(params)
+        }, &RustParams::default())?;
+        Ok(())
+    }
+}

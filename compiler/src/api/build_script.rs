@@ -28,48 +28,22 @@
 
 use std::path::Path;
 use crate::api::core::Error;
-use crate::api::config;
-use crate::api::core::generator::Generator;
-use crate::gen::{GeneratorRust, RustImportSolver, RustParams};
+use crate::api::tools::{GenTools, Rust};
 
 /// A simple function to quickly generate protocols in Rust for use with the Cargo build system.
 ///
 /// # Arguments
 ///
-/// * `load_fn`: a function which loads and imports all required protocols to compile and generate
-///              Rust code for.
-/// * `configure_fn`: a configuration function to configure the [Protoc](Protoc) for generating.
-///
-/// # Panics
-///
-/// This function panics in case the loader, compiler or generator failed and the protocol Rust code
-/// could not be generated.
+/// * `path`: the path to the toml configuration file.
 pub fn generate_rust(path: impl AsRef<Path>) -> Result<(), Error> {
-    let str = std::fs::read_to_string(path).map_err(Error::Io)?;
-    let config = config::core::parse::<config::model::RustParams>(&str).map_err(Error::Config)?;
-    let protocols = config::core::compile(&config, &RustImportSolver)?;
     let out_dir = std::env::var("OUT_DIR").unwrap();
-    let (mut context, generator) = Generator::new(protocols, &Path::new(&out_dir), GeneratorRust);
-    config::core::generate(&generator, &mut context, &config, |v| {
-        let mut params = RustParams::default();
-        if let Some(v) = &v.disable_read {
-            for v in v {
-                params = params.disable_read(v);
-            }
+    Rust::run_file(path, out_dir, |context| {
+        for proto in context.iter() {
+            println!(
+                "cargo::rustc-env=BP3D_PROTOC_{}={}",
+                proto.name.to_ascii_uppercase(),
+                proto.path.display()
+            );
         }
-        if let Some(v) = &v.disable_write {
-            for v in v {
-                params = params.disable_write(v);
-            }
-        }
-        params
-    }, &RustParams::default())?;
-    for proto in context.iter() {
-        println!(
-            "cargo::rustc-env=BP3D_PROTOC_{}={}",
-            proto.name.to_ascii_uppercase(),
-            proto.path.display()
-        );
-    }
-    Ok(())
+    })
 }
