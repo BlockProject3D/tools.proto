@@ -96,6 +96,19 @@ impl Default for Params {
     }
 }
 
+impl Params {
+    pub fn new() -> Self {
+        Self {
+            write_messages: false,
+            read_messages: false,
+            use_enums: false,
+            use_structs: false,
+            use_messages: false,
+            use_unions: false,
+        }
+    }
+}
+
 pub struct Generator<'a, T, G> {
     protocols: ProtocolStore<'a, T>,
     generator: PhantomData<G>,

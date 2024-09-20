@@ -55,7 +55,10 @@ pub trait GenTools {
         let motherfuckingrust = Self::new_solver();
         let config = config::core::parse::<Self::Params<'_>>(config.as_ref()).map_err(Error::Config)?;
         let protocols = config::core::compile(&config, &motherfuckingrust)?;
-        let (mut context, generator) = Generator::new(protocols, out_dir.as_ref(), Self::new_generator());
+        let (mut context, mut generator) = Generator::new(protocols, out_dir.as_ref(), Self::new_generator());
+        if let Some(file_header) = config.package.file_header {
+            generator.set_file_header(file_header);
+        }
         Self::generate(&generator, &mut context, &config)?;
         post_generation(&context);
         Ok(())
