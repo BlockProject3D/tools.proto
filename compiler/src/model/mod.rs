@@ -26,6 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+//! Low-level model based on serde.
+
 //TODO: Support for static sized unions in structures
 //TODO: Support for offset in bits in structure fields
 //TODO: Support for padding in structure fields

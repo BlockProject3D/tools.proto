@@ -26,6 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+//! Low-level code generator built on top of the compiler.
+
+#[cfg(feature = "gen-base")]
 pub mod base;
 pub mod file;
 pub mod hook;

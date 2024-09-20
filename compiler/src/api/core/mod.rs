@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//! This module contains the core low-level interface to the protocol compiler/generator.
+//! This module contains the core mid-level interface to the low-level protocol compiler/generator.
 
 pub mod loader;
 pub mod generator;

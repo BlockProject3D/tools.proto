@@ -26,6 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+//! Low-level protocol compiler. This module is responsible to provide the tools needed to
+//! pre-calculate structure offsets, sizes and check for invalid model combinations.
+
 pub mod r#enum;
 mod error;
 pub mod message;

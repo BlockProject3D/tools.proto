@@ -26,6 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+//! Mid and high-level APIs built on top of the model, compiler and code-generator. This module is
+//! responsible to provide simple abstractions over parsing the model, compiling and generating the
+//! code. Currently, these APIs uses the json5 serde parser to parse the model.
+
 #[cfg(feature = "api-config")]
 pub mod config;
 
