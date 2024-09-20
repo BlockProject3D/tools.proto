@@ -26,11 +26,23 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#[cfg(feature = "compiler")]
 pub mod compiler;
+
+#[cfg(feature = "gen")]
 pub mod gen;
-mod interface;
-mod model;
-pub mod util;
+
+#[cfg(feature = "model")]
+pub mod model;
+
+#[cfg(feature = "api")]
 pub mod api;
 
+#[cfg(feature = "legacy")]
+pub mod util;
+
+#[cfg(feature = "legacy")]
+mod interface;
+
+#[cfg(feature = "legacy")]
 pub use interface::*;

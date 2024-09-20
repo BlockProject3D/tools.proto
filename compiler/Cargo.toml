@@ -20,8 +20,14 @@ regex = "1.10.5"
 bp3d-debug = "1.0.0-rc.5.0.0"
 
 [features]
-gen-rust = []
-gen-swift = []
-api-config = ["toml"]
+model = []
+compiler = ["model"]
+gen = ["compiler"]
+gen-rust = ["gen"]
+gen-swift = ["gen"]
+api = ["gen"]
+api-config = ["api", "toml"]
 api-tools = ["api-config"]
 api-rust = ["gen-rust", "api-tools"]
+
+legacy = ["gen"]
