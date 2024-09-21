@@ -26,13 +26,13 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::gen::{GeneratorRust, GeneratorSwift, RustParams, SwiftImportSolver};
-use bp3d_protoc::util::SimpleImportSolver;
-use bp3d_protoc::{Loader, Protoc};
+use bp3d_protoc::gen::{GeneratorRust, GeneratorSwift, RustImportSolver, RustParams, SwiftImportSolver};
 use bp3d_util::result::ResultExt;
 use clap::{Parser, ValueEnum};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
+use bp3d_protoc::api::core::generator::Params;
+use bp3d_protoc::api::core::loader::Loader;
 
 #[derive(ValueEnum, Copy, Clone, Debug)]
 pub enum Generator {
@@ -40,16 +40,6 @@ pub enum Generator {
     Rust,
 
     /// The Swift code generator.
-    Swift,
-}
-
-#[derive(ValueEnum, Copy, Clone, Debug)]
-pub enum Solver {
-    /// The simple import solver which is the default for Rust, should work in most cases.
-    Simple,
-
-    /// The swift import solver which simplifies dealing with the distinction between foreign and
-    /// local imports.
     Swift,
 }
 
@@ -75,15 +65,15 @@ pub enum Feature {
 }
 
 impl Feature {
-    pub fn apply<'a>(&self, protoc: Protoc<'a>) -> Protoc<'a> {
+    pub fn apply(&self, params: &mut Params) {
         match self {
-            Feature::WriteMessages => protoc.set_writes_messages(true),
-            Feature::ReadMessages => protoc.set_reads_messages(true),
-            Feature::UseEnums => protoc.set_use_enums(true),
-            Feature::UseStructs => protoc.set_use_structs(true),
-            Feature::UseMessages => protoc.set_use_messages(true),
-            Feature::UseUnions => protoc.set_use_unions(true),
-        }
+            Feature::WriteMessages => params.write_messages = true,
+            Feature::ReadMessages => params.read_messages = true,
+            Feature::UseEnums => params.use_enums = true,
+            Feature::UseStructs => params.use_structs = true,
+            Feature::UseMessages => params.use_messages = true,
+            Feature::UseUnions => params.use_unions = true
+        };
     }
 }
 
@@ -105,9 +95,6 @@ pub struct Args {
     /// Name of the code generator to use.
     #[clap(short = 'g', long = "generator", default_value = "rust")]
     pub generator: Generator,
-    /// Name of the import solver to use.
-    #[clap(short = 's', long = "solver", default_value = "simple")]
-    pub solver: Solver,
     /// Features to enable, the default is to use the default set of features which includes
     /// everything except reading and writing messages.
     #[clap(short = 'f', long = "feature")]
@@ -129,35 +116,57 @@ impl Args {
     }
 }
 
+// Amazing motherfucking piece of shit awful language UNABLE to do accept ANY OTHER code apart
+// from code duplication!!! EVEN MACROS gets refused for such a simple thing!!!
+fn build_swift(loader: Loader, args: &Args) {
+    let protocols = loader.compile(&SwiftImportSolver).expect_exit("failed to compile protocols", 1);
+    let params = if let Some(features) = &args.features {
+    let mut params = Params::new();
+        for f in features {
+            f.apply(&mut params);
+        }
+        params
+    } else {
+        Params::default()
+    };
+    let output = args.output.as_deref().unwrap_or(Path::new("./"));
+    let (mut context, mut generator) = bp3d_protoc::api::core::generator::Generator::new(protocols, &output, GeneratorSwift);
+    if let Some(file_header) = &args.file_header {
+        generator.set_file_header(file_header);
+    }
+    generator.generate_all(&mut context, &params, generator.protocols()).expect_exit("failed to generate protocols", 1);
+}
+
+fn build_rust(loader: Loader, args: &Args) {
+    let protocols = loader.compile(&RustImportSolver).expect_exit("failed to compile protocols", 1);
+    let params = if let Some(features) = &args.features {
+        let mut params = Params::new();
+        for f in features {
+            f.apply(&mut params);
+        }
+        params
+    } else {
+        Params::default()
+    };
+    let output = args.output.as_deref().unwrap_or(Path::new("./"));
+    let (mut context, mut generator) = bp3d_protoc::api::core::generator::Generator::new(protocols, &output, GeneratorRust);
+    if let Some(file_header) = &args.file_header {
+        generator.set_file_header(file_header);
+    }
+    generator.generate_all(&mut context, &params, &RustParams::default()).expect_exit("failed to generate protocols", 1);
+}
+
 fn main() {
     let args = Args::parse();
-    let mut loader = Loader::new();
+    let mut loader = Loader::default();
     for (import_file, import_path) in args.iter_imports() {
-        loader.import(import_file, import_path).expect_exit("failed to import protocol", 1);
+        loader.load_from_file(import_file, import_path).expect_exit("failed to import protocol", 1);
     }
-    for input in args.inputs {
-        loader.load(input).expect_exit("failed to load protocol", 1);
+    for input in &args.inputs {
+        loader.load_from_file(input, "").expect_exit("failed to load protocol", 1);
     }
-    //let mut swift_solver = SwiftImportSolver::new();
-    //TODO: Fix once interface2 is finished
-    let mut protoc = match args.solver {
-        Solver::Simple => loader.compile(&mut SimpleImportSolver::new(&args.import_separator)),
-        Solver::Swift => loader.compile(&SwiftImportSolver),
-    }
-    .expect_exit("failed to compile protocols", 1);
-    if let Some(features) = args.features {
-        for f in features {
-            protoc = f.apply(protoc);
-        }
-    }
-    if let Some(file_header) = &args.file_header {
-        protoc = protoc.set_file_header(file_header);
-    }
-    /*match args.generator {
-        Generator::Rust => {
-            protoc.generate::<GeneratorRust>(args.output.unwrap_or(PathBuf::from("./")), RustParams::default())
-        }
-        Generator::Swift => protoc.generate::<GeneratorSwift>(args.output.unwrap_or(PathBuf::from("./")), swift_solver),
-    }
-    .expect_exit("failed to generate protocols", 1);*/
+    match args.generator {
+        Generator::Rust => build_rust(loader, &args),
+        Generator::Swift => build_swift(loader, &args),
+    };
 }
