@@ -35,7 +35,8 @@ use serde::{Deserialize};
 pub struct RustParams<'a> {
     #[serde(borrow)]
     pub disable_read: Option<Vec<&'a str>>,
-    pub disable_write: Option<Vec<&'a str>>
+    pub disable_write: Option<Vec<&'a str>>,
+    pub write_async: bool
 }
 
 #[derive(Deserialize)]
