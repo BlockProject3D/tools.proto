@@ -30,5 +30,3 @@ api = ["gen", "json5"]
 api-config = ["api", "toml"]
 api-tools = ["api-config"]
 api-rust = ["gen-rust", "api-tools"]
-
-legacy = ["gen", "json5"]
