@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::borrow::Cow;
 use std::path::Path;
 use bp3d_debug::{error, trace};
 use crate::{compiler, model};
@@ -78,7 +79,14 @@ impl<'a> Loader<'a> {
         while !self.models.is_empty() && iterations > 0 {
             let (package, model) = self.models.pop().unwrap();
             trace!({imports=?model.imports}, "Solving imports for model {}", model.name);
-            if model.imports.as_ref().map(|v| v.iter().any(|v| protocols.get(&v.protocol).is_none())).unwrap_or_default() {
+            if model.imports.as_ref().map(|v| v.iter().any(|v| {
+                let full_name = if package.is_empty() {
+                    Cow::Borrowed(&v.protocol)
+                } else {
+                    Cow::Owned(format!("{}::{}", package, v.protocol))
+                };
+                protocols.get(&full_name).is_none()
+            })).unwrap_or_default() {
                 self.models.insert(0, (package, model));
                 iterations -= 1;
                 continue;

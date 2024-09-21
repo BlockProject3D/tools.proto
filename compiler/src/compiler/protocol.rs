@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::borrow::Cow;
 use crate::compiler::error::Error;
 use crate::compiler::message::Message;
 use crate::compiler::r#enum::Enum;
@@ -141,8 +142,13 @@ impl Protocol {
         if let Some(mut imports) = value.imports {
             let mut solved_imports = Vec::new();
             while let Some(v) = imports.pop() {
-                trace!({protocol=&*v.protocol} {type=&*v.type_name}, "Solving import");
-                let r = protocols.get(&v.protocol);
+                let protocol_path = if package.is_empty() {
+                    Cow::Borrowed(&v.protocol)
+                } else {
+                    Cow::Owned(format!("{}::{}", package, v.protocol))
+                };
+                trace!({protocol=&**protocol_path} {type=&*v.type_name}, "Solving import");
+                let r = protocols.get(&protocol_path);
                 let r = match r {
                     Some(r) => r,
                     None => return Err(Error::UndefinedReference(v.protocol)),
@@ -154,7 +160,7 @@ impl Protocol {
                     .or_else(|| r.messages.get(&v.type_name).map(Import::Message))
                     .or_else(|| r.unions.get(&v.type_name).map(Import::Union))
                     .or_else(|| r.enums.get(&v.type_name).map(Import::Enum))
-                    .ok_or(Error::UnresolvedImport(format!("{}::{}", v.protocol, v.type_name)))?;
+                    .ok_or(Error::UnresolvedImport(format!("{}::{}", protocol_path, v.type_name)))?;
                 let type_path = protocols.get_full_type_path(r, &v.type_name).ok_or(Error::SolverError)?;
                 solved_imports.push(ty);
                 let count1 = imports.iter().filter(|vv| vv.type_name == v.type_name).count();
@@ -162,10 +168,10 @@ impl Protocol {
                 let is_ambiguous = count1 > 0 || count2 > 1;
                 proto.type_path_map.add(&ty, type_path);
                 if is_ambiguous {
-                    trace!({protocol=&*v.protocol} {type=&*v.type_name}, "Import is ambiguous, import it as {}::{}", v.protocol, v.type_name);
+                    trace!({protocol=&**protocol_path} {type=&*v.type_name}, "Import is ambiguous, import it as {}::{}", v.protocol, v.type_name);
                     ty.insert(format!("{}::{}", v.protocol, v.type_name), &mut proto);
                 } else {
-                    trace!({protocol=&*v.protocol} {type=&*v.type_name}, "Import is not ambiguous");
+                    trace!({protocol=&**protocol_path} {type=&*v.type_name}, "Import is not ambiguous");
                     ty.insert(v.type_name, &mut proto);
                 }
             }
