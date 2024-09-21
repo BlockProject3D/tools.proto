@@ -87,6 +87,9 @@ pub fn gen_union_decl(u: &Union, type_path_map: &TypePathMap, params: &RustParam
     if params.disable_write.contains(u.name()) {
         options.disable("write_to").disable("write_to_async").disable("setter");
     }
+    if !params.enable_union_set_discriminant {
+        options.disable("setter");
+    }
     let mut template = Template::compile_with_options(TEMPLATE, &options).unwrap();
     template.var("generics", get_generics(u));
     generate::<RustUtils, _>(

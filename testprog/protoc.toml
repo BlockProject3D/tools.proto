@@ -3,6 +3,10 @@ name = ""
 path = "src"
 #file-header = "path/to/file/header"
 
+[options.unions]
+union-set-discriminant = true
+
+
 [options.import_ambiguous]
 reads-messages = false
 writes-messages = false

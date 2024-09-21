@@ -65,11 +65,17 @@ simple_error! {
 #[derive(Default, Debug)]
 pub struct Params<'a> {
     enable_write_async: bool,
+    enable_union_set_discriminant: bool,
     disable_read: HashSet<&'a str>,
     disable_write: HashSet<&'a str>
 }
 
 impl<'a> Params<'a> {
+    pub fn enable_union_set_discriminant(mut self, flag: bool) -> Self {
+        self.enable_union_set_discriminant = flag;
+        self
+    }
+
     pub fn enable_write_async(mut self, flag: bool) -> Self {
         self.enable_write_async = flag;
         self

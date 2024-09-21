@@ -36,7 +36,8 @@ pub struct RustParams<'a> {
     #[serde(borrow)]
     pub disable_read: Option<Vec<&'a str>>,
     pub disable_write: Option<Vec<&'a str>>,
-    pub write_async: Option<bool>
+    pub write_async: Option<bool>,
+    pub union_set_discriminant: Option<bool>
 }
 
 #[derive(Deserialize)]
