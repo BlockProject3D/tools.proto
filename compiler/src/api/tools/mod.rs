@@ -61,10 +61,14 @@ pub trait GenTools {
         Ok(())
     }
 
+    fn run_string(config: impl AsRef<str>, out_dir: impl AsRef<Path>, post_generation: impl FnOnce(&Context)) -> Result<(), Error> {
+        let config = config::core::parse::<Self::Params<'_>>(config.as_ref()).map_err(Error::Config)?;
+        Self::run(&config, out_dir, post_generation)
+    }
+
     fn run_file(config_file: impl AsRef<Path>, out_dir: impl AsRef<Path>, post_generation: impl FnOnce(&Context)) -> Result<(), Error> {
         let str = std::fs::read_to_string(config_file).map_err(Error::Io)?;
-        let config = config::core::parse::<Self::Params<'_>>(&str).map_err(Error::Config)?;
-        Self::run(&config, out_dir, post_generation)
+        Self::run_string(str, out_dir, post_generation)
     }
 }
 
