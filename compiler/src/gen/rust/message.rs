@@ -32,11 +32,12 @@ use crate::gen::base::message::{gen_message_array_type_decls, generate};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 use crate::compiler::util::types::TypePathMap;
+use crate::gen::RustParams;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
 
-pub fn gen_message_decl(msg: &Message, type_path_map: &TypePathMap) -> String {
+pub fn gen_message_decl(msg: &Message, type_path_map: &TypePathMap, params: &RustParams) -> String {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let mut template = Template::compile(TEMPLATE).unwrap();
     let mut template_ext = Template::compile(TEMPLATE_EXT).unwrap();
@@ -47,6 +48,9 @@ pub fn gen_message_decl(msg: &Message, type_path_map: &TypePathMap) -> String {
     );
     let mut code = generate::<RustUtils, _>(template, msg, &type_path_map);
     code += "\n";
-    code += &gen_message_array_type_decls::<RustUtils, _>(&template_ext, msg, &type_path_map);
+    code += &gen_message_array_type_decls::<RustUtils, _>(&template_ext, "decl", msg, &type_path_map);
+    if params.enable_list_wrappers {
+        code += &gen_message_array_type_decls::<RustUtils, _>(&template_ext, "wrappers", msg, &type_path_map);
+    }
     code
 }

@@ -51,7 +51,8 @@ impl GenTools for Rust {
 
     fn generate<'a, 'b>(generator: &'b Generator<'a, Self::Solver, Self::Generator>, context: &mut Context<'b>, config: &Config<Self::Params<'_>>) -> Result<(), Error> {
         config::core::generate(generator, context, config, |v| {
-            if v.disable_write.is_none() && v.disable_read.is_none() && v.write_async.is_none() && v.union_set_discriminant.is_none() {
+            if v.disable_write.is_none() && v.disable_read.is_none() && v.write_async.is_none()
+                && v.union_set_discriminant.is_none() && v.list_wrappers.is_none() {
                 return None;
             }
             let mut params = RustParams::default();
@@ -67,6 +68,7 @@ impl GenTools for Rust {
             }
             params = params.enable_write_async(v.write_async.unwrap_or_default());
             params = params.enable_union_set_discriminant(v.union_set_discriminant.unwrap_or_default());
+            params = params.enable_list_wrappers(v.list_wrappers.unwrap_or_default());
             Some(params)
         }, &RustParams::default())?;
         Ok(())

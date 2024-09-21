@@ -95,6 +95,7 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
 
 pub fn gen_message_array_type_decls<U: Utilities, T: TypeMapper>(
     template: &Template,
+    function: &str,
     msg: &Message,
     type_path_map: &TypePathMapper<T>,
 ) -> String {
@@ -108,21 +109,21 @@ pub fn gen_message_array_type_decls<U: Utilities, T: TypeMapper>(
                     scope
                         .var("item_type", type_path_map.get(&v.item_type))
                         .var("codec", U::get_value_type(field.endianness, v.ty))
-                        .render("", &["decl_array"])
+                        .render(function, &["array"])
                         .unwrap(),
                 ),
                 FieldType::List(v) => Some(
                     scope
                         .var("item_type", type_path_map.get(&v.item_type))
                         .var("codec", U::get_value_type(field.endianness, v.ty))
-                        .render("", &["decl_list"])
+                        .render(function, &["list"])
                         .unwrap(),
                 ),
                 FieldType::SizedList(v) => Some(
                     scope
                         .var("item_type", type_path_map.get(&v.item_type))
                         .var("codec", U::get_value_type(field.endianness, v.ty))
-                        .render("", &["decl_list"])
+                        .render(function, &["list"])
                         .unwrap(),
                 ),
                 _ => None,

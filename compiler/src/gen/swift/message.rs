@@ -66,6 +66,6 @@ pub fn gen_message_decl(proto: &Protocol, msg: &Message) -> String {
     template.var("proto_name", proto.name()).var("initializer", initializer);
     let mut code = generate::<SwiftUtils, _>(template, msg, &type_path_map);
     code += "\n";
-    code += &gen_message_array_type_decls::<SwiftUtils, _>(&template_ext, msg, &type_path_map);
+    code += &gen_message_array_type_decls::<SwiftUtils, _>(&template_ext, "decl", msg, &type_path_map);
     code
 }

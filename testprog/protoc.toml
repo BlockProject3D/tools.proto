@@ -6,6 +6,14 @@ path = "src"
 [options.unions]
 union-set-discriminant = true
 
+[options.lists]
+list-wrappers = true
+
+[options.lists2]
+list-wrappers = true
+
+[options.arrays]
+list-wrappers = true
 
 [options.import_ambiguous]
 reads-messages = false

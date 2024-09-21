@@ -1,8 +1,8 @@
-#fragment push decl_array
+#fragment push decl.array
 public typealias {proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B: BP3DProto.Buffer> = BP3DProto.Array<B, {codec}, {item_type}<B>>;
 #fragment pop
 
-#fragment push decl_list
+#fragment push decl.list
 public typealias {proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B: BP3DProto.Buffer> = BP3DProto.List<B, {codec}, {item_type}<B>>;
 #fragment pop
 
