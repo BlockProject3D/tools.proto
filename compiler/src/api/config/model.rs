@@ -36,7 +36,7 @@ pub struct RustParams<'a> {
     #[serde(borrow)]
     pub disable_read: Option<Vec<&'a str>>,
     pub disable_write: Option<Vec<&'a str>>,
-    pub write_async: bool
+    pub write_async: Option<bool>
 }
 
 #[derive(Deserialize)]
@@ -72,7 +72,6 @@ pub struct Dependency<'a> {
 pub struct Config<'a, T> {
     #[serde(borrow)]
     pub package: Package<'a>,
-    #[serde(flatten)]
     pub options: Option<HashMap<&'a str, Params<T>>>,
     pub dependency: Option<Vec<Dependency<'a>>>
 }

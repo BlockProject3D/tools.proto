@@ -3,7 +3,7 @@ name = ""
 path = "src"
 #file-header = "path/to/file/header"
 
-[import_ambiguous]
+[options.import_ambiguous]
 reads-messages = false
 writes-messages = false
 #disable-read = ["Name1", "Name2"]

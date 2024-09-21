@@ -26,6 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::borrow::Cow;
+use bp3d_debug::trace;
 use serde::Deserialize;
 use crate::api::config::model::Config;
 use crate::api::core::loader::Loader;
@@ -55,7 +57,14 @@ pub fn generate<'a, G: crate::gen::Generator, T, I: ImportSolver, F: Fn(&T) -> O
     generator_params_converter: F,
     generator_default_params: &G::Params<'_>) -> Result<(), Error> {
     if let Some(options) = &config.options {
-        for (protocol_full_name, params) in options {
+        for (protocol, params) in options {
+            trace!("Found options for protocol: {}", protocol);
+            let protocol_path: Cow<str> = if config.package.name.is_empty() {
+                Cow::Borrowed(protocol)
+            } else {
+                Cow::Owned(format!("{}::{}", config.package.name, protocol))
+            };
+            trace!("Protocol path: {}", protocol_path);
             let mut p = Params::default();
             if let Some(flag) = params.write_messages {
                 p.write_messages = flag;
@@ -76,9 +85,9 @@ pub fn generate<'a, G: crate::gen::Generator, T, I: ImportSolver, F: Fn(&T) -> O
                 p.use_messages = flag;
             }
             if let Some(gp) = generator_params_converter(&params.inner) {
-                generator.generate(context, protocol_full_name, &p, &gp)?;
+                generator.generate(context, protocol_path, &p, &gp)?;
             } else {
-                generator.generate(context, protocol_full_name, &p, generator_default_params)?;
+                generator.generate(context, protocol_path, &p, generator_default_params)?;
             }
         }
     }

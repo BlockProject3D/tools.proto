@@ -54,6 +54,7 @@ use crate::gen::{
 };
 use bp3d_util::simple_error;
 use std::path::Path;
+use bp3d_debug::trace;
 
 simple_error! {
     pub Error {
@@ -61,7 +62,7 @@ simple_error! {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Params<'a> {
     enable_write_async: bool,
     disable_read: HashSet<&'a str>,
@@ -92,6 +93,7 @@ impl Generator for GeneratorRust {
     type Params<'a> = Params<'a>;
 
     fn generate(proto: &Protocol, params: &Params) -> Result<Vec<File>, Self::Error> {
+        trace!("Params = {:?}", params);
         let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(v, &proto.type_path_map));
         let impl_from_slice_messages_code =
             proto.messages.iter().map(|v| gen_message_from_slice_impl(v, &proto.type_path_map));
