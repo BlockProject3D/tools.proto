@@ -168,3 +168,17 @@ impl<'a> bp3d_proto::union::UFromSlice<'a, {discriminant_type}<&'a [u8]>> for {u
 #fragment pop
 }}
 #fragment pop
+
+#fragment push empty
+#[derive(Copy, Clone, Debug)]
+pub struct {union_name}{generics} {{
+    #[allow(dead_code)]
+    unused: std::marker::PhantomData<&'a str>
+#fragment push struct
+#fragment pop
+#fragment push message
+#fragment pop
+#fragment push none
+#fragment pop
+}}
+#fragment pop

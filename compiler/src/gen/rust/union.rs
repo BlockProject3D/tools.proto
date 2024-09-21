@@ -76,7 +76,6 @@ fn get_generics(u: &Union) -> &str {
 
 pub fn gen_union_decl(u: &Union, type_path_map: &TypePathMap, params: &RustParams) -> String {
     let mut hooks = TemplateHooks::new();
-    hooks.hook("decl", "from_value");
     if params.enable_write_async {
         hooks.hook("write_to", "write_to_async");
     }
@@ -89,6 +88,12 @@ pub fn gen_union_decl(u: &Union, type_path_map: &TypePathMap, params: &RustParam
     }
     if !params.enable_union_set_discriminant {
         options.disable("setter");
+    }
+    if params.disable_read.contains(u.name()) && params.disable_write.contains(u.name()) {
+        options.disable("decl");
+        hooks.hook("decl", "empty");
+    } else {
+        hooks.hook("decl", "from_value");
     }
     let mut template = Template::compile_with_options(TEMPLATE, &options).unwrap();
     template.var("generics", get_generics(u));

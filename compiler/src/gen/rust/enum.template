@@ -4,6 +4,7 @@
 pub enum {name} {{
 {variants}
 #fragment push variant
+    #[allow(dead_code)]
     {key} = {value},
 #fragment pop
 }}
