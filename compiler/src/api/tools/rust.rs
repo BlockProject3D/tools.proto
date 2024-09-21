@@ -49,7 +49,7 @@ impl GenTools for Rust {
         GeneratorRust
     }
 
-    fn generate<'a, 'b>(generator: &'b Generator<'a, Self::Solver, Self::Generator>, context: &mut Context<'b>, config: &Config<Self::Params<'a>>) -> Result<(), Error> {
+    fn generate<'a, 'b>(generator: &'b Generator<'a, Self::Solver, Self::Generator>, context: &mut Context<'b>, config: &Config<Self::Params<'_>>) -> Result<(), Error> {
         config::core::generate(generator, context, config, |v| {
             if v.disable_write.is_none() && v.disable_read.is_none() {
                 return None;

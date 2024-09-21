@@ -47,14 +47,11 @@ pub trait GenTools {
 
     fn new_solver() -> Self::Solver;
     fn new_generator() -> Self::Generator;
-    fn generate<'a, 'b>(generator: &'b Generator<'a, Self::Solver, Self::Generator>, context: &mut Context<'b>, config: &config::model::Config<Self::Params<'a>>) -> Result<(), Error>;
+    fn generate<'a, 'b>(generator: &'b Generator<'a, Self::Solver, Self::Generator>, context: &mut Context<'b>, config: &config::model::Config<Self::Params<'_>>) -> Result<(), Error>;
 
-    fn run(config: impl AsRef<str>, out_dir: impl AsRef<Path>, post_generation: impl FnOnce(&Context)) -> Result<(), Error> {
-        // Rust is a such a piece of shit language that it requires that mothefuckingrust
-        // is declared before config!! Makes no sense at all!!
+    fn run(config: &config::model::Config<Self::Params<'_>>, out_dir: impl AsRef<Path>, post_generation: impl FnOnce(&Context)) -> Result<(), Error> {
         let motherfuckingrust = Self::new_solver();
-        let config = config::core::parse::<Self::Params<'_>>(config.as_ref()).map_err(Error::Config)?;
-        let protocols = config::core::compile(&config, &motherfuckingrust)?;
+        let protocols = config::core::compile(config, &motherfuckingrust)?;
         let (mut context, mut generator) = Generator::new(protocols, out_dir.as_ref(), Self::new_generator());
         if let Some(file_header) = config.package.file_header {
             generator.set_file_header(file_header);
@@ -65,10 +62,9 @@ pub trait GenTools {
     }
 
     fn run_file(config_file: impl AsRef<Path>, out_dir: impl AsRef<Path>, post_generation: impl FnOnce(&Context)) -> Result<(), Error> {
-        // Rust is a such a piece of shit language that it requires that mothefuckingrust
-        // is declared before config!! Makes no sense at all!!
         let str = std::fs::read_to_string(config_file).map_err(Error::Io)?;
-        Self::run(str, out_dir, post_generation)
+        let config = config::core::parse::<Self::Params<'_>>(&str).map_err(Error::Config)?;
+        Self::run(&config, out_dir, post_generation)
     }
 }
 

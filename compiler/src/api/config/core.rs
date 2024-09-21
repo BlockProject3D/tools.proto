@@ -48,12 +48,12 @@ pub fn compile<'a, T, I: ImportSolver>(config: &Config<T>, solver: &'a I) -> Res
     loader.compile(solver)
 }
 
-pub fn generate<'a, G: crate::gen::Generator, T, I: ImportSolver, F: Fn(&T) -> Option<G::Params<'a>>>(
+pub fn generate<'a, G: crate::gen::Generator, T, I: ImportSolver, F: Fn(&T) -> Option<G::Params<'_>>>(
     generator: &'a Generator<'a, I, G>,
     context: &mut Context<'a>,
     config: &Config<T>,
     generator_params_converter: F,
-    generator_default_params: &G::Params<'a>) -> Result<(), Error> {
+    generator_default_params: &G::Params<'_>) -> Result<(), Error> {
     if let Some(options) = &config.options {
         for (protocol_full_name, params) in options {
             let mut p = Params::default();
