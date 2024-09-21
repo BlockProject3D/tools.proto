@@ -96,10 +96,6 @@ pub struct Args {
     /// everything except reading and writing messages.
     #[clap(short = 'f', long = "feature")]
     pub features: Option<Vec<Feature>>,
-    /// The separator to add between the import path of protocol and the type (the default value is
-    /// '::', as used by Rust and C++).
-    #[clap(long = "separator", default_value = "::")]
-    pub import_separator: String,
     /// The file header to include at the top of each generated file, each line in the file header
     /// is already formatted according to the line comments syntax of the chosen target generation
     /// language.
