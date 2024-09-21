@@ -1,0 +1,10 @@
+[package]
+name = "protom"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+clap = { version = "4.5.15", features = ["derive"] }
+bp3d-protoc = { version = "1.0.0-rc.1.0.0", path = "../compiler", features = ["gen-rust", "gen-swift", "api-tools"] }
+bp3d-util = { version = "1.4.0", features = ["result"] }
