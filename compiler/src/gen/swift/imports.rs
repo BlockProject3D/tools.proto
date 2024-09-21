@@ -35,6 +35,7 @@ const TEMPLATE: &[u8] = include_bytes!("./imports.template");
 
 pub fn gen_imports(solver: &ProtocolStore<SwiftImportSolver>) -> String {
     let mut template = Template::compile(TEMPLATE).unwrap();
-    let import_list = solver.iter().map(|v| format!("import {};", v.package())).join("\n");
+    let import_list = solver.iter().filter(|v| !v.package().is_empty())
+        .map(|v| format!("import {};", v.package())).join("\n");
     template.var("import_list", import_list).render("", &["imports"]).unwrap()
 }

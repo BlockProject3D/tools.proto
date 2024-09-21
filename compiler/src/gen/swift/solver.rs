@@ -34,11 +34,11 @@ pub struct SwiftImportSolver;
 
 impl ImportSolver for SwiftImportSolver {
     fn get_full_type_path(&self, protocol: &Protocol, type_name: &str) -> Option<String> {
-        // package is assumed to be the module name containing the protocol, Self if the
+        // package is assumed to be the module name containing the protocol, leave empty if the
         // module is not external (so not to be imported).
-        let package_name = protocol.package();
-        if package_name != "Self" {
-            Some(format!("{}.{}{}", package_name, protocol.name().to_pascal_case(), type_name))
+        let package = protocol.package();
+        if !package.is_empty() {
+            Some(format!("{}.{}{}", package, protocol.name().to_pascal_case(), type_name))
         } else {
             Some(format!("{}{}", protocol.name().to_pascal_case(), type_name))
         }
