@@ -26,37 +26,40 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod builder;
-mod args;
-
-use bp3d_protoc::gen::{GeneratorRust, GeneratorSwift, RustImportSolver, RustParams, SwiftImportSolver};
+use std::path::Path;
 use bp3d_util::result::ResultExt;
-use clap::Parser;
+use bp3d_protoc::api::core::generator::{Context, Generator, Params};
 use bp3d_protoc::api::core::loader::Loader;
-use crate::args::{Args, Generator};
-use crate::builder::Builder;
+use bp3d_protoc::compiler::util::imports::ImportSolver;
+use crate::Args;
 
-fn build_swift(loader: Loader, args: &Args) {
-    let mut builder = Builder::new(loader, args, &SwiftImportSolver, GeneratorSwift);
-    builder.generator.generate_all(&mut builder.context, &builder.params, builder.generator.protocols()).expect_exit("failed to generate protocols", 1);
+pub struct Builder<'a, I, G> {
+    pub context: Context<'a>,
+    pub generator: Generator<'a, I, G>,
+    pub params: Params
 }
 
-fn build_rust(loader: Loader, args: &Args) {
-    let mut builder = Builder::new(loader, args, &RustImportSolver, GeneratorRust);
-    builder.generator.generate_all(&mut builder.context, &builder.params, &RustParams::default()).expect_exit("failed to generate protocols", 1);
-}
-
-fn main() {
-    let args = Args::parse();
-    let mut loader = Loader::default();
-    for (import_file, import_path) in args.iter_imports() {
-        loader.load_from_file(import_file, import_path).expect_exit("failed to import protocol", 1);
+impl<'a, I: ImportSolver, G: bp3d_protoc::gen::Generator> Builder<'a, I, G> {
+    pub fn new(loader: Loader, args: &'a Args, solver: &'a I, generator: G) -> Self {
+        let protocols = loader.compile(solver).expect_exit("failed to compile protocols", 1);
+        let params = if let Some(features) = &args.features {
+            let mut params = Params::new();
+            for f in features {
+                f.apply(&mut params);
+            }
+            params
+        } else {
+            Params::default()
+        };
+        let output = args.output.as_deref().unwrap_or(Path::new("./"));
+        let (context, mut generator) = Generator::new(protocols, &output, generator);
+        if let Some(file_header) = &args.file_header {
+            generator.set_file_header(file_header);
+        }
+        Self {
+            context,
+            generator,
+            params
+        }
     }
-    for input in &args.inputs {
-        loader.load_from_file(input, "").expect_exit("failed to load protocol", 1);
-    }
-    match args.generator {
-        Generator::Rust => build_rust(loader, &args),
-        Generator::Swift => build_swift(loader, &args),
-    };
 }
