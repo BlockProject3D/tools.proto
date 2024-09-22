@@ -30,7 +30,7 @@ use testprog::enums::{Header, Type};
 
 #[test]
 fn basic() {
-    let mut header = Header::new_on_stack();
+    let mut header = Header::new();
     assert_eq!(header.get_type().unwrap(), Type::Null);
     header.set_type(Type::String);
     assert_eq!(header.get_type().unwrap(), Type::String);

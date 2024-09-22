@@ -31,7 +31,7 @@ use testprog::import_ambiguous::Master;
 
 #[test]
 fn basic() {
-    let master = Master::new_on_stack();
+    let master = Master::new();
     assert_eq!(
         master.size(),
         testprog::bits::SIZE_NUMBERS + testprog::bits2::SIZE_NUMBERS

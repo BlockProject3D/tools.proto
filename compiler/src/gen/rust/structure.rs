@@ -77,7 +77,8 @@ mod tests {
         let code = template.render("", &["decl"]).unwrap();
         assert_eq!(
             &*code,
-            "#[derive(Copy, Clone, Default, Debug)]
+            "/// Definition for the Test structure.
+#[derive(Copy, Clone, Default, Debug)]
 pub struct Test<T> {
     data: T
 }

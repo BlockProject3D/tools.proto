@@ -32,7 +32,7 @@ use testprog::bits2::Numbers as Numbers2;
 
 #[test]
 fn numbers() {
-    let mut nums = Numbers::new_on_stack();
+    let mut nums = Numbers::new();
     assert_eq!(nums.size(), 4);
     nums.set_a(-8).set_b(15).set_c(-65536).set_d(127);
     assert_eq!(nums.get_a(), -8);
@@ -60,7 +60,7 @@ fn numbers() {
 
 #[test]
 fn numbers_raw() {
-    let mut nums = Numbers::new_on_stack();
+    let mut nums = Numbers::new();
     nums.set_raw_a(15);
     nums.set_raw_b(15);
     nums.set_raw_c(65536);
@@ -84,7 +84,7 @@ fn numbers_raw() {
 
 #[test]
 fn numbers2() {
-    let mut nums = Numbers2::new_on_stack();
+    let mut nums = Numbers2::new();
     assert_eq!(nums.size(), 4);
     nums.set_a(-8).set_b(15).set_c(-65536).set_d(127);
     assert_eq!(nums.get_a(), -8);
@@ -112,7 +112,7 @@ fn numbers2() {
 
 #[test]
 fn numbers_raw2() {
-    let mut nums = Numbers2::new_on_stack();
+    let mut nums = Numbers2::new();
     nums.set_raw_a(15);
     nums.set_raw_b(15);
     nums.set_raw_c(65536);

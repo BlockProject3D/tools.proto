@@ -31,7 +31,7 @@ use testprog::struct_arrays::Basic;
 
 #[test]
 fn basic() {
-    let mut basic = Basic::new_on_stack();
+    let mut basic = Basic::new();
     assert_eq!(basic.size(), 58);
     basic.get_p3_mut().set(0, 42.42).set(1, 42.42).set(2, 42.42).set(3, 42.42);
     assert_eq!(basic.get_p3().get(0), 42.42);

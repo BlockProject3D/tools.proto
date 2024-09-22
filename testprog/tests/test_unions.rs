@@ -37,7 +37,7 @@ use testprog::values::{
 };
 
 fn write_message(value: Value, out: &mut impl Write) {
-    let mut header = Header::new_on_stack();
+    let mut header = Header::new();
     value.set_discriminant(&mut header);
     let item = Item {
         header: header.to_ref(),
@@ -48,7 +48,7 @@ fn write_message(value: Value, out: &mut impl Write) {
 }
 
 fn write_message_fast<T: WriteSelf>(value: T, ty: Type, out: &mut impl Write) {
-    let mut header = Header::new_on_stack();
+    let mut header = Header::new();
     header.set_type(ty);
     let item = Item {
         header: header.to_ref(),

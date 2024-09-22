@@ -41,7 +41,7 @@ macro_rules! assert_feq {
 
 #[test]
 fn floats() {
-    let mut floats = Floats::new_on_stack();
+    let mut floats = Floats::new();
     floats.set_a(4.4242).set_b(12.7);
     assert_feq!(floats.get_a(), 4.4242, 0.0001);
     assert_feq!(floats.get_b(), 12.7, 0.1);

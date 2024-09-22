@@ -45,7 +45,7 @@ fn check_numbers<T: AsRef<[u8]>>(nums: &Numbers<T>) {
     assert_eq!(nums.get_b(), -4242);
     assert_eq!(nums.get_u_c(), 0x12);
     assert_eq!(nums.get_c(), -42);
-    let copy = nums.copy_on_stack();
+    let copy = nums.dupe();
     check_numbers1(&copy);
 }
 
@@ -63,7 +63,7 @@ fn check_floats<T: AsRef<[u8]>>(floats: &Floats<T>) {
 
 #[test]
 fn numbers() {
-    let mut nums = Numbers::new_on_stack();
+    let mut nums = Numbers::new();
     assert_eq!(nums.size(), 14);
     nums.set_u_a(0x123456AB).set_a(-424242).set_u_b(0x1234).set_b(-4242).set_u_c(0x12).set_c(-42);
     check_numbers(&nums);
@@ -71,7 +71,7 @@ fn numbers() {
 
 #[test]
 fn flags() {
-    let mut flags = Flags::new_on_stack();
+    let mut flags = Flags::new();
     assert_eq!(flags.size(), 15);
     flags.set_a(true).set_b(true).set_c(true).set_d(true);
     check_flags(&flags);
@@ -79,7 +79,7 @@ fn flags() {
 
 #[test]
 fn floats() {
-    let mut floats = Floats::new_on_stack();
+    let mut floats = Floats::new();
     assert_eq!(floats.size(), 12);
     floats.set_a(4242.0).set_b(4242.4242);
     check_floats(&floats);
@@ -87,7 +87,7 @@ fn floats() {
 
 #[test]
 fn master() {
-    let mut master = Master::new_on_stack();
+    let mut master = Master::new();
     assert_eq!(master.size(), 14 + 15 + 12);
     master
         .get_nums_mut()
