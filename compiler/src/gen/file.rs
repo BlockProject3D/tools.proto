@@ -29,6 +29,7 @@
 use bp3d_util::path::PathExt;
 use itertools::Itertools;
 use std::borrow::Cow;
+use std::fmt::{Debug, Formatter};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
@@ -159,6 +160,12 @@ pub struct File {
     name: Cow<'static, str>,
     data: Option<String>,
     ty: FileType,
+}
+
+impl Debug for File {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "File {{ name: {:?}, ty: {:?} }}", self.name, self.ty)
+    }
 }
 
 impl File {

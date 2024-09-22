@@ -16,8 +16,8 @@ list-wrappers = true
 list-wrappers = true
 
 [options.import_ambiguous]
-reads-messages = false
-writes-messages = false
+read-messages = false
+write-messages = false
 #disable-read = ["Name1", "Name2"]
 #disable-write = ["Name1", "Name2"]
 

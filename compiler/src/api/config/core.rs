@@ -58,13 +58,12 @@ pub fn generate<'a, G: crate::gen::Generator, T, I: ImportSolver, F: Fn(&T) -> O
     generator_default_params: &G::Params<'_>) -> Result<(), Error> {
     if let Some(options) = &config.options {
         for (protocol, params) in options {
-            trace!("Found options for protocol: {}", protocol);
             let protocol_path: Cow<str> = if config.package.name.is_empty() {
                 Cow::Borrowed(protocol)
             } else {
                 Cow::Owned(format!("{}::{}", config.package.name, protocol))
             };
-            trace!("Protocol path: {}", protocol_path);
+            trace!({path=&*protocol_path}, "Found options for protocol: {}", protocol);
             let mut p = Params::default();
             if let Some(flag) = params.write_messages {
                 p.write_messages = flag;

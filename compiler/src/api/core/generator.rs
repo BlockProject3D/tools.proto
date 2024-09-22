@@ -28,6 +28,7 @@
 
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
+use bp3d_debug::trace;
 use bp3d_util::index_map::IndexMap;
 use bp3d_util::path::PathExt;
 use crate::compiler;
@@ -136,6 +137,7 @@ impl<'a, T: ImportSolver, G: crate::gen::Generator> Generator<'a, T, G> {
     }
 
     fn generate_internal<'b>(&self, protocol: &'b compiler::Protocol, params: &Params, generator_params: &G::Params<'_>) -> Result<Item<'b>, Error> {
+        trace!({?params}, "Generating protocol {}", protocol.full_name);
         let file_header = self.file_header
             .map(std::fs::read_to_string)
             .transpose()
@@ -147,13 +149,21 @@ impl<'a, T: ImportSolver, G: crate::gen::Generator> Generator<'a, T, G> {
         if !out_path.exists() {
             std::fs::create_dir(&out_path).map_err(Error::Io)?;
         }
-        let files_iter = files.into_iter().filter(|v| match v.ty() {
-            FileType::MessageWriting => params.write_messages,
-            FileType::MessageReading => params.read_messages,
-            FileType::Message => params.use_messages,
-            FileType::Structure => params.use_structs,
-            FileType::Enum => params.use_enums,
-            FileType::Union => params.use_unions,
+        let files_iter = files.into_iter().filter(|v| {
+            let value = match v.ty() {
+                FileType::MessageWriting => params.write_messages,
+                FileType::MessageReading => params.read_messages,
+                FileType::Message => params.use_messages,
+                FileType::Structure => params.use_structs,
+                FileType::Enum => params.use_enums,
+                FileType::Union => params.use_unions,
+            };
+            if !value {
+                trace!("Excluding {:?} from generation", v);
+            } else {
+                trace!("Including {:?} in generation", v);
+            }
+            value
         });
         let iter = files_iter.into_iter()
             .map(|v| v.write(&out_path, file_header.as_deref(), G::get_language_extension()))

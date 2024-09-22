@@ -111,7 +111,7 @@ impl Generator for GeneratorRust {
     type Params<'a> = Params<'a>;
 
     fn generate(proto: &Protocol, params: &Params) -> Result<Vec<File>, Self::Error> {
-        trace!("Params = {:?}", params);
+        trace!({?params}, "Generating protocol {}", proto.full_name);
         let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(v, &proto.type_path_map, params));
         let impl_from_slice_messages_code =
             proto.messages.iter().map(|v| gen_message_from_slice_impl(v, &proto.type_path_map));
