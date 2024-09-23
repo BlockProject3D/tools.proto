@@ -58,10 +58,12 @@ pub struct MessageField {
     pub name: String,
     pub info: MessageFieldType,
     pub optional: Option<bool>,
+    pub description: Option<String>
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Message {
     pub name: String,
+    pub description: Option<String>,
     pub fields: Vec<MessageField>,
 }

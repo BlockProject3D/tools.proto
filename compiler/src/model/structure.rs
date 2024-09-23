@@ -82,6 +82,7 @@ impl StructFieldType {
 #[derive(Clone, Debug, Deserialize)]
 pub struct StructField {
     pub name: String,
+    pub description: Option<String>,
     pub info: StructFieldType,
     pub view: Option<StructFieldView>,
     pub array_len: Option<usize>,
@@ -90,5 +91,6 @@ pub struct StructField {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Structure {
     pub name: String,
+    pub description: Option<String>,
     pub fields: Vec<StructField>,
 }

@@ -33,11 +33,13 @@ pub struct UnionField {
     pub name: String,
     pub case: String,
     pub item_type: Option<String>,
+    pub description: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Union {
     pub name: String,
     pub discriminant: String,
+    pub description: Option<String>,
     pub cases: Vec<UnionField>,
 }

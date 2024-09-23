@@ -49,12 +49,14 @@ pub struct Import {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Enum {
     pub name: String,
+    pub description: Option<String>,
     pub variants: HashMap<String, usize>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Protocol {
     pub name: String,
+    pub description: Option<String>,
     pub endianness: Option<Endianness>,
     pub imports: Option<Vec<Import>>,
     pub structs: Option<Vec<Structure>>,
