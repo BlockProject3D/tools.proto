@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::message::{Referenced, SizeInfo};
-use crate::compiler::structure::{Field, FieldView, FixedField, Structure};
+use crate::compiler::structure::{Field, FieldType, FieldView, FixedField, Structure};
 use crate::compiler::{Error, Protocol};
 use std::rc::Rc;
 use crate::compiler::util::store::name_index;
@@ -87,11 +87,11 @@ impl<'a> Iterator for DiscriminantFieldIterator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let index = self.index.next()?;
         let field = &self.cur.fields[*index];
-        let is_leaf = match field {
-            Field::Fixed(_) => true,
-            Field::Array(_) => std::unreachable!(),
-            Field::Struct(v) => {
-                self.cur = &v.r;
+        let is_leaf = match &field.ty {
+            FieldType::Fixed(_) => true,
+            FieldType::Array(_) => std::unreachable!(),
+            FieldType::Struct(v) => {
+                self.cur = v;
                 false
             }
         };
@@ -107,8 +107,12 @@ impl DiscriminantField {
         }
     }
 
-    pub fn get_leaf(&self) -> &FixedField {
-        self.leaf.fields[self.leaf_index].as_fixed().unwrap()
+    pub fn get_leaf(&self) -> &Field {
+        &self.leaf.fields[self.leaf_index]
+    }
+
+    pub fn get_leaf_fixed(&self) -> &FixedField {
+        self.leaf.fields[self.leaf_index].ty.as_fixed().unwrap()
     }
 
     pub fn from_model(proto: &Protocol, discriminant: String) -> Result<Self, Error> {
@@ -122,13 +126,13 @@ impl DiscriminantField {
                 .fields
                 .iter()
                 .enumerate()
-                .find(|(_, v)| v.name() == sub)
+                .find(|(_, v)| v.name == sub)
                 .ok_or_else(|| Error::UndefinedReference(format!("{}.{}", name, sub)))?;
             index_list.push(index);
-            match field {
-                Field::Fixed(_) => break,
-                Field::Struct(v) => leaf = &v.r,
-                Field::Array(_) => return Err(Error::InvalidUnionDiscriminant),
+            match &field.ty {
+                FieldType::Fixed(_) => break,
+                FieldType::Struct(v) => leaf = v,
+                FieldType::Array(_) => return Err(Error::InvalidUnionDiscriminant),
             }
         }
         Ok(DiscriminantField {
@@ -158,7 +162,7 @@ impl Union {
         let cases = value
             .cases
             .into_iter()
-            .map(|v| UnionField::from_model(proto, discriminant.get_leaf(), v))
+            .map(|v| UnionField::from_model(proto, discriminant.get_leaf_fixed(), v))
             .collect::<Result<Vec<UnionField>, Error>>()?;
         let is_element_dyn_sized = cases.iter().any(|v| {
             v.item_type

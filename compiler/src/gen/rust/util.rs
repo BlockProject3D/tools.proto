@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::message::{Field, FieldType, Message};
-use crate::compiler::structure::{FixedField, FixedFieldType};
+use crate::compiler::structure::FixedFieldType;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::base::message::StringType;
 use crate::gen::template::Template;
@@ -147,7 +147,7 @@ impl crate::gen::base::structure::Utilities for RustUtils {
         gen_value_type!("", field_type, "")
     }
 
-    fn get_fragment_name(field: &FixedField) -> &'static str {
+    fn get_fragment_name(field: &crate::compiler::structure::Field) -> &'static str {
         let raw_field_type = field.loc.get_unsigned_integer_type();
         let raw_field_byte_size = raw_field_type.get_byte_size();
         match raw_field_byte_size != field.loc.byte_size {
@@ -156,7 +156,7 @@ impl crate::gen::base::structure::Utilities for RustUtils {
         }
     }
 
-    fn get_fragment_name_mut(field: &FixedField) -> &'static str {
+    fn get_fragment_name_mut(field: &crate::compiler::structure::Field) -> &'static str {
         let raw_field_type = field.loc.get_unsigned_integer_type();
         let raw_field_byte_size = raw_field_type.get_byte_size();
         match raw_field_byte_size != field.loc.byte_size {

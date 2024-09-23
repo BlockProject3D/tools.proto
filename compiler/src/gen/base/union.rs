@@ -167,7 +167,7 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     hooks: &TemplateHooks,
 ) -> String {
     template
-        .var("discriminant_raw_type", U::get_field_type(u.discriminant.get_leaf().ty))
+        .var("discriminant_raw_type", U::get_field_type(u.discriminant.get_leaf_fixed().ty))
         .var("union_name", &u.name)
         .var("discriminant_path_mut", U::gen_discriminant_path_mut(&u.discriminant))
         .var("discriminant_path", U::gen_discriminant_path(&u.discriminant))

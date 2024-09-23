@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::structure::{Field, FieldView, FixedField, FixedFieldType, Structure};
+use crate::compiler::structure::{Field, FieldType, FieldView, FixedField, FixedFieldType, Structure};
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::hook::{Render, TemplateHooks};
 use crate::gen::template::{Scope, Template};
@@ -36,8 +36,8 @@ use crate::compiler::util::types::TypeMapper;
 
 pub trait Utilities {
     fn get_field_type(field_type: FixedFieldType) -> &'static str;
-    fn get_fragment_name(field: &FixedField) -> &'static str;
-    fn get_fragment_name_mut(field: &FixedField) -> &'static str;
+    fn get_fragment_name(field: &Field) -> &'static str;
+    fn get_fragment_name_mut(field: &Field) -> &'static str;
     fn get_bit_codec_inline(endianness: Endianness) -> &'static str;
     fn get_byte_codec_inline(endianness: Endianness) -> &'static str;
     fn get_byte_codec(endianness: Endianness) -> &'static str;
@@ -50,20 +50,20 @@ fn gen_field_getter<U: Utilities, T: TypeMapper>(
 ) -> String {
     let mut scope = template.scope();
     scope
-        .var_d("start", field.loc().byte_offset)
-        .var_d("end", field.loc().byte_offset + field.loc().byte_size)
-        .var("name", field.name());
-    match field {
-        Field::Fixed(v) => {
-            let raw_field_type = v.loc.get_unsigned_integer_type();
+        .var_d("start", field.loc.byte_offset)
+        .var_d("end", field.loc.byte_offset + field.loc.byte_size)
+        .var("name", &field.name);
+    match &field.ty {
+        FieldType::Fixed(v) => {
+            let raw_field_type = field.loc.get_unsigned_integer_type();
             let raw_field_type = U::get_field_type(raw_field_type);
-            let fragment_name = U::get_fragment_name(v);
+            let fragment_name = U::get_fragment_name(field);
             scope.var("raw_type", raw_field_type);
-            if v.loc.bit_size % 8 != 0 {
+            if field.loc.bit_size % 8 != 0 {
                 scope
                     .var("codec", U::get_bit_codec_inline(v.endianness))
-                    .var_d("bit_offset", v.loc.bit_offset)
-                    .var_d("bit_size", v.loc.bit_size)
+                    .var_d("bit_offset", field.loc.bit_offset)
+                    .var_d("bit_size", field.loc.bit_size)
                     .render_to_var("getters.fixed.bit", &[fragment_name], "fragment")
                     .unwrap();
             } else {
@@ -76,13 +76,13 @@ fn gen_field_getter<U: Utilities, T: TypeMapper>(
             code += &gen_field_view_getter::<U, T>(v, &scope, type_path_map);
             code
         }
-        Field::Array(v) => scope
+        FieldType::Array(v) => scope
             .var("raw_type", U::get_field_type(v.ty))
             .var("codec", U::get_byte_codec(v.endianness))
-            .var_d("bit_size", v.item_bit_size())
+            .var_d("bit_size", v.item_bit_size)
             .render("getters", &["array"])
             .unwrap(),
-        Field::Struct(v) => scope.var("type_name", type_path_map.get(&v.r)).render("getters", &["struct"]).unwrap(),
+        FieldType::Struct(v) => scope.var("type_name", type_path_map.get(v)).render("getters", &["struct"]).unwrap(),
     }
 }
 
@@ -93,20 +93,20 @@ fn gen_field_setter<U: Utilities, T: TypeMapper>(
 ) -> String {
     let mut scope = template.scope();
     scope
-        .var_d("start", field.loc().byte_offset)
-        .var_d("end", field.loc().byte_offset + field.loc().byte_size)
-        .var("name", field.name());
-    match field {
-        Field::Fixed(v) => {
-            let raw_field_type = v.loc.get_unsigned_integer_type();
+        .var_d("start", field.loc.byte_offset)
+        .var_d("end", field.loc.byte_offset + field.loc.byte_size)
+        .var("name", &field.name);
+    match &field.ty {
+        FieldType::Fixed(v) => {
+            let raw_field_type = field.loc.get_unsigned_integer_type();
             let raw_field_type = U::get_field_type(raw_field_type);
-            let fragment_name = U::get_fragment_name_mut(v);
+            let fragment_name = U::get_fragment_name_mut(field);
             scope.var("raw_type", raw_field_type);
-            if v.loc.bit_size % 8 != 0 {
+            if field.loc.bit_size % 8 != 0 {
                 scope
                     .var("codec", U::get_bit_codec_inline(v.endianness))
-                    .var_d("bit_offset", v.loc.bit_offset)
-                    .var_d("bit_size", v.loc.bit_size)
+                    .var_d("bit_offset", field.loc.bit_offset)
+                    .var_d("bit_size", field.loc.bit_size)
                     .render_to_var("setters.fixed.bit", &[fragment_name], "fragment")
                     .unwrap();
             } else {
@@ -119,13 +119,13 @@ fn gen_field_setter<U: Utilities, T: TypeMapper>(
             code += &gen_field_view_setter::<U, T>(v, &scope, type_path_map);
             code
         }
-        Field::Array(v) => scope
+        FieldType::Array(v) => scope
             .var("raw_type", U::get_field_type(v.ty))
             .var("codec", U::get_byte_codec(v.endianness))
-            .var_d("bit_size", v.item_bit_size())
+            .var_d("bit_size", v.item_bit_size)
             .render("setters", &["array"])
             .unwrap(),
-        Field::Struct(v) => scope.var("type_name", type_path_map.get(&v.r)).render("setters", &["struct"]).unwrap(),
+        FieldType::Struct(v) => scope.var("type_name", type_path_map.get(v)).render("setters", &["struct"]).unwrap(),
     }
 }
 

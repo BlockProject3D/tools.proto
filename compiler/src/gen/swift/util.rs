@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::structure::{FixedField, FixedFieldType};
+use crate::compiler::structure::{Field, FixedFieldType};
 use crate::compiler::Protocol;
 use crate::gen::base::message::StringType;
 use crate::gen::template::util::CaseConversion;
@@ -81,7 +81,7 @@ impl crate::gen::base::structure::Utilities for SwiftUtils {
         gen_value_type!("", field_type, "")
     }
 
-    fn get_fragment_name(field: &FixedField) -> &'static str {
+    fn get_fragment_name(field: &Field) -> &'static str {
         let raw_field_type = field.loc.get_unsigned_integer_type();
         let raw_field_byte_size = raw_field_type.get_byte_size();
         match raw_field_byte_size != field.loc.byte_size {
@@ -90,7 +90,7 @@ impl crate::gen::base::structure::Utilities for SwiftUtils {
         }
     }
 
-    fn get_fragment_name_mut(field: &FixedField) -> &'static str {
+    fn get_fragment_name_mut(field: &Field) -> &'static str {
         let raw_field_type = field.loc.get_unsigned_integer_type();
         let raw_field_byte_size = raw_field_type.get_byte_size();
         match raw_field_byte_size != field.loc.byte_size {

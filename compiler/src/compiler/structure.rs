@@ -225,66 +225,44 @@ impl FieldView {
 
 #[derive(Clone, Debug)]
 pub struct FixedField {
-    pub name: String,
     pub ty: FixedFieldType,
-    pub loc: Location,
     pub view: FieldView,
     pub endianness: Endianness,
 }
 
 #[derive(Clone, Debug)]
 pub struct FixedArrayField {
-    pub name: String,
     pub ty: FixedFieldType,
     pub array_len: usize,
-    pub loc: Location,
     pub endianness: Endianness,
-}
-
-impl FixedArrayField {
-    pub fn item_bit_size(&self) -> usize {
-        self.loc.bit_size / self.array_len
-    }
+    pub item_bit_size: usize
 }
 
 #[derive(Clone, Debug)]
-pub struct StructField {
-    pub name: String,
-    pub r: Rc<Structure>,
-    pub loc: Location,
-}
-
-#[derive(Clone, Debug)]
-pub enum Field {
+pub enum FieldType {
     Fixed(FixedField),
     Array(FixedArrayField),
-    Struct(StructField),
+    Struct(Rc<Structure>),
 }
 
-impl Field {
+impl FieldType {
     pub fn as_fixed(&self) -> Option<&FixedField> {
         match self {
-            Field::Fixed(v) => Some(v),
+            FieldType::Fixed(v) => Some(v),
             _ => None,
         }
     }
+}
 
-    pub fn loc(&self) -> &Location {
-        match self {
-            Field::Fixed(v) => &v.loc,
-            Field::Array(v) => &v.loc,
-            Field::Struct(v) => &v.loc,
-        }
-    }
+#[derive(Clone, Debug)]
+pub struct Field {
+    pub name: String,
+    pub loc: Location,
+    pub description: Option<String>,
+    pub ty: FieldType
+}
 
-    pub fn name(&self) -> &str {
-        match self {
-            Field::Fixed(v) => &v.name,
-            Field::Array(v) => &v.name,
-            Field::Struct(v) => &v.name,
-        }
-    }
-
+impl Field {
     fn from_model(
         proto: &Protocol,
         last_bit_offset: usize,
@@ -295,11 +273,12 @@ impl Field {
                 let r = try2!(proto.structs.get(&item_type) => Error::UndefinedReference(item_type));
                 trace!("Solved reference {} => {:?}", item_type, r);
                 Ok((
-                    Self::Struct(StructField {
+                    Self {
                         name: value.name,
-                        r: r.clone(),
+                        ty: FieldType::Struct(r.clone()),
                         loc: Location::from_model(r.bit_size, last_bit_offset),
-                    }),
+                        description: value.description
+                    },
                     last_bit_offset + r.bit_size,
                 ))
             }
@@ -315,24 +294,31 @@ impl Field {
                         return Err(Error::UnalignedArrayCodec);
                     }
                     Ok((
-                        Self::Array(FixedArrayField {
+                        Self {
                             name: value.name,
-                            endianness: proto.endianness,
-                            array_len,
-                            ty,
+                            ty: FieldType::Array(FixedArrayField {
+                                endianness: proto.endianness,
+                                array_len,
+                                ty,
+                                item_bit_size: loc.bit_size / array_len
+                            }),
                             loc,
-                        }),
+                            description: value.description
+                        },
                         last_bit_offset + bit_size,
                     ))
                 } else {
                     Ok((
-                        Self::Fixed(FixedField {
+                        Self {
                             name: value.name,
-                            endianness: proto.endianness,
-                            ty,
+                            ty: FieldType::Fixed(FixedField {
+                                endianness: proto.endianness,
+                                ty,
+                                view
+                            }),
                             loc,
-                            view,
-                        }),
+                            description: value.description
+                        },
                         last_bit_offset + bit_size,
                     ))
                 }
@@ -344,6 +330,7 @@ impl Field {
 #[derive(Clone, Debug)]
 pub struct Structure {
     pub name: String,
+    pub description: Option<String>,
     pub fields: Vec<Field>,
     pub byte_size: usize,
     pub bit_size: usize,
@@ -361,6 +348,7 @@ impl Structure {
         });
         Ok(Structure {
             name: value.name,
+            description: value.description,
             fields: fields.collect::<Result<Vec<Field>, Error>>()?,
             bit_size: last_bit_offset,
             byte_size: if last_bit_offset % 8 != 0 {

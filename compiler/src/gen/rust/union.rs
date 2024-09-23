@@ -44,9 +44,9 @@ impl Utilities for RustUtils {
             .iter()
             .map(|(f, is_leaf)| {
                 if is_leaf {
-                    format!("get_raw_{}()", f.name())
+                    format!("get_raw_{}()", f.name)
                 } else {
-                    format!("get_{}()", f.name())
+                    format!("get_{}()", f.name)
                 }
             })
             .join(".")
@@ -57,9 +57,9 @@ impl Utilities for RustUtils {
             .iter()
             .map(|(f, is_leaf)| {
                 if is_leaf {
-                    format!("set_raw_{}", f.name())
+                    format!("set_raw_{}", f.name)
                 } else {
-                    format!("get_{}_mut()", f.name())
+                    format!("get_{}_mut()", f.name)
                 }
             })
             .join(".")

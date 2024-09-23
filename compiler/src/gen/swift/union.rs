@@ -44,9 +44,9 @@ impl Utilities for SwiftUtils {
             .iter()
             .map(|(f, is_leaf)| {
                 if is_leaf {
-                    format!("raw{}", f.name().to_pascal_case())
+                    format!("raw{}", f.name.to_pascal_case())
                 } else {
-                    format!("{}", f.name().to_camel_case())
+                    format!("{}", f.name.to_camel_case())
                 }
             })
             .join(".")
@@ -57,9 +57,9 @@ impl Utilities for SwiftUtils {
             .iter()
             .map(|(f, is_leaf)| {
                 if is_leaf {
-                    format!("setRaw{}", f.name().to_pascal_case())
+                    format!("setRaw{}", f.name.to_pascal_case())
                 } else {
-                    format!("{}", f.name().to_camel_case())
+                    format!("{}", f.name.to_camel_case())
                 }
             })
             .join(".")
