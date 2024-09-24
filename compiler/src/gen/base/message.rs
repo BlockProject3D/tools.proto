@@ -103,7 +103,7 @@ pub fn gen_message_array_type_decls<U: Utilities, T: TypeMapper>(
     msg.fields
         .iter()
         .filter_map(|field| {
-            scope.var("name", &field.name);
+            scope.var("name", &field.name).var("description", field.description.as_deref().unwrap_or(""));
             match &field.ty {
                 FieldType::Array(v) => Some(
                     scope
@@ -138,6 +138,7 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     type_path_map: &TypePathMapper<T>,
 ) -> String {
     template.var("msg_name", &msg.name);
+    template.var("msg_description", msg.description.as_deref().unwrap_or(""));
     let fields = msg.fields.iter().map(|v| gen_msg_field_decl::<U, T>(v, &template, type_path_map)).join("");
     template.scope().var("fields", fields).render("", &["decl"]).unwrap()
 }

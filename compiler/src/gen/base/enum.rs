@@ -34,6 +34,7 @@ use itertools::Itertools;
 pub fn generate<'variable, U: Utilities>(mut template: Template<'_, 'variable>, e: &'variable Enum) -> String {
     template
         .var("name", &e.name)
+        .var("description", e.description.as_deref().unwrap_or(""))
         .var_d("largest", e.largest)
         .var("repr_type", U::get_field_type(e.repr_type));
     let mut code = e

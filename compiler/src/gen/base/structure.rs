@@ -52,7 +52,8 @@ fn gen_field_getter<U: Utilities, T: TypeMapper>(
     scope
         .var_d("start", field.loc.byte_offset)
         .var_d("end", field.loc.byte_offset + field.loc.byte_size)
-        .var("name", &field.name);
+        .var("name", &field.name)
+        .var("description", field.description.as_deref().unwrap_or(""));
     match &field.ty {
         FieldType::Fixed(v) => {
             let raw_field_type = field.loc.get_unsigned_integer_type();
@@ -95,7 +96,8 @@ fn gen_field_setter<U: Utilities, T: TypeMapper>(
     scope
         .var_d("start", field.loc.byte_offset)
         .var_d("end", field.loc.byte_offset + field.loc.byte_size)
-        .var("name", &field.name);
+        .var("name", &field.name)
+        .var("description", field.description.as_deref().unwrap_or(""));
     match &field.ty {
         FieldType::Fixed(v) => {
             let raw_field_type = field.loc.get_unsigned_integer_type();
@@ -235,8 +237,10 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
 ) -> String {
     let mut template = templates.template;
     let mut field_template = templates.field_template;
-    field_template.var("struct_name", &s.name);
-    template.var("name", &s.name).var_d("byte_size", s.byte_size);
+    field_template.var("struct_name", &s.name)
+        .var("struct_description", s.description.as_deref().unwrap_or(""));
+    template.var("name", &s.name).var_d("byte_size", s.byte_size)
+        .var("struct_description", s.description.as_deref().unwrap_or(""));
     let mut code = template.render("", &["decl", "new", "fixed_size", "write_to", "from_slice"]).unwrap();
     for frag in hooks.get_fragments("ext") {
         code += &template.render_frag(frag).unwrap();
