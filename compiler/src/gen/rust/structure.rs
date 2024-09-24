@@ -73,11 +73,13 @@ mod tests {
     #[test]
     fn test_template_render() {
         let mut template = Template::compile(STRUCT_TEMPLATE).unwrap();
-        template.var("name", "Test");
+        template.var("name", "Test").var("struct_description", "");
         let code = template.render("", &["decl"]).unwrap();
         assert_eq!(
             &*code,
             "/// Definition for the Test structure.
+///
+/// 
 #[derive(Copy, Clone, Default, Debug)]
 pub struct Test<T> {
     data: T

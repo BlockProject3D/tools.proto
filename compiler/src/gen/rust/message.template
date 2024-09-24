@@ -1,8 +1,14 @@
 #fragment push decl
+/// Message declaration for {msg_name}.
+///
+/// {msg_description}
 #[derive(Copy, Clone, Debug)]
 pub struct {msg_name}{generics} {{
 {fields}
 #fragment push field
+    /// Message field {info}.
+    ///
+    /// {description}
     pub {name}: {type},
 #fragment pop
 }}

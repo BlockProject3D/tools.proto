@@ -82,6 +82,8 @@ impl<'a, T: AsMut<[u8]>> {name}<T> {{
 
 #fragment push decl
 /// Definition for the {name} structure.
+///
+/// {struct_description}
 #[derive(Copy, Clone, Default, Debug)]
 pub struct {name}<T> {{
     data: T

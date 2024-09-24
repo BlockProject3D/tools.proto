@@ -2,6 +2,9 @@
 impl<T: AsRef<[u8]>> {struct_name}<T> {{
 {fields}
 #fragment push fixed
+    /// Raw field getter for {info}.
+    ///
+    /// {description}
     pub fn get_raw_{name}(&self) -> {raw_type} {{
 {fragment}
 #fragment push bit.aligned
@@ -19,27 +22,42 @@ impl<T: AsRef<[u8]>> {struct_name}<T> {{
     }}
 #fragment pop
 #fragment push array
+    /// Immutable access to {info}.
+    ///
+    /// {description}
     pub fn get_{name}(&self) -> bp3d_proto::codec::ArrayCodec<&[u8], {raw_type}, {codec}, {bit_size}> {{
         bp3d_proto::codec::ArrayCodec::new(&self.data.as_ref()[{start}..{end}])
     }}
 #fragment pop
 #fragment push struct
+    /// Immutable access to {info}.
+    ///
+    /// {description}
     pub fn get_{name}(&self) -> {type_name}<&[u8]> {{
         {type_name}::from(&self.data.as_ref()[{start}..{end}])
     }}
 #fragment pop
 #fragment push view_float
+    /// Field getter for {info}.
+    ///
+    /// {description}
     pub fn get_{name}(&self) -> {view_type} {{
         let raw_value = self.get_raw_{name}() as {view_type};
         raw_value * {a} + {b}
     }}
 #fragment pop
 #fragment push view_enum
+    /// Field getter for {info}.
+    ///
+    /// {description}
     pub fn get_{name}(&self) -> Option<{view_type}> {{
         {view_type}::from_raw(self.get_raw_{name}())
     }}
 #fragment pop
 #fragment push view_transmute
+    /// Field getter for {info}.
+    ///
+    /// {description}
     pub fn get_{name}(&self) -> {view_type} {{
 {fragment}
 #fragment push bool
@@ -51,6 +69,9 @@ impl<T: AsRef<[u8]>> {struct_name}<T> {{
     }}
 #fragment pop
 #fragment push view_signed
+    /// Field getter for {info}.
+    ///
+    /// {description}
     pub fn get_{name}(&self) -> {view_type} {{
         let raw_value = self.get_raw_{name}();
         if raw_value > {max_positive} {{
@@ -61,6 +82,9 @@ impl<T: AsRef<[u8]>> {struct_name}<T> {{
     }}
 #fragment pop
 #fragment push view_none
+    /// Field getter for {info}.
+    ///
+    /// {description}
     pub fn get_{name}(&self) -> {view_type} {{
         self.get_raw_{name}()
     }}
@@ -72,6 +96,9 @@ impl<T: AsRef<[u8]>> {struct_name}<T> {{
 impl<T: AsMut<[u8]>> {struct_name}<T> {{
 {fields}
 #fragment push fixed
+    /// Raw field setter for {info}.
+    ///
+    /// {description}
     pub fn set_raw_{name}(&mut self, value: {raw_type}) {{
 {fragment}
 #fragment push bit.aligned
@@ -89,16 +116,25 @@ impl<T: AsMut<[u8]>> {struct_name}<T> {{
     }}
 #fragment pop
 #fragment push array
+    /// Mutable access to {info}.
+    ///
+    /// {description}
     pub fn get_{name}_mut(&mut self) -> bp3d_proto::codec::ArrayCodec<&mut [u8], {raw_type}, {codec}, {bit_size}> {{
         bp3d_proto::codec::ArrayCodec::new(&mut self.data.as_mut()[{start}..{end}])
     }}
 #fragment pop
 #fragment push struct
+    /// Mutable access to {info}.
+    ///
+    /// {description}
     pub fn get_{name}_mut(&mut self) -> {type_name}<&mut [u8]> {{
         {type_name}::from(&mut self.data.as_mut()[{start}..{end}])
     }}
 #fragment pop
 #fragment push view_float
+    /// Field setter for {info}.
+    ///
+    /// {description}
     pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
         let raw_value = value * {a_inv} + {b_inv};
         self.set_raw_{name}(raw_value as {raw_type});
@@ -106,12 +142,18 @@ impl<T: AsMut<[u8]>> {struct_name}<T> {{
     }}
 #fragment pop
 #fragment push view_enum
+    /// Field setter for {info}.
+    ///
+    /// {description}
     pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
         self.set_raw_{name}(value.into_raw());
         self
     }}
 #fragment pop
 #fragment push view_transmute
+    /// Field setter for {info}.
+    ///
+    /// {description}
     pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
 {fragment}
 #fragment push bool
@@ -128,6 +170,9 @@ impl<T: AsMut<[u8]>> {struct_name}<T> {{
     }}
 #fragment pop
 #fragment push view_none
+    /// Field setter for {info}.
+    ///
+    /// {description}
     pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
         self.set_raw_{name}(value);
         self
