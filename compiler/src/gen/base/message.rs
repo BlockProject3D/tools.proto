@@ -103,7 +103,8 @@ pub fn gen_message_array_type_decls<U: Utilities, T: TypeMapper>(
     msg.fields
         .iter()
         .filter_map(|field| {
-            scope.var("name", &field.name).var("description", field.description.as_deref().unwrap_or(""));
+            scope.var("name", &field.name).var("description", field.description.as_deref().unwrap_or(""))
+                .var_d("info", field);
             match &field.ty {
                 FieldType::Array(v) => Some(
                     scope

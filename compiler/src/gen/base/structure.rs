@@ -53,7 +53,8 @@ fn gen_field_getter<U: Utilities, T: TypeMapper>(
         .var_d("start", field.loc.byte_offset)
         .var_d("end", field.loc.byte_offset + field.loc.byte_size)
         .var("name", &field.name)
-        .var("description", field.description.as_deref().unwrap_or(""));
+        .var("description", field.description.as_deref().unwrap_or(""))
+        .var_d("info", field);
     match &field.ty {
         FieldType::Fixed(v) => {
             let raw_field_type = field.loc.get_unsigned_integer_type();
@@ -97,7 +98,8 @@ fn gen_field_setter<U: Utilities, T: TypeMapper>(
         .var_d("start", field.loc.byte_offset)
         .var_d("end", field.loc.byte_offset + field.loc.byte_size)
         .var("name", &field.name)
-        .var("description", field.description.as_deref().unwrap_or(""));
+        .var("description", field.description.as_deref().unwrap_or(""))
+        .var_d("info", field);
     match &field.ty {
         FieldType::Fixed(v) => {
             let raw_field_type = field.loc.get_unsigned_integer_type();

@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::fmt::{Display, Formatter, Write};
 use crate::compiler::error::Error;
 use crate::compiler::r#enum::Enum;
 use crate::compiler::Protocol;
@@ -35,6 +36,7 @@ use bp3d_debug::trace;
 use std::rc::Rc;
 use crate::compiler::util::store::name_index;
 use crate::compiler::util::try2;
+use crate::compiler::util::types::Name;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FixedFieldType {
@@ -49,6 +51,24 @@ pub enum FixedFieldType {
     Float32,
     Float64,
     Bool,
+}
+
+impl Display for FixedFieldType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FixedFieldType::Int8 => f.write_str("Int8"),
+            FixedFieldType::Int16 => f.write_str("Int16"),
+            FixedFieldType::Int32 => f.write_str("Int32"),
+            FixedFieldType::Int64 => f.write_str("Int64"),
+            FixedFieldType::UInt8 => f.write_str("UInt8"),
+            FixedFieldType::UInt16 => f.write_str("UInt16"),
+            FixedFieldType::UInt32 => f.write_str("UInt32"),
+            FixedFieldType::UInt64 => f.write_str("UInt64"),
+            FixedFieldType::Float32 => f.write_str("Float32"),
+            FixedFieldType::Float64 => f.write_str("Float64"),
+            FixedFieldType::Bool => f.write_str("Bool")
+        }
+    }
 }
 
 fn map_numeric(
@@ -125,6 +145,12 @@ pub struct Location {
     pub bit_offset: usize,
     pub byte_size: usize,
     pub bit_size: usize,
+}
+
+impl Display for Location {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "bytes {}..{}, bits {}..{}", self.byte_offset, self.byte_offset + self.byte_size, self.bit_offset, self.bit_offset + self.bit_size)
+    }
 }
 
 impl Location {
@@ -230,6 +256,12 @@ pub struct FixedField {
     pub endianness: Endianness,
 }
 
+impl Display for FixedField {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}, {} endian", self.ty, self.endianness)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct FixedArrayField {
     pub ty: FixedFieldType,
@@ -238,12 +270,29 @@ pub struct FixedArrayField {
     pub item_bit_size: usize
 }
 
+impl Display for FixedArrayField {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}[{}], {} endian", self.ty, self.array_len, self.endianness)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub enum FieldType {
     Fixed(FixedField),
     Array(FixedArrayField),
     Struct(Rc<Structure>),
 }
+
+impl Display for FieldType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FieldType::Fixed(v) => v.fmt(f),
+            FieldType::Array(v) => v.fmt(f),
+            FieldType::Struct(v) => f.write_str(v.name())
+        }
+    }
+}
+
 
 impl FieldType {
     pub fn as_fixed(&self) -> Option<&FixedField> {
@@ -260,6 +309,12 @@ pub struct Field {
     pub loc: Location,
     pub description: Option<String>,
     pub ty: FieldType
+}
+
+impl Display for Field {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {} ({})", self.name, self.ty, self.loc)
+    }
 }
 
 impl Field {

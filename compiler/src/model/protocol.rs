@@ -31,12 +31,22 @@ use crate::model::structure::Structure;
 use crate::model::union::Union;
 use serde::Deserialize;
 use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Endianness {
     Little,
     Big,
+}
+
+impl Display for Endianness {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Endianness::Little => f.write_str("little"),
+            Endianness::Big => f.write_str("big")
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]

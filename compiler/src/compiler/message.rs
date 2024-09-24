@@ -35,6 +35,7 @@ use crate::model::message::MessageFieldType;
 use crate::model::protocol::Endianness;
 use crate::model::structure::StructFieldType;
 use std::cell::Cell;
+use std::fmt::{Display, Formatter};
 use std::rc::Rc;
 use crate::compiler::util::types::{Name, PtrKey};
 
@@ -78,15 +79,33 @@ pub struct ArrayField {
     pub item_type: Rc<Structure>,
 }
 
+impl Display for ArrayField {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Array<{}, Len = {}>", self.item_type.name, self.ty)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct VarcharStringField {
     pub ty: FixedFieldType,
+}
+
+impl Display for VarcharStringField {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Varchar<{}>", self.ty)
+    }
 }
 
 #[derive(Clone, Debug)]
 pub struct ListField {
     pub ty: FixedFieldType,
     pub item_type: Rc<Message>,
+}
+
+impl Display for ListField {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "List<{}, Len = {}>", self.item_type.name(), self.ty)
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -96,9 +115,21 @@ pub struct SizedListField {
     pub size_ty: FixedFieldType,
 }
 
+impl Display for SizedListField {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "SizedList<{}, Len = {}, Size = {}>", self.item_type.name(), self.ty, self.size_ty)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct FixedField {
     pub ty: FixedFieldType,
+}
+
+impl Display for FixedField {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.ty)
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -106,6 +137,12 @@ pub struct UnionField {
     pub r: Rc<Union>,
     pub on_name: String,
     pub on_index: usize,
+}
+
+impl Display for UnionField {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.r.name())
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -119,6 +156,22 @@ pub enum FieldType {
     List(ListField),
     SizedList(SizedListField),
     Payload,
+}
+
+impl Display for FieldType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FieldType::Fixed(v) => v.fmt(f),
+            FieldType::Ref(v) => f.write_str(v.name()),
+            FieldType::NullTerminatedString => f.write_str("String"),
+            FieldType::VarcharString(v) => v.fmt(f),
+            FieldType::Array(v) => v.fmt(f),
+            FieldType::Union(v) => v.fmt(f),
+            FieldType::List(v) => v.fmt(f),
+            FieldType::SizedList(v) => v.fmt(f),
+            FieldType::Payload => f.write_str("Bytes")
+        }
+    }
 }
 
 impl FieldType {
@@ -158,6 +211,16 @@ pub struct Field {
     pub size: SizeInfo,
     pub endianness: Endianness,
     pub description: Option<String>,
+}
+
+impl Display for Field {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if self.optional {
+            write!(f, "{}: {}?, {} endian", self.name, self.ty, self.endianness)
+        } else {
+            write!(f, "{}: {}, {} endian", self.name, self.ty, self.endianness)
+        }
+    }
 }
 
 impl Field {
