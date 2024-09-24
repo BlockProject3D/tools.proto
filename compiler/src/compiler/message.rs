@@ -157,6 +157,7 @@ pub struct Field {
     pub optional: bool,
     pub size: SizeInfo,
     pub endianness: Endianness,
+    pub description: Option<String>,
 }
 
 impl Field {
@@ -178,6 +179,7 @@ impl Field {
                             let fixed = unsafe { r.fields[0].ty.as_fixed().unwrap_unchecked() };
                             Ok(Field {
                                 name: value.name,
+                                description: value.description,
                                 ty: FieldType::Fixed(FixedField { ty: fixed.ty }),
                                 optional: value.optional.unwrap_or_default(),
                                 size: SizeInfo {
@@ -189,6 +191,7 @@ impl Field {
                         } else {
                             Ok(Field {
                                 name: value.name,
+                                description: value.description,
                                 ty: FieldType::Ref(Referenced::Struct(r)),
                                 optional: value.optional.unwrap_or_default(),
                                 size: SizeInfo {
@@ -201,6 +204,7 @@ impl Field {
                     }
                     Referenced::Message(r) => Ok(Field {
                         name: value.name,
+                        description: value.description,
                         optional: value.optional.unwrap_or_default(),
                         size: r.size,
                         ty: FieldType::Ref(Referenced::Message(r)),
@@ -218,6 +222,7 @@ impl Field {
                 match r {
                     Referenced::Struct(item_type) => Ok(Field {
                         name: value.name,
+                        description: value.description,
                         ty: FieldType::Array(ArrayField { item_type, ty }),
                         optional: value.optional.unwrap_or_default(),
                         size: SizeInfo {
@@ -231,6 +236,7 @@ impl Field {
                             let size_ty = FixedFieldType::from_max_value(max_size)?;
                             Ok(Field {
                                 name: value.name,
+                                description: value.description,
                                 ty: FieldType::SizedList(SizedListField { ty, item_type, size_ty }),
                                 optional: value.optional.unwrap_or_default(),
                                 size: SizeInfo {
@@ -243,6 +249,7 @@ impl Field {
                             item_type.embedded.set(true);
                             Ok(Field {
                                 name: value.name,
+                                description: value.description,
                                 ty: FieldType::List(ListField { ty, item_type }),
                                 optional: value.optional.unwrap_or_default(),
                                 size: SizeInfo {
@@ -258,6 +265,7 @@ impl Field {
             MessageFieldType::String { max_len } => match max_len {
                 None => Ok(Field {
                     name: value.name,
+                    description: value.description,
                     ty: FieldType::NullTerminatedString,
                     optional: value.optional.unwrap_or_default(),
                     size: SizeInfo {
@@ -270,6 +278,7 @@ impl Field {
                     let ty = FixedFieldType::from_max_value(max_len)?;
                     Ok(Field {
                         name: value.name,
+                        description: value.description,
                         ty: FieldType::VarcharString(VarcharStringField { ty }),
                         optional: value.optional.unwrap_or_default(),
                         size: SizeInfo {
@@ -301,6 +310,7 @@ impl Field {
                 }
                 Ok(Field {
                     name: value.name,
+                    description: value.description,
                     ty: FieldType::Union(UnionField {
                         r: r.clone(),
                         on_name,
@@ -313,6 +323,7 @@ impl Field {
             }
             MessageFieldType::Payload => Ok(Field {
                 name: value.name,
+                description: value.description,
                 ty: FieldType::Payload,
                 optional: value.optional.unwrap_or_default(),
                 size: SizeInfo {
@@ -325,6 +336,7 @@ impl Field {
                 let ty = FixedFieldType::from_model(StructFieldType::Unsigned { bits })?;
                 Ok(Field {
                     name: value.name,
+                    description: value.description,
                     ty: FieldType::Fixed(FixedField { ty }),
                     optional: value.optional.unwrap_or_default(),
                     size: SizeInfo {
@@ -341,6 +353,7 @@ impl Field {
 #[derive(Clone, Debug)]
 pub struct Message {
     pub name: String,
+    pub description: Option<String>,
     pub fields: Vec<Field>,
     pub size: SizeInfo,
     embedded: Cell<bool>,
@@ -373,6 +386,7 @@ impl Message {
         }
         Ok(Message {
             name: value.name,
+            description: value.description,
             fields,
             size: SizeInfo {
                 is_dyn_sized,

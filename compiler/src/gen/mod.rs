@@ -28,6 +28,8 @@
 
 //! Low-level code generator built on top of the compiler.
 
+//TODO: Support for description in the Rust generator as doc comments.
+
 #[cfg(feature = "gen-base")]
 pub mod base;
 pub mod file;

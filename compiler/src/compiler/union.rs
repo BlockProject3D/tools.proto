@@ -35,6 +35,7 @@ use crate::compiler::util::store::name_index;
 #[derive(Clone, Debug)]
 pub struct UnionField {
     pub name: String,
+    pub description: Option<String>,
     pub case: usize,
     pub item_type: Option<Referenced>,
 }
@@ -62,6 +63,7 @@ impl UnionField {
             .transpose()?;
         Ok(UnionField {
             name: value.name,
+            description: value.description,
             case,
             item_type,
         })
@@ -148,6 +150,7 @@ impl DiscriminantField {
 pub struct Union {
     pub name: String,
     pub discriminant: DiscriminantField,
+    pub description: Option<String>,
     pub cases: Vec<UnionField>,
     pub size: SizeInfo,
 }
@@ -185,6 +188,7 @@ impl Union {
         Ok(Union {
             name: value.name,
             discriminant,
+            description: value.description,
             cases,
             size: SizeInfo {
                 is_element_dyn_sized,

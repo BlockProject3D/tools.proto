@@ -42,6 +42,7 @@ use crate::compiler::util::types::{Name, PtrKey, TypePathMap};
 #[derive(Clone, Debug)]
 pub struct Protocol {
     pub full_name: String,
+    pub description: Option<String>,
     pub endianness: Endianness,
     pub type_path_map: TypePathMap,
     pub structs: ObjectStore<Structure>,
@@ -132,6 +133,7 @@ impl Protocol {
         };
         let mut proto = Protocol {
             full_name,
+            description: value.description,
             endianness: value.endianness.unwrap_or(Endianness::Little),
             type_path_map: TypePathMap::new(),
             structs: ObjectStore::new(),
