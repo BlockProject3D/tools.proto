@@ -31,11 +31,12 @@ use crate::compiler::structure::{Field, FieldType, FieldView, FixedField, Struct
 use crate::compiler::{Error, Protocol};
 use std::rc::Rc;
 use crate::compiler::util::store::name_index;
+use crate::model::protocol::Description;
 
 #[derive(Clone, Debug)]
 pub struct UnionField {
     pub name: String,
-    pub description: Option<String>,
+    pub description: Option<Description>,
     pub case: usize,
     pub item_type: Option<Referenced>,
 }
@@ -150,7 +151,7 @@ impl DiscriminantField {
 pub struct Union {
     pub name: String,
     pub discriminant: DiscriminantField,
-    pub description: Option<String>,
+    pub description: Option<Description>,
     pub cases: Vec<UnionField>,
     pub size: SizeInfo,
 }

@@ -32,7 +32,7 @@ use crate::compiler::message::Message;
 use crate::compiler::r#enum::Enum;
 use crate::compiler::structure::Structure;
 use crate::compiler::union::Union;
-use crate::model::protocol::Endianness;
+use crate::model::protocol::{Description, Endianness};
 use bp3d_debug::trace;
 use std::rc::Rc;
 use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
@@ -42,7 +42,7 @@ use crate::compiler::util::types::{Name, PtrKey, TypePathMap};
 #[derive(Clone, Debug)]
 pub struct Protocol {
     pub full_name: String,
-    pub description: Option<String>,
+    pub description: Option<Description>,
     pub endianness: Endianness,
     pub type_path_map: TypePathMap,
     pub structs: ObjectStore<Structure>,

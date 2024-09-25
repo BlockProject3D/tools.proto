@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use serde::Deserialize;
+use crate::model::protocol::Description;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -58,12 +59,12 @@ pub struct MessageField {
     pub name: String,
     pub info: MessageFieldType,
     pub optional: Option<bool>,
-    pub description: Option<String>
+    pub description: Option<Description>
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Message {
     pub name: String,
-    pub description: Option<String>,
+    pub description: Option<Description>,
     pub fields: Vec<MessageField>,
 }

@@ -27,19 +27,20 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use serde::Deserialize;
+use crate::model::protocol::Description;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct UnionField {
     pub name: String,
     pub case: String,
     pub item_type: Option<String>,
-    pub description: Option<String>,
+    pub description: Option<Description>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Union {
     pub name: String,
     pub discriminant: String,
-    pub description: Option<String>,
+    pub description: Option<Description>,
     pub cases: Vec<UnionField>,
 }

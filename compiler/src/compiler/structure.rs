@@ -30,7 +30,7 @@ use std::fmt::{Display, Formatter};
 use crate::compiler::error::Error;
 use crate::compiler::r#enum::Enum;
 use crate::compiler::Protocol;
-use crate::model::protocol::Endianness;
+use crate::model::protocol::{Description, Endianness};
 use crate::model::structure::{SimpleType, StructFieldType, StructFieldView};
 use bp3d_debug::trace;
 use std::rc::Rc;
@@ -307,7 +307,7 @@ impl FieldType {
 pub struct Field {
     pub name: String,
     pub loc: Location,
-    pub description: Option<String>,
+    pub description: Option<Description>,
     pub ty: FieldType
 }
 
@@ -385,7 +385,7 @@ impl Field {
 #[derive(Clone, Debug)]
 pub struct Structure {
     pub name: String,
-    pub description: Option<String>,
+    pub description: Option<Description>,
     pub fields: Vec<Field>,
     pub byte_size: usize,
     pub bit_size: usize,

@@ -30,12 +30,13 @@ use crate::compiler::structure::FixedFieldType;
 use crate::compiler::util::store::name_index;
 use crate::compiler::Error;
 use std::collections::HashMap;
+use crate::model::protocol::Description;
 
 #[derive(Clone, Debug)]
 pub struct Enum {
     pub name: String,
     pub largest: usize,
-    pub description: Option<String>,
+    pub description: Option<Description>,
     pub repr_type: FixedFieldType,
     pub variants: Vec<(String, usize)>,
     pub variants_map: HashMap<String, usize>,

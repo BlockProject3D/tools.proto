@@ -32,7 +32,7 @@ use crate::compiler::union::Union;
 use crate::compiler::util::store::name_index;
 use crate::compiler::Protocol;
 use crate::model::message::MessageFieldType;
-use crate::model::protocol::Endianness;
+use crate::model::protocol::{Description, Endianness};
 use crate::model::structure::StructFieldType;
 use std::cell::Cell;
 use std::fmt::{Display, Formatter};
@@ -210,7 +210,7 @@ pub struct Field {
     pub optional: bool,
     pub size: SizeInfo,
     pub endianness: Endianness,
-    pub description: Option<String>,
+    pub description: Option<Description>,
 }
 
 impl Display for Field {
@@ -416,7 +416,7 @@ impl Field {
 #[derive(Clone, Debug)]
 pub struct Message {
     pub name: String,
-    pub description: Option<String>,
+    pub description: Option<Description>,
     pub fields: Vec<Field>,
     pub size: SizeInfo,
     embedded: Cell<bool>,

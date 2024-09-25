@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use serde::Deserialize;
+use crate::model::protocol::Description;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -82,7 +83,7 @@ impl StructFieldType {
 #[derive(Clone, Debug, Deserialize)]
 pub struct StructField {
     pub name: String,
-    pub description: Option<String>,
+    pub description: Option<Description>,
     pub info: StructFieldType,
     pub view: Option<StructFieldView>,
     pub array_len: Option<usize>,
@@ -91,6 +92,6 @@ pub struct StructField {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Structure {
     pub name: String,
-    pub description: Option<String>,
+    pub description: Option<Description>,
     pub fields: Vec<StructField>,
 }
