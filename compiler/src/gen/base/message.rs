@@ -59,7 +59,7 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name)
-        .var("description", field.description.as_deref().unwrap_or(""))
+        .var("description", "")
         .var_d("info", field);
     let msg_type = match &field.ty {
         FieldType::Fixed(ty) => U::get_field_type(ty.ty).into(),
@@ -106,7 +106,7 @@ pub fn gen_message_array_type_decls<U: Utilities, T: TypeMapper>(
         .iter()
         .filter_map(|field| {
             scope.var("name", &field.name)
-                .var("description", field.description.as_deref().unwrap_or(""))
+                .var("description", field.description.as_ref().map(U::gen_description).unwrap_or("".into()))
                 .var_d("info", field);
             match &field.ty {
                 FieldType::Array(v) => Some(
@@ -142,7 +142,7 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     type_path_map: &TypePathMapper<T>,
 ) -> String {
     template.var("msg_name", &msg.name);
-    template.var("msg_description", msg.description.as_deref().unwrap_or(""));
+    template.var("msg_description", msg.description.as_ref().map(U::gen_description).unwrap_or("".into()));
     let fields = msg.fields.iter().map(|v| gen_msg_field_decl::<U, T>(v, &template, type_path_map)).join("");
     template.scope().var("fields", fields).render("", &["decl"]).unwrap()
 }

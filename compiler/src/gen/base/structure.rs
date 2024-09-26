@@ -26,11 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::borrow::Cow;
 use crate::compiler::structure::{Field, FieldType, FieldView, FixedField, FixedFieldType, Structure};
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::hook::{Render, TemplateHooks};
 use crate::gen::template::{Scope, Template};
-use crate::model::protocol::Endianness;
+use crate::model::protocol::{Description, Endianness};
 use itertools::Itertools;
 use crate::compiler::util::types::TypeMapper;
 
@@ -41,6 +42,12 @@ pub trait Utilities {
     fn get_bit_codec_inline(endianness: Endianness) -> &'static str;
     fn get_byte_codec_inline(endianness: Endianness) -> &'static str;
     fn get_byte_codec(endianness: Endianness) -> &'static str;
+    fn gen_description(desc: &Description) -> Cow<str> {
+        match desc {
+            Description::Single(v) => Cow::Borrowed(v),
+            Description::Multi(v) => Cow::Owned(v.join(" "))
+        }
+    }
 }
 
 fn gen_field_getter<U: Utilities, T: TypeMapper>(
@@ -53,7 +60,7 @@ fn gen_field_getter<U: Utilities, T: TypeMapper>(
         .var_d("start", field.loc.byte_offset)
         .var_d("end", field.loc.byte_offset + field.loc.byte_size)
         .var("name", &field.name)
-        .var("description", field.description.as_deref().unwrap_or(""))
+        .var("description", field.description.as_ref().map(U::gen_description).unwrap_or("".into()))
         .var_d("info", field);
     match &field.ty {
         FieldType::Fixed(v) => {
@@ -98,7 +105,7 @@ fn gen_field_setter<U: Utilities, T: TypeMapper>(
         .var_d("start", field.loc.byte_offset)
         .var_d("end", field.loc.byte_offset + field.loc.byte_size)
         .var("name", &field.name)
-        .var("description", field.description.as_deref().unwrap_or(""))
+        .var("description", field.description.as_ref().map(U::gen_description).unwrap_or("".into()))
         .var_d("info", field);
     match &field.ty {
         FieldType::Fixed(v) => {
@@ -240,9 +247,9 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     let mut template = templates.template;
     let mut field_template = templates.field_template;
     field_template.var("struct_name", &s.name)
-        .var("struct_description", s.description.as_deref().unwrap_or(""));
+        .var("struct_description", s.description.as_ref().map(U::gen_description).unwrap_or("".into()));
     template.var("name", &s.name).var_d("byte_size", s.byte_size)
-        .var("struct_description", s.description.as_deref().unwrap_or(""));
+        .var("struct_description", s.description.as_ref().map(U::gen_description).unwrap_or("".into()));
     let mut code = template.render("", &["decl", "new", "fixed_size", "write_to", "from_slice"]).unwrap();
     for frag in hooks.get_fragments("ext") {
         code += &template.render_frag(frag).unwrap();
