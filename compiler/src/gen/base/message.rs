@@ -28,11 +28,11 @@
 
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::structure::FixedFieldType;
+use crate::compiler::util::types::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::template::Template;
 use crate::model::protocol::Endianness;
 use itertools::Itertools;
-use crate::compiler::util::types::TypeMapper;
 
 pub enum StringType {
     Varchar,
@@ -58,9 +58,7 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
     type_path_map: &TypePathMapper<T>,
 ) -> String {
     let mut scope = template.scope();
-    scope.var("name", &field.name)
-        .var("description", "")
-        .var_d("info", field);
+    scope.var("name", &field.name).var("description", "").var_d("info", field);
     let msg_type = match &field.ty {
         FieldType::Fixed(ty) => U::get_field_type(ty.ty).into(),
         FieldType::Ref(v) => match v {
@@ -105,8 +103,12 @@ pub fn gen_message_array_type_decls<U: Utilities, T: TypeMapper>(
     msg.fields
         .iter()
         .filter_map(|field| {
-            scope.var("name", &field.name)
-                .var("description", field.description.as_ref().map(U::gen_description).unwrap_or("".into()))
+            scope
+                .var("name", &field.name)
+                .var(
+                    "description",
+                    field.description.as_ref().map(U::gen_description).unwrap_or("".into()),
+                )
                 .var_d("info", field);
             match &field.ty {
                 FieldType::Array(v) => Some(
@@ -142,7 +144,10 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     type_path_map: &TypePathMapper<T>,
 ) -> String {
     template.var("msg_name", &msg.name);
-    template.var("msg_description", msg.description.as_ref().map(U::gen_description).unwrap_or("".into()));
+    template.var(
+        "msg_description",
+        msg.description.as_ref().map(U::gen_description).unwrap_or("".into()),
+    );
     let fields = msg.fields.iter().map(|v| gen_msg_field_decl::<U, T>(v, &template, type_path_map)).join("");
     template.scope().var("fields", fields).render("", &["decl"]).unwrap()
 }

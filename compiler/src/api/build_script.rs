@@ -26,9 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::path::Path;
 use crate::api::tools::Error;
 use crate::api::tools::{GenTools, Rust};
+use std::path::Path;
 
 /// A simple function to quickly generate protocols in Rust for use with the Cargo build system.
 ///

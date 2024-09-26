@@ -28,8 +28,8 @@
 
 //! This module contains the core mid-level interface to the low-level protocol compiler/generator.
 
-pub mod loader;
-pub mod generator;
 mod error;
+pub mod generator;
+pub mod loader;
 
 pub use error::Error;

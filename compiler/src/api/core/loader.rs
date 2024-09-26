@@ -26,16 +26,16 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::borrow::Cow;
-use std::path::Path;
-use bp3d_debug::{error, trace};
-use crate::{compiler, model};
 use crate::api::core::Error;
 use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
+use crate::{compiler, model};
+use bp3d_debug::{error, trace};
+use std::borrow::Cow;
+use std::path::Path;
 
 pub struct Loader<'a> {
     models: Vec<(&'a str, model::Protocol)>,
-    max_iterations: usize
+    max_iterations: usize,
 }
 
 impl<'a> Default for Loader<'a> {
@@ -48,7 +48,7 @@ impl<'a> Loader<'a> {
     pub fn new(max_iterations: usize) -> Self {
         Self {
             models: Vec::new(),
-            max_iterations
+            max_iterations,
         }
     }
 
@@ -79,14 +79,21 @@ impl<'a> Loader<'a> {
         while !self.models.is_empty() && iterations > 0 {
             let (package, model) = self.models.pop().unwrap();
             trace!({imports=?model.imports}, "Solving imports for model {}", model.name);
-            if model.imports.as_ref().map(|v| v.iter().any(|v| {
-                let full_name = if package.is_empty() {
-                    Cow::Borrowed(&v.protocol)
-                } else {
-                    Cow::Owned(format!("{}::{}", package, v.protocol))
-                };
-                protocols.get(&full_name).is_none()
-            })).unwrap_or_default() {
+            if model
+                .imports
+                .as_ref()
+                .map(|v| {
+                    v.iter().any(|v| {
+                        let full_name = if package.is_empty() {
+                            Cow::Borrowed(&v.protocol)
+                        } else {
+                            Cow::Owned(format!("{}::{}", package, v.protocol))
+                        };
+                        protocols.get(&full_name).is_none()
+                    })
+                })
+                .unwrap_or_default()
+            {
                 self.models.insert(0, (package, model));
                 iterations -= 1;
                 continue;
@@ -95,7 +102,11 @@ impl<'a> Loader<'a> {
             protocols.insert(proto);
         }
         if iterations == 0 && self.models.len() > 0 {
-            error!("Failed to solve protocol import order in {} iterations, {} model(s) could not be solved...", self.max_iterations, self.models.len());
+            error!(
+                "Failed to solve protocol import order in {} iterations, {} model(s) could not be solved...",
+                self.max_iterations,
+                self.models.len()
+            );
             return Err(Error::SolverMaxIterations);
         }
         Ok(protocols)

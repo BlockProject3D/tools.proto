@@ -26,24 +26,24 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::marker::PhantomData;
-use std::path::{Path, PathBuf};
-use bp3d_debug::trace;
-use bp3d_util::index_map::IndexMap;
-use bp3d_util::path::PathExt;
+use crate::api::core::Error;
 use crate::compiler;
 use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
 use crate::gen::file::FileType;
-use crate::api::core::Error;
+use bp3d_debug::trace;
+use bp3d_util::index_map::IndexMap;
+use bp3d_util::path::PathExt;
+use std::marker::PhantomData;
+use std::path::{Path, PathBuf};
 
 pub struct Context<'a> {
-    items: IndexMap<Item<'a>>
+    items: IndexMap<Item<'a>>,
 }
 
 impl<'a> Context<'a> {
     fn new(size: usize) -> Self {
         Self {
-            items: IndexMap::with_capacity(size)
+            items: IndexMap::with_capacity(size),
         }
     }
 
@@ -55,7 +55,7 @@ impl<'a> Context<'a> {
         self.items.get(full_name)
     }
 
-    pub fn iter(&self) -> impl Iterator<Item=&Item<'a>> {
+    pub fn iter(&self) -> impl Iterator<Item = &Item<'a>> {
         self.items.iter()
     }
 }
@@ -63,7 +63,7 @@ impl<'a> Context<'a> {
 pub struct Item<'a> {
     full_name: &'a str,
     pub name: &'a str,
-    pub path: PathBuf
+    pub path: PathBuf,
 }
 
 impl<'a> bp3d_util::index_map::Index for Item<'a> {
@@ -81,7 +81,7 @@ pub struct Params {
     pub use_enums: bool,
     pub use_structs: bool,
     pub use_messages: bool,
-    pub use_unions: bool
+    pub use_unions: bool,
 }
 
 impl Default for Params {
@@ -119,12 +119,15 @@ pub struct Generator<'a, T, G> {
 
 impl<'a, T: ImportSolver, G: crate::gen::Generator> Generator<'a, T, G> {
     pub fn new<'b>(protocols: ProtocolStore<'a, T>, out_directory: &'a Path, _: G) -> (Context<'b>, Self) {
-        (Context::new(protocols.len()), Self {
-            protocols,
-            out_directory,
-            generator: PhantomData,
-            file_header: None
-        })
+        (
+            Context::new(protocols.len()),
+            Self {
+                protocols,
+                out_directory,
+                generator: PhantomData,
+                file_header: None,
+            },
+        )
     }
 
     pub fn protocols(&self) -> &ProtocolStore<'a, T> {
@@ -136,9 +139,15 @@ impl<'a, T: ImportSolver, G: crate::gen::Generator> Generator<'a, T, G> {
         self
     }
 
-    fn generate_internal<'b>(&self, protocol: &'b compiler::Protocol, params: &Params, generator_params: &G::Params<'_>) -> Result<Item<'b>, Error> {
+    fn generate_internal<'b>(
+        &self,
+        protocol: &'b compiler::Protocol,
+        params: &Params,
+        generator_params: &G::Params<'_>,
+    ) -> Result<Item<'b>, Error> {
         trace!({?params}, "Generating protocol {}", protocol.full_name);
-        let file_header = self.file_header
+        let file_header = self
+            .file_header
             .map(std::fs::read_to_string)
             .transpose()
             .map_err(Error::Io)?
@@ -165,7 +174,8 @@ impl<'a, T: ImportSolver, G: crate::gen::Generator> Generator<'a, T, G> {
             }
             value
         });
-        let iter = files_iter.into_iter()
+        let iter = files_iter
+            .into_iter()
             .map(|v| v.write(&out_path, file_header.as_deref(), G::get_language_extension()))
             .filter_map(|v| match v {
                 Ok(o) => o.map(Ok),
@@ -185,19 +195,33 @@ impl<'a, T: ImportSolver, G: crate::gen::Generator> Generator<'a, T, G> {
         Ok(Item {
             full_name: &protocol.full_name,
             name,
-            path: proto_path
+            path: proto_path,
         })
     }
 
-    pub fn generate<'b>(&'b self, context: &mut Context<'b>, full_name: impl AsRef<str>, params: &Params, generator_params: &G::Params<'_>) -> Result<(), Error> {
+    pub fn generate<'b>(
+        &'b self,
+        context: &mut Context<'b>,
+        full_name: impl AsRef<str>,
+        params: &Params,
+        generator_params: &G::Params<'_>,
+    ) -> Result<(), Error> {
         if context.get(full_name.as_ref()).is_none() {
-            let protocol = self.protocols.get(full_name.as_ref()).ok_or_else(|| Error::ProtocolNotFound(full_name.as_ref().into()))?;
+            let protocol = self
+                .protocols
+                .get(full_name.as_ref())
+                .ok_or_else(|| Error::ProtocolNotFound(full_name.as_ref().into()))?;
             context.insert(self.generate_internal(protocol, params, generator_params)?);
         }
         Ok(())
     }
 
-    pub fn generate_all<'b>(&'b self, context: &mut Context<'b>, params: &Params, generator_params: &G::Params<'_>) -> Result<(), Error> {
+    pub fn generate_all<'b>(
+        &'b self,
+        context: &mut Context<'b>,
+        params: &Params,
+        generator_params: &G::Params<'_>,
+    ) -> Result<(), Error> {
         for protocol in self.protocols.iter() {
             if context.get(&protocol.full_name).is_none() {
                 context.insert(self.generate_internal(protocol, params, generator_params)?);

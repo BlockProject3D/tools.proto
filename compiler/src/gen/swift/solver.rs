@@ -26,9 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::compiler::util::imports::ImportSolver;
 use crate::compiler::Protocol;
 use crate::gen::template::util::CaseConversion;
-use crate::compiler::util::imports::ImportSolver;
 
 pub struct SwiftImportSolver;
 

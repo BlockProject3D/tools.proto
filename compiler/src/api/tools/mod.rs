@@ -29,16 +29,16 @@
 #[cfg(feature = "gen-rust")]
 mod rust;
 
+mod error;
 #[cfg(feature = "gen-swift")]
 mod swift;
-mod error;
 
-pub use error::Error;
-use std::path::Path;
-use serde::Deserialize;
 use crate::api::config;
 use crate::api::core::generator::{Context, Generator};
 use crate::compiler::util::imports::ImportSolver;
+pub use error::Error;
+use serde::Deserialize;
+use std::path::Path;
 
 pub trait GenTools {
     type Params<'a>: Deserialize<'a>;
@@ -47,9 +47,17 @@ pub trait GenTools {
 
     fn new_solver() -> Self::Solver;
     fn new_generator() -> Self::Generator;
-    fn generate<'a, 'b>(generator: &'b Generator<'a, Self::Solver, Self::Generator>, context: &mut Context<'b>, config: &config::model::Config<Self::Params<'_>>) -> Result<(), Error>;
+    fn generate<'a, 'b>(
+        generator: &'b Generator<'a, Self::Solver, Self::Generator>,
+        context: &mut Context<'b>,
+        config: &config::model::Config<Self::Params<'_>>,
+    ) -> Result<(), Error>;
 
-    fn run(config: &config::model::Config<Self::Params<'_>>, out_dir: impl AsRef<Path>, post_generation: impl FnOnce(&Context)) -> Result<(), Error> {
+    fn run(
+        config: &config::model::Config<Self::Params<'_>>,
+        out_dir: impl AsRef<Path>,
+        post_generation: impl FnOnce(&Context),
+    ) -> Result<(), Error> {
         let motherfuckingrust = Self::new_solver();
         let protocols = config::core::compile(config, &motherfuckingrust)?;
         let (mut context, mut generator) = Generator::new(protocols, out_dir.as_ref(), Self::new_generator());
@@ -61,12 +69,20 @@ pub trait GenTools {
         Ok(())
     }
 
-    fn run_string(config: impl AsRef<str>, out_dir: impl AsRef<Path>, post_generation: impl FnOnce(&Context)) -> Result<(), Error> {
+    fn run_string(
+        config: impl AsRef<str>,
+        out_dir: impl AsRef<Path>,
+        post_generation: impl FnOnce(&Context),
+    ) -> Result<(), Error> {
         let config = config::core::parse::<Self::Params<'_>>(config.as_ref()).map_err(Error::Config)?;
         Self::run(&config, out_dir, post_generation)
     }
 
-    fn run_file(config_file: impl AsRef<Path>, out_dir: impl AsRef<Path>, post_generation: impl FnOnce(&Context)) -> Result<(), Error> {
+    fn run_file(
+        config_file: impl AsRef<Path>,
+        out_dir: impl AsRef<Path>,
+        post_generation: impl FnOnce(&Context),
+    ) -> Result<(), Error> {
         let str = std::fs::read_to_string(config_file).map_err(Error::Io)?;
         Self::run_string(str, out_dir, post_generation)
     }

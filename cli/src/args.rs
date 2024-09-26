@@ -26,10 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use bp3d_protoc::api::core::generator::Params;
+use clap::{Parser, ValueEnum};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
-use clap::{Parser, ValueEnum};
-use bp3d_protoc::api::core::generator::Params;
 
 #[derive(ValueEnum, Copy, Clone, Debug)]
 pub enum Generator {
@@ -69,7 +69,7 @@ impl Feature {
             Feature::UseEnums => params.use_enums = true,
             Feature::UseStructs => params.use_structs = true,
             Feature::UseMessages => params.use_messages = true,
-            Feature::UseUnions => params.use_unions = true
+            Feature::UseUnions => params.use_unions = true,
         };
     }
 }

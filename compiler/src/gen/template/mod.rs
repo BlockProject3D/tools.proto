@@ -29,9 +29,9 @@
 mod core;
 mod error;
 mod functions;
+mod options;
 mod parse_tree;
 pub mod util;
-mod options;
 
 pub use core::Scope;
 pub use core::Template;

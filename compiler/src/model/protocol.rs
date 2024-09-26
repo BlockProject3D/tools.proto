@@ -38,7 +38,7 @@ use std::fmt::{Display, Formatter};
 #[serde(untagged)]
 pub enum Description {
     Single(String),
-    Multi(Vec<String>)
+    Multi(Vec<String>),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Deserialize)]
@@ -52,7 +52,7 @@ impl Display for Endianness {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Endianness::Little => f.write_str("little"),
-            Endianness::Big => f.write_str("big")
+            Endianness::Big => f.write_str("big"),
         }
     }
 }

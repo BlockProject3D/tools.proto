@@ -28,8 +28,8 @@
 
 use crate::api::config;
 use crate::api::config::model::Config;
-use crate::api::tools::Error;
 use crate::api::core::generator::{Context, Generator};
+use crate::api::tools::Error;
 use crate::api::tools::GenTools;
 use crate::gen::{GeneratorSwift, SwiftImportSolver};
 
@@ -48,7 +48,11 @@ impl GenTools for Swift {
         GeneratorSwift
     }
 
-    fn generate<'a, 'b>(generator: &'b Generator<'a, Self::Solver, Self::Generator>, context: &mut Context<'b>, config: &Config<Self::Params<'a>>) -> Result<(), Error> {
+    fn generate<'a, 'b>(
+        generator: &'b Generator<'a, Self::Solver, Self::Generator>,
+        context: &mut Context<'b>,
+        config: &Config<Self::Params<'a>>,
+    ) -> Result<(), Error> {
         let protocols = generator.protocols();
         config::core::generate(generator, context, config, |_| None, protocols)?;
         Ok(())

@@ -26,24 +26,30 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod builder;
 mod args;
+mod builder;
 
+use crate::args::{Args, Generator};
+use crate::builder::Builder;
+use bp3d_protoc::api::core::loader::Loader;
 use bp3d_protoc::gen::{GeneratorRust, GeneratorSwift, RustImportSolver, RustParams, SwiftImportSolver};
 use bp3d_util::result::ResultExt;
 use clap::Parser;
-use bp3d_protoc::api::core::loader::Loader;
-use crate::args::{Args, Generator};
-use crate::builder::Builder;
 
 fn build_swift(loader: Loader, args: &Args) {
     let mut builder = Builder::new(loader, args, &SwiftImportSolver, GeneratorSwift);
-    builder.generator.generate_all(&mut builder.context, &builder.params, builder.generator.protocols()).expect_exit("failed to generate protocols", 1);
+    builder
+        .generator
+        .generate_all(&mut builder.context, &builder.params, builder.generator.protocols())
+        .expect_exit("failed to generate protocols", 1);
 }
 
 fn build_rust(loader: Loader, args: &Args) {
     let mut builder = Builder::new(loader, args, &RustImportSolver, GeneratorRust);
-    builder.generator.generate_all(&mut builder.context, &builder.params, &RustParams::default()).expect_exit("failed to generate protocols", 1);
+    builder
+        .generator
+        .generate_all(&mut builder.context, &builder.params, &RustParams::default())
+        .expect_exit("failed to generate protocols", 1);
 }
 
 fn main() {

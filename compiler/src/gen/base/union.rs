@@ -28,11 +28,11 @@
 
 use crate::compiler::message::Referenced;
 use crate::compiler::union::{DiscriminantField, Union};
+use crate::compiler::util::types::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::hook::TemplateHooks;
 use crate::gen::template::Template;
 use itertools::Itertools;
-use crate::compiler::util::types::TypeMapper;
 
 pub trait Utilities: crate::gen::base::structure::Utilities {
     fn gen_discriminant_path(discriminant: &DiscriminantField) -> String;
@@ -167,7 +167,10 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     hooks: &TemplateHooks,
 ) -> String {
     template
-        .var("discriminant_raw_type", U::get_field_type(u.discriminant.get_leaf_fixed().ty))
+        .var(
+            "discriminant_raw_type",
+            U::get_field_type(u.discriminant.get_leaf_fixed().ty),
+        )
         .var("union_name", &u.name)
         .var("discriminant_path_mut", U::gen_discriminant_path_mut(&u.discriminant))
         .var("discriminant_path", U::gen_discriminant_path(&u.discriminant))

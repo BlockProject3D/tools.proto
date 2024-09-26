@@ -27,11 +27,11 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::message::Message;
+use crate::compiler::util::types::TypePathMap;
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::base::message::{gen_message_array_type_decls, generate};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
-use crate::compiler::util::types::TypePathMap;
 use crate::gen::RustParams;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");

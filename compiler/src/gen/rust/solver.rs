@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::Protocol;
 use crate::compiler::util::imports::ImportSolver;
+use crate::compiler::Protocol;
 
 pub struct RustImportSolver;
 

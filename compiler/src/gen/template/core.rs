@@ -26,12 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::gen::template::options::Options;
 use crate::gen::template::parse_tree::{Component, Fragment, FragmentMode, Token};
 use crate::gen::template::Error;
 use itertools::Itertools;
 use std::borrow::Cow;
 use std::collections::HashMap;
-use crate::gen::template::options::Options;
 
 pub struct Template<'fragment, 'variable> {
     fragments: HashMap<String, Fragment<'fragment>>,

@@ -28,13 +28,13 @@
 
 use crate::compiler::message::{Field, FieldType, Message};
 use crate::compiler::structure::FixedFieldType;
+use crate::compiler::util::types::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::base::message::StringType;
 use crate::gen::template::Template;
 use crate::model::protocol::Endianness;
 use itertools::Itertools;
 use std::borrow::Cow;
-use crate::compiler::util::types::TypeMapper;
 
 macro_rules! gen_value_type {
     ($prefix: literal, $ty: expr, $suffix: literal) => {

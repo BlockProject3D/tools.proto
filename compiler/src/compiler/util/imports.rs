@@ -26,9 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::fmt::{Debug, Formatter};
-use bp3d_util::index_map::IndexMap;
 use crate::compiler::Protocol;
+use bp3d_util::index_map::IndexMap;
+use std::fmt::{Debug, Formatter};
 
 pub trait ImportSolver {
     fn get_full_type_path(&self, protocol: &Protocol, type_name: &str) -> Option<String>;
@@ -42,14 +42,14 @@ impl ImportSolver for () {
 
 pub struct ProtocolStore<'a, T> {
     map: IndexMap<Protocol>,
-    solver: &'a T
+    solver: &'a T,
 }
 
 impl<'a, T: ImportSolver> ProtocolStore<'a, T> {
     pub fn new(solver: &'a T) -> Self {
         Self {
             map: IndexMap::new(),
-            solver
+            solver,
         }
     }
 
@@ -73,7 +73,7 @@ impl<'a, T: ImportSolver> ProtocolStore<'a, T> {
         self.solver.get_full_type_path(protocol, type_name)
     }
 
-    pub fn iter(&self) -> impl Iterator<Item=&Protocol> {
+    pub fn iter(&self) -> impl Iterator<Item = &Protocol> {
         self.map.iter()
     }
 }

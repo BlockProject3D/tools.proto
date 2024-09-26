@@ -31,14 +31,13 @@ mod message;
 mod message_from_slice;
 mod message_offsets;
 mod message_write;
+mod solver;
 pub mod structure;
 mod union;
 mod util;
-mod solver;
 
 pub use solver::RustImportSolver;
 
-use std::collections::HashSet;
 use crate::compiler::Protocol;
 use crate::gen::file::B;
 use crate::gen::rust::message::gen_message_decl;
@@ -52,9 +51,10 @@ use crate::gen::{
     file::{File, FileType},
     Generator,
 };
-use bp3d_util::simple_error;
-use std::path::Path;
 use bp3d_debug::trace;
+use bp3d_util::simple_error;
+use std::collections::HashSet;
+use std::path::Path;
 
 simple_error! {
     pub Error {
@@ -69,7 +69,7 @@ pub struct Params<'a> {
     enable_union_set_discriminant: bool,
     enable_list_wrappers: bool,
     disable_read: HashSet<&'a str>,
-    disable_write: HashSet<&'a str>
+    disable_write: HashSet<&'a str>,
 }
 
 impl<'a> Params<'a> {
