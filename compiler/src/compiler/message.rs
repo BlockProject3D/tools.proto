@@ -30,6 +30,7 @@ use crate::compiler::error::Error;
 use crate::compiler::structure::{FixedFieldType, Structure};
 use crate::compiler::union::Union;
 use crate::compiler::util::store::name_index;
+use crate::compiler::util::types::{Name, PtrKey};
 use crate::compiler::Protocol;
 use crate::model::message::MessageFieldType;
 use crate::model::protocol::{Description, Endianness};
@@ -37,7 +38,6 @@ use crate::model::structure::StructFieldType;
 use std::cell::Cell;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
-use crate::compiler::util::types::{Name, PtrKey};
 
 #[derive(Clone, Debug)]
 pub enum Referenced {
@@ -117,7 +117,13 @@ pub struct SizedListField {
 
 impl Display for SizedListField {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "SizedList<{}, Len = {}, Size = {}>", self.item_type.name(), self.ty, self.size_ty)
+        write!(
+            f,
+            "SizedList<{}, Len = {}, Size = {}>",
+            self.item_type.name(),
+            self.ty,
+            self.size_ty
+        )
     }
 }
 
@@ -169,7 +175,7 @@ impl Display for FieldType {
             FieldType::Union(v) => v.fmt(f),
             FieldType::List(v) => v.fmt(f),
             FieldType::SizedList(v) => v.fmt(f),
-            FieldType::Payload => f.write_str("Bytes")
+            FieldType::Payload => f.write_str("Bytes"),
         }
     }
 }

@@ -27,12 +27,12 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::message::{Field, Message};
+use crate::compiler::util::types::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::base::message::Utilities;
 use crate::gen::base::message_common::generate_field_type_inline;
 use crate::gen::template::Template;
 use itertools::Itertools;
-use crate::compiler::util::types::TypeMapper;
 
 fn gen_field_from_slice_impl<U: Utilities, T: TypeMapper>(
     msg: &Message,

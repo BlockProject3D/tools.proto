@@ -26,17 +26,17 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::fmt::{Display, Formatter};
 use crate::compiler::error::Error;
 use crate::compiler::r#enum::Enum;
+use crate::compiler::util::store::name_index;
+use crate::compiler::util::try2;
+use crate::compiler::util::types::Name;
 use crate::compiler::Protocol;
 use crate::model::protocol::{Description, Endianness};
 use crate::model::structure::{SimpleType, StructFieldType, StructFieldView};
 use bp3d_debug::trace;
+use std::fmt::{Display, Formatter};
 use std::rc::Rc;
-use crate::compiler::util::store::name_index;
-use crate::compiler::util::try2;
-use crate::compiler::util::types::Name;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FixedFieldType {
@@ -66,7 +66,7 @@ impl Display for FixedFieldType {
             FixedFieldType::UInt64 => f.write_str("UInt64"),
             FixedFieldType::Float32 => f.write_str("Float32"),
             FixedFieldType::Float64 => f.write_str("Float64"),
-            FixedFieldType::Bool => f.write_str("Bool")
+            FixedFieldType::Bool => f.write_str("Bool"),
         }
     }
 }
@@ -149,7 +149,14 @@ pub struct Location {
 
 impl Display for Location {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "bytes {}..{}, bits {}..{}", self.byte_offset, self.byte_offset + self.byte_size, self.bit_offset, self.bit_offset + self.bit_size)
+        write!(
+            f,
+            "bytes {}..{}, bits {}..{}",
+            self.byte_offset,
+            self.byte_offset + self.byte_size,
+            self.bit_offset,
+            self.bit_offset + self.bit_size
+        )
     }
 }
 
@@ -267,7 +274,7 @@ pub struct FixedArrayField {
     pub ty: FixedFieldType,
     pub array_len: usize,
     pub endianness: Endianness,
-    pub item_bit_size: usize
+    pub item_bit_size: usize,
 }
 
 impl Display for FixedArrayField {
@@ -288,11 +295,10 @@ impl Display for FieldType {
         match self {
             FieldType::Fixed(v) => v.fmt(f),
             FieldType::Array(v) => v.fmt(f),
-            FieldType::Struct(v) => f.write_str(v.name())
+            FieldType::Struct(v) => f.write_str(v.name()),
         }
     }
 }
-
 
 impl FieldType {
     pub fn as_fixed(&self) -> Option<&FixedField> {
@@ -308,7 +314,7 @@ pub struct Field {
     pub name: String,
     pub loc: Location,
     pub description: Option<Description>,
-    pub ty: FieldType
+    pub ty: FieldType,
 }
 
 impl Display for Field {
@@ -332,7 +338,7 @@ impl Field {
                         name: value.name,
                         ty: FieldType::Struct(r.clone()),
                         loc: Location::from_model(r.bit_size, last_bit_offset),
-                        description: value.description
+                        description: value.description,
                     },
                     last_bit_offset + r.bit_size,
                 ))
@@ -355,10 +361,10 @@ impl Field {
                                 endianness: proto.endianness,
                                 array_len,
                                 ty,
-                                item_bit_size: loc.bit_size / array_len
+                                item_bit_size: loc.bit_size / array_len,
                             }),
                             loc,
-                            description: value.description
+                            description: value.description,
                         },
                         last_bit_offset + bit_size,
                     ))
@@ -369,10 +375,10 @@ impl Field {
                             ty: FieldType::Fixed(FixedField {
                                 endianness: proto.endianness,
                                 ty,
-                                view
+                                view,
                             }),
                             loc,
-                            description: value.description
+                            description: value.description,
                         },
                         last_bit_offset + bit_size,
                     ))

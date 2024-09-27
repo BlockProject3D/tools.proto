@@ -26,12 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use serde::Deserialize;
 use std::collections::HashMap;
 use std::path::Path;
-use serde::{Deserialize};
 
 #[derive(Deserialize)]
-#[serde(rename_all="kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct RustParams<'a> {
     #[serde(borrow)]
     pub disable_read: Option<Vec<&'a str>>,
@@ -39,11 +39,11 @@ pub struct RustParams<'a> {
     pub write_async: Option<bool>,
     pub union_set_discriminant: Option<bool>,
     pub list_wrappers: Option<bool>,
-    pub struct_to_mut: Option<bool>
+    pub struct_to_mut: Option<bool>,
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all="kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct Params<T> {
     pub write_messages: Option<bool>,
     pub read_messages: Option<bool>,
@@ -52,11 +52,11 @@ pub struct Params<T> {
     pub use_messages: Option<bool>,
     pub use_unions: Option<bool>,
     #[serde(flatten)]
-    pub inner: T
+    pub inner: T,
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all="kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct Package<'a> {
     pub name: &'a str,
     pub path: &'a Path,
@@ -64,17 +64,17 @@ pub struct Package<'a> {
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all="kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct Dependency<'a> {
     pub path: &'a Path,
-    pub package: &'a str
+    pub package: &'a str,
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all="kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct Config<'a, T> {
     #[serde(borrow)]
     pub package: Package<'a>,
     pub options: Option<HashMap<&'a str, Params<T>>>,
-    pub dependency: Option<Vec<Dependency<'a>>>
+    pub dependency: Option<Vec<Dependency<'a>>>,
 }

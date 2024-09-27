@@ -26,18 +26,18 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::borrow::Cow;
 use crate::compiler::error::Error;
 use crate::compiler::message::Message;
 use crate::compiler::r#enum::Enum;
 use crate::compiler::structure::Structure;
 use crate::compiler::union::Union;
-use crate::model::protocol::{Description, Endianness};
-use bp3d_debug::trace;
-use std::rc::Rc;
 use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
 use crate::compiler::util::store::ObjectStore;
 use crate::compiler::util::types::{Name, PtrKey, TypePathMap};
+use crate::model::protocol::{Description, Endianness};
+use bp3d_debug::trace;
+use std::borrow::Cow;
+use std::rc::Rc;
 
 #[derive(Clone, Debug)]
 pub struct Protocol {
@@ -125,7 +125,11 @@ impl Protocol {
         }
     }
 
-    pub fn from_model<T: ImportSolver>(value: crate::model::Protocol, protocols: &ProtocolStore<T>, package: &str) -> Result<Self, Error> {
+    pub fn from_model<T: ImportSolver>(
+        value: crate::model::Protocol,
+        protocols: &ProtocolStore<T>,
+        package: &str,
+    ) -> Result<Self, Error> {
         let full_name = if package.is_empty() {
             value.name
         } else {
@@ -139,7 +143,7 @@ impl Protocol {
             structs: ObjectStore::new(),
             messages: ObjectStore::new(),
             enums: ObjectStore::new(),
-            unions: ObjectStore::new()
+            unions: ObjectStore::new(),
         };
         if let Some(mut imports) = value.imports {
             let mut solved_imports = Vec::new();

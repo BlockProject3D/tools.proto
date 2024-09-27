@@ -26,14 +26,14 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::borrow::Cow;
+use crate::api::config::model::Config;
+use crate::api::core::generator::{Context, Generator, Params};
+use crate::api::core::loader::Loader;
+use crate::api::core::Error;
+use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
 use bp3d_debug::trace;
 use serde::Deserialize;
-use crate::api::config::model::Config;
-use crate::api::core::loader::Loader;
-use crate::api::core::generator::{Context, Generator, Params};
-use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
-use crate::api::core::Error;
+use std::borrow::Cow;
 
 pub fn parse<'a, T: Deserialize<'a>>(data: &'a str) -> Result<Config<'a, T>, toml::de::Error> {
     toml::from_str(data)
@@ -55,7 +55,8 @@ pub fn generate<'a, G: crate::gen::Generator, T, I: ImportSolver, F: Fn(&T) -> O
     context: &mut Context<'a>,
     config: &Config<T>,
     generator_params_converter: F,
-    generator_default_params: &G::Params<'_>) -> Result<(), Error> {
+    generator_default_params: &G::Params<'_>,
+) -> Result<(), Error> {
     if let Some(options) = &config.options {
         for (protocol, params) in options {
             let protocol_path: Cow<str> = if config.package.name.is_empty() {
@@ -63,7 +64,7 @@ pub fn generate<'a, G: crate::gen::Generator, T, I: ImportSolver, F: Fn(&T) -> O
             } else {
                 Cow::Owned(format!("{}::{}", config.package.name, protocol))
             };
-            trace!({path=&*protocol_path}, "Found options for protocol: {}", protocol);
+            trace!({ path = &*protocol_path }, "Found options for protocol: {}", protocol);
             let mut p = Params::default();
             if let Some(flag) = params.write_messages {
                 p.write_messages = flag;

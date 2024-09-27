@@ -26,27 +26,27 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use bp3d_util::index_map::IndexMap;
 use std::collections::HashMap;
 use std::rc::Rc;
-use bp3d_util::index_map::IndexMap;
 
 #[derive(Clone, Debug)]
 pub struct ObjectStore<T> {
     objects: Vec<Rc<T>>,
     objects_by_name: IndexMap<Rc<T>>,
-    objects_imports: HashMap<String, Rc<T>>
+    objects_imports: HashMap<String, Rc<T>>,
 }
 
-impl<T: bp3d_util::index_map::Index<Key=str>> ObjectStore<T> {
+impl<T: bp3d_util::index_map::Index<Key = str>> ObjectStore<T> {
     pub fn new() -> Self {
         Self {
             objects: Vec::new(),
             objects_by_name: IndexMap::new(),
-            objects_imports: HashMap::new()
+            objects_imports: HashMap::new(),
         }
     }
 
-    pub fn iter(&self) -> impl Iterator<Item=&Rc<T>> {
+    pub fn iter(&self) -> impl Iterator<Item = &Rc<T>> {
         self.objects.iter()
     }
 

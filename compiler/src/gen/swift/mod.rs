@@ -55,10 +55,10 @@ simple_error! {
     }
 }
 
+use crate::compiler::util::imports::ProtocolStore;
 use crate::gen::file::B;
 use crate::gen::swift::imports::gen_imports;
 pub use solver::SwiftImportSolver;
-use crate::compiler::util::imports::ProtocolStore;
 
 pub struct GeneratorSwift;
 

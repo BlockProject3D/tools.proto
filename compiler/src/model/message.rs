@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use serde::Deserialize;
 use crate::model::protocol::Description;
+use serde::Deserialize;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -59,7 +59,7 @@ pub struct MessageField {
     pub name: String,
     pub info: MessageFieldType,
     pub optional: Option<bool>,
-    pub description: Option<Description>
+    pub description: Option<Description>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::union::{DiscriminantField, Union};
+use crate::compiler::util::types::{Name, TypePathMap};
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::base::union::{generate, Utilities};
 use crate::gen::hook::TemplateHooks;
@@ -34,7 +35,6 @@ use crate::gen::rust::util::RustUtils;
 use crate::gen::template::{Options, Template};
 use crate::gen::RustParams;
 use itertools::Itertools;
-use crate::compiler::util::types::{Name, TypePathMap};
 
 const TEMPLATE: &[u8] = include_bytes!("./union.template");
 

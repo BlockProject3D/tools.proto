@@ -26,19 +26,19 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::collections::HashSet;
 use crate::gen::template::functions::FunctionMap;
+use std::collections::HashSet;
 
 pub struct Options<'a> {
     function_map: FunctionMap<'a>,
-    disabled_fragments: HashSet<&'a str>
+    disabled_fragments: HashSet<&'a str>,
 }
 
 impl<'a> Default for Options<'a> {
     fn default() -> Self {
         Self {
             function_map: FunctionMap::default(),
-            disabled_fragments: HashSet::new()
+            disabled_fragments: HashSet::new(),
         }
     }
 }
@@ -47,7 +47,7 @@ impl<'a> Options<'a> {
     pub fn new(function_map: FunctionMap<'a>) -> Self {
         Self {
             function_map,
-            disabled_fragments: HashSet::new()
+            disabled_fragments: HashSet::new(),
         }
     }
 

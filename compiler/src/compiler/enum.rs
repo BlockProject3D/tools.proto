@@ -29,8 +29,8 @@
 use crate::compiler::structure::FixedFieldType;
 use crate::compiler::util::store::name_index;
 use crate::compiler::Error;
-use std::collections::HashMap;
 use crate::model::protocol::Description;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub struct Enum {

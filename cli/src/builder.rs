@@ -26,17 +26,17 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::path::Path;
-use bp3d_util::result::ResultExt;
+use crate::Args;
 use bp3d_protoc::api::core::generator::{Context, Generator, Params};
 use bp3d_protoc::api::core::loader::Loader;
 use bp3d_protoc::compiler::util::imports::ImportSolver;
-use crate::Args;
+use bp3d_util::result::ResultExt;
+use std::path::Path;
 
 pub struct Builder<'a, I, G> {
     pub context: Context<'a>,
     pub generator: Generator<'a, I, G>,
-    pub params: Params
+    pub params: Params,
 }
 
 impl<'a, I: ImportSolver, G: bp3d_protoc::gen::Generator> Builder<'a, I, G> {
@@ -59,7 +59,7 @@ impl<'a, I: ImportSolver, G: bp3d_protoc::gen::Generator> Builder<'a, I, G> {
         Self {
             context,
             generator,
-            params
+            params,
         }
     }
 }

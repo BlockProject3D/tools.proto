@@ -26,10 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::path::{Path, PathBuf};
+use bp3d_protoc::api::tools::GenTools;
 use bp3d_util::result::ResultExt;
 use clap::{Parser, ValueEnum};
-use bp3d_protoc::api::tools::GenTools;
+use std::path::{Path, PathBuf};
 
 #[derive(ValueEnum, Copy, Clone, Debug)]
 pub enum Generator {
@@ -53,7 +53,7 @@ pub struct Args {
     pub output: Option<PathBuf>,
     /// Name of the code generator to use.
     #[clap(short = 'g', long = "generator", default_value = "rust")]
-    pub generator: Generator
+    pub generator: Generator,
 }
 
 fn main() {
@@ -61,6 +61,7 @@ fn main() {
     let output = args.output.as_deref().unwrap_or(Path::new("./"));
     match args.generator {
         Generator::Rust => bp3d_protoc::api::tools::Rust::run_file(args.input, output, |_| {}),
-        Generator::Swift => bp3d_protoc::api::tools::Swift::run_file(args.input, output, |_| {})
-    }.expect_exit("Failed to run make tool", 1);
+        Generator::Swift => bp3d_protoc::api::tools::Swift::run_file(args.input, output, |_| {}),
+    }
+    .expect_exit("Failed to run make tool", 1);
 }
