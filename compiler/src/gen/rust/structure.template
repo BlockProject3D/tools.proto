@@ -17,14 +17,19 @@ impl {name}<[u8; {byte_size}]> {{
 
 #[allow(dead_code)]
 impl<T: AsRef<[u8]>> {name}<T> {{
+    /// Wraps the given data buffer without checking for bounds.
+    pub unsafe fn new_unchecked(data: T) -> Self {{
+        Self {{ data: data }}
+    }}
+}}
+
+#[allow(dead_code)]
+impl<T: AsRef<[u8]>> {name}<T> {{
     /// Duplicates this structure onto the stack.
     ///
     /// WARNING: Unlike Copy/Clone this will ALWAYS allocate a new buffer on the stack, similarly to the
     /// [new](Self::new) function.
     pub fn dupe(&self) -> {name}<[u8; {byte_size}]> {{
-        if self.data.as_ref().len() < {byte_size} {{
-            panic!("attempt to copy a too small buffer");
-        }}
         use std::mem::MaybeUninit;
         let mut data: [MaybeUninit<u8>; {byte_size}] = unsafe {{ MaybeUninit::uninit().assume_init() }};
         #[allow(clippy::missing_transmute_annotations)]
@@ -36,8 +41,11 @@ impl<T: AsRef<[u8]>> {name}<T> {{
     }}
 }}
 
-impl<T> From<T> for {name}<T> {{
+impl<T: AsRef<[u8]>> From<T> for {name}<T> {{
     fn from(data: T) -> Self {{
+        if data.as_ref().len() < <Self as bp3d_proto::util::FixedSize>::SIZE {{
+            panic!("attempt to copy a too small buffer");
+        }}
         Self {{ data }}
     }}
 }}
@@ -124,7 +132,7 @@ impl<'a> bp3d_proto::message::FromSlice<'a> for {name}<&'a [u8]> {{
         if slice.len() < <Self as bp3d_proto::util::FixedSize>::SIZE {{
             Err(bp3d_proto::message::Error::Truncated)
         }} else {{
-            Ok(bp3d_proto::message::Message::new(<Self as bp3d_proto::util::FixedSize>::SIZE, Self::from(&slice[..<Self as bp3d_proto::util::FixedSize>::SIZE])))
+            Ok(bp3d_proto::message::Message::new(<Self as bp3d_proto::util::FixedSize>::SIZE, Self {{ data: &slice[..<Self as bp3d_proto::util::FixedSize>::SIZE] }}))
         }}
     }}
 }}
