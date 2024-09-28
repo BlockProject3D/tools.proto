@@ -28,7 +28,7 @@
 
 import Foundation
 
-public protocol FromBytes {
+public protocol ScalarFromBytes {
     static var size: Int {get};
 
     init<B: Buffer>(fromBytesLE slice: B);
@@ -37,7 +37,7 @@ public protocol FromBytes {
     func toBytesBE() -> Data;
 }
 
-public protocol Scalar: FromBytes, BinaryInteger {
+public protocol Scalar: ScalarFromBytes, BinaryInteger {
     init(fromUInt value: UInt);
     func toUInt() -> UInt;
 }
@@ -208,7 +208,7 @@ extension UInt8: Scalar {
     }
 }
 
-extension Float32: FromBytes {
+extension Float32: ScalarFromBytes {
     public static var size: Int {
         4
     }
@@ -230,7 +230,7 @@ extension Float32: FromBytes {
     }
 }
 
-extension Float64: FromBytes {
+extension Float64: ScalarFromBytes {
     public static var size: Int {
         8
     }

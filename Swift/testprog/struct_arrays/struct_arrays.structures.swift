@@ -49,14 +49,14 @@ extension StructArraysBasic: BP3DProto.WriteTo where T: BP3DProto.Buffer {
         out.write(bytes: input.data[...58].toData());
     }
 }
-extension StructArraysBasic: BP3DProto.FromSlice where T: BP3DProto.Buffer {
+extension StructArraysBasic: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     public typealias Buffer = T;
     public typealias Output = StructArraysBasic;
-    public static func from(slice: T) throws -> BP3DProto.Message<Output> {
-        if slice.size < 58 {
+    public static func from(bytes: T) throws -> BP3DProto.Message<Output> {
+        if bytes.size < 58 {
             throw BP3DProto.Error.truncated;
         }
-        return BP3DProto.Message(size: 58, data: StructArraysBasic(slice[...58]));
+        return BP3DProto.Message(size: 58, data: StructArraysBasic(bytes[...58]));
     }
 }
 extension StructArraysBasic where T: BP3DProto.Buffer {

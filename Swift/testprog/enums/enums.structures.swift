@@ -49,14 +49,14 @@ extension EnumsHeader: BP3DProto.WriteTo where T: BP3DProto.Buffer {
         out.write(bytes: input.data[...1].toData());
     }
 }
-extension EnumsHeader: BP3DProto.FromSlice where T: BP3DProto.Buffer {
+extension EnumsHeader: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     public typealias Buffer = T;
     public typealias Output = EnumsHeader;
-    public static func from(slice: T) throws -> BP3DProto.Message<Output> {
-        if slice.size < 1 {
+    public static func from(bytes: T) throws -> BP3DProto.Message<Output> {
+        if bytes.size < 1 {
             throw BP3DProto.Error.truncated;
         }
-        return BP3DProto.Message(size: 1, data: EnumsHeader(slice[...1]));
+        return BP3DProto.Message(size: 1, data: EnumsHeader(bytes[...1]));
     }
 }
 extension EnumsHeader where T: BP3DProto.Buffer {

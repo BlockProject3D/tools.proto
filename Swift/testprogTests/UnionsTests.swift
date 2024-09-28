@@ -50,7 +50,7 @@ final class UnionsTests: XCTestCase {
     }
 
     func readMessage<B: Buffer>(_ slice: B, type: EnumsType) throws -> UnionsValue<B> {
-        let msg = try UnionsItem.from(slice: slice);
+        let msg = try UnionsItem.from(bytes: slice);
         XCTAssertEqual(slice.size, msg.size);
         let item = msg.data;
         XCTAssertEqual(item.header.type, type);

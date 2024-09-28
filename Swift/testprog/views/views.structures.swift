@@ -49,14 +49,14 @@ extension ViewsFloats: BP3DProto.WriteTo where T: BP3DProto.Buffer {
         out.write(bytes: input.data[...3].toData());
     }
 }
-extension ViewsFloats: BP3DProto.FromSlice where T: BP3DProto.Buffer {
+extension ViewsFloats: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     public typealias Buffer = T;
     public typealias Output = ViewsFloats;
-    public static func from(slice: T) throws -> BP3DProto.Message<Output> {
-        if slice.size < 3 {
+    public static func from(bytes: T) throws -> BP3DProto.Message<Output> {
+        if bytes.size < 3 {
             throw BP3DProto.Error.truncated;
         }
-        return BP3DProto.Message(size: 3, data: ViewsFloats(slice[...3]));
+        return BP3DProto.Message(size: 3, data: ViewsFloats(bytes[...3]));
     }
 }
 extension ViewsFloats where T: BP3DProto.Buffer {

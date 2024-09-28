@@ -56,11 +56,11 @@ public struct Message<T> {
     }
 }
 
-public protocol FromSlice {
+public protocol FromBytes {
     associatedtype Buffer: BP3DProto.Buffer
     associatedtype Output;
 
-    static func from(slice: Self.Buffer) throws -> Message<Output>;
+    static func from(bytes: Self.Buffer) throws -> Message<Output>;
 }
 
 public protocol WriteTo {

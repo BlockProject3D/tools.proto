@@ -28,7 +28,7 @@
 
 import Foundation
 
-public struct List<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: FromSlice where T.Output: Scalar, T.Buffer == Buffer, Item.Buffer == Buffer {
+public struct List<Buffer: BP3DProto.Buffer, T: FromBytes, Item: FromBytes>: FromBytes where T.Output: Scalar, T.Buffer == Buffer, Item.Buffer == Buffer {
     var buffer: Buffer;
     var _count: Int;
 
@@ -43,16 +43,16 @@ public struct List<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: Fro
 
     public typealias Output = List<Buffer, T, Item>;
 
-    public static func from(slice: Buffer) throws -> Message<List<Buffer, T, Item>> {
-        let msg = try T.from(slice: slice);
-        var data = slice[msg.size...];
+    public static func from(bytes: Buffer) throws -> Message<List<Buffer, T, Item>> {
+        let msg = try T.from(bytes: bytes);
+        var data = bytes[msg.size...];
         var totalSize = msg.size;
         for _ in 0...msg.data.toUInt() - 1 {
-            let item = try Item.from(slice: data);
+            let item = try Item.from(bytes: data);
             totalSize += item.size;
             data = data[item.size...];
         }
-        return Message(size: totalSize, data: List(slice[msg.size...], count: Int(msg.data.toUInt())));
+        return Message(size: totalSize, data: List(bytes[msg.size...], count: Int(msg.data.toUInt())));
     }
 
     public func toArray() throws -> [Item.Output] {
@@ -60,7 +60,7 @@ public struct List<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: Fro
         var items: [Item.Output] = [];
         items.reserveCapacity(_count);
         for _ in 0..._count - 1 {
-            let item = try Item.from(slice: data);
+            let item = try Item.from(bytes: data);
             items.append(item.data);
             data = data[item.size...];
         }
@@ -95,21 +95,21 @@ extension List where Item: WriteTo, Buffer: WritableBuffer {
     }
 }
 
-public struct UnsizedList<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: FromSlice where
+public struct UnsizedList<Buffer: BP3DProto.Buffer, T: FromBytes, Item: FromBytes>: FromBytes where
     T.Output: Scalar,
     T.Buffer == Buffer,
     Item.Buffer == Buffer
 {
     public typealias Output = List<Buffer, T, Item>;
 
-    public static func from(slice: Buffer) throws -> Message<List<Buffer, T, Item>> {
-        let msg = try T.from(slice: slice);
-        let data = slice[msg.size...];
-        return Message(size: slice.size, data: List(data, count: Int(msg.data.toUInt())));
+    public static func from(bytes: Buffer) throws -> Message<List<Buffer, T, Item>> {
+        let msg = try T.from(bytes: bytes);
+        let data = bytes[msg.size...];
+        return Message(size: bytes.size, data: List(data, count: Int(msg.data.toUInt())));
     }
 }
 
-public struct SizedList<Buffer: BP3DProto.Buffer, T: FromSlice, S: FromSlice, Item: FromSlice>: FromSlice where
+public struct SizedList<Buffer: BP3DProto.Buffer, T: FromBytes, S: FromBytes, Item: FromBytes>: FromBytes where
     T.Output: Scalar,
     S.Output: Scalar,
     T.Buffer == Buffer,
@@ -118,14 +118,14 @@ public struct SizedList<Buffer: BP3DProto.Buffer, T: FromSlice, S: FromSlice, It
 {
     public typealias Output = List<Buffer, T, Item>;
 
-    public static func from(slice: Buffer) throws -> Message<List<Buffer, T, Item>> {
-        let msg = try T.from(slice: slice);
+    public static func from(bytes: Buffer) throws -> Message<List<Buffer, T, Item>> {
+        let msg = try T.from(bytes: bytes);
         var control_size = msg.size;
         let len = msg.data.toUInt();
-        let msg1 = try S.from(slice: slice[control_size...]);
+        let msg1 = try S.from(bytes: bytes[control_size...]);
         control_size += msg1.size;
         let total_size = control_size + Int(msg1.data.toUInt());
-        let data = slice[control_size...total_size];
+        let data = bytes[control_size...total_size];
         return Message(size: total_size, data: List(data, count: Int(len)));
     }
 }

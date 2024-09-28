@@ -71,7 +71,7 @@ final class ListsTests: XCTestCase {
     func testRun() throws {
         var buffer = DataBuffer();
         try writeSpanRun({ msg in try ListsSpanRun.write(input: msg, to: &buffer) });
-        let msg = try ListsSpanRun.from(slice: buffer);
+        let msg = try ListsSpanRun.from(bytes: buffer);
         XCTAssertEqual(msg.size, buffer.size);
         try assertSpanRun(msg.data);
     }
@@ -83,7 +83,7 @@ final class ListsTests: XCTestCase {
         try writeSpanRun({ msg in try list.writeItem(msg) });
         try writeSpanRun({ msg in try list.writeItem(msg) });
         try ListsDataset.write(input: ListsDataset(runs: list), to: &buffer);
-        let msg = try ListsDataset.from(slice: buffer);
+        let msg = try ListsDataset.from(bytes: buffer);
         XCTAssertEqual(msg.size, buffer.size);
         let data = msg.data;
         XCTAssertEqual(data.runs.count, 3);

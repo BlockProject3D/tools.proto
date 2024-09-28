@@ -28,17 +28,17 @@
 
 import Foundation
 
-public struct Array<Buffer: BP3DProto.Buffer, T: FromSlice, Item: FromSlice>: FromSlice where T.Output: Scalar, Item.Output: FixedSize, T.Buffer == Buffer, Item.Buffer == Buffer {
+public struct Array<Buffer: BP3DProto.Buffer, T: FromBytes, Item: FromBytes>: FromBytes where T.Output: Scalar, Item.Output: FixedSize, T.Buffer == Buffer, Item.Buffer == Buffer {
     let buffer: Buffer;
     public let count: Int;
 
     public typealias Output = Self;
 
-    public static func from(slice: Buffer) throws -> Message<Self> {
-        let msg = try T.from(slice: slice);
-        let data = slice[msg.size...];
+    public static func from(bytes: Buffer) throws -> Message<Self> {
+        let msg = try T.from(bytes: bytes);
+        let data = bytes[msg.size...];
         let totalSize = msg.size + Int(msg.data.toUInt()) * Item.Output.size;
-        if slice.size < totalSize {
+        if bytes.size < totalSize {
             throw Error.truncated;
         }
         let len = Int(msg.data.toUInt());

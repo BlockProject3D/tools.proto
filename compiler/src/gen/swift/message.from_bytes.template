@@ -1,23 +1,23 @@
 #fragment push impl
-extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.FromSlice  {{
+extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.FromBytes  {{
     public typealias Buffer = B;
     public typealias Output = Self;
 
-    public static func from(slice: B) throws -> BP3DProto.Message<Self> {{
+    public static func from(bytes: B) throws -> BP3DProto.Message<Self> {{
         var byteOffset = 0;
 {fields}
 #fragment push field
-        let {name}Msg = try {type}.from(slice: slice[byteOffset...]);
+        let {name}Msg = try {type}.from(bytes: bytes[byteOffset...]);
         byteOffset += {name}Msg.size;
         let {name} = {name}Msg.data;
 #fragment pop
 #fragment push field_msg
-        let {name}Msg = try {type}.from(slice: slice[byteOffset...]);
+        let {name}Msg = try {type}.from(bytes: bytes[byteOffset...]);
         byteOffset += {name}Msg.size;
         let {name} = {name}Msg.data;
 #fragment pop
 #fragment push field_union
-        let {name}Msg = try {type}.from(slice: slice[byteOffset...], discriminant: {on_name});
+        let {name}Msg = try {type}.from(bytes: bytes[byteOffset...], discriminant: {on_name});
         byteOffset += {name}Msg.size;
         let {name} = {name}Msg.data;
 #fragment pop

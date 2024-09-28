@@ -29,25 +29,37 @@
 import Foundation;
 import BP3DProto;
 
-extension UnionsItem: BP3DProto.FromSlice  {
+extension ListsSpanRun: BP3DProto.FromBytes  {
     public typealias Buffer = B;
     public typealias Output = Self;
-    public static func from(slice: B) throws -> BP3DProto.Message<Self> {
+    public static func from(bytes: B) throws -> BP3DProto.Message<Self> {
         var byteOffset = 0;
-        let headerMsg = try EnumsHeader.from(slice: slice[byteOffset...]);
-        byteOffset += headerMsg.size;
-        let header = headerMsg.data;
-        let nameMsg = try BP3DProto.NullTerminatedString<B>.from(slice: slice[byteOffset...]);
-        byteOffset += nameMsg.size;
-        let name = nameMsg.data;
-        let valueMsg = try UnionsValue.from(slice: slice[byteOffset...], discriminant: header);
-        byteOffset += valueMsg.size;
-        let value = valueMsg.data;
+        let timesMsg = try ListsTimes.from(bytes: bytes[byteOffset...]);
+        byteOffset += timesMsg.size;
+        let times = timesMsg.data;
+        let varsMsg = try BP3DProto.List<B, BP3DProto.ValueLE<B, UInt8>, UnionsItem<B>>.from(bytes: bytes[byteOffset...]);
+        byteOffset += varsMsg.size;
+        let vars = varsMsg.data;
 
-        let _data = UnionsItem(
-            header: header,
-            name: name,
-            value: value
+        let _data = ListsSpanRun(
+            times: times,
+            vars: vars
+        );
+        return BP3DProto.Message(size: byteOffset, data: _data);
+    }
+}
+
+extension ListsDataset: BP3DProto.FromBytes  {
+    public typealias Buffer = B;
+    public typealias Output = Self;
+    public static func from(bytes: B) throws -> BP3DProto.Message<Self> {
+        var byteOffset = 0;
+        let runsMsg = try BP3DProto.UnsizedList<B, BP3DProto.ValueLE<B, UInt32>, ListsSpanRun<B>>.from(bytes: bytes[byteOffset...]);
+        byteOffset += runsMsg.size;
+        let runs = runsMsg.data;
+
+        let _data = ListsDataset(
+            runs: runs
         );
         return BP3DProto.Message(size: byteOffset, data: _data);
     }

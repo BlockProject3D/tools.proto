@@ -29,12 +29,12 @@
 import Foundation;
 import BP3DProto;
 
-extension ValuesValueString: BP3DProto.FromSlice  {
+extension ValuesValueString: BP3DProto.FromBytes  {
     public typealias Buffer = B;
     public typealias Output = Self;
-    public static func from(slice: B) throws -> BP3DProto.Message<Self> {
+    public static func from(bytes: B) throws -> BP3DProto.Message<Self> {
         var byteOffset = 0;
-        let dataMsg = try BP3DProto.NullTerminatedString<B>.from(slice: slice[byteOffset...]);
+        let dataMsg = try BP3DProto.NullTerminatedString<B>.from(bytes: bytes[byteOffset...]);
         byteOffset += dataMsg.size;
         let data = dataMsg.data;
 

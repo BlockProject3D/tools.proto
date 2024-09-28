@@ -49,14 +49,14 @@ extension StructsNumbers: BP3DProto.WriteTo where T: BP3DProto.Buffer {
         out.write(bytes: input.data[...14].toData());
     }
 }
-extension StructsNumbers: BP3DProto.FromSlice where T: BP3DProto.Buffer {
+extension StructsNumbers: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     public typealias Buffer = T;
     public typealias Output = StructsNumbers;
-    public static func from(slice: T) throws -> BP3DProto.Message<Output> {
-        if slice.size < 14 {
+    public static func from(bytes: T) throws -> BP3DProto.Message<Output> {
+        if bytes.size < 14 {
             throw BP3DProto.Error.truncated;
         }
-        return BP3DProto.Message(size: 14, data: StructsNumbers(slice[...14]));
+        return BP3DProto.Message(size: 14, data: StructsNumbers(bytes[...14]));
     }
 }
 extension StructsNumbers where T: BP3DProto.Buffer {
@@ -194,14 +194,14 @@ extension StructsFlags: BP3DProto.WriteTo where T: BP3DProto.Buffer {
         out.write(bytes: input.data[...15].toData());
     }
 }
-extension StructsFlags: BP3DProto.FromSlice where T: BP3DProto.Buffer {
+extension StructsFlags: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     public typealias Buffer = T;
     public typealias Output = StructsFlags;
-    public static func from(slice: T) throws -> BP3DProto.Message<Output> {
-        if slice.size < 15 {
+    public static func from(bytes: T) throws -> BP3DProto.Message<Output> {
+        if bytes.size < 15 {
             throw BP3DProto.Error.truncated;
         }
-        return BP3DProto.Message(size: 15, data: StructsFlags(slice[...15]));
+        return BP3DProto.Message(size: 15, data: StructsFlags(bytes[...15]));
     }
 }
 extension StructsFlags where T: BP3DProto.Buffer {
@@ -339,14 +339,14 @@ extension StructsFloats: BP3DProto.WriteTo where T: BP3DProto.Buffer {
         out.write(bytes: input.data[...12].toData());
     }
 }
-extension StructsFloats: BP3DProto.FromSlice where T: BP3DProto.Buffer {
+extension StructsFloats: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     public typealias Buffer = T;
     public typealias Output = StructsFloats;
-    public static func from(slice: T) throws -> BP3DProto.Message<Output> {
-        if slice.size < 12 {
+    public static func from(bytes: T) throws -> BP3DProto.Message<Output> {
+        if bytes.size < 12 {
             throw BP3DProto.Error.truncated;
         }
-        return BP3DProto.Message(size: 12, data: StructsFloats(slice[...12]));
+        return BP3DProto.Message(size: 12, data: StructsFloats(bytes[...12]));
     }
 }
 extension StructsFloats where T: BP3DProto.Buffer {
@@ -414,14 +414,14 @@ extension StructsMaster: BP3DProto.WriteTo where T: BP3DProto.Buffer {
         out.write(bytes: input.data[...41].toData());
     }
 }
-extension StructsMaster: BP3DProto.FromSlice where T: BP3DProto.Buffer {
+extension StructsMaster: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     public typealias Buffer = T;
     public typealias Output = StructsMaster;
-    public static func from(slice: T) throws -> BP3DProto.Message<Output> {
-        if slice.size < 41 {
+    public static func from(bytes: T) throws -> BP3DProto.Message<Output> {
+        if bytes.size < 41 {
             throw BP3DProto.Error.truncated;
         }
-        return BP3DProto.Message(size: 41, data: StructsMaster(slice[...41]));
+        return BP3DProto.Message(size: 41, data: StructsMaster(bytes[...41]));
     }
 }
 extension StructsMaster where T: BP3DProto.Buffer {

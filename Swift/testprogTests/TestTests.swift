@@ -53,7 +53,7 @@ final class TestTests: XCTestCase {
     func testBasic() throws {
         var buffer = DataBuffer();
         try writeMessage(out: &buffer);
-        let msg = try TestTest.from(slice: buffer).data;
+        let msg = try TestTest.from(bytes: buffer).data;
         XCTAssertEqual(msg.p1!.p1, 42);
         XCTAssertEqual(msg.p1!.s1, "this is a test");
         XCTAssertEqual(msg.s1, "a test");

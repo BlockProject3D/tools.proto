@@ -29,37 +29,25 @@
 import Foundation;
 import BP3DProto;
 
-extension Lists2SpanRun: BP3DProto.FromSlice  {
+extension UnionsItem: BP3DProto.FromBytes  {
     public typealias Buffer = B;
     public typealias Output = Self;
-    public static func from(slice: B) throws -> BP3DProto.Message<Self> {
+    public static func from(bytes: B) throws -> BP3DProto.Message<Self> {
         var byteOffset = 0;
-        let timesMsg = try Lists2Times.from(slice: slice[byteOffset...]);
-        byteOffset += timesMsg.size;
-        let times = timesMsg.data;
-        let varsMsg = try BP3DProto.SizedList<B, BP3DProto.ValueLE<B, UInt8>, BP3DProto.ValueLE<B, UInt16>, UnionsItem<B>>.from(slice: slice[byteOffset...]);
-        byteOffset += varsMsg.size;
-        let vars = varsMsg.data;
+        let headerMsg = try EnumsHeader.from(bytes: bytes[byteOffset...]);
+        byteOffset += headerMsg.size;
+        let header = headerMsg.data;
+        let nameMsg = try BP3DProto.NullTerminatedString<B>.from(bytes: bytes[byteOffset...]);
+        byteOffset += nameMsg.size;
+        let name = nameMsg.data;
+        let valueMsg = try UnionsValue.from(bytes: bytes[byteOffset...], discriminant: header);
+        byteOffset += valueMsg.size;
+        let value = valueMsg.data;
 
-        let _data = Lists2SpanRun(
-            times: times,
-            vars: vars
-        );
-        return BP3DProto.Message(size: byteOffset, data: _data);
-    }
-}
-
-extension Lists2Dataset: BP3DProto.FromSlice  {
-    public typealias Buffer = B;
-    public typealias Output = Self;
-    public static func from(slice: B) throws -> BP3DProto.Message<Self> {
-        var byteOffset = 0;
-        let runsMsg = try BP3DProto.UnsizedList<B, BP3DProto.ValueLE<B, UInt32>, Lists2SpanRun<B>>.from(slice: slice[byteOffset...]);
-        byteOffset += runsMsg.size;
-        let runs = runsMsg.data;
-
-        let _data = Lists2Dataset(
-            runs: runs
+        let _data = UnionsItem(
+            header: header,
+            name: name,
+            value: value
         );
         return BP3DProto.Message(size: byteOffset, data: _data);
     }

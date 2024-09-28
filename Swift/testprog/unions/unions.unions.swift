@@ -45,43 +45,43 @@ public enum UnionsValue<B: BP3DProto.Buffer> {
 
 }
 extension UnionsValue {
-    public static func from(slice: B, discriminant: EnumsHeader<B>) throws -> BP3DProto.Message<Self> {
+    public static func from(bytes: B, discriminant: EnumsHeader<B>) throws -> BP3DProto.Message<Self> {
         let discriminant = discriminant.rawType;
         switch discriminant {
             case 0:
                 return BP3DProto.Message(size: 0, data: Self.null);
             case 1:
-                let msg = try ValuesValueString.from(slice: slice);
+                let msg = try ValuesValueString.from(bytes: bytes);
                 return msg.map({ v in Self.string(v) });
             case 2:
-                let msg = try ValuesValueInt8.from(slice: slice);
+                let msg = try ValuesValueInt8.from(bytes: bytes);
                 return msg.map({ v in Self.int8(v) });
             case 3:
-                let msg = try ValuesValueInt16.from(slice: slice);
+                let msg = try ValuesValueInt16.from(bytes: bytes);
                 return msg.map({ v in Self.int16(v) });
             case 4:
-                let msg = try ValuesValueInt32.from(slice: slice);
+                let msg = try ValuesValueInt32.from(bytes: bytes);
                 return msg.map({ v in Self.int32(v) });
             case 5:
-                let msg = try ValuesValueInt64.from(slice: slice);
+                let msg = try ValuesValueInt64.from(bytes: bytes);
                 return msg.map({ v in Self.int64(v) });
             case 6:
-                let msg = try ValuesValueUInt8.from(slice: slice);
+                let msg = try ValuesValueUInt8.from(bytes: bytes);
                 return msg.map({ v in Self.uInt8(v) });
             case 7:
-                let msg = try ValuesValueUInt16.from(slice: slice);
+                let msg = try ValuesValueUInt16.from(bytes: bytes);
                 return msg.map({ v in Self.uInt16(v) });
             case 8:
-                let msg = try ValuesValueUInt32.from(slice: slice);
+                let msg = try ValuesValueUInt32.from(bytes: bytes);
                 return msg.map({ v in Self.uInt32(v) });
             case 9:
-                let msg = try ValuesValueUInt64.from(slice: slice);
+                let msg = try ValuesValueUInt64.from(bytes: bytes);
                 return msg.map({ v in Self.uInt64(v) });
             case 10:
-                let msg = try ValuesValueFloat.from(slice: slice);
+                let msg = try ValuesValueFloat.from(bytes: bytes);
                 return msg.map({ v in Self.float(v) });
             case 11:
-                let msg = try ValuesValueDouble.from(slice: slice);
+                let msg = try ValuesValueDouble.from(bytes: bytes);
                 return msg.map({ v in Self.double(v) });
 
             default:

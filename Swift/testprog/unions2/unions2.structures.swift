@@ -49,14 +49,14 @@ extension Unions2Header: BP3DProto.WriteTo where T: BP3DProto.Buffer {
         out.write(bytes: input.data[...1].toData());
     }
 }
-extension Unions2Header: BP3DProto.FromSlice where T: BP3DProto.Buffer {
+extension Unions2Header: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     public typealias Buffer = T;
     public typealias Output = Unions2Header;
-    public static func from(slice: T) throws -> BP3DProto.Message<Output> {
-        if slice.size < 1 {
+    public static func from(bytes: T) throws -> BP3DProto.Message<Output> {
+        if bytes.size < 1 {
             throw BP3DProto.Error.truncated;
         }
-        return BP3DProto.Message(size: 1, data: Unions2Header(slice[...1]));
+        return BP3DProto.Message(size: 1, data: Unions2Header(bytes[...1]));
     }
 }
 extension Unions2Header where T: BP3DProto.Buffer {
@@ -127,14 +127,14 @@ extension Unions2Header2: BP3DProto.WriteTo where T: BP3DProto.Buffer {
         out.write(bytes: input.data[...1].toData());
     }
 }
-extension Unions2Header2: BP3DProto.FromSlice where T: BP3DProto.Buffer {
+extension Unions2Header2: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     public typealias Buffer = T;
     public typealias Output = Unions2Header2;
-    public static func from(slice: T) throws -> BP3DProto.Message<Output> {
-        if slice.size < 1 {
+    public static func from(bytes: T) throws -> BP3DProto.Message<Output> {
+        if bytes.size < 1 {
             throw BP3DProto.Error.truncated;
         }
-        return BP3DProto.Message(size: 1, data: Unions2Header2(slice[...1]));
+        return BP3DProto.Message(size: 1, data: Unions2Header2(bytes[...1]));
     }
 }
 extension Unions2Header2 where T: BP3DProto.Buffer {

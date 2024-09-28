@@ -37,15 +37,15 @@ extension {proto_name:to_pascal_case}{name}: BP3DProto.WriteTo where T: BP3DProt
 #fragment pop
 
 #fragment push from_bytes
-extension {proto_name:to_pascal_case}{name}: BP3DProto.FromSlice where T: BP3DProto.Buffer {{
+extension {proto_name:to_pascal_case}{name}: BP3DProto.FromBytes where T: BP3DProto.Buffer {{
     public typealias Buffer = T;
     public typealias Output = {proto_name:to_pascal_case}{name};
 
-    public static func from(slice: T) throws -> BP3DProto.Message<Output> {{
-        if slice.size < {byte_size} {{
+    public static func from(bytes: T) throws -> BP3DProto.Message<Output> {{
+        if bytes.size < {byte_size} {{
             throw BP3DProto.Error.truncated;
         }}
-        return BP3DProto.Message(size: {byte_size}, data: {proto_name:to_pascal_case}{name}(slice[...{byte_size}]));
+        return BP3DProto.Message(size: {byte_size}, data: {proto_name:to_pascal_case}{name}(bytes[...{byte_size}]));
     }}
 }}
 #fragment pop

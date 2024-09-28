@@ -93,7 +93,7 @@ impl Generator for GeneratorSwift {
             ),
             File::new(
                 FileType::MessageReading,
-                format!("{}.messages_from_slice.swift", proto.name()),
+                format!("{}.messages_from_bytes.swift", proto.name()),
                 (&imports, impl_from_slice_messages_code),
             ),
             File::new(

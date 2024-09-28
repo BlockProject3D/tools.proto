@@ -49,14 +49,14 @@ extension Lists2Times: BP3DProto.WriteTo where T: BP3DProto.Buffer {
         out.write(bytes: input.data[...16].toData());
     }
 }
-extension Lists2Times: BP3DProto.FromSlice where T: BP3DProto.Buffer {
+extension Lists2Times: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     public typealias Buffer = T;
     public typealias Output = Lists2Times;
-    public static func from(slice: T) throws -> BP3DProto.Message<Output> {
-        if slice.size < 16 {
+    public static func from(bytes: T) throws -> BP3DProto.Message<Output> {
+        if bytes.size < 16 {
             throw BP3DProto.Error.truncated;
         }
-        return BP3DProto.Message(size: 16, data: Lists2Times(slice[...16]));
+        return BP3DProto.Message(size: 16, data: Lists2Times(bytes[...16]));
     }
 }
 extension Lists2Times where T: BP3DProto.Buffer {

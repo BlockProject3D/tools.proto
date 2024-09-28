@@ -49,14 +49,14 @@ extension BitsNumbers: BP3DProto.WriteTo where T: BP3DProto.Buffer {
         out.write(bytes: input.data[...4].toData());
     }
 }
-extension BitsNumbers: BP3DProto.FromSlice where T: BP3DProto.Buffer {
+extension BitsNumbers: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     public typealias Buffer = T;
     public typealias Output = BitsNumbers;
-    public static func from(slice: T) throws -> BP3DProto.Message<Output> {
-        if slice.size < 4 {
+    public static func from(bytes: T) throws -> BP3DProto.Message<Output> {
+        if bytes.size < 4 {
             throw BP3DProto.Error.truncated;
         }
-        return BP3DProto.Message(size: 4, data: BitsNumbers(slice[...4]));
+        return BP3DProto.Message(size: 4, data: BitsNumbers(bytes[...4]));
     }
 }
 extension BitsNumbers where T: BP3DProto.Buffer {

@@ -28,16 +28,16 @@
 
 import Foundation
 
-public struct Optional<Buffer: BP3DProto.Buffer, T: FromSlice>: FromSlice where T.Buffer == Buffer {
+public struct Optional<Buffer: BP3DProto.Buffer, T: FromBytes>: FromBytes where T.Buffer == Buffer {
     public typealias Output = T.Output?;
 
-    public static func from(slice: Buffer) throws -> Message<T.Output?> {
-        if slice.isEmpty {
+    public static func from(bytes: Buffer) throws -> Message<T.Output?> {
+        if bytes.isEmpty {
             throw Error.truncated;
         }
-        let b = slice[0] > 0;
+        let b = bytes[0] > 0;
         if b {
-            let msg = try T.from(slice: slice[1...]);
+            let msg = try T.from(bytes: bytes[1...]);
             return Message(size: msg.size + 1, data: msg.data);
         } else {
             return Message(size: 1, data: nil);
@@ -57,15 +57,15 @@ extension Optional: WriteTo where T: WriteTo {
     }
 }
 
-public struct ValueLE<Buffer: BP3DProto.Buffer, T: Scalar>: FromSlice, WriteTo {
+public struct ValueLE<Buffer: BP3DProto.Buffer, T: Scalar>: FromBytes, WriteTo {
     public typealias Input = T;
     public typealias Output = T;
 
-    public static func from(slice: Buffer) throws -> Message<T> {
-        if slice.size < T.size {
+    public static func from(bytes: Buffer) throws -> Message<T> {
+        if bytes.size < T.size {
             throw Error.truncated;
         }
-        return Message(size: T.size, data: T(fromBytesLE: slice));
+        return Message(size: T.size, data: T(fromBytesLE: bytes));
     }
 
     public static func write<B: WritableBuffer>(input: T, to out: inout B) throws {
@@ -73,15 +73,15 @@ public struct ValueLE<Buffer: BP3DProto.Buffer, T: Scalar>: FromSlice, WriteTo {
     }
 }
 
-public struct ValueBE<Buffer: BP3DProto.Buffer, T: Scalar>: FromSlice, WriteTo {
+public struct ValueBE<Buffer: BP3DProto.Buffer, T: Scalar>: FromBytes, WriteTo {
     public typealias Input = T;
     public typealias Output = T;
 
-    public static func from(slice: Buffer) throws -> Message<T> {
-        if slice.size < T.size {
+    public static func from(bytes: Buffer) throws -> Message<T> {
+        if bytes.size < T.size {
             throw Error.truncated;
         }
-        return Message(size: T.size, data: T(fromBytesBE: slice));
+        return Message(size: T.size, data: T(fromBytesBE: bytes));
     }
 
     public static func write<B: WritableBuffer>(input: T, to out: inout B) throws {

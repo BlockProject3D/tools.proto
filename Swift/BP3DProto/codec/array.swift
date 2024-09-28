@@ -28,7 +28,7 @@
 
 import Foundation
 
-public struct ArrayCodec<B: Buffer, C: ByteCodec, Item: FromBytes> {
+public struct ArrayCodec<B: Buffer, C: ByteCodec, Item: ScalarFromBytes> {
     var buffer: B;
     let itemByteSize: Int;
 

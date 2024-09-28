@@ -56,7 +56,7 @@ final class ArraysTests: XCTestCase {
             try ArraysMsg.write(input: msg, to: &msg_buffer);
         }
         do {
-            let msg = try ArraysMsg.from(slice: msg_buffer);
+            let msg = try ArraysMsg.from(bytes: msg_buffer);
             XCTAssertEqual(msg_buffer.size, msg.size);
             let msg1 = msg.data;
             XCTAssertEqual(msg1.items.count, 4);
@@ -88,7 +88,7 @@ final class ArraysTests: XCTestCase {
             try ArraysMsg1.write(input: msg, to: &msg_buffer);
         }
         do {
-            let msg = try ArraysMsg1.from(slice: msg_buffer);
+            let msg = try ArraysMsg1.from(bytes: msg_buffer);
             XCTAssertEqual(msg_buffer.size, msg.size);
             let msg1 = msg.data;
             XCTAssertEqual(msg1.items!.count, 4);
@@ -114,7 +114,7 @@ final class ArraysTests: XCTestCase {
             try ArraysMsg1.write(input: msg, to: &msg_buffer);
         }
         do {
-            let msg = try ArraysMsg1.from(slice: msg_buffer);
+            let msg = try ArraysMsg1.from(bytes: msg_buffer);
             XCTAssertEqual(msg_buffer.size, msg.size);
             let msg1 = msg.data;
             XCTAssert(msg1.items == nil);

@@ -104,13 +104,13 @@ extension {proto_name:to_pascal_case}{union_name} {{
 extension {proto_name:to_pascal_case}{union_name} {{
 {fragment}
 #fragment push content
-    public static func from(slice: B, discriminant: {discriminant_type}<B>) throws -> BP3DProto.Message<Self> {{
+    public static func from(bytes: B, discriminant: {discriminant_type}<B>) throws -> BP3DProto.Message<Self> {{
         let discriminant = discriminant.{discriminant_path};
         switch discriminant {{
 {cases}
 #fragment push case
             case {case}:
-                let msg = try {type_name}.from(slice: slice);
+                let msg = try {type_name}.from(bytes: bytes);
                 return msg.map({{ v in Self.{name:to_camel_case}(v) }});
 #fragment pop
             default:
@@ -119,7 +119,7 @@ extension {proto_name:to_pascal_case}{union_name} {{
     }}
 #fragment pop
 #fragment push none
-    public static func from(slice: B, discriminant: {discriminant_type}<B>) throws -> BP3DProto.Message<Self> {{
+    public static func from(bytes: B, discriminant: {discriminant_type}<B>) throws -> BP3DProto.Message<Self> {{
         let discriminant = discriminant.{discriminant_path};
         switch discriminant {{
 {cases}

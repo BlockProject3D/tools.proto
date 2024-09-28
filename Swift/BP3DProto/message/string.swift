@@ -28,13 +28,13 @@
 
 import Foundation
 
-public struct NullTerminatedString<Buffer: BP3DProto.Buffer>: FromSlice, WriteTo {
+public struct NullTerminatedString<Buffer: BP3DProto.Buffer>: FromBytes, WriteTo {
     public typealias Output = String;
     public typealias Input = String;
 
-    public static func from(slice: Buffer) throws -> Message<String> {
-        guard let index = slice.findFirst(0x0) else { throw Error.truncated };
-        let str = String(decoding: slice[...index].toData(), as: UTF8.self);
+    public static func from(bytes: Buffer) throws -> Message<String> {
+        guard let index = bytes.findFirst(0x0) else { throw Error.truncated };
+        let str = String(decoding: bytes[...index].toData(), as: UTF8.self);
         return Message(size: index + 1, data: str);
     }
 
@@ -45,13 +45,13 @@ public struct NullTerminatedString<Buffer: BP3DProto.Buffer>: FromSlice, WriteTo
     }
 }
 
-public struct VarcharString<Buffer: BP3DProto.Buffer, T: FromSlice>: FromSlice where T.Output: Scalar, T.Buffer == Buffer {
+public struct VarcharString<Buffer: BP3DProto.Buffer, T: FromBytes>: FromBytes where T.Output: Scalar, T.Buffer == Buffer {
     public typealias Output = String;
 
-    public static func from(slice: Buffer) throws -> Message<String> {
-        let size = try T.from(slice: slice);
+    public static func from(bytes: Buffer) throws -> Message<String> {
+        let size = try T.from(bytes: bytes);
         let length = size.data.toUInt();
-        let data = slice[size.size...size.size + Int(length)].toData();
+        let data = bytes[size.size...size.size + Int(length)].toData();
         let str = String(decoding: data, as: UTF8.self);
         return Message(size: Int(length) + size.size, data: str);
     }
