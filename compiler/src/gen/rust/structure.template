@@ -97,7 +97,7 @@ impl<'a> bp3d_proto::message::WriteTo for {name}<&'a [u8]> {{
     type Input<'b> = Self;
 
     fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {{
-        out.write_all(&input.data[..{byte_size}])?;
+        unsafe {{ out.write_all(input.data.get_unchecked(..{byte_size}))? }};
         Ok(())
     }}
 }}
@@ -106,7 +106,7 @@ impl<'a> bp3d_proto::message::WriteTo for {name}<&'a [u8]> {{
 #fragment push write_to_async
 impl<'a> bp3d_proto::message::WriteToAsync for {name}<&'a [u8]> {{
     async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> bp3d_proto::message::Result<()> {{
-        out.write_all(&input.data[..{byte_size}]).await?;
+        unsafe {{ out.write_all(input.data.get_unchecked(..{byte_size})).await? }};
         Ok(())
     }}
 }}
@@ -117,10 +117,12 @@ impl<'a> bp3d_proto::message::FromBytes<'a> for {name}<&'a [u8]> {{
     type Output = Self;
 
     fn from_bytes(bytes: &'a [u8]) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
+        //Disable stupid clippy warning as this code is generated.
+        #[allow(clippy::len_zero)]
         if bytes.len() < {byte_size} {{
             Err(bp3d_proto::message::Error::Truncated)
         }} else {{
-            Ok(bp3d_proto::message::Message::new({byte_size}, Self {{ data: &bytes[..{byte_size}] }}))
+            unsafe {{ Ok(bp3d_proto::message::Message::new({byte_size}, Self {{ data: bytes.get_unchecked(..{byte_size}) }})) }}
         }}
     }}
 }}
