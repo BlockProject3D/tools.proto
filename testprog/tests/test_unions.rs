@@ -27,8 +27,8 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use bp3d_proto::message::{FromBytes, WriteSelf, WriteTo};
-use bp3d_proto::util::Wrap;
 use bp3d_proto::union::IntoUnion;
+use bp3d_proto::util::Wrap;
 use std::io::Write;
 use testprog::enums::{Header, Type};
 use testprog::unions::{Item, Value};

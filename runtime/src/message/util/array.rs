@@ -29,7 +29,7 @@
 use crate::message::payload::list_base::impl_list_base;
 use crate::message::WriteTo;
 use crate::message::{Error, FromBytes, Message};
-use crate::util::{Size, Wrap, ToUsize};
+use crate::util::{Size, ToUsize, Wrap};
 use std::marker::PhantomData;
 use std::ops::{Index, IndexMut};
 use std::slice::{Chunks, ChunksMut};
