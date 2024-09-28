@@ -66,6 +66,7 @@ impl GenTools for Rust {
                     && v.list_wrappers.is_none()
                     && v.struct_to_mut.is_none()
                     && v.struct_dupe.is_none()
+                    && v.message_offsets.is_none()
                 {
                     return None;
                 }
@@ -89,6 +90,7 @@ impl GenTools for Rust {
                 params = params.enable_union_set_discriminant(v.union_set_discriminant.unwrap_or_default());
                 params = params.enable_list_wrappers(v.list_wrappers.unwrap_or_default());
                 params = params.enable_struct_to_mut(v.struct_to_mut.unwrap_or_default());
+                params = params.enable_message_offsets(v.message_offsets.unwrap_or_default());
                 Some(params)
             },
             &RustParams::default(),

@@ -3,6 +3,9 @@ name = ""
 path = "src"
 #file-header = "path/to/file/header"
 
+[options.test]
+message-offsets = true
+
 [options.structs]
 struct-dupe = ["Numbers"]
 

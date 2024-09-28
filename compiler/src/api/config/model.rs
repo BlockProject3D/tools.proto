@@ -37,6 +37,7 @@ pub struct RustParams<'a> {
     pub disable_read: Option<Vec<&'a str>>,
     pub disable_write: Option<Vec<&'a str>>,
     pub write_async: Option<bool>,
+    pub message_offsets: Option<bool>,
     pub union_set_discriminant: Option<bool>,
     pub list_wrappers: Option<bool>,
     pub struct_to_mut: Option<bool>,

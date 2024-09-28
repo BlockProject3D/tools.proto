@@ -69,6 +69,7 @@ pub struct Params<'a> {
     enable_write_async: bool,
     enable_union_set_discriminant: bool,
     enable_list_wrappers: bool,
+    enable_message_offsets: bool,
     disable_read: HashSet<&'a str>,
     disable_write: HashSet<&'a str>,
 }
@@ -91,6 +92,11 @@ impl<'a> Params<'a> {
 
     pub fn enable_list_wrappers(mut self, flag: bool) -> Self {
         self.enable_list_wrappers = flag;
+        self
+    }
+
+    pub fn enable_message_offsets(mut self, flag: bool) -> Self {
+        self.enable_message_offsets = flag;
         self
     }
 
@@ -126,9 +132,7 @@ impl Generator for GeneratorRust {
         let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(v, &proto.type_path_map, params));
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(v));
         let decl_unions = proto.unions.iter().map(|v| gen_union_decl(v, &proto.type_path_map, params));
-        let decl_messages_code_offsets =
-            proto.messages.iter().map(|v| gen_message_offsets_decl(v, &proto.type_path_map));
-        Ok(vec![
+        let mut files = vec![
             File::new(FileType::Message, "messages.rs", B(decl_messages_code)),
             File::new(
                 FileType::MessageReading,
@@ -140,15 +144,20 @@ impl Generator for GeneratorRust {
                 "messages_write.rs",
                 B(impl_write_messages_code),
             ),
-            File::new(
-                FileType::MessageReading,
-                "messages_offsets.rs",
-                B(decl_messages_code_offsets),
-            ),
             File::new(FileType::Structure, "structures.rs", B(decl_structures)),
             File::new(FileType::Enum, "enums.rs", B(decl_enums)),
             File::new(FileType::Union, "unions.rs", B(decl_unions)),
-        ])
+        ];
+        if params.enable_message_offsets {
+            let decl_messages_code_offsets =
+                proto.messages.iter().map(|v| gen_message_offsets_decl(v, &proto.type_path_map));
+            files.push(File::new(
+                FileType::MessageReading,
+                "messages_offsets.rs",
+                B(decl_messages_code_offsets)
+            ));
+        }
+        Ok(files)
     }
 
     fn generate_umbrella<'a>(
