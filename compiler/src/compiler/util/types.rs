@@ -84,15 +84,4 @@ impl TypePathMap {
             Some(v) => mapper.map_foreign_type(v),
         }
     }
-
-    pub fn get_with_default_prefix<'a, K: PtrKey + Name>(
-        &'a self,
-        item_type: &'a K,
-        default_prefix: &str,
-    ) -> Cow<'a, str> {
-        match self.type_path_by_addr.get(&item_type.ptr_key()) {
-            None => Cow::Owned(format!("{default_prefix}{}", item_type.name())),
-            Some(v) => Cow::Borrowed(v),
-        }
-    }
 }
