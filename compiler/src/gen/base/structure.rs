@@ -260,7 +260,7 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
         "struct_description",
         s.description.as_ref().map(U::gen_description).unwrap_or("".into()),
     );
-    let mut code = template.render("", &["decl", "new", "fixed_size", "write_to", "from_slice"]).unwrap();
+    let mut code = template.render("", &["decl", "new", "fixed_size", "write_to", "from_bytes"]).unwrap();
     for frag in hooks.get_fragments("ext") {
         code += &template.render_frag(frag).unwrap();
     }

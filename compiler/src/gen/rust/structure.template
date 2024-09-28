@@ -124,15 +124,15 @@ impl<'a> bp3d_proto::message::WriteToAsync for {name}<&'a [u8]> {{
 }}
 #fragment pop
 
-#fragment push from_slice
-impl<'a> bp3d_proto::message::FromSlice<'a> for {name}<&'a [u8]> {{
+#fragment push from_bytes
+impl<'a> bp3d_proto::message::FromBytes<'a> for {name}<&'a [u8]> {{
     type Output = Self;
 
-    fn from_slice(slice: &'a [u8]) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
-        if slice.len() < <Self as bp3d_proto::util::FixedSize>::SIZE {{
+    fn from_bytes(bytes: &'a [u8]) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
+        if bytes.len() < <Self as bp3d_proto::util::FixedSize>::SIZE {{
             Err(bp3d_proto::message::Error::Truncated)
         }} else {{
-            Ok(bp3d_proto::message::Message::new(<Self as bp3d_proto::util::FixedSize>::SIZE, Self {{ data: &slice[..<Self as bp3d_proto::util::FixedSize>::SIZE] }}))
+            Ok(bp3d_proto::message::Message::new(<Self as bp3d_proto::util::FixedSize>::SIZE, Self {{ data: &bytes[..<Self as bp3d_proto::util::FixedSize>::SIZE] }}))
         }}
     }}
 }}

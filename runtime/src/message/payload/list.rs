@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::message::payload::list_base::impl_list_base;
-use crate::message::{Error, FromSlice, FromSliceWithOffsets, Message, WriteTo};
+use crate::message::{Error, FromBytes, FromBytesWithOffsets, Message, WriteTo};
 use crate::util::ToUsize;
 use std::io::Write;
 use std::marker::PhantomData;
@@ -94,19 +94,19 @@ impl<B: Write, T, I> List<B, T, I> {
     }
 }
 
-impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FromSlice<'a, Output = Item>> FromSlice<'a>
+impl<'a, T: FromBytes<'a, Output: ToUsize>, Item: FromBytes<'a, Output = Item>> FromBytes<'a>
     for List<&'a [u8], T, Item>
 {
     type Output = List<&'a [u8], T, Item>;
 
-    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
-        let msg = T::from_slice(slice)?;
+    fn from_bytes(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
+        let msg = T::from_bytes(slice)?;
         let control_size = msg.size();
         let len = msg.into_inner().to_usize();
         let data = &slice[control_size..];
         let mut total_size: usize = 0;
         for _ in 0..len {
-            let msg = Item::from_slice(&data[total_size..])?;
+            let msg = Item::from_bytes(&data[total_size..])?;
             total_size += msg.size();
         }
         let data = &slice[control_size..control_size + total_size];
@@ -137,11 +137,11 @@ pub struct Unsized<T, Item> {
     useless1: PhantomData<Item>,
 }
 
-impl<'a, T: FromSlice<'a, Output: ToUsize>, Item> FromSlice<'a> for Unsized<T, Item> {
+impl<'a, T: FromBytes<'a, Output: ToUsize>, Item> FromBytes<'a> for Unsized<T, Item> {
     type Output = List<&'a [u8], T, Item>;
 
-    fn from_slice(slice: &'a [u8]) -> crate::message::Result<Message<Self::Output>> {
-        let msg = T::from_slice(slice)?;
+    fn from_bytes(slice: &'a [u8]) -> crate::message::Result<Message<Self::Output>> {
+        let msg = T::from_bytes(slice)?;
         let control_size = msg.size();
         let len = msg.into_inner().to_usize();
         let data = &slice[control_size..];
@@ -156,16 +156,16 @@ pub struct Sized<B, T, S, Item> {
     useless3: PhantomData<B>,
 }
 
-impl<'a, B, T: FromSlice<'a, Output: ToUsize>, S: FromSlice<'a, Output: ToUsize>, Item> FromSlice<'a>
+impl<'a, B, T: FromBytes<'a, Output: ToUsize>, S: FromBytes<'a, Output: ToUsize>, Item> FromBytes<'a>
     for Sized<B, T, S, Item>
 {
     type Output = List<&'a [u8], T, Item>;
 
-    fn from_slice(slice: &'a [u8]) -> crate::message::Result<Message<Self::Output>> {
-        let msg = T::from_slice(slice)?;
+    fn from_bytes(slice: &'a [u8]) -> crate::message::Result<Message<Self::Output>> {
+        let msg = T::from_bytes(slice)?;
         let mut control_size = msg.size();
         let len = msg.into_inner().to_usize();
-        let msg = S::from_slice(&slice[control_size..])?;
+        let msg = S::from_bytes(&slice[control_size..])?;
         control_size += msg.size();
         let total_size = control_size + msg.into_inner().to_usize();
         let data = &slice[control_size..total_size];
@@ -211,14 +211,14 @@ pub struct Iter<'a, Item> {
     useless: PhantomData<Item>,
 }
 
-impl<'a, Item: FromSlice<'a, Output = Item>> Iterator for Iter<'a, Item> {
+impl<'a, Item: FromBytes<'a, Output = Item>> Iterator for Iter<'a, Item> {
     type Item = crate::message::Result<Item>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.len == 0 {
             return None;
         }
-        let msg = match Item::from_slice(self.data) {
+        let msg = match Item::from_bytes(self.data) {
             Err(e) => return Some(Err(e)),
             Ok(v) => v,
         };
@@ -234,14 +234,14 @@ pub struct IterOffsets<'a, Item> {
     useless: PhantomData<Item>,
 }
 
-impl<'a, Item: FromSlice<'a, Output = Item> + FromSliceWithOffsets<'a>> Iterator for IterOffsets<'a, Item> {
+impl<'a, Item: FromBytes<'a, Output = Item> + FromBytesWithOffsets<'a>> Iterator for IterOffsets<'a, Item> {
     type Item = crate::message::Result<(Item, Item::Offsets)>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.len == 0 {
             return None;
         }
-        let msg = match Item::from_slice_with_offsets(self.data) {
+        let msg = match Item::from_bytes_with_offsets(self.data) {
             Err(e) => return Some(Err(e)),
             Ok(v) => v,
         };

@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::message::{FromSlice, Message, WriteSelf};
+use crate::message::{FromBytes, Message, WriteSelf};
 
 pub trait FromValue<T> {
     fn from_value(value: T) -> Self;
@@ -36,10 +36,10 @@ pub trait IntoUnion<U> {
     fn into_union(self) -> U;
 }
 
-pub trait UFromSlice<'a, D> {
+pub trait UFromBytes<'a, D> {
     type Output: Sized;
 
-    fn u_from_slice(slice: &'a [u8], discriminant: &D) -> crate::message::Result<Message<Self::Output>>;
+    fn u_from_bytes(slice: &'a [u8], discriminant: &D) -> crate::message::Result<Message<Self::Output>>;
 }
 
 pub trait UWriteTo<D> {
@@ -71,10 +71,10 @@ impl<T, U: FromValue<T>> IntoUnion<U> for T {
     }
 }
 
-impl<'a, D, T: FromSlice<'a>> UFromSlice<'a, D> for T {
+impl<'a, D, T: FromBytes<'a>> UFromBytes<'a, D> for T {
     type Output = T::Output;
 
-    fn u_from_slice(slice: &'a [u8], _: &D) -> crate::message::Result<Message<Self::Output>> {
-        T::from_slice(slice)
+    fn u_from_bytes(slice: &'a [u8], _: &D) -> crate::message::Result<Message<Self::Output>> {
+        T::from_bytes(slice)
     }
 }

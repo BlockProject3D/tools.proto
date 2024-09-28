@@ -36,7 +36,7 @@ extension {proto_name:to_pascal_case}{name}: BP3DProto.WriteTo where T: BP3DProt
 }}
 #fragment pop
 
-#fragment push from_slice
+#fragment push from_bytes
 extension {proto_name:to_pascal_case}{name}: BP3DProto.FromSlice where T: BP3DProto.Buffer {{
     public typealias Buffer = T;
     public typealias Output = {proto_name:to_pascal_case}{name};

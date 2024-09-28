@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto::message::{FromSlice, WriteTo};
+use bp3d_proto::message::{FromBytes, WriteTo};
 use testprog::arrays::{Msg, Msg1, Msg1Items, MsgItems};
 
 #[test]
@@ -48,7 +48,7 @@ fn msg() {
         Msg::write_to(&msg, &mut msg_buffer).unwrap();
     }
     {
-        let msg = Msg::from_slice(&msg_buffer).unwrap();
+        let msg = Msg::from_bytes(&msg_buffer).unwrap();
         assert_eq!(msg_buffer.len(), msg.size());
         let items = Msg1Items::from_array(msg.into_inner().items);
         assert_eq!(items.iter().count(), 4);
@@ -84,7 +84,7 @@ fn msg1_1() {
         Msg1::write_to(&msg, &mut msg_buffer).unwrap();
     }
     {
-        let msg = Msg1::from_slice(&msg_buffer).unwrap();
+        let msg = Msg1::from_bytes(&msg_buffer).unwrap();
         assert_eq!(msg_buffer.len(), msg.size());
         let msg = msg.into_inner();
         assert!(msg.items.is_some());
@@ -113,7 +113,7 @@ fn msg1_2() {
         Msg1::write_to(&msg, &mut msg_buffer).unwrap();
     }
     {
-        let msg = Msg1::from_slice(&msg_buffer).unwrap().into_inner();
+        let msg = Msg1::from_bytes(&msg_buffer).unwrap().into_inner();
         assert!(msg.items.is_none());
     }
 }

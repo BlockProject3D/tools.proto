@@ -26,17 +26,17 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::message::{Error, FromSlice, Message, WriteTo};
+use crate::message::{Error, FromBytes, Message, WriteTo};
 use crate::util::ToUsize;
 use std::io::Write;
 use std::marker::PhantomData;
 
 pub struct NullTerminatedString;
 
-impl<'a> FromSlice<'a> for NullTerminatedString {
+impl<'a> FromBytes<'a> for NullTerminatedString {
     type Output = &'a str;
 
-    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
+    fn from_bytes(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
         let string = slice
             .iter()
             .enumerate()
@@ -75,11 +75,11 @@ impl crate::message::WriteToAsync for NullTerminatedString {
 
 pub struct VarcharString<T>(PhantomData<T>);
 
-impl<'a, T: FromSlice<'a, Output: ToUsize>> FromSlice<'a> for VarcharString<T> {
+impl<'a, T: FromBytes<'a, Output: ToUsize>> FromBytes<'a> for VarcharString<T> {
     type Output = &'a str;
 
-    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
-        let msg = T::from_slice(slice)?;
+    fn from_bytes(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
+        let msg = T::from_bytes(slice)?;
         let size = msg.size();
         let subslice = &slice[size..size + msg.into_inner().to_usize()];
         let string = std::str::from_utf8(subslice).map_err(|_| Error::InvalidUtf8)?;

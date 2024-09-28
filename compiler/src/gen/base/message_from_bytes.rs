@@ -58,7 +58,7 @@ fn gen_field_from_slice_impl<U: Utilities, T: TypeMapper>(
     }
 }
 
-pub fn generate_from_slice_impl<U: Utilities, T: TypeMapper>(
+pub fn generate_from_bytes_impl<U: Utilities, T: TypeMapper>(
     msg: &Message,
     template: &Template,
     type_path_map: &TypePathMapper<T>,
@@ -89,5 +89,5 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     function: &str,
 ) -> String {
     template.var("msg_name", &msg.name);
-    generate_from_slice_impl::<U, T>(msg, &template, type_path_map, function)
+    generate_from_bytes_impl::<U, T>(msg, &template, type_path_map, function)
 }

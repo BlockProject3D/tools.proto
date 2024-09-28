@@ -41,7 +41,7 @@ const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("./structure.field.template"
 pub fn gen_structure_decl(s: &Structure, type_path_map: &TypePathMap, params: &RustParams) -> String {
     let mut options = Options::default();
     if params.disable_read.contains(s.name()) {
-        options.disable("from_slice").disable("getters");
+        options.disable("from_bytes").disable("getters");
     }
     if params.disable_write.contains(s.name()) {
         options.disable("write_to").disable("write_to_async").disable("setters");

@@ -29,12 +29,12 @@
 use crate::compiler::message::Message;
 use crate::compiler::util::types::TypePathMap;
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
-use crate::gen::base::message_from_slice::generate;
+use crate::gen::base::message_from_bytes::generate;
 use crate::gen::rust::util::{gen_where_clause, RustUtils};
 use crate::gen::template::Template;
 use itertools::Itertools;
 
-const TEMPLATE: &[u8] = include_bytes!("./message.from_slice.template");
+const TEMPLATE: &[u8] = include_bytes!("message.from_bytes.template");
 
 pub fn gen_message_from_slice_impl(msg: &Message, type_path_map: &TypePathMap) -> String {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);

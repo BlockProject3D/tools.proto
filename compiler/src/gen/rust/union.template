@@ -137,25 +137,25 @@ impl<'a> bp3d_proto::union::UWriteToAsync<{discriminant_type}<&'a [u8]>> for {un
 }}
 #fragment pop
 
-#fragment push from_slice
-impl<'a> bp3d_proto::union::UFromSlice<'a, {discriminant_type}<&'a [u8]>> for {union_name}{generics} {{
+#fragment push from_bytes
+impl<'a> bp3d_proto::union::UFromBytes<'a, {discriminant_type}<&'a [u8]>> for {union_name}{generics} {{
     type Output = Self;
 {fragment}
 #fragment push content
-    fn u_from_slice(slice: &'a [u8], discriminant: &{discriminant_type}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
-        use bp3d_proto::message::FromSlice;
+    fn u_from_bytes(bytes: &'a [u8], discriminant: &{discriminant_type}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
+        use bp3d_proto::message::FromBytes;
         let discriminant = discriminant.{discriminant_path};
         match discriminant {{
 {cases}
 #fragment push case
-            {case} => {type_name}::from_slice(slice).map(|v| v.map(Self::{name})),
+            {case} => {type_name}::from_bytes(bytes).map(|v| v.map(Self::{name})),
 #fragment pop
             _ => Err(bp3d_proto::message::Error::InvalidUnionDiscriminant(discriminant as _))
         }}
     }}
 #fragment pop
 #fragment push none
-    fn u_from_slice(_: &'a [u8], discriminant: &{discriminant_type}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
+    fn u_from_bytes(_: &'a [u8], discriminant: &{discriminant_type}<&'a [u8]>) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
         let discriminant = discriminant.{discriminant_path};
         match discriminant {{
 {cases}

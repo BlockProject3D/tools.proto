@@ -29,12 +29,12 @@
 use crate::compiler::message::Message;
 use crate::compiler::Protocol;
 use crate::gen::base::map::TypePathMapper;
-use crate::gen::base::message_from_slice::generate;
+use crate::gen::base::message_from_bytes::generate;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::{Options, Template};
 use std::borrow::Cow;
 
-const TEMPLATE: &[u8] = include_bytes!("./message.from_slice.template");
+const TEMPLATE: &[u8] = include_bytes!("message.from_bytes.template");
 
 pub fn gen_message_from_slice_impl(proto: &Protocol, msg: &Message) -> String {
     let mut options = Options::default();

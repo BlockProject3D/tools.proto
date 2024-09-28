@@ -100,7 +100,7 @@ extension {proto_name:to_pascal_case}{union_name} {{
 }}
 #fragment pop
 
-#fragment push from_slice
+#fragment push from_bytes
 extension {proto_name:to_pascal_case}{union_name} {{
 {fragment}
 #fragment push content

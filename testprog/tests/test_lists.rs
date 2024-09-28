@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto::message::{FromSlice, WriteTo};
+use bp3d_proto::message::{FromBytes, WriteTo};
 use testprog::enums::{Header, Type};
 use testprog::lists::{Dataset, DatasetRuns, SpanRun, SpanRunVars, Times, SIZE_TIMES};
 use testprog::unions::{Item, Value};
@@ -79,7 +79,7 @@ fn run() {
         write_span_run(|msg| SpanRun::write_to(&msg, &mut msg_buffer));
     }
     {
-        let msg = SpanRun::from_slice(&msg_buffer).unwrap();
+        let msg = SpanRun::from_bytes(&msg_buffer).unwrap();
         assert_eq!(msg_buffer.len(), msg.size());
         assert_span_run(msg.into_inner());
     }
@@ -98,7 +98,7 @@ fn dataset() {
         Dataset::write_to(&msg, &mut msg_buffer).unwrap();
     }
     {
-        let msg = Dataset::from_slice(&msg_buffer).unwrap().into_inner();
+        let msg = Dataset::from_bytes(&msg_buffer).unwrap().into_inner();
         assert_eq!(msg.runs.len(), 3);
         let mut runs = msg.runs.iter();
         assert_span_run(runs.next().unwrap().unwrap());

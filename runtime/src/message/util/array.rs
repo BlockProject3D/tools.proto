@@ -28,11 +28,14 @@
 
 use crate::message::payload::list_base::impl_list_base;
 use crate::message::WriteTo;
-use crate::message::{Error, FromSlice, Message};
+use crate::message::{Error, FromBytes, Message};
 use crate::util::{FixedSize, ToUsize};
 use std::marker::PhantomData;
 use std::ops::{Index, IndexMut};
 use std::slice::{Chunks, ChunksMut};
+
+//TODO: Check if we can't implement a FromUnchecked trait for structures to move bounds checking
+// at array construction.
 
 pub struct IterMut<'a, Item> {
     data: ChunksMut<'a, u8>,
@@ -187,11 +190,11 @@ impl<B: AsRef<[u8]> + AsMut<[u8]>, T, Item: FixedSize> IndexMut<usize> for Array
     }
 }
 
-impl<'a, T: FromSlice<'a, Output: ToUsize>, Item: FixedSize> FromSlice<'a> for Array<&'a [u8], T, Item> {
+impl<'a, T: FromBytes<'a, Output: ToUsize>, Item: FixedSize> FromBytes<'a> for Array<&'a [u8], T, Item> {
     type Output = Array<&'a [u8], T, Item>;
 
-    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
-        let msg = T::from_slice(slice)?;
+    fn from_bytes(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
+        let msg = T::from_bytes(slice)?;
         let control_size = msg.size();
         let len = msg.into_inner().to_usize();
         let total_size = control_size + (len * Item::SIZE);

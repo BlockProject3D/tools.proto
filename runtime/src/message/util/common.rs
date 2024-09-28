@@ -26,23 +26,23 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::message::{Error, FromSlice, FromSliceWithOffsets, Message, WriteTo};
+use crate::message::{Error, FromBytes, FromBytesWithOffsets, Message, WriteTo};
 use bytesutil::ReadBytes;
 use std::io::Write;
 use std::marker::PhantomData;
 
 pub struct Optional<T>(PhantomData<T>);
 
-impl<'a, T: FromSlice<'a>> FromSlice<'a> for Optional<T> {
+impl<'a, T: FromBytes<'a>> FromBytes<'a> for Optional<T> {
     type Output = Option<T::Output>;
 
-    fn from_slice(slice: &'a [u8]) -> Result<Message<Option<T::Output>>, Error> {
+    fn from_bytes(slice: &'a [u8]) -> Result<Message<Option<T::Output>>, Error> {
         if slice.is_empty() {
             Err(Error::Truncated)
         } else {
             let b = slice[0] > 0;
             if b {
-                let msg = T::from_slice(&slice[1..])?;
+                let msg = T::from_bytes(&slice[1..])?;
                 Ok(Message::new(msg.size() + 1, Some(msg.into_inner())))
             } else {
                 Ok(Message::new(1, None))
@@ -51,16 +51,16 @@ impl<'a, T: FromSlice<'a>> FromSlice<'a> for Optional<T> {
     }
 }
 
-impl<'a, T: FromSlice<'a> + FromSliceWithOffsets<'a>> FromSliceWithOffsets<'a> for Optional<T> {
+impl<'a, T: FromBytes<'a> + FromBytesWithOffsets<'a>> FromBytesWithOffsets<'a> for Optional<T> {
     type Offsets = Option<T::Offsets>;
 
-    fn from_slice_with_offsets(slice: &'a [u8]) -> crate::message::Result<Message<(Self::Output, Self::Offsets)>> {
+    fn from_bytes_with_offsets(slice: &'a [u8]) -> crate::message::Result<Message<(Self::Output, Self::Offsets)>> {
         if slice.is_empty() {
             Err(Error::Truncated)
         } else {
             let b = slice[0] > 0;
             if b {
-                let msg = T::from_slice_with_offsets(&slice[1..])?;
+                let msg = T::from_bytes_with_offsets(&slice[1..])?;
                 let size = msg.size();
                 let (msg, offsets) = msg.into_inner();
                 Ok(Message::new(size + 1, (Some(msg), Some(offsets))))
@@ -108,10 +108,10 @@ pub struct ValueLE<T>(PhantomData<T>);
 #[derive(Debug, Copy, Clone)]
 pub struct ValueBE<T>(PhantomData<T>);
 
-impl<'a, T: ReadBytes> FromSlice<'a> for ValueLE<T> {
+impl<'a, T: ReadBytes> FromBytes<'a> for ValueLE<T> {
     type Output = T;
 
-    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
+    fn from_bytes(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
         let size = size_of::<T>();
         if slice.len() < size {
             Err(Error::Truncated)
@@ -144,10 +144,10 @@ impl<T: bytesutil::WriteTo + bytesutil::WriteBytes> crate::message::WriteToAsync
     }
 }
 
-impl<'a, T: ReadBytes> FromSlice<'a> for ValueBE<T> {
+impl<'a, T: ReadBytes> FromBytes<'a> for ValueBE<T> {
     type Output = T;
 
-    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
+    fn from_bytes(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
         let size = size_of::<T>();
         if slice.len() < size {
             Err(Error::Truncated)

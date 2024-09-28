@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto::message::{FromSlice, FromSliceWithOffsets, WriteTo};
+use bp3d_proto::message::{FromBytes, FromBytesWithOffsets, WriteTo};
 use std::io::Write;
 use testprog::test::{Test, Test1};
 
@@ -46,7 +46,7 @@ fn write_message<W: Write>(out: W) {
 fn test() {
     let mut v = Vec::new();
     write_message(&mut v);
-    let msg = Test::from_slice(&v).unwrap().into_inner();
+    let msg = Test::from_bytes(&v).unwrap().into_inner();
     assert_eq!(msg.p1.unwrap().p1, 42);
     assert_eq!(msg.p1.unwrap().s1, "this is a test");
     assert_eq!(msg.s1, "a test");
@@ -58,7 +58,7 @@ fn test() {
 fn test_offsets() {
     let mut v = Vec::new();
     write_message(&mut v);
-    let (msg, offsets) = Test::from_slice_with_offsets(&v).unwrap().into_inner();
+    let (msg, offsets) = Test::from_bytes_with_offsets(&v).unwrap().into_inner();
     assert_eq!(msg.p1.unwrap().p1, 42);
     assert_eq!(msg.p1.unwrap().s1, "this is a test");
     assert_eq!(msg.s1, "a test");

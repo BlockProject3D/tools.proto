@@ -179,8 +179,8 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     for func in hooks.get_functions("decl") {
         code += &gen_decl(u, &template, type_path_map, func);
     }
-    code += &gen_union_from_slice_impl::<T>(u, &template, type_path_map, "from_slice");
-    for func in hooks.get_functions("from_slice") {
+    code += &gen_union_from_slice_impl::<T>(u, &template, type_path_map, "from_bytes");
+    for func in hooks.get_functions("from_bytes") {
         code += &gen_union_from_slice_impl::<T>(u, &template, type_path_map, func);
     }
     code += &gen_union_write_to_impl::<T>(u, &template, type_path_map, "write_to");

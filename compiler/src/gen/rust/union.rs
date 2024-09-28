@@ -81,7 +81,7 @@ pub fn gen_union_decl(u: &Union, type_path_map: &TypePathMap, params: &RustParam
     }
     let mut options = Options::default();
     if params.disable_read.contains(u.name()) {
-        options.disable("from_slice").disable("getters");
+        options.disable("from_bytes").disable("getters");
     }
     if params.disable_write.contains(u.name()) {
         options.disable("write_to").disable("write_to_async").disable("setter");

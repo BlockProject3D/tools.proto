@@ -30,7 +30,7 @@ pub mod r#enum;
 pub mod map;
 pub mod message;
 mod message_common;
-pub mod message_from_slice;
+pub mod message_from_bytes;
 pub mod message_write;
 pub mod structure;
 pub mod union;

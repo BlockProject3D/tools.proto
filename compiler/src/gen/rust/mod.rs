@@ -28,7 +28,7 @@
 
 mod r#enum;
 mod message;
-mod message_from_slice;
+mod message_from_bytes;
 mod message_offsets;
 mod message_write;
 mod solver;
@@ -41,7 +41,7 @@ pub use solver::RustImportSolver;
 use crate::compiler::Protocol;
 use crate::gen::file::B;
 use crate::gen::rust::message::gen_message_decl;
-use crate::gen::rust::message_from_slice::gen_message_from_slice_impl;
+use crate::gen::rust::message_from_bytes::gen_message_from_slice_impl;
 use crate::gen::rust::message_offsets::gen_message_offsets_decl;
 use crate::gen::rust::message_write::gen_message_write_impl;
 use crate::gen::rust::r#enum::gen_enum_decl;

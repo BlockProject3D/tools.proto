@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto::message::{FromSlice, WriteSelf, WriteTo};
+use bp3d_proto::message::{FromBytes, WriteSelf, WriteTo};
 use bp3d_proto::union::IntoUnion;
 use std::io::Write;
 use testprog::enums::{Header, Type};
@@ -59,7 +59,7 @@ fn write_message_fast<T: WriteSelf>(value: T, ty: Type, out: &mut impl Write) {
 }
 
 fn read_message(slice: &[u8], ty: Type) -> Value {
-    let msg = Item::from_slice(slice).unwrap();
+    let msg = Item::from_bytes(slice).unwrap();
     assert_eq!(slice.len(), msg.size());
     let item = msg.into_inner();
     assert_eq!(item.header.get_type().unwrap(), ty);

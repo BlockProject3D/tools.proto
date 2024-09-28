@@ -74,17 +74,17 @@ impl<T> Message<T> {
     }
 }
 
-pub trait FromSlice<'a> {
+pub trait FromBytes<'a> {
     type Output: Sized;
 
-    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>>;
+    fn from_bytes(slice: &'a [u8]) -> Result<Message<Self::Output>>;
     //fn copy_to_slice(&self, out_slice: &mut [u8]);
 }
 
-pub trait FromSliceWithOffsets<'a>: FromSlice<'a> {
+pub trait FromBytesWithOffsets<'a>: FromBytes<'a> {
     type Offsets: Sized;
 
-    fn from_slice_with_offsets(slice: &'a [u8]) -> Result<Message<(Self::Output, Self::Offsets)>>;
+    fn from_bytes_with_offsets(slice: &'a [u8]) -> Result<Message<(Self::Output, Self::Offsets)>>;
 }
 
 pub trait WriteTo {

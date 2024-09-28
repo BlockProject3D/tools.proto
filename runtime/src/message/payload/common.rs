@@ -26,15 +26,15 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::message::{Error, FromSlice, Message, WriteTo};
+use crate::message::{Error, FromBytes, Message, WriteTo};
 use std::io::Write;
 
 pub struct Buffer;
 
-impl<'a> FromSlice<'a> for Buffer {
+impl<'a> FromBytes<'a> for Buffer {
     type Output = &'a [u8];
 
-    fn from_slice(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
+    fn from_bytes(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {
         Ok(Message::new(slice.len(), slice))
     }
 }
