@@ -3,6 +3,9 @@ name = ""
 path = "src"
 #file-header = "path/to/file/header"
 
+[options.structs]
+struct-dupe = true
+
 [options.unions]
 union-set-discriminant = true
 

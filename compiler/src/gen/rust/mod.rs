@@ -65,6 +65,7 @@ simple_error! {
 #[derive(Default, Debug)]
 pub struct Params<'a> {
     enable_struct_to_mut: bool,
+    enable_struct_dupe: bool,
     enable_write_async: bool,
     enable_union_set_discriminant: bool,
     enable_list_wrappers: bool,
@@ -75,6 +76,11 @@ pub struct Params<'a> {
 impl<'a> Params<'a> {
     pub fn enable_struct_to_mut(mut self, flag: bool) -> Self {
         self.enable_struct_to_mut = flag;
+        self
+    }
+
+    pub fn enable_struct_dupe(mut self, flag: bool) -> Self {
+        self.enable_struct_dupe = flag;
         self
     }
 
