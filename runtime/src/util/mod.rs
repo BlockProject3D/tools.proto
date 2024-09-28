@@ -31,14 +31,8 @@ mod scalar;
 pub use scalar::*;
 
 pub trait Size {
-    fn size(&self) -> usize;
-}
-
-pub trait FixedSize {
     const SIZE: usize;
-}
 
-impl<T: FixedSize> Size for T {
     fn size(&self) -> usize {
         Self::SIZE
     }
@@ -77,4 +71,40 @@ macro_rules! transmute {
     (<$src: ty, $dst: ty>($value: expr)) => {
         unsafe { std::mem::transmute::<$src, $dst>($value) }
     };
+}
+
+/// This trait represents any structure type.
+pub trait Wrap<T: AsRef<[u8]>>: Sized + Size {
+    /// Wraps the given data buffer.
+    ///
+    /// # Arguments
+    ///
+    /// * `data`: the data buffer to wrap as this structure.
+    ///
+    /// returns: Self
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the passed data buffer is too small to store the entire
+    /// structure.
+    fn wrap(data: T) -> Self {
+        if data.as_ref().len() < Self::SIZE {
+            panic!("attempt to wrap a too small buffer");
+        }
+        unsafe { Self::wrap_unchecked(data) }
+    }
+
+    /// Wraps the given data buffer.
+    ///
+    /// # Arguments
+    ///
+    /// * `data`: the data buffer to wrap as this structure type.
+    ///
+    /// returns: Self
+    ///
+    /// # Safety
+    ///
+    /// This function assumes the size of the buffer passed in is always at least the size of this
+    /// structure.
+    unsafe fn wrap_unchecked(data: T) -> Self;
 }

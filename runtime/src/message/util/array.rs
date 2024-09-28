@@ -29,13 +29,10 @@
 use crate::message::payload::list_base::impl_list_base;
 use crate::message::WriteTo;
 use crate::message::{Error, FromBytes, Message};
-use crate::util::{FixedSize, ToUsize};
+use crate::util::{Size, Wrap, ToUsize};
 use std::marker::PhantomData;
 use std::ops::{Index, IndexMut};
 use std::slice::{Chunks, ChunksMut};
-
-//TODO: Check if we can't implement a FromUnchecked trait for structures to move bounds checking
-// at array construction.
 
 pub struct IterMut<'a, Item> {
     data: ChunksMut<'a, u8>,
@@ -51,11 +48,11 @@ impl<'a, Item> IterMut<'a, Item> {
     }
 }
 
-impl<'a, Item: From<&'a mut [u8]>> Iterator for IterMut<'a, Item> {
+impl<'a, Item: Wrap<&'a mut [u8]>> Iterator for IterMut<'a, Item> {
     type Item = Item;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.data.next().map(Item::from)
+        self.data.next().map(|v| unsafe { Item::wrap_unchecked(v) })
     }
 }
 
@@ -73,11 +70,11 @@ impl<'a, Item> Iter<'a, Item> {
     }
 }
 
-impl<'a, Item: From<&'a [u8]>> Iterator for Iter<'a, Item> {
+impl<'a, Item: Wrap<&'a [u8]>> Iterator for Iter<'a, Item> {
     type Item = Item;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.data.next().map(Item::from)
+        self.data.next().map(|v| unsafe { Item::wrap_unchecked(v) })
     }
 }
 
@@ -111,9 +108,12 @@ impl<B, T, Item> Array<B, T, Item> {
             useless1: PhantomData,
         }
     }
+}
 
+impl<B: AsRef<[u8]>, T, Item: Size> Array<B, T, Item> {
     pub fn new(data: B) -> Array<B, T, Item> {
-        unsafe { Array::from_raw_parts(data, 0) }
+        let len = data.as_ref().len() / Item::SIZE;
+        unsafe { Array::from_raw_parts(data, len) }
     }
 }
 
@@ -125,7 +125,7 @@ impl<B: AsRef<[u8]>, T, Item> Array<B, T, Item> {
     }
 }
 
-impl<B: AsRef<[u8]>, T, Item: FixedSize> Array<B, T, Item> {
+impl<B: AsRef<[u8]>, T, Item: Size> Array<B, T, Item> {
     pub fn from_parts(data: B, len: usize) -> Option<Array<B, T, Item>> {
         match data.as_ref().len() == len * Item::SIZE {
             true => Some(unsafe { Array::from_raw_parts(data, len) }),
@@ -134,7 +134,7 @@ impl<B: AsRef<[u8]>, T, Item: FixedSize> Array<B, T, Item> {
     }
 }
 
-impl<'a, B: AsRef<[u8]>, T, Item: FixedSize> Array<B, T, Item> {
+impl<'a, B: AsRef<[u8]>, T, Item: Size> Array<B, T, Item> {
     pub fn get(&'a self, index: usize) -> Option<&'a [u8]> {
         if index >= self.len {
             None
@@ -150,7 +150,7 @@ impl<'a, B: AsRef<[u8]>, T, Item: FixedSize> Array<B, T, Item> {
     }
 }
 
-impl<'a, B: AsMut<[u8]>, T, Item: FixedSize> Array<B, T, Item> {
+impl<'a, B: AsMut<[u8]>, T, Item: Size> Array<B, T, Item> {
     pub fn get_mut(&'a mut self, index: usize) -> Option<&'a mut [u8]> {
         if index >= self.len {
             None
@@ -166,7 +166,7 @@ impl<'a, B: AsMut<[u8]>, T, Item: FixedSize> Array<B, T, Item> {
     }
 }
 
-impl<B: AsRef<[u8]>, T, Item: FixedSize> Index<usize> for Array<B, T, Item> {
+impl<B: AsRef<[u8]>, T, Item: Size> Index<usize> for Array<B, T, Item> {
     type Output = [u8];
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -179,7 +179,7 @@ impl<B: AsRef<[u8]>, T, Item: FixedSize> Index<usize> for Array<B, T, Item> {
     }
 }
 
-impl<B: AsRef<[u8]> + AsMut<[u8]>, T, Item: FixedSize> IndexMut<usize> for Array<B, T, Item> {
+impl<B: AsRef<[u8]> + AsMut<[u8]>, T, Item: Size> IndexMut<usize> for Array<B, T, Item> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         if index >= self.len {
             panic!("attempt to index item out of bounds, index={}, len={}", index, self.len)
@@ -190,7 +190,7 @@ impl<B: AsRef<[u8]> + AsMut<[u8]>, T, Item: FixedSize> IndexMut<usize> for Array
     }
 }
 
-impl<'a, T: FromBytes<'a, Output: ToUsize>, Item: FixedSize> FromBytes<'a> for Array<&'a [u8], T, Item> {
+impl<'a, T: FromBytes<'a, Output: ToUsize>, Item: Size> FromBytes<'a> for Array<&'a [u8], T, Item> {
     type Output = Array<&'a [u8], T, Item>;
 
     fn from_bytes(slice: &'a [u8]) -> Result<Message<Self::Output>, Error> {

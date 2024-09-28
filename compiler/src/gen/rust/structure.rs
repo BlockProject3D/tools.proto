@@ -57,6 +57,8 @@ pub fn gen_structure_decl(s: &Structure, type_path_map: &TypePathMap, params: &R
     if params.enable_struct_to_mut {
         hooks.hook("ext", Fragment::new("", &["to_mut"]));
     }
+    //TODO: Put that behind a generator feature
+    hooks.hook("ext", Fragment::new("", &["dupe"]));
     generate::<RustUtils, _>(
         templates,
         s,

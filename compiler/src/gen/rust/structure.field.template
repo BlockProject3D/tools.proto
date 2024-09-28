@@ -34,7 +34,8 @@ impl<T: AsRef<[u8]>> {struct_name}<T> {{
     ///
     /// {description}
     pub fn get_{name}(&self) -> {type_name}<&[u8]> {{
-        unsafe {{ {type_name}::new_unchecked(self.data.as_ref().get_unchecked({start}..{end})) }}
+        use bp3d_proto::util::Wrap;
+        unsafe {{ {type_name}::wrap_unchecked(self.data.as_ref().get_unchecked({start}..{end})) }}
     }}
 #fragment pop
 #fragment push view_float
@@ -128,7 +129,8 @@ impl<T: AsMut<[u8]>> {struct_name}<T> {{
     ///
     /// {description}
     pub fn get_{name}_mut(&mut self) -> {type_name}<&mut [u8]> {{
-        unsafe {{ {type_name}::new_unchecked(self.data.as_mut().get_unchecked_mut({start}..{end})) }}
+        use bp3d_proto::util::Wrap;
+        unsafe {{ {type_name}::wrap_unchecked(self.data.as_mut().get_unchecked_mut({start}..{end})) }}
     }}
 #fragment pop
 #fragment push view_float

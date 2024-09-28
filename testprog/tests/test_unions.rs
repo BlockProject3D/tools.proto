@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use bp3d_proto::message::{FromBytes, WriteSelf, WriteTo};
+use bp3d_proto::util::Wrap;
 use bp3d_proto::union::IntoUnion;
 use std::io::Write;
 use testprog::enums::{Header, Type};
@@ -73,21 +74,21 @@ fn item_numbers() {
     let mut value_buffer: [u8; 8] = [0; 8];
 
     write_message(
-        ValueInt8::from(&mut value_buffer).set_data(-42).to_ref().into_union(),
+        ValueInt8::wrap(&mut value_buffer).set_data(-42).to_ref().into_union(),
         &mut buf,
     );
     assert_eq!(read_message(&buf, Type::Int8).as_int8().unwrap().get_data(), -42);
 
     buf.clear();
     write_message(
-        ValueInt16::from(&mut value_buffer).set_data(-4242).to_ref().into_union(),
+        ValueInt16::wrap(&mut value_buffer).set_data(-4242).to_ref().into_union(),
         &mut buf,
     );
     assert_eq!(read_message(&buf, Type::Int16).as_int16().unwrap().get_data(), -4242);
 
     buf.clear();
     write_message_fast(
-        ValueInt32::from(&mut value_buffer).set_data(-424242).to_ref(),
+        ValueInt32::wrap(&mut value_buffer).set_data(-424242).to_ref(),
         Type::Int32,
         &mut buf,
     );
@@ -95,7 +96,7 @@ fn item_numbers() {
 
     buf.clear();
     write_message_fast(
-        ValueInt64::from(&mut value_buffer).set_data(-42424242).to_ref(),
+        ValueInt64::wrap(&mut value_buffer).set_data(-42424242).to_ref(),
         Type::Int64,
         &mut buf,
     );
@@ -106,21 +107,21 @@ fn item_numbers() {
 
     buf.clear();
     write_message(
-        Value::UInt8(ValueUInt8::from(&mut value_buffer).set_data(42).to_ref()),
+        Value::UInt8(ValueUInt8::wrap(&mut value_buffer).set_data(42).to_ref()),
         &mut buf,
     );
     assert_eq!(read_message(&buf, Type::UInt8).as_u_int8().unwrap().get_data(), 42);
 
     buf.clear();
     write_message(
-        Value::UInt16(ValueUInt16::from(&mut value_buffer).set_data(4242).to_ref()),
+        Value::UInt16(ValueUInt16::wrap(&mut value_buffer).set_data(4242).to_ref()),
         &mut buf,
     );
     assert_eq!(read_message(&buf, Type::UInt16).as_u_int16().unwrap().get_data(), 4242);
 
     buf.clear();
     write_message(
-        Value::UInt32(ValueUInt32::from(&mut value_buffer).set_data(424242).to_ref()),
+        Value::UInt32(ValueUInt32::wrap(&mut value_buffer).set_data(424242).to_ref()),
         &mut buf,
     );
     assert_eq!(
@@ -130,7 +131,7 @@ fn item_numbers() {
 
     buf.clear();
     write_message(
-        Value::UInt64(ValueUInt64::from(&mut value_buffer).set_data(42424242).to_ref()),
+        Value::UInt64(ValueUInt64::wrap(&mut value_buffer).set_data(42424242).to_ref()),
         &mut buf,
     );
     assert_eq!(
@@ -153,14 +154,14 @@ fn item_float() {
     let mut value_buffer: [u8; 8] = [0; 8];
 
     write_message(
-        Value::Float(ValueFloat::from(&mut value_buffer).set_data(42.42).to_ref()),
+        Value::Float(ValueFloat::wrap(&mut value_buffer).set_data(42.42).to_ref()),
         &mut buf,
     );
     assert_eq!(read_message(&buf, Type::Float).as_float().unwrap().get_data(), 42.42);
 
     buf.clear();
     write_message(
-        Value::Double(ValueDouble::from(&mut value_buffer).set_data(42.4242).to_ref()),
+        Value::Double(ValueDouble::wrap(&mut value_buffer).set_data(42.4242).to_ref()),
         &mut buf,
     );
     assert_eq!(

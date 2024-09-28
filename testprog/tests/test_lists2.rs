@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use bp3d_proto::message::{FromBytes, WriteTo};
+use bp3d_proto::util::Wrap;
 use testprog::enums::{Header, Type};
 use testprog::lists2::{Dataset, DatasetRuns, SpanRun, SpanRunVars, Times, SIZE_TIMES};
 use testprog::unions::{Item, Value};
@@ -48,7 +49,7 @@ fn write_span_run<F: FnOnce(SpanRun) -> bp3d_proto::message::Result<()>>(f: F) {
     list.write_item(&Item {
         header: header.set_type(Type::Int16).to_ref(),
         name: "test1",
-        value: Value::Int16(ValueInt16::from(&mut value).set_data(-4242).to_ref()),
+        value: Value::Int16(ValueInt16::wrap(&mut value).set_data(-4242).to_ref()),
     })
     .unwrap();
     let msg = SpanRun {

@@ -16,41 +16,6 @@ impl {name}<[u8; {byte_size}]> {{
 }}
 
 #[allow(dead_code)]
-impl<T: AsRef<[u8]>> {name}<T> {{
-    /// Wraps the given data buffer without checking for bounds.
-    pub unsafe fn new_unchecked(data: T) -> Self {{
-        Self {{ data: data }}
-    }}
-}}
-
-#[allow(dead_code)]
-impl<T: AsRef<[u8]>> {name}<T> {{
-    /// Duplicates this structure onto the stack.
-    ///
-    /// WARNING: Unlike Copy/Clone this will ALWAYS allocate a new buffer on the stack, similarly to the
-    /// [new](Self::new) function.
-    pub fn dupe(&self) -> {name}<[u8; {byte_size}]> {{
-        use std::mem::MaybeUninit;
-        let mut data: [MaybeUninit<u8>; {byte_size}] = unsafe {{ MaybeUninit::uninit().assume_init() }};
-        #[allow(clippy::missing_transmute_annotations)]
-        unsafe {{
-            std::ptr::copy_nonoverlapping(self.data.as_ref().as_ptr(), std::mem::transmute(data.as_mut_ptr()), {byte_size});
-        }}
-        #[allow(clippy::missing_transmute_annotations)]
-        {name} {{ data: unsafe {{ std::mem::transmute(data) }} }}
-    }}
-}}
-
-impl<T: AsRef<[u8]>> From<T> for {name}<T> {{
-    fn from(data: T) -> Self {{
-        if data.as_ref().len() < <Self as bp3d_proto::util::FixedSize>::SIZE {{
-            panic!("attempt to copy a too small buffer");
-        }}
-        Self {{ data }}
-    }}
-}}
-
-#[allow(dead_code)]
 impl<'a, T: AsRef<[u8]>> {name}<T> {{
     /// Converts this structure to an immutable reference for use with the message/union system.
     ///
@@ -72,6 +37,12 @@ impl<T: AsMut<[u8]>> AsMut<[u8]> for {name}<T> {{
     }}
 }}
 
+impl<T: AsRef<[u8]>> bp3d_proto::util::Wrap<T> for {name}<T> {{
+    unsafe fn wrap_unchecked(data: T) -> Self {{
+        Self {{ data }}
+    }}
+}}
+
 #[allow(dead_code)]
 /// The size of the {name} structure.
 pub const SIZE_{name:to_screaming_case}: usize = {byte_size};
@@ -88,6 +59,23 @@ impl<'a, T: AsMut<[u8]>> {name}<T> {{
 }}
 #fragment pop
 
+#fragment push dupe
+impl<T: AsRef<[u8]>> {name}<T> {{
+    /// Duplicates this structure onto the stack.
+    ///
+    /// WARNING: Unlike Copy/Clone this will ALWAYS allocate a new buffer on the stack, similarly to the
+    /// [new](Self::new) function.
+    pub fn dupe(&self) -> {name}<[u8; {byte_size}]> {{
+        use std::mem::MaybeUninit;
+        let mut data: [MaybeUninit<u8>; {byte_size}] = unsafe {{ MaybeUninit::uninit().assume_init() }};
+        unsafe {{
+            std::ptr::copy_nonoverlapping(self.data.as_ref().as_ptr(), std::mem::transmute(data.as_mut_ptr()), {byte_size});
+            {name} {{ data: std::mem::transmute::<[MaybeUninit<u8>; {byte_size}], [u8; {byte_size}]>(data) }}
+        }}
+    }}
+}}
+#fragment pop
+
 #fragment push decl
 /// Definition for the {name} structure.
 ///
@@ -99,7 +87,7 @@ pub struct {name}<T> {{
 #fragment pop
 
 #fragment push fixed_size
-impl<T> bp3d_proto::util::FixedSize for {name}<T> {{
+impl<T> bp3d_proto::util::Size for {name}<T> {{
     const SIZE: usize = {byte_size};
 }}
 #fragment pop
@@ -109,7 +97,7 @@ impl<'a> bp3d_proto::message::WriteTo for {name}<&'a [u8]> {{
     type Input<'b> = Self;
 
     fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {{
-        out.write_all(&input.data[..<Self as bp3d_proto::util::FixedSize>::SIZE])?;
+        out.write_all(&input.data[..{byte_size}])?;
         Ok(())
     }}
 }}
@@ -118,7 +106,7 @@ impl<'a> bp3d_proto::message::WriteTo for {name}<&'a [u8]> {{
 #fragment push write_to_async
 impl<'a> bp3d_proto::message::WriteToAsync for {name}<&'a [u8]> {{
     async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> bp3d_proto::message::Result<()> {{
-        out.write_all(&input.data[..<Self as bp3d_proto::util::FixedSize>::SIZE]).await?;
+        out.write_all(&input.data[..{byte_size}]).await?;
         Ok(())
     }}
 }}
@@ -129,10 +117,10 @@ impl<'a> bp3d_proto::message::FromBytes<'a> for {name}<&'a [u8]> {{
     type Output = Self;
 
     fn from_bytes(bytes: &'a [u8]) -> bp3d_proto::message::Result<bp3d_proto::message::Message<Self>> {{
-        if bytes.len() < <Self as bp3d_proto::util::FixedSize>::SIZE {{
+        if bytes.len() < {byte_size} {{
             Err(bp3d_proto::message::Error::Truncated)
         }} else {{
-            Ok(bp3d_proto::message::Message::new(<Self as bp3d_proto::util::FixedSize>::SIZE, Self {{ data: &bytes[..<Self as bp3d_proto::util::FixedSize>::SIZE] }}))
+            Ok(bp3d_proto::message::Message::new({byte_size}, Self {{ data: &bytes[..{byte_size}] }}))
         }}
     }}
 }}
