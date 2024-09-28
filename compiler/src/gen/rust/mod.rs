@@ -126,7 +126,7 @@ impl Generator for GeneratorRust {
             File::new(FileType::Message, "messages.rs", B(decl_messages_code)),
             File::new(
                 FileType::MessageReading,
-                "messages_from_slice.rs",
+                "messages_from_bytes.rs",
                 B(impl_from_slice_messages_code),
             ),
             File::new(
