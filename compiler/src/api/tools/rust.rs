@@ -80,11 +80,15 @@ impl GenTools for Rust {
                         params = params.disable_write(v);
                     }
                 }
+                if let Some(v) = &v.struct_dupe {
+                    for v in v {
+                        params = params.enable_struct_dupe(v);
+                    }
+                }
                 params = params.enable_write_async(v.write_async.unwrap_or_default());
                 params = params.enable_union_set_discriminant(v.union_set_discriminant.unwrap_or_default());
                 params = params.enable_list_wrappers(v.list_wrappers.unwrap_or_default());
                 params = params.enable_struct_to_mut(v.struct_to_mut.unwrap_or_default());
-                params = params.enable_struct_dupe(v.struct_dupe.unwrap_or_default());
                 Some(params)
             },
             &RustParams::default(),

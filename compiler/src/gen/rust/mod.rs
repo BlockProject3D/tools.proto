@@ -65,7 +65,7 @@ simple_error! {
 #[derive(Default, Debug)]
 pub struct Params<'a> {
     enable_struct_to_mut: bool,
-    enable_struct_dupe: bool,
+    enable_struct_dupe: HashSet<&'a str>,
     enable_write_async: bool,
     enable_union_set_discriminant: bool,
     enable_list_wrappers: bool,
@@ -79,8 +79,8 @@ impl<'a> Params<'a> {
         self
     }
 
-    pub fn enable_struct_dupe(mut self, flag: bool) -> Self {
-        self.enable_struct_dupe = flag;
+    pub fn enable_struct_dupe(mut self, name: &'a str) -> Self {
+        self.enable_struct_dupe.insert(name);
         self
     }
 

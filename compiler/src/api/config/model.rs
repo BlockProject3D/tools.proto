@@ -40,7 +40,7 @@ pub struct RustParams<'a> {
     pub union_set_discriminant: Option<bool>,
     pub list_wrappers: Option<bool>,
     pub struct_to_mut: Option<bool>,
-    pub struct_dupe: Option<bool>,
+    pub struct_dupe: Option<Vec<&'a str>>,
 }
 
 #[derive(Deserialize)]
