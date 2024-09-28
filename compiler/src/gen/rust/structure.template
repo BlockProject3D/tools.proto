@@ -69,6 +69,7 @@ impl<T: AsRef<[u8]>> {name}<T> {{
         use std::mem::MaybeUninit;
         let mut data: [MaybeUninit<u8>; {byte_size}] = unsafe {{ MaybeUninit::uninit().assume_init() }};
         unsafe {{
+            #[allow(clippy::missing_transmute_annotations)]
             std::ptr::copy_nonoverlapping(self.data.as_ref().as_ptr(), std::mem::transmute(data.as_mut_ptr()), {byte_size});
             {name} {{ data: std::mem::transmute::<[MaybeUninit<u8>; {byte_size}], [u8; {byte_size}]>(data) }}
         }}
