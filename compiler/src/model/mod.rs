@@ -31,6 +31,8 @@
 //TODO: Support for static sized unions in structures
 //TODO: Support for offset in bits in structure fields
 //TODO: Support for padding in structure fields
+//TODO: Support custom string, list/array and payload types in messages
+//TODO: Make list vs unsized list detection explicit with compiler checks to avoid future bugs
 
 pub mod message;
 pub mod protocol;

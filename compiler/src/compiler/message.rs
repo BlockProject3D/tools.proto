@@ -286,6 +286,9 @@ impl Field {
                 item_type,
                 max_size,
             } => {
+                if max_len == 0 {
+                    return Err(Error::ZeroArray);
+                }
                 let r = Referenced::lookup(proto, &item_type).ok_or(Error::UndefinedReference(item_type))?;
                 let ty = FixedFieldType::from_max_value(max_len)?;
                 match r {
@@ -302,6 +305,9 @@ impl Field {
                     }),
                     Referenced::Message(item_type) => {
                         if let Some(max_size) = max_size {
+                            if max_size == 0 {
+                                return Err(Error::ZeroArray);
+                            }
                             let size_ty = FixedFieldType::from_max_value(max_size)?;
                             Ok(Field {
                                 name: value.name,
@@ -344,6 +350,9 @@ impl Field {
                     endianness: proto.endianness,
                 }),
                 Some(max_len) => {
+                    if max_len == 0 {
+                        return Err(Error::ZeroArray);
+                    }
                     let ty = FixedFieldType::from_max_value(max_len)?;
                     Ok(Field {
                         name: value.name,

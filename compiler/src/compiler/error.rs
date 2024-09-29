@@ -37,6 +37,8 @@ simple_error! {
         UnsupportedType(StructFieldType) => "unsupported field type in struct: {:?}",
         UnsupportedViewType(SimpleType) => "unsupported view for type: {:?}",
         MissingBitSize => "missing bits specifier on a structure field",
+        ZeroStruct => "structures must have at least 1 field",
+        ZeroArray => "arrays and lists must have at least 1 item",
         UndefinedReference(String) => "undefined reference to '{}'",
         UnresolvedImport(String) => "unresolved import to '{}'",
         UnalignedArrayCodec => "unaligned array in structure",
