@@ -26,27 +26,70 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::model::structure::{SimpleType, StructFieldType};
-use bp3d_util::simple_error;
+use bp3d_protoc::api::core::Error;
+use bp3d_protoc::api::core::loader::Loader;
+use bp3d_protoc::gen::RustImportSolver;
 
-simple_error! {
-    pub Error {
-        MultiPayload => "message has more than 1 payload",
-        VarsizeAfterPayload => "message has 1 or more variable sized fields after the payload",
-        UnsupportedBitSize(usize) => "unsupported bit size for fixed field ({}), maximum is 64, minimum is 1",
-        UnsupportedType(StructFieldType) => "unsupported field type in struct: {:?}",
-        UnsupportedViewType(SimpleType) => "unsupported view for type: {:?}",
-        MissingBitSize => "missing bits specifier on a structure field",
-        ZeroStruct => "structures must have at least 1 field",
-        ZeroArray => "arrays and lists must have at least 1 item",
-        UndefinedReference(String) => "undefined reference to '{}'",
-        UnresolvedImport(String) => "unresolved import to '{}'",
-        UnalignedArrayCodec => "unaligned array in structure",
-        SolverError => "failed to resolve imported type",
-        ZeroEnum => "enums must have at least 1 variant",
-        InvalidUnionDiscriminant => "invalid union discriminant path",
-        FloatInUnionDiscriminant => "floats are not allowed as union discriminants",
-        InvalidUnionCase(String) => "invalid union case {}",
-        UnionTypeMismatch => "mismatch with union discriminant types"
-    }
+const ZST1: &str = "
+{
+    name: \"test\",
+    structs: [
+        {
+            name: \"Test\",
+            fields: []
+        }
+    ]
+}
+";
+
+const ZST2: &str = "
+{
+    name: \"test\",
+    structs: [
+        {
+            name: \"Test\",
+            fields: [
+                { name: \"v\", info: { type: \"unsigned\", bits: 0 } }
+            ]
+        }
+    ]
+}
+";
+
+const ZST3: &str = "
+{
+    name: \"test\",
+    structs: [
+        {
+            name: \"Test\",
+            fields: [
+                { name: \"v\", info: { type: \"unsigned\", bits: 8 }, array_len: 0 }
+            ]
+        }
+    ]
+}
+";
+
+#[test]
+fn struct_zst1() {
+    let mut loader = Loader::new(1);
+    loader.load_from_string(ZST1, "").unwrap();
+    let err = loader.compile(&RustImportSolver).unwrap_err();
+    assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::ZeroStruct)));
+}
+
+#[test]
+fn struct_zst2() {
+    let mut loader = Loader::new(1);
+    loader.load_from_string(ZST2, "").unwrap();
+    let err = loader.compile(&RustImportSolver).unwrap_err();
+    assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::UnsupportedBitSize(0))));
+}
+
+#[test]
+fn struct_zst3() {
+    let mut loader = Loader::new(1);
+    loader.load_from_string(ZST3, "").unwrap();
+    let err = loader.compile(&RustImportSolver).unwrap_err();
+    assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::ZeroArray)));
 }

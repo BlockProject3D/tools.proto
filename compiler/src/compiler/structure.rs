@@ -353,9 +353,6 @@ impl Field {
                 bit_size *= array_len;
                 let ty = FixedFieldType::from_model(value.info)?;
                 let loc = Location::from_model(bit_size, last_bit_offset);
-                if bit_size == 0 {
-                    return Err(Error::ZeroStruct);
-                }
                 if array_len > 1 {
                     if bit_size % 8 != 0 {
                         return Err(Error::UnalignedArrayCodec);
@@ -413,7 +410,7 @@ impl Structure {
             }
             res.map(|(field, _)| field)
         });
-        Ok(Structure {
+        let s = Structure {
             name: value.name,
             description: value.description,
             fields: fields.collect::<Result<Vec<Field>, Error>>()?,
@@ -423,7 +420,11 @@ impl Structure {
             } else {
                 last_bit_offset / 8
             },
-        })
+        };
+        if s.bit_size == 0 {
+            return Err(Error::ZeroStruct);
+        }
+        Ok(s)
     }
 }
 

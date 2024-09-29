@@ -64,7 +64,11 @@ impl<'a> Loader<'a> {
 
     pub fn load_from_file(&mut self, path: impl AsRef<Path>, package: &'a str) -> Result<(), Error> {
         let content = std::fs::read_to_string(path).map_err(Error::Io)?;
-        let model: model::Protocol = json5::from_str(&content).map_err(Error::Model)?;
+        self.load_from_string(content, package)
+    }
+
+    pub fn load_from_string(&mut self, content: impl AsRef<str>, package: &'a str) -> Result<(), Error> {
+        let model: model::Protocol = json5::from_str(content.as_ref()).map_err(Error::Model)?;
         if model.imports.as_ref().map(|v| v.len()).unwrap_or_default() > 0 {
             self.models.insert(0, (package, model));
         } else {
