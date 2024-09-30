@@ -348,13 +348,13 @@ impl Field {
                 if array_len == 0 {
                     return Err(Error::ZeroArray);
                 }
-                let mut bit_size = value.info.get_bit_size().ok_or(Error::MissingBitSize)?;
+                let mut bit_size = value.info.get_bit_size().unwrap();
                 let view = FieldView::from_model(proto, value.info.get_simple_type(), bit_size, value.view)?;
                 bit_size *= array_len;
                 let ty = FixedFieldType::from_model(value.info)?;
                 let loc = Location::from_model(bit_size, last_bit_offset);
                 if array_len > 1 {
-                    if bit_size % 8 != 0 {
+                    if (bit_size / array_len) % 8 != 0 {
                         return Err(Error::UnalignedArrayCodec);
                     }
                     Ok((
