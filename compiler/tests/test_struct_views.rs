@@ -59,6 +59,20 @@ const UNSUPPORTED_VIEW_TYPE_FLOAT_INT_2: &str = "
 }
 ";
 
+const UNSUPPORTED_VIEW_TYPE_FLOAT_ENUM: &str = "
+{
+    name: \"test\",
+    structs: [
+        {
+            name: \"Test\",
+            fields: [
+                { name: \"v\", info: { type: \"float\", bits: 32 }, view: { type: \"enum\", name: \"Test\" } }
+            ]
+        }
+    ]
+}
+";
+
 const UNSUPPORTED_VIEW_TYPE_FLOAT_NONE: &str = "
 {
     name: \"test\",
@@ -93,6 +107,14 @@ fn unsupported_view_type_float_int_2() {
 fn unsupported_view_type_float_none() {
     let mut loader = Loader::new(1);
     loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_NONE, "").unwrap();
+    let err = loader.compile(&RustImportSolver).unwrap_err();
+    assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::UnsupportedViewType(SimpleType::Float))));
+}
+
+#[test]
+fn unsupported_view_type_float_enum() {
+    let mut loader = Loader::new(1);
+    loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_ENUM, "").unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::UnsupportedViewType(SimpleType::Float))));
 }
