@@ -35,7 +35,6 @@ use crate::gen::template::Template;
 use itertools::Itertools;
 
 fn gen_field_write_impl<U: Utilities, T: TypeMapper>(
-    msg: &Message,
     field: &Field,
     template: &Template,
     type_path_map: &TypePathMapper<T>,
@@ -43,7 +42,7 @@ fn gen_field_write_impl<U: Utilities, T: TypeMapper>(
 ) -> String {
     let mut scope = template.scope();
     scope.var("name", &field.name);
-    let msg_type = generate_field_type_inline::<U, T>(msg, field, template, type_path_map);
+    let msg_type = generate_field_type_inline::<U, T>(field, template, type_path_map);
     let union = field.ty.as_union();
     if let Some(v) = union {
         scope.var("on_name", &v.on_name);
@@ -68,7 +67,7 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     let fields = msg
         .fields
         .iter()
-        .map(|field| gen_field_write_impl::<U, T>(msg, field, &template, type_path_map, function))
+        .map(|field| gen_field_write_impl::<U, T>(field, &template, type_path_map, function))
         .join("");
     template.var("fields", fields).render("", &[function]).unwrap()
 }

@@ -46,6 +46,7 @@ simple_error! {
         InvalidUnionDiscriminant => "invalid union discriminant path",
         FloatInUnionDiscriminant => "floats are not allowed as union discriminants",
         InvalidUnionCase(String) => "invalid union case {}",
-        UnionTypeMismatch => "mismatch with union discriminant types"
+        UnionTypeMismatch => "mismatch with union discriminant types",
+        MissingNestedList(String) => "the list field {} is not allowed to be nested"
     }
 }

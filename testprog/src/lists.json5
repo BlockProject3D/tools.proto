@@ -40,7 +40,8 @@
                     info: {
                         type: "list",
                         max_len: 255,
-                        item_type: "Item"
+                        item_type: "Item",
+                        nested: true
                     }
                 }
             ]

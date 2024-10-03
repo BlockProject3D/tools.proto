@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::error::Error;
-use crate::compiler::message::Message;
+use crate::compiler::message::{FieldType, Message};
 use crate::compiler::r#enum::Enum;
 use crate::compiler::structure::Structure;
 use crate::compiler::union::Union;
@@ -208,6 +208,19 @@ impl Protocol {
                 trace!({model=?&v}, "Compiling message");
                 let v = Rc::new(Message::from_model(&proto, v)?);
                 proto.messages.insert(v);
+            }
+        }
+        for msg in proto.messages.iter() {
+            if msg.is_embedded() {
+                for field in &msg.fields {
+                    let flag = match &field.ty {
+                        FieldType::List(v) => v.nested,
+                        _ => true
+                    };
+                    if !flag {
+                        return Err(Error::MissingNestedList(format!("{}::{}", msg.name, field.name)));
+                    }
+                }
             }
         }
         Ok(proto)

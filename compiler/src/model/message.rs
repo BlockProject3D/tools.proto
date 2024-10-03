@@ -40,6 +40,7 @@ pub enum MessageFieldType {
         max_len: usize,
         item_type: String,
         max_size: Option<usize>,
+        nested: Option<bool>
     },
     String {
         max_len: Option<usize>,

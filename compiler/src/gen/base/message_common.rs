@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::{Field, FieldType, Message, Referenced};
+use crate::compiler::message::{Field, FieldType, Referenced};
 use crate::compiler::util::types::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::base::message::{StringType, Utilities};
@@ -42,7 +42,6 @@ fn gen_optional<'a, U: Utilities>(optional: bool, type_name: impl Into<Cow<'a, s
 }
 
 pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
-    msg: &Message,
     field: &'a Field,
     template: &Template,
     type_path_map: &'a TypePathMapper<T>,
@@ -74,7 +73,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                 .unwrap(),
         ),
         FieldType::Union(v) => gen_optional::<U>(field.optional, type_path_map.get(&v.r)),
-        FieldType::List(v) => match msg.is_embedded() {
+        FieldType::List(v) => match v.nested {
             false => gen_optional::<U>(
                 field.optional,
                 template

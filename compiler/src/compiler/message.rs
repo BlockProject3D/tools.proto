@@ -100,6 +100,7 @@ impl Display for VarcharStringField {
 pub struct ListField {
     pub ty: FixedFieldType,
     pub item_type: Rc<Message>,
+    pub nested: bool
 }
 
 impl Display for ListField {
@@ -285,6 +286,7 @@ impl Field {
                 max_len,
                 item_type,
                 max_size,
+                nested
             } => {
                 if max_len == 0 {
                     return Err(Error::ZeroArray);
@@ -325,7 +327,7 @@ impl Field {
                             Ok(Field {
                                 name: value.name,
                                 description: value.description,
-                                ty: FieldType::List(ListField { ty, item_type }),
+                                ty: FieldType::List(ListField { ty, item_type, nested: nested.unwrap_or_default() }),
                                 optional: value.optional.unwrap_or_default(),
                                 size: SizeInfo {
                                     is_element_dyn_sized: true,
@@ -438,7 +440,7 @@ pub struct Message {
 }
 
 impl Message {
-    pub fn is_embedded(&self) -> bool {
+    pub(crate) fn is_embedded(&self) -> bool {
         self.embedded.get()
     }
 
