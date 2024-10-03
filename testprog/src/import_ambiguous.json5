@@ -8,20 +8,8 @@
         {
             name: "Master",
             fields: [
-                {
-                    name: "bits",
-                    info: {
-                        type: "struct",
-                        item_type: "bits::Numbers"
-                    }
-                },
-                {
-                    name: "bits2",
-                    info: {
-                        type: "struct",
-                        item_type: "bits2::Numbers"
-                    }
-                }
+                { name: "bits", item_type: "bits::Numbers" },
+                { name: "bits2", item_type: "bits2::Numbers" }
             ]
         }
     ]

@@ -45,8 +45,7 @@ pub enum StructFieldType {
     Signed { bits: usize },
     Unsigned { bits: usize },
     Float { bits: usize },
-    Boolean { bits: usize },
-    Struct { item_type: String },
+    Boolean { bits: usize }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -64,18 +63,16 @@ impl StructFieldType {
             StructFieldType::Signed { .. } => SimpleType::Signed,
             StructFieldType::Unsigned { .. } => SimpleType::Unsigned,
             StructFieldType::Float { .. } => SimpleType::Float,
-            StructFieldType::Boolean { .. } => SimpleType::Boolean,
-            StructFieldType::Struct { .. } => SimpleType::Struct,
+            StructFieldType::Boolean { .. } => SimpleType::Boolean
         }
     }
 
-    pub fn get_bit_size(&self) -> Option<usize> {
+    pub fn get_bit_size(&self) -> usize {
         match self {
-            StructFieldType::Signed { bits } => Some(*bits),
-            StructFieldType::Unsigned { bits } => Some(*bits),
-            StructFieldType::Float { bits } => Some(*bits),
-            StructFieldType::Boolean { bits } => Some(*bits),
-            StructFieldType::Struct { .. } => None,
+            StructFieldType::Signed { bits } => *bits,
+            StructFieldType::Unsigned { bits } => *bits,
+            StructFieldType::Float { bits } => *bits,
+            StructFieldType::Boolean { bits } => *bits
         }
     }
 }
@@ -84,9 +81,10 @@ impl StructFieldType {
 pub struct StructField {
     pub name: String,
     pub description: Option<Description>,
-    pub info: StructFieldType,
+    pub info: Option<StructFieldType>,
     pub view: Option<StructFieldView>,
     pub array_len: Option<usize>,
+    pub item_type: Option<String>
 }
 
 #[derive(Clone, Debug, Deserialize)]

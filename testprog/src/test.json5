@@ -38,10 +38,7 @@
                 },
                 {
                     name: "p1",
-                    info: {
-                        type: "item",
-                        item_type: "Test1"
-                    },
+                    item_type: "Test1",
                     optional: true
                 }
             ]

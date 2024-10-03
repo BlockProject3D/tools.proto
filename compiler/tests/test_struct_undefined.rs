@@ -37,7 +37,7 @@ const UNDEFINED_REFERENCE: &str = "
         {
             name: \"Test\",
             fields: [
-                { name: \"v\", info: { type: \"struct\", item_type: \"NonExistent\" } }
+                { name: \"v\", item_type: \"NonExistent\" }
             ]
         }
     ]

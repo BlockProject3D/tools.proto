@@ -28,13 +28,7 @@
         {
             name: "SpanRun",
             fields: [
-                {
-                    name: "times",
-                    info: {
-                        type: "item",
-                        item_type: "Times"
-                    }
-                },
+                { name: "times", item_type: "Times" },
                 {
                     name: "vars",
                     info: {

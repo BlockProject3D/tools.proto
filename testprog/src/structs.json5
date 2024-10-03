@@ -103,27 +103,9 @@
         {
             name: "Master",
             fields: [
-                {
-                    name: "floats",
-                    info: {
-                        type: "struct",
-                        item_type: "Floats"
-                    }
-                },
-                {
-                    name: "nums",
-                    info: {
-                        type: "struct",
-                        item_type: "Numbers"
-                    }
-                },
-                {
-                    name: "flags",
-                    info: {
-                        type: "struct",
-                        item_type: "Flags"
-                    }
-                }
+                { name: "floats", item_type: "Floats" },
+                { name: "nums", item_type: "Numbers" },
+                { name: "flags", item_type: "Flags" }
             ]
         }
     ]

@@ -46,13 +46,7 @@
         {
             name: "Header2",
             fields: [
-                {
-                    name: "inner",
-                    info: {
-                        type: "struct",
-                        item_type: "Header"
-                    }
-                }
+                { name: "inner", item_type: "Header" }
             ]
         }
     ]

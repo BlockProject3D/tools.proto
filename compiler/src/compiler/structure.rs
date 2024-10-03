@@ -118,7 +118,7 @@ impl FixedFieldType {
     pub fn from_model(ty1: StructFieldType) -> Result<Self, Error> {
         let motherfuckingrust = ty1.clone();
         let ty = ty1.get_simple_type();
-        let bit_size = ty1.get_bit_size().ok_or(Error::UnsupportedType(ty1))?;
+        let bit_size = ty1.get_bit_size();
         if ty == SimpleType::Boolean {
             Ok(Self::Bool)
         } else if ty == SimpleType::Float && bit_size == 32 {
@@ -329,64 +329,65 @@ impl Field {
         last_bit_offset: usize,
         value: crate::model::structure::StructField,
     ) -> Result<(Self, usize), Error> {
-        match value.info {
-            StructFieldType::Struct { item_type } => {
-                let r = try2!(proto.structs.get(&item_type) => Error::UndefinedReference(item_type));
-                trace!("Solved reference {} => {:?}", item_type, r);
+        if (value.info.is_none() && value.item_type.is_none()) || (value.info.is_some() && value.item_type.is_some()) {
+            return Err(Error::BadFieldType)
+        }
+        if let Some(info) = value.info {
+            let array_len = value.array_len.unwrap_or(1);
+            if array_len == 0 {
+                return Err(Error::ZeroArray);
+            }
+            let mut bit_size = info.get_bit_size();
+            let view = FieldView::from_model(proto, info.get_simple_type(), bit_size, value.view)?;
+            bit_size *= array_len;
+            let ty = FixedFieldType::from_model(info)?;
+            let loc = Location::from_model(bit_size, last_bit_offset);
+            if array_len > 1 {
+                if (bit_size / array_len) % 8 != 0 {
+                    return Err(Error::UnalignedArrayCodec);
+                }
                 Ok((
                     Self {
                         name: value.name,
-                        ty: FieldType::Struct(r.clone()),
-                        loc: Location::from_model(r.bit_size, last_bit_offset),
+                        ty: FieldType::Array(FixedArrayField {
+                            endianness: proto.endianness,
+                            array_len,
+                            ty,
+                            item_bit_size: loc.bit_size / array_len,
+                        }),
+                        loc,
                         description: value.description,
                     },
-                    last_bit_offset + r.bit_size,
+                    last_bit_offset + bit_size,
+                ))
+            } else {
+                Ok((
+                    Self {
+                        name: value.name,
+                        ty: FieldType::Fixed(FixedField {
+                            endianness: proto.endianness,
+                            ty,
+                            view,
+                        }),
+                        loc,
+                        description: value.description,
+                    },
+                    last_bit_offset + bit_size,
                 ))
             }
-            _ => {
-                let array_len = value.array_len.unwrap_or(1);
-                if array_len == 0 {
-                    return Err(Error::ZeroArray);
-                }
-                let mut bit_size = value.info.get_bit_size().unwrap();
-                let view = FieldView::from_model(proto, value.info.get_simple_type(), bit_size, value.view)?;
-                bit_size *= array_len;
-                let ty = FixedFieldType::from_model(value.info)?;
-                let loc = Location::from_model(bit_size, last_bit_offset);
-                if array_len > 1 {
-                    if (bit_size / array_len) % 8 != 0 {
-                        return Err(Error::UnalignedArrayCodec);
-                    }
-                    Ok((
-                        Self {
-                            name: value.name,
-                            ty: FieldType::Array(FixedArrayField {
-                                endianness: proto.endianness,
-                                array_len,
-                                ty,
-                                item_bit_size: loc.bit_size / array_len,
-                            }),
-                            loc,
-                            description: value.description,
-                        },
-                        last_bit_offset + bit_size,
-                    ))
-                } else {
-                    Ok((
-                        Self {
-                            name: value.name,
-                            ty: FieldType::Fixed(FixedField {
-                                endianness: proto.endianness,
-                                ty,
-                                view,
-                            }),
-                            loc,
-                            description: value.description,
-                        },
-                        last_bit_offset + bit_size,
-                    ))
-                }
-            }
+        } else {
+            let item_type = unsafe { value.item_type.unwrap_unchecked() };
+            let r = try2!(proto.structs.get(&item_type) => Error::UndefinedReference(item_type));
+            trace!("Solved reference {} => {:?}", item_type, r);
+            Ok((
+                Self {
+                    name: value.name,
+                    ty: FieldType::Struct(r.clone()),
+                    loc: Location::from_model(r.bit_size, last_bit_offset),
+                    description: value.description,
+                },
+                last_bit_offset + r.bit_size,
+            ))
         }
     }
 }
