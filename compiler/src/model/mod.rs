@@ -32,7 +32,6 @@
 //TODO: Support for offset in bits in structure fields
 //TODO: Support for padding in structure fields
 //TODO: Support custom string, list/array and payload types in messages
-//TODO: Make list vs unsized list detection explicit with compiler checks to avoid future bugs
 //TODO: Support re-usable types (a bit like typedefs or type aliases)
 
 pub mod message;
