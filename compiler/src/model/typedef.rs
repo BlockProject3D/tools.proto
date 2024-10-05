@@ -26,17 +26,29 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//! Low-level model based on serde.
+use serde::Deserialize;
+use crate::model::message::MessageField;
+use crate::model::structure::StructField;
 
-//TODO: Support for static sized unions in structures
-//TODO: Support for offset in bits in structure fields
-//TODO: Support for padding in structure fields
-//TODO: Support custom string, list/array and payload types in messages
+#[derive(Clone, Debug, Deserialize)]
+#[serde(untagged)]
+pub enum Typedef {
+    Message(MessageField),
+    Structure(StructField)
+}
 
-pub mod message;
-pub mod protocol;
-pub mod structure;
-pub mod union;
-pub mod typedef;
+impl Typedef {
+    pub fn as_message(&self) -> Option<&MessageField> {
+        match self {
+            Typedef::Message(v) => Some(v),
+            Typedef::Structure(_) => None
+        }
+    }
 
-pub use protocol::Protocol;
+    pub fn as_struct(&self) -> Option<&StructField> {
+        match self {
+            Typedef::Message(_) => None,
+            Typedef::Structure(v) => Some(v)
+        }
+    }
+}

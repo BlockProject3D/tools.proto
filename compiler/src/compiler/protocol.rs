@@ -35,9 +35,30 @@ use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
 use crate::compiler::util::store::ObjectStore;
 use crate::compiler::util::types::{Name, PtrKey, TypePathMap};
 use crate::model::protocol::{Description, Endianness};
-use bp3d_debug::trace;
+use bp3d_debug::{info, trace};
 use std::borrow::Cow;
 use std::rc::Rc;
+use crate::model::typedef::Typedef;
+
+impl Name for Typedef {
+    fn name(&self) -> &str {
+        match self {
+            Typedef::Message(v) => &v.name,
+            Typedef::Structure(v) => &v.name
+        }
+    }
+}
+
+impl bp3d_util::index_map::Index for Typedef {
+    type Key = str;
+
+    fn index(&self) -> &Self::Key {
+        match self {
+            Typedef::Message(v) => &v.name,
+            Typedef::Structure(v) => &v.name
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct Protocol {
@@ -49,6 +70,7 @@ pub struct Protocol {
     pub messages: ObjectStore<Message>,
     pub enums: ObjectStore<Enum>,
     pub unions: ObjectStore<Union>,
+    pub types: ObjectStore<Typedef>
 }
 
 impl bp3d_util::index_map::Index for Protocol {
@@ -65,6 +87,7 @@ enum Import<'a> {
     Enum(&'a Rc<Enum>),
     Union(&'a Rc<Union>),
     Message(&'a Rc<Message>),
+    Type(&'a Rc<Typedef>)
 }
 
 impl<'a> Name for Import<'a> {
@@ -74,6 +97,7 @@ impl<'a> Name for Import<'a> {
             Import::Enum(v) => v.name(),
             Import::Union(v) => v.name(),
             Import::Message(v) => v.name(),
+            Import::Type(v) => v.name(),
         }
     }
 }
@@ -85,6 +109,7 @@ impl<'a> PtrKey for Import<'a> {
             Import::Enum(v) => v.ptr_key(),
             Import::Union(v) => v.ptr_key(),
             Import::Message(v) => v.ptr_key(),
+            Import::Type(v) => v.ptr_key(),
         }
     }
 }
@@ -103,6 +128,9 @@ impl<'a> Import<'a> {
             }
             Import::Message(v) => {
                 proto.messages.insert_import(type_name, v.clone());
+            }
+            Import::Type(v) => {
+                proto.types.insert_import(type_name, v.clone());
             }
         }
     }
@@ -126,7 +154,7 @@ impl Protocol {
     }
 
     pub fn from_model<T: ImportSolver>(
-        value: crate::model::Protocol,
+        mut value: crate::model::Protocol,
         protocols: &ProtocolStore<T>,
         package: &str,
     ) -> Result<Self, Error> {
@@ -144,7 +172,9 @@ impl Protocol {
             messages: ObjectStore::new(),
             enums: ObjectStore::new(),
             unions: ObjectStore::new(),
+            types: ObjectStore::new()
         };
+        info!("Running import solver pass...");
         if let Some(mut imports) = value.imports {
             let mut solved_imports = Vec::new();
             while let Some(v) = imports.pop() {
@@ -166,6 +196,7 @@ impl Protocol {
                     .or_else(|| r.messages.get(&v.type_name).map(Import::Message))
                     .or_else(|| r.unions.get(&v.type_name).map(Import::Union))
                     .or_else(|| r.enums.get(&v.type_name).map(Import::Enum))
+                    .or_else(|| r.types.get(&v.type_name).map(Import::Type))
                     .ok_or(Error::UnresolvedImport(format!("{}::{}", protocol_path, v.type_name)))?;
                 let type_path = protocols.get_full_type_path(r, &v.type_name).ok_or(Error::SolverError)?;
                 solved_imports.push(ty);
@@ -182,6 +213,37 @@ impl Protocol {
                 }
             }
         }
+        info!("Adding typedefs...");
+        if let Some(types) = value.types {
+            for v in types {
+                trace!({model=?&v}, "Adding typedef to protocol");
+                proto.types.insert(Rc::new(v));
+            }
+        }
+        info!("Running type inference pass...");
+        if let Some(structs) = &mut value.structs {
+            for v in structs {
+                for field in &mut v.fields {
+                    if let Some(info) = field.item_type.as_ref().map(|v| proto.types.get(v)).flatten().map(|v| v.as_struct()).flatten() {
+                        trace!({typedef=?info}, "Inferred {} as {}", field.name, info.name);
+                        let name = std::mem::replace(field, info.clone()).name;
+                        field.name = name;
+                    }
+                }
+            }
+        }
+        if let Some(messages) = &mut value.messages {
+            for v in messages {
+                for field in &mut v.fields {
+                    if let Some(info) = field.item_type.as_ref().map(|v| proto.types.get(v)).flatten().map(|v| v.as_message()).flatten() {
+                        trace!({typedef=?info}, "Inferred {} as {}", field.name, info.name);
+                        let name = std::mem::replace(field, info.clone()).name;
+                        field.name = name;
+                    }
+                }
+            }
+        }
+        info!("Running compiler pass...");
         if let Some(enums) = value.enums {
             for v in enums {
                 trace!({model=?&v}, "Compiling enum");
@@ -210,6 +272,7 @@ impl Protocol {
                 proto.messages.insert(v);
             }
         }
+        info!("Running list sanitizer pass...");
         for msg in proto.messages.iter() {
             if msg.is_embedded() {
                 for field in &msg.fields {

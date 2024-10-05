@@ -32,6 +32,7 @@ use crate::model::union::Union;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
+use crate::model::typedef::Typedef;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -81,4 +82,5 @@ pub struct Protocol {
     pub messages: Option<Vec<Message>>,
     pub enums: Option<Vec<Enum>>,
     pub unions: Option<Vec<Union>>,
+    pub types: Option<Vec<Typedef>>,
 }

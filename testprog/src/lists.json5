@@ -3,6 +3,25 @@
     imports: [
         { protocol: "unions", type: "Item" }
     ],
+    types: [
+        {
+            name: "VarList",
+            info: {
+                type: "list",
+                max_len: 255,
+                item_type: "Item",
+                nested: true
+            }
+        },
+        {
+            name: "RunList",
+            info: {
+                type: "list",
+                max_len: 999999,
+                item_type: "SpanRun"
+            }
+        }
+    ],
     structs: [
         {
             name: "Times",
@@ -29,28 +48,13 @@
             name: "SpanRun",
             fields: [
                 { name: "times", item_type: "Times" },
-                {
-                    name: "vars",
-                    info: {
-                        type: "list",
-                        max_len: 255,
-                        item_type: "Item",
-                        nested: true
-                    }
-                }
+                { name: "vars", item_type: "VarList" }
             ]
         },
         {
             name: "Dataset",
             fields: [
-                {
-                    name: "runs",
-                    info: {
-                        type: "list",
-                        max_len: 999999,
-                        item_type: "SpanRun"
-                    }
-                }
+                { name: "runs", item_type: "RunList" }
             ]
         }
     ]
