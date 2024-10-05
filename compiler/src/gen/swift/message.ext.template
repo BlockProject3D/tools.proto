@@ -18,6 +18,10 @@ public typealias {proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B: B
     }}
 #fragment pop
 
+#fragment push string:inline
+String
+#fragment pop
+
 #fragment push sized_string:inline
 String
 #fragment pop
@@ -36,4 +40,8 @@ String
 
 #fragment push union:inline
 {type_name}<B>
+#fragment pop
+
+#fragment push option:inline
+{msg_type}?
 #fragment pop
