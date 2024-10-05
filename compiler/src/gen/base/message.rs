@@ -34,18 +34,9 @@ use crate::gen::template::Template;
 use crate::model::protocol::Endianness;
 use itertools::Itertools;
 
-pub enum StringType {
-    Varchar,
-    NullTerminated,
-}
-
 pub trait Utilities: crate::gen::base::structure::Utilities {
     fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str;
     fn get_value_type_inline(endianness: Endianness, ty: FixedFieldType) -> &'static str;
-    fn gen_option_type(ty: &str) -> String;
-    fn gen_option_type_inline(ty: &str) -> String;
-    fn get_string_type(ty: StringType) -> &'static str;
-    fn get_string_type_inline(ty: StringType) -> &'static str;
     fn get_payload_type() -> &'static str;
     fn get_payload_type_inline() -> &'static str;
     fn gen_struct_ref_type(type_name: &str) -> String;

@@ -30,7 +30,6 @@ use crate::compiler::message::{Field, FieldType, Message};
 use crate::compiler::structure::FixedFieldType;
 use crate::compiler::util::types::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
-use crate::gen::base::message::StringType;
 use crate::gen::template::Template;
 use crate::model::protocol::Endianness;
 use itertools::Itertools;
@@ -199,25 +198,6 @@ impl crate::gen::base::message::Utilities for RustUtils {
         match endianness {
             Endianness::Little => gen_value_type!("bp3d_proto::message::util::ValueLE::<", ty, ">"),
             Endianness::Big => gen_value_type!("bp3d_proto::message::util::ValueBE::<", ty, ">"),
-        }
-    }
-
-    fn gen_option_type(ty: &str) -> String {
-        format!("Option<{}>", ty)
-    }
-
-    fn gen_option_type_inline(ty: &str) -> String {
-        format!("bp3d_proto::message::util::Optional::<{}>", ty)
-    }
-
-    fn get_string_type(_: StringType) -> &'static str {
-        "&'a str"
-    }
-
-    fn get_string_type_inline(ty: StringType) -> &'static str {
-        match ty {
-            StringType::Varchar => "bp3d_proto::message::util::VarcharString",
-            StringType::NullTerminated => "bp3d_proto::message::util::NullTerminatedString",
         }
     }
 

@@ -29,7 +29,6 @@
 use crate::compiler::structure::{Field, FixedFieldType};
 use crate::compiler::util::types::TypeMapper;
 use crate::compiler::Protocol;
-use crate::gen::base::message::StringType;
 use crate::gen::template::util::CaseConversion;
 use crate::model::protocol::Endianness;
 use std::borrow::Cow;
@@ -133,25 +132,6 @@ impl crate::gen::base::message::Utilities for SwiftUtils {
         match endianness {
             Endianness::Little => gen_value_type!("BP3DProto.ValueLE<B, ", ty, ">"),
             Endianness::Big => gen_value_type!("BP3DProto.ValueBE<B, ", ty, ">"),
-        }
-    }
-
-    fn gen_option_type(ty: &str) -> String {
-        format!("{}?", ty)
-    }
-
-    fn gen_option_type_inline(ty: &str) -> String {
-        format!("BP3DProto.Optional<B, {}>", ty)
-    }
-
-    fn get_string_type(_: StringType) -> &'static str {
-        "String"
-    }
-
-    fn get_string_type_inline(ty: StringType) -> &'static str {
-        match ty {
-            StringType::Varchar => "BP3DProto.VarcharString",
-            StringType::NullTerminated => "BP3DProto.NullTerminatedString<B>",
         }
     }
 
