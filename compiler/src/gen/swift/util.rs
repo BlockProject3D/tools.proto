@@ -135,14 +135,6 @@ impl crate::gen::base::message::Utilities for SwiftUtils {
         }
     }
 
-    fn get_payload_type() -> &'static str {
-        "Data"
-    }
-
-    fn get_payload_type_inline() -> &'static str {
-        "Data"
-    }
-
     fn gen_struct_ref_type(type_name: &str) -> String {
         format!("{}<B>", type_name)
     }

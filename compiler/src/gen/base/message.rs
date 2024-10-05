@@ -37,8 +37,6 @@ use itertools::Itertools;
 pub trait Utilities: crate::gen::base::structure::Utilities {
     fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str;
     fn get_value_type_inline(endianness: Endianness, ty: FixedFieldType) -> &'static str;
-    fn get_payload_type() -> &'static str;
-    fn get_payload_type_inline() -> &'static str;
     fn gen_struct_ref_type(type_name: &str) -> String;
     fn gen_message_ref_type(type_name: &str) -> String;
 }
