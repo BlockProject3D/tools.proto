@@ -66,7 +66,7 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
             Referenced::Message(v) => U::gen_message_ref_type(&type_path_map.get(v)),
         },
         FieldType::NullTerminatedString => U::get_string_type(StringType::NullTerminated).into(),
-        FieldType::VarcharString(_) => U::get_string_type(StringType::Varchar).into(),
+        FieldType::SizedString(_) => U::get_string_type(StringType::Varchar).into(),
         FieldType::Array(v) => scope
             .var("codec", U::get_value_type(field.endianness, v.ty))
             .var("type_name", type_path_map.get(&v.item_type))

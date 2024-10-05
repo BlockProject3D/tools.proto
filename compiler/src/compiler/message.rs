@@ -86,11 +86,11 @@ impl Display for ArrayField {
 }
 
 #[derive(Clone, Debug)]
-pub struct VarcharStringField {
+pub struct SizedStringField {
     pub ty: FixedFieldType,
 }
 
-impl Display for VarcharStringField {
+impl Display for SizedStringField {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Varchar<{}>", self.ty)
     }
@@ -157,7 +157,7 @@ pub enum FieldType {
     Fixed(FixedField),
     Ref(Referenced),
     NullTerminatedString,
-    VarcharString(VarcharStringField),
+    SizedString(SizedStringField),
     Array(ArrayField),
     Union(UnionField),
     List(ListField),
@@ -171,7 +171,7 @@ impl Display for FieldType {
             FieldType::Fixed(v) => v.fmt(f),
             FieldType::Ref(v) => f.write_str(v.name()),
             FieldType::NullTerminatedString => f.write_str("String"),
-            FieldType::VarcharString(v) => v.fmt(f),
+            FieldType::SizedString(v) => v.fmt(f),
             FieldType::Array(v) => v.fmt(f),
             FieldType::Union(v) => v.fmt(f),
             FieldType::List(v) => v.fmt(f),
@@ -200,7 +200,7 @@ impl FieldType {
     }
 
     pub fn is_string(&self) -> bool {
-        matches!(self, FieldType::VarcharString(_) | FieldType::NullTerminatedString)
+        matches!(self, FieldType::SizedString(_) | FieldType::NullTerminatedString)
     }
 }
 
@@ -318,7 +318,7 @@ impl Field {
                         Ok(Field {
                             name: value.name,
                             description: value.description,
-                            ty: FieldType::VarcharString(VarcharStringField { ty }),
+                            ty: FieldType::SizedString(SizedStringField { ty }),
                             optional: value.optional.unwrap_or_default(),
                             size: SizeInfo {
                                 is_element_dyn_sized: false,

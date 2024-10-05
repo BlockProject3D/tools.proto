@@ -124,7 +124,7 @@ impl RustUtils {
                 v.ty,
                 FieldType::Ref(_)
                     | FieldType::NullTerminatedString
-                    | FieldType::VarcharString(_)
+                    | FieldType::SizedString(_)
                     | FieldType::Array(_)
                     | FieldType::Union(_)
                     | FieldType::List(_)

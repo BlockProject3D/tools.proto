@@ -55,7 +55,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
         FieldType::NullTerminatedString => {
             gen_optional::<U>(field.optional, U::get_string_type_inline(StringType::NullTerminated))
         }
-        FieldType::VarcharString(v) => gen_optional::<U>(
+        FieldType::SizedString(v) => gen_optional::<U>(
             field.optional,
             template
                 .scope()
