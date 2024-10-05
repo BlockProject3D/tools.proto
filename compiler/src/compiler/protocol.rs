@@ -33,11 +33,12 @@ use crate::compiler::structure::Structure;
 use crate::compiler::union::Union;
 use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
 use crate::compiler::util::store::ObjectStore;
-use crate::compiler::util::types::{Name, PtrKey, TypePathMap};
+use crate::compiler::util::types::{Name, TypePathMap};
 use crate::model::protocol::{Description, Endianness};
 use bp3d_debug::{info, trace};
 use std::borrow::Cow;
 use std::rc::Rc;
+use crate::compiler::imports::Import;
 use crate::model::typedef::Typedef;
 
 impl Name for Typedef {
@@ -78,61 +79,6 @@ impl bp3d_util::index_map::Index for Protocol {
 
     fn index(&self) -> &Self::Key {
         &self.full_name
-    }
-}
-
-#[derive(Copy, Clone)]
-enum Import<'a> {
-    Struct(&'a Rc<Structure>),
-    Enum(&'a Rc<Enum>),
-    Union(&'a Rc<Union>),
-    Message(&'a Rc<Message>),
-    Type(&'a Rc<Typedef>)
-}
-
-impl<'a> Name for Import<'a> {
-    fn name(&self) -> &str {
-        match self {
-            Import::Struct(v) => v.name(),
-            Import::Enum(v) => v.name(),
-            Import::Union(v) => v.name(),
-            Import::Message(v) => v.name(),
-            Import::Type(v) => v.name(),
-        }
-    }
-}
-
-impl<'a> PtrKey for Import<'a> {
-    fn ptr_key(&self) -> usize {
-        match self {
-            Import::Struct(v) => v.ptr_key(),
-            Import::Enum(v) => v.ptr_key(),
-            Import::Union(v) => v.ptr_key(),
-            Import::Message(v) => v.ptr_key(),
-            Import::Type(v) => v.ptr_key(),
-        }
-    }
-}
-
-impl<'a> Import<'a> {
-    pub fn insert(self, type_name: String, proto: &mut Protocol) {
-        match self {
-            Import::Struct(v) => {
-                proto.structs.insert_import(type_name, v.clone());
-            }
-            Import::Enum(v) => {
-                proto.enums.insert_import(type_name, v.clone());
-            }
-            Import::Union(v) => {
-                proto.unions.insert_import(type_name, v.clone());
-            }
-            Import::Message(v) => {
-                proto.messages.insert_import(type_name, v.clone());
-            }
-            Import::Type(v) => {
-                proto.types.insert_import(type_name, v.clone());
-            }
-        }
     }
 }
 
