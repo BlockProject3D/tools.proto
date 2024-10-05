@@ -60,7 +60,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
             template
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
-                .render("", &["varchar"])
+                .render("", &["sized_string"])
                 .unwrap(),
         ),
         FieldType::Array(v) => gen_optional::<U>(

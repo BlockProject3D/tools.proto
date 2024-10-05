@@ -32,7 +32,7 @@ extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.FromBytes  {{
 }}
 #fragment pop
 
-#fragment push varchar:inline
+#fragment push sized_string:inline
 BP3DProto.VarcharString<B, {codec}>
 #fragment pop
 
