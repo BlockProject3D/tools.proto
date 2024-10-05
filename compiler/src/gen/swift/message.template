@@ -36,3 +36,7 @@ String
 #fragment push option:inline
 {msg_type}?
 #fragment pop
+
+#fragment push payload:inline
+Data
+#fragment pop

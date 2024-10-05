@@ -44,3 +44,7 @@ BP3DProto.SizedList<B, {codec}, {size_codec}, {type_name}<B>>
 #fragment push option:inline
 BP3DProto.Optional<B, {msg_type}>
 #fragment pop
+
+#fragment push payload:inline
+Data
+#fragment pop

@@ -41,3 +41,7 @@ T{name}
 #fragment push option:inline
 Option<{msg_type}>
 #fragment pop
+
+#fragment push payload:inline
+&'a [u8]
+#fragment pop

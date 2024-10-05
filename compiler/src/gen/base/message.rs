@@ -69,7 +69,7 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
             .var("type_name", type_path_map.get(&v.item_type))
             .render("", &["list"])
             .unwrap(),
-        FieldType::Payload => U::get_payload_type().into(),
+        FieldType::Payload => scope.render("", &["payload"]).unwrap(),
         FieldType::SizedList(v) => scope
             .var("codec", U::get_value_type(field.endianness, v.ty))
             .var("type_name", type_path_map.get(&v.item_type))

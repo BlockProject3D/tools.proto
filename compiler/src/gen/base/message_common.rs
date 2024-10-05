@@ -91,7 +91,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                     .unwrap(),
             ),
         },
-        FieldType::Payload => gen_optional(template, field.optional, U::get_payload_type_inline()),
+        FieldType::Payload => gen_optional(template, field.optional, template.scope().render("", &["payload"]).unwrap()),
         FieldType::SizedList(v) => gen_optional(template,
                                                      field.optional,
             template

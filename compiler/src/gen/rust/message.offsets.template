@@ -88,3 +88,7 @@ bp3d_proto::message::payload::list::Sized::<&'a [u8], {codec}, {size_codec}, {ty
 #fragment push option:inline
 bp3d_proto::message::util::Optional::<{msg_type}>
 #fragment pop
+
+#fragment push payload:inline
+bp3d_proto::message::payload::Buffer
+#fragment pop
