@@ -55,3 +55,7 @@ BP3DProto.UnsizedList<B, {codec}, {type_name}<B>>
 #fragment push sized_list:inline
 BP3DProto.SizedList<B, {codec}, {size_codec}, {type_name}<B>>
 #fragment pop
+
+#fragment push option:inline
+BP3DProto.Optional<B, {msg_type}>
+#fragment pop

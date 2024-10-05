@@ -33,9 +33,10 @@ use crate::gen::base::message::Utilities;
 use crate::gen::template::Template;
 use std::borrow::Cow;
 
-fn gen_optional<'a, U: Utilities>(optional: bool, type_name: impl Into<Cow<'a, str>>) -> Cow<'a, str> {
+fn gen_optional<'a, U: Utilities>(template: &'a Template, optional: bool, type_name: impl Into<Cow<'a, str>>) -> Cow<'a, str> {
     if optional {
-        U::gen_option_type_inline(&type_name.into()).into()
+        template.scope().var("msg_type", type_name).render("", &["option"]).unwrap().into()
+        //U::gen_option_type_inline(&type_name.into()).into()
     } else {
         type_name.into()
     }
@@ -43,26 +44,26 @@ fn gen_optional<'a, U: Utilities>(optional: bool, type_name: impl Into<Cow<'a, s
 
 pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
     field: &'a Field,
-    template: &Template,
+    template: &'a Template,
     type_path_map: &'a TypePathMapper<T>,
 ) -> Cow<'a, str> {
     let msg_type = match &field.ty {
-        FieldType::Fixed(ty) => gen_optional::<U>(field.optional, U::get_value_type_inline(field.endianness, ty.ty)),
+        FieldType::Fixed(ty) => gen_optional::<U>(template, field.optional, U::get_value_type_inline(field.endianness, ty.ty)),
         FieldType::Ref(v) => match v {
-            Referenced::Struct(v) => gen_optional::<U>(field.optional, type_path_map.get(v)),
-            Referenced::Message(v) => gen_optional::<U>(field.optional, type_path_map.get(v)),
+            Referenced::Struct(v) => gen_optional::<U>(template, field.optional, type_path_map.get(v)),
+            Referenced::Message(v) => gen_optional::<U>(template, field.optional, type_path_map.get(v)),
         },
-        FieldType::NullTerminatedString => gen_optional::<U>(field.optional, template.scope().render("", &["string"]).unwrap()),
-        FieldType::SizedString(v) => gen_optional::<U>(
-            field.optional,
+        FieldType::NullTerminatedString => gen_optional::<U>(template, field.optional, template.scope().render("", &["string"]).unwrap()),
+        FieldType::SizedString(v) => gen_optional::<U>(template,
+                                                       field.optional,
             template
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
                 .render("", &["sized_string"])
                 .unwrap(),
         ),
-        FieldType::Array(v) => gen_optional::<U>(
-            field.optional,
+        FieldType::Array(v) => gen_optional::<U>(template,
+                                                 field.optional,
             template
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
@@ -70,10 +71,10 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                 .render("", &["array"])
                 .unwrap(),
         ),
-        FieldType::Union(v) => gen_optional::<U>(field.optional, type_path_map.get(&v.r)),
+        FieldType::Union(v) => gen_optional::<U>(template, field.optional, type_path_map.get(&v.r)),
         FieldType::List(v) => match v.nested {
-            false => gen_optional::<U>(
-                field.optional,
+            false => gen_optional::<U>(template,
+                                       field.optional,
                 template
                     .scope()
                     .var("codec", U::get_value_type(field.endianness, v.ty))
@@ -81,8 +82,8 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                     .render("", &["unsized_list"])
                     .unwrap(),
             ),
-            true => gen_optional::<U>(
-                field.optional,
+            true => gen_optional::<U>(template,
+                                      field.optional,
                 template
                     .scope()
                     .var("codec", U::get_value_type(field.endianness, v.ty))
@@ -91,9 +92,9 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                     .unwrap(),
             ),
         },
-        FieldType::Payload => gen_optional::<U>(field.optional, U::get_payload_type_inline()),
-        FieldType::SizedList(v) => gen_optional::<U>(
-            field.optional,
+        FieldType::Payload => gen_optional::<U>(template, field.optional, U::get_payload_type_inline()),
+        FieldType::SizedList(v) => gen_optional::<U>(template,
+                                                     field.optional,
             template
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))

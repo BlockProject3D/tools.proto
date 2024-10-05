@@ -37,3 +37,7 @@ pub struct {msg_name}{generics} {{
 #fragment push union:inline
 T{name}
 #fragment pop
+
+#fragment push option:inline
+Option<{msg_type}>
+#fragment pop

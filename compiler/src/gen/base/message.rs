@@ -87,7 +87,7 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
             .unwrap(),
     };
     let msg_type = match field.optional {
-        true => U::gen_option_type(&msg_type),
+        true => scope.var("msg_type", msg_type).render("", &["option"]).unwrap(),
         false => msg_type,
     };
     scope.var("type", msg_type).render("decl", &["field"]).unwrap()
