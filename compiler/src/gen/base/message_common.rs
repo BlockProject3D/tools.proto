@@ -29,7 +29,7 @@
 use crate::compiler::message::{Field, FieldType, Referenced};
 use crate::compiler::util::types::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
-use crate::gen::base::message::{StringType, Utilities};
+use crate::gen::base::message::Utilities;
 use crate::gen::template::Template;
 use std::borrow::Cow;
 
@@ -52,9 +52,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
             Referenced::Struct(v) => gen_optional::<U>(field.optional, type_path_map.get(v)),
             Referenced::Message(v) => gen_optional::<U>(field.optional, type_path_map.get(v)),
         },
-        FieldType::NullTerminatedString => {
-            gen_optional::<U>(field.optional, U::get_string_type_inline(StringType::NullTerminated))
-        }
+        FieldType::NullTerminatedString => gen_optional::<U>(field.optional, template.scope().render("", &["string"]).unwrap()),
         FieldType::SizedString(v) => gen_optional::<U>(
             field.optional,
             template

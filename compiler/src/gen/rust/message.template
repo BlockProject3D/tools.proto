@@ -14,6 +14,10 @@ pub struct {msg_name}{generics} {{
 }}
 #fragment pop
 
+#fragment push string:inline
+&'a str
+#fragment pop
+
 #fragment push sized_string:inline
 &'a str
 #fragment pop

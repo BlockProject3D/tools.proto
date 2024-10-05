@@ -65,7 +65,7 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
             Referenced::Struct(v) => U::gen_struct_ref_type(&type_path_map.get(v)),
             Referenced::Message(v) => U::gen_message_ref_type(&type_path_map.get(v)),
         },
-        FieldType::NullTerminatedString => U::get_string_type(StringType::NullTerminated).into(),
+        FieldType::NullTerminatedString => scope.render("", &["string"]).unwrap(),
         FieldType::SizedString(v) => scope.var("codec", U::get_value_type(field.endianness, v.ty)).render("", &["sized_string"]).unwrap(),
         FieldType::Array(v) => scope
             .var("codec", U::get_value_type(field.endianness, v.ty))

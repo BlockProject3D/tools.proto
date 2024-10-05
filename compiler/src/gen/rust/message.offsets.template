@@ -61,6 +61,10 @@ impl{generics} bp3d_proto::message::FromBytesWithOffsets<'a> for {msg_name}{gene
 }}
 #fragment pop
 
+#fragment push string:inline
+bp3d_proto::message::util::NullTerminatedString
+#fragment pop
+
 #fragment push sized_string:inline
 bp3d_proto::message::util::VarcharString::<{codec}>
 #fragment pop

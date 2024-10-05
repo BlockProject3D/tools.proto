@@ -36,6 +36,10 @@ impl{generics} bp3d_proto::message::FromBytes<'a> for {msg_name}{generics}
 }}
 #fragment pop
 
+#fragment push string:inline
+bp3d_proto::message::util::NullTerminatedString
+#fragment pop
+
 #fragment push sized_string:inline
 bp3d_proto::message::util::VarcharString::<{codec}>
 #fragment pop
