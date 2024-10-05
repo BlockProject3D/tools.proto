@@ -330,7 +330,7 @@ impl Field {
         value: crate::model::structure::StructField,
     ) -> Result<(Self, usize), Error> {
         if (value.info.is_none() && value.item_type.is_none()) || (value.info.is_some() && value.item_type.is_some()) {
-            return Err(Error::BadFieldType)
+            return Err(Error::BadFieldType);
         }
         if let Some(info) = value.info {
             let array_len = value.array_len.unwrap_or(1);

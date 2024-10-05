@@ -100,7 +100,7 @@ impl Display for VarcharStringField {
 pub struct ListField {
     pub ty: FixedFieldType,
     pub item_type: Rc<Message>,
-    pub nested: bool
+    pub nested: bool,
 }
 
 impl Display for ListField {
@@ -237,7 +237,7 @@ impl Field {
         value: crate::model::message::MessageField,
     ) -> Result<Self, Error> {
         if (value.info.is_none() && value.item_type.is_none()) || (value.info.is_some() && value.item_type.is_some()) {
-            return Err(Error::BadFieldType)
+            return Err(Error::BadFieldType);
         }
         if let Some(info) = value.info {
             match info {
@@ -245,7 +245,7 @@ impl Field {
                     max_len,
                     item_type,
                     max_size,
-                    nested
+                    nested,
                 } => {
                     if max_len == 0 {
                         return Err(Error::ZeroArray);
@@ -286,7 +286,11 @@ impl Field {
                                 Ok(Field {
                                     name: value.name,
                                     description: value.description,
-                                    ty: FieldType::List(ListField { ty, item_type, nested: nested.unwrap_or_default() }),
+                                    ty: FieldType::List(ListField {
+                                        ty,
+                                        item_type,
+                                        nested: nested.unwrap_or_default(),
+                                    }),
                                     optional: value.optional.unwrap_or_default(),
                                     size: SizeInfo {
                                         is_element_dyn_sized: true,

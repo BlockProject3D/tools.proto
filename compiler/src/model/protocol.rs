@@ -28,11 +28,11 @@
 
 use crate::model::message::Message;
 use crate::model::structure::Structure;
+use crate::model::typedef::Typedef;
 use crate::model::union::Union;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use crate::model::typedef::Typedef;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]

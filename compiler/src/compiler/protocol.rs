@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::error::Error;
+use crate::compiler::imports::Import;
 use crate::compiler::message::{FieldType, Message};
 use crate::compiler::r#enum::Enum;
 use crate::compiler::structure::Structure;
@@ -35,17 +36,16 @@ use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
 use crate::compiler::util::store::ObjectStore;
 use crate::compiler::util::types::{Name, TypePathMap};
 use crate::model::protocol::{Description, Endianness};
+use crate::model::typedef::Typedef;
 use bp3d_debug::{info, trace};
 use std::borrow::Cow;
 use std::rc::Rc;
-use crate::compiler::imports::Import;
-use crate::model::typedef::Typedef;
 
 impl Name for Typedef {
     fn name(&self) -> &str {
         match self {
             Typedef::Message(v) => &v.name,
-            Typedef::Structure(v) => &v.name
+            Typedef::Structure(v) => &v.name,
         }
     }
 }
@@ -56,7 +56,7 @@ impl bp3d_util::index_map::Index for Typedef {
     fn index(&self) -> &Self::Key {
         match self {
             Typedef::Message(v) => &v.name,
-            Typedef::Structure(v) => &v.name
+            Typedef::Structure(v) => &v.name,
         }
     }
 }
@@ -71,7 +71,7 @@ pub struct Protocol {
     pub messages: ObjectStore<Message>,
     pub enums: ObjectStore<Enum>,
     pub unions: ObjectStore<Union>,
-    pub types: ObjectStore<Typedef>
+    pub types: ObjectStore<Typedef>,
 }
 
 impl bp3d_util::index_map::Index for Protocol {
@@ -118,7 +118,7 @@ impl Protocol {
             messages: ObjectStore::new(),
             enums: ObjectStore::new(),
             unions: ObjectStore::new(),
-            types: ObjectStore::new()
+            types: ObjectStore::new(),
         };
         info!("Running import solver pass...");
         if let Some(mut imports) = value.imports {
@@ -170,7 +170,9 @@ impl Protocol {
         if let Some(structs) = &mut value.structs {
             for v in structs {
                 for field in &mut v.fields {
-                    if let Some(info) = field.item_type.as_ref().map(|v| proto.types.get(v)).flatten().map(|v| v.as_struct()).flatten() {
+                    if let Some(info) =
+                        field.item_type.as_ref().map(|v| proto.types.get(v)).flatten().map(|v| v.as_struct()).flatten()
+                    {
                         trace!({typedef=?info}, "Inferred {} as {}", field.name, info.name);
                         let name = std::mem::replace(field, info.clone()).name;
                         field.name = name;
@@ -181,7 +183,9 @@ impl Protocol {
         if let Some(messages) = &mut value.messages {
             for v in messages {
                 for field in &mut v.fields {
-                    if let Some(info) = field.item_type.as_ref().map(|v| proto.types.get(v)).flatten().map(|v| v.as_message()).flatten() {
+                    if let Some(info) =
+                        field.item_type.as_ref().map(|v| proto.types.get(v)).flatten().map(|v| v.as_message()).flatten()
+                    {
                         trace!({typedef=?info}, "Inferred {} as {}", field.name, info.name);
                         let name = std::mem::replace(field, info.clone()).name;
                         field.name = name;
@@ -224,7 +228,7 @@ impl Protocol {
                 for field in &msg.fields {
                     let flag = match &field.ty {
                         FieldType::List(v) => v.nested,
-                        _ => true
+                        _ => true,
                     };
                     if !flag {
                         return Err(Error::MissingNestedList(format!("{}::{}", msg.name, field.name)));

@@ -36,7 +36,7 @@
 pub mod message;
 pub mod protocol;
 pub mod structure;
-pub mod union;
 pub mod typedef;
+pub mod union;
 
 pub use protocol::Protocol;

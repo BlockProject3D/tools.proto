@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::api::core::Error;
 use bp3d_protoc::api::core::loader::Loader;
+use bp3d_protoc::api::core::Error;
 use bp3d_protoc::gen::RustImportSolver;
 
 const ZST1: &str = "
@@ -83,7 +83,10 @@ fn struct_zst2() {
     let mut loader = Loader::new(1);
     loader.load_from_string(ZST2, "").unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
-    assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::UnsupportedBitSize(0))));
+    assert!(matches!(
+        err,
+        Error::Compiler(bp3d_protoc::compiler::Error::UnsupportedBitSize(0))
+    ));
 }
 
 #[test]

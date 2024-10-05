@@ -154,7 +154,7 @@ impl Generator for GeneratorRust {
             files.push(File::new(
                 FileType::MessageReading,
                 "messages_offsets.rs",
-                B(decl_messages_code_offsets)
+                B(decl_messages_code_offsets),
             ));
         }
         Ok(files)

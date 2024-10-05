@@ -26,29 +26,29 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use serde::Deserialize;
 use crate::model::message::MessageField;
 use crate::model::structure::StructField;
+use serde::Deserialize;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(untagged)]
 pub enum Typedef {
     Message(MessageField),
-    Structure(StructField)
+    Structure(StructField),
 }
 
 impl Typedef {
     pub fn as_message(&self) -> Option<&MessageField> {
         match self {
             Typedef::Message(v) => Some(v),
-            Typedef::Structure(_) => None
+            Typedef::Structure(_) => None,
         }
     }
 
     pub fn as_struct(&self) -> Option<&StructField> {
         match self {
             Typedef::Message(_) => None,
-            Typedef::Structure(v) => Some(v)
+            Typedef::Structure(v) => Some(v),
         }
     }
 }

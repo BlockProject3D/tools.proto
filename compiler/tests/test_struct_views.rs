@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::api::core::Error;
 use bp3d_protoc::api::core::loader::Loader;
+use bp3d_protoc::api::core::Error;
 use bp3d_protoc::gen::RustImportSolver;
 use bp3d_protoc::model::structure::SimpleType;
 
@@ -92,7 +92,10 @@ fn unsupported_view_type_float_int_1() {
     let mut loader = Loader::new(1);
     loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_INT_1, "").unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
-    assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::UnsupportedViewType(SimpleType::Unsigned))));
+    assert!(matches!(
+        err,
+        Error::Compiler(bp3d_protoc::compiler::Error::UnsupportedViewType(SimpleType::Unsigned))
+    ));
 }
 
 #[test]
@@ -100,7 +103,10 @@ fn unsupported_view_type_float_int_2() {
     let mut loader = Loader::new(1);
     loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_INT_2, "").unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
-    assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::UnsupportedViewType(SimpleType::Signed))));
+    assert!(matches!(
+        err,
+        Error::Compiler(bp3d_protoc::compiler::Error::UnsupportedViewType(SimpleType::Signed))
+    ));
 }
 
 #[test]
@@ -108,7 +114,10 @@ fn unsupported_view_type_float_none() {
     let mut loader = Loader::new(1);
     loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_NONE, "").unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
-    assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::UnsupportedViewType(SimpleType::Float))));
+    assert!(matches!(
+        err,
+        Error::Compiler(bp3d_protoc::compiler::Error::UnsupportedViewType(SimpleType::Float))
+    ));
 }
 
 #[test]
@@ -116,5 +125,8 @@ fn unsupported_view_type_float_enum() {
     let mut loader = Loader::new(1);
     loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_ENUM, "").unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
-    assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::UnsupportedViewType(SimpleType::Float))));
+    assert!(matches!(
+        err,
+        Error::Compiler(bp3d_protoc::compiler::Error::UnsupportedViewType(SimpleType::Float))
+    ));
 }
