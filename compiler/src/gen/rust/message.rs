@@ -36,7 +36,7 @@ use crate::gen::RustParams;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
-const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("./default.codec.template");
+const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("default_codec/decl.template");
 
 pub fn gen_message_decl(msg: &Message, type_path_map: &TypePathMap, params: &RustParams) -> String {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);

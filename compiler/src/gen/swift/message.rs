@@ -36,7 +36,7 @@ use itertools::Itertools;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
-const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("./default.codec.template");
+const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("default_codec/decl.template");
 
 fn gen_initializer(templates: &Templates, msg: &Message, type_path_map: &TypePathMapper<SwiftTypeMapper>) -> String {
     let init_field_list = msg

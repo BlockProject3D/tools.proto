@@ -29,20 +29,19 @@
 use crate::compiler::message::{Field, Message};
 use crate::compiler::util::types::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
-use crate::gen::base::message::Utilities;
+use crate::gen::base::message::{Templates, Utilities};
 use crate::gen::base::message_common::generate_field_type_inline;
-use crate::gen::template::Template;
 use itertools::Itertools;
 
-fn gen_field_from_slice_impl<U: Utilities, T: TypeMapper>(
+fn gen_field_from_bytes_impl<U: Utilities, T: TypeMapper>(
     field: &Field,
-    template: &Template,
+    templates: &Templates,
     type_path_map: &TypePathMapper<T>,
     function: &str,
 ) -> String {
-    let mut scope = template.scope();
+    let mut scope = templates.template.scope();
     scope.var("name", &field.name);
-    let msg_type = generate_field_type_inline::<U, T>(field, template, type_path_map);
+    let msg_type = generate_field_type_inline::<U, T>(field, &templates.codec_template, type_path_map);
     let union = field.ty.as_union();
     if let Some(v) = union {
         scope.var("on_name", &v.on_name);
@@ -59,21 +58,21 @@ fn gen_field_from_slice_impl<U: Utilities, T: TypeMapper>(
 
 pub fn generate_from_bytes_impl<U: Utilities, T: TypeMapper>(
     msg: &Message,
-    template: &Template,
+    templates: &Templates,
     type_path_map: &TypePathMapper<T>,
     function: &str,
 ) -> String {
     let fields = msg
         .fields
         .iter()
-        .map(|field| gen_field_from_slice_impl::<U, T>(field, template, type_path_map, function))
+        .map(|field| gen_field_from_bytes_impl::<U, T>(field, templates, type_path_map, function))
         .join("");
     let field_names = msg
         .fields
         .iter()
-        .map(|field| template.scope().var("name", &field.name).render(function, &["field_name"]).unwrap())
+        .map(|field| templates.template.scope().var("name", &field.name).render(function, &["field_name"]).unwrap())
         .join("");
-    template
+    templates.template
         .scope()
         .var("fields", fields)
         .var("field_names", field_names)
@@ -82,11 +81,11 @@ pub fn generate_from_bytes_impl<U: Utilities, T: TypeMapper>(
 }
 
 pub fn generate<'variable, U: Utilities, T: TypeMapper>(
-    mut template: Template<'_, 'variable>,
+    mut templates: Templates<'_, 'variable>,
     msg: &'variable Message,
     type_path_map: &TypePathMapper<T>,
     function: &str,
 ) -> String {
-    template.var("msg_name", &msg.name);
-    generate_from_bytes_impl::<U, T>(msg, &template, type_path_map, function)
+    templates.template.var("msg_name", &msg.name);
+    generate_from_bytes_impl::<U, T>(msg, &templates, type_path_map, function)
 }

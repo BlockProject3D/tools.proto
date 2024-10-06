@@ -35,35 +35,3 @@ impl{generics} bp3d_proto::message::FromBytes<'a> for {msg_name}{generics}
     }}
 }}
 #fragment pop
-
-#fragment push string:inline
-bp3d_proto::message::util::NullTerminatedString
-#fragment pop
-
-#fragment push sized_string:inline
-bp3d_proto::message::util::VarcharString::<{codec}>
-#fragment pop
-
-#fragment push array:inline
-bp3d_proto::message::util::Array::<&'a [u8], {codec}, {type_name}<&'a [u8]>>
-#fragment pop
-
-#fragment push list:inline
-bp3d_proto::message::payload::List::<&'a [u8], {codec}, {type_name}>
-#fragment pop
-
-#fragment push unsized_list:inline
-bp3d_proto::message::payload::list::Unsized::<{codec}, {type_name}>
-#fragment pop
-
-#fragment push sized_list:inline
-bp3d_proto::message::payload::list::Sized::<&'a [u8], {codec}, {size_codec}, {type_name}>
-#fragment pop
-
-#fragment push option:inline
-bp3d_proto::message::util::Optional::<{msg_type}>
-#fragment pop
-
-#fragment push payload:inline
-bp3d_proto::message::payload::Buffer
-#fragment pop
