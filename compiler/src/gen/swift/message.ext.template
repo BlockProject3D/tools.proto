@@ -1,11 +1,3 @@
-#fragment push decl.array
-public typealias {proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B: BP3DProto.Buffer> = BP3DProto.Array<B, {codec}, {item_type}<B>>;
-#fragment pop
-
-#fragment push decl.list
-public typealias {proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B: BP3DProto.Buffer> = BP3DProto.List<B, {codec}, {item_type}<B>>;
-#fragment pop
-
 #fragment push decl
 #fragment push field
 {name}: {type}
@@ -18,34 +10,10 @@ public typealias {proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B: B
     }}
 #fragment pop
 
-#fragment push string:inline
-String
-#fragment pop
-
-#fragment push sized_string:inline
-String
-#fragment pop
-
-#fragment push array:inline
-{proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B>
-#fragment pop
-
 #fragment push list:inline
-{proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B>
-#fragment pop
-
-#fragment push sized_list:inline
 {proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B>
 #fragment pop
 
 #fragment push union:inline
 {type_name}<B>
-#fragment pop
-
-#fragment push option:inline
-{msg_type}?
-#fragment pop
-
-#fragment push payload:inline
-Data
 #fragment pop

@@ -14,34 +14,18 @@ pub struct {msg_name}{generics} {{
 }}
 #fragment pop
 
-#fragment push string:inline
-&'a str
+#fragment push typealias.array
+type {msg_name}{name:to_pascal_case}Type<'a> = {type_name};
 #fragment pop
 
-#fragment push sized_string:inline
-&'a str
-#fragment pop
-
-#fragment push array:inline
-{msg_name}{name:to_pascal_case}Type<'a>
+#fragment push typealias.list
+type {msg_name}{name:to_pascal_case}Type<'a> = {type_name};
 #fragment pop
 
 #fragment push list:inline
 {msg_name}{name:to_pascal_case}Type<'a>
 #fragment pop
 
-#fragment push sized_list:inline
-{msg_name}{name:to_pascal_case}Type<'a>
-#fragment pop
-
 #fragment push union:inline
 T{name}
-#fragment pop
-
-#fragment push option:inline
-Option<{msg_type}>
-#fragment pop
-
-#fragment push payload:inline
-&'a [u8]
 #fragment pop

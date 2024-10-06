@@ -9,34 +9,18 @@ public struct {proto_name:to_pascal_case}{msg_name}<B: BP3DProto.Buffer> {{
 }}
 #fragment pop
 
-#fragment push string:inline
-String
+#fragment push typealias.array
+public typealias {proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B: BP3DProto.Buffer> = {type_name};
 #fragment pop
 
-#fragment push sized_string:inline
-String
-#fragment pop
-
-#fragment push array:inline
-{proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B>
+#fragment push typealias.list
+public typealias {proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B: BP3DProto.Buffer> = {type_name};
 #fragment pop
 
 #fragment push list:inline
 {proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B>
 #fragment pop
 
-#fragment push sized_list:inline
-{proto_name:to_pascal_case}{msg_name}{name:to_pascal_case}<B>
-#fragment pop
-
 #fragment push union:inline
 {type_name}<B>
-#fragment pop
-
-#fragment push option:inline
-{msg_type}?
-#fragment pop
-
-#fragment push payload:inline
-Data
 #fragment pop

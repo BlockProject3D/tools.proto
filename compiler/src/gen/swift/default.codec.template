@@ -1,0 +1,27 @@
+#fragment push decl.string:inline
+String
+#fragment pop
+
+#fragment push decl.sized_string:inline
+String
+#fragment pop
+
+#fragment push decl.array:inline
+BP3DProto.Array<B, {codec}, {item_type}<B>>
+#fragment pop
+
+#fragment push decl.list:inline
+BP3DProto.List<B, {codec}, {item_type}<B>>
+#fragment pop
+
+#fragment push decl.sized_list:inline
+BP3DProto.List<B, {codec}, {item_type}<B>>
+#fragment pop
+
+#fragment push decl.option:inline
+{msg_type}?
+#fragment pop
+
+#fragment push decl.payload:inline
+Data
+#fragment pop

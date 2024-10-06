@@ -29,28 +29,28 @@
 use crate::compiler::message::Message;
 use crate::compiler::util::types::TypePathMap;
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
-use crate::gen::base::message::{gen_message_array_type_decls, generate};
+use crate::gen::base::message::{gen_message_array_type_decls, generate, Templates};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 use crate::gen::RustParams;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
+const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("./default.codec.template");
 
 pub fn gen_message_decl(msg: &Message, type_path_map: &TypePathMap, params: &RustParams) -> String {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
-    let mut template = Template::compile(TEMPLATE).unwrap();
-    let mut template_ext = Template::compile(TEMPLATE_EXT).unwrap();
-    template_ext.var("msg_name", &msg.name);
-    template.var(
-        "generics",
-        RustUtils::get_generics(msg, &type_path_map).to_string_with_defaults(),
-    );
-    let mut code = generate::<RustUtils, _>(template, msg, &type_path_map);
-    code += "\n";
-    code += &gen_message_array_type_decls::<RustUtils, _>(&template_ext, "decl", msg, &type_path_map);
+    let mut templates = Templates {
+        template: Template::compile(TEMPLATE_EXT).unwrap(),
+        codec_template: Template::compile(TEMPLATE_CODEC_DECL).unwrap()
+    };
+    templates.template.var("msg_name", &msg.name);
+    let mut code = String::new();
     if params.enable_list_wrappers {
-        code += &gen_message_array_type_decls::<RustUtils, _>(&template_ext, "wrappers", msg, &type_path_map);
+        code += &gen_message_array_type_decls::<RustUtils, _>(&templates, "wrappers", msg, &type_path_map);
     }
+    templates.template = Template::compile(TEMPLATE).unwrap();
+    templates.template.var("generics", RustUtils::get_generics(msg, &type_path_map).to_string_with_defaults());
+    code += &generate::<RustUtils, _>(templates, msg, &type_path_map);
     code
 }

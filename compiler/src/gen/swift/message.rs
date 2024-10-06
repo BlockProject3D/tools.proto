@@ -29,27 +29,28 @@
 use crate::compiler::message::Message;
 use crate::compiler::Protocol;
 use crate::gen::base::map::TypePathMapper;
-use crate::gen::base::message::{gen_message_array_type_decls, gen_msg_field_decl, generate};
+use crate::gen::base::message::{gen_msg_field_decl, generate, Templates};
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::Template;
 use itertools::Itertools;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
+const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("./default.codec.template");
 
-fn gen_initializer(template: &Template, msg: &Message, type_path_map: &TypePathMapper<SwiftTypeMapper>) -> String {
+fn gen_initializer(templates: &Templates, msg: &Message, type_path_map: &TypePathMapper<SwiftTypeMapper>) -> String {
     let init_field_list = msg
         .fields
         .iter()
-        .map(|field| gen_msg_field_decl::<SwiftUtils, _>(field, template, type_path_map))
+        .map(|field| gen_msg_field_decl::<SwiftUtils, _>(field, templates, type_path_map))
         .map(|v| v[..v.len() - 1].to_string())
         .join(", ");
     let initializers = msg
         .fields
         .iter()
-        .map(|field| template.scope().var("name", &field.name).render("decl", &["initializer"]).unwrap())
+        .map(|field| templates.template.scope().var("name", &field.name).render("decl", &["initializer"]).unwrap())
         .join("");
-    template
+    templates.template
         .scope()
         .var("init_field_list", init_field_list)
         .var("initializers", initializers)
@@ -59,13 +60,13 @@ fn gen_initializer(template: &Template, msg: &Message, type_path_map: &TypePathM
 
 pub fn gen_message_decl(proto: &Protocol, msg: &Message) -> String {
     let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
-    let mut template_ext = Template::compile(TEMPLATE_EXT).unwrap();
-    template_ext.var("proto_name", proto.name()).var("msg_name", &msg.name);
-    let initializer = gen_initializer(&template_ext, msg, &type_path_map);
-    let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("proto_name", proto.name()).var("initializer", initializer);
-    let mut code = generate::<SwiftUtils, _>(template, msg, &type_path_map);
-    code += "\n";
-    code += &gen_message_array_type_decls::<SwiftUtils, _>(&template_ext, "decl", msg, &type_path_map);
-    code
+    let mut templates = Templates {
+        template: Template::compile(TEMPLATE_EXT).unwrap(),
+        codec_template: Template::compile(TEMPLATE_CODEC_DECL).unwrap(),
+    };
+    templates.template.var("proto_name", proto.name()).var("msg_name", &msg.name);
+    let initializer = gen_initializer(&templates, msg, &type_path_map);
+    templates.template = Template::compile(TEMPLATE).unwrap();
+    templates.template.var("proto_name", proto.name()).var("initializer", initializer);
+    generate::<SwiftUtils, _>(templates, msg, &type_path_map)
 }
