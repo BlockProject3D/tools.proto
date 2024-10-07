@@ -39,11 +39,10 @@ const TEMPLATE_CODEC: &[u8] = include_bytes!("./default_codec/write.template");
 
 pub fn gen_message_write_impl(proto: &Protocol, msg: &Message) -> String {
     let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
-    let templates = Templates {
+    let mut templates = Templates {
         codec_template: Template::compile(TEMPLATE_CODEC).unwrap(),
         template: Template::compile(TEMPLATE).unwrap()
     };
-    let mut template = Template::compile(TEMPLATE).unwrap();
-    template.var("proto_name", proto.name());
+    templates.template.var("proto_name", proto.name());
     generate::<SwiftUtils, _>(templates, msg, &type_path_map, "impl")
 }

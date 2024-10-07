@@ -59,16 +59,16 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
             Referenced::Struct(v) => U::gen_struct_ref_type(&type_path_map.get(v)),
             Referenced::Message(v) => U::gen_message_ref_type(&type_path_map.get(v)),
         },
-        FieldType::NullTerminatedString => templates.codec_template.render("decl", &["string"]).unwrap(),
-        FieldType::SizedString(v) => templates.codec_template.scope().var("codec", U::get_value_type(field.endianness, v.ty)).render("decl", &["sized_string"]).unwrap(),
+        FieldType::NullTerminatedString => templates.codec_template.render("", &["string"]).unwrap(),
+        FieldType::SizedString(v) => templates.codec_template.scope().var("codec", U::get_value_type(field.endianness, v.ty)).render("", &["sized_string"]).unwrap(),
         FieldType::Array(_) => scope.render("", &["list"]).unwrap(),
         FieldType::Union(v) => scope.var("type_name", type_path_map.get(&v.r)).render("", &["union"]).unwrap(),
         FieldType::List(_) => scope.render("", &["list"]).unwrap(),
-        FieldType::Payload => templates.codec_template.render("decl", &["payload"]).unwrap(),
+        FieldType::Payload => templates.codec_template.render("", &["payload"]).unwrap(),
         FieldType::SizedList(_) => scope.render("", &["list"]).unwrap(),
     };
     let msg_type = match field.optional {
-        true => templates.codec_template.scope().var("msg_type", msg_type).render("decl", &["option"]).unwrap(),
+        true => templates.codec_template.scope().var("msg_type", msg_type).render("", &["option"]).unwrap(),
         false => msg_type,
     };
     scope.var("type", msg_type).render("decl", &["field"]).unwrap()
@@ -98,7 +98,7 @@ pub fn gen_message_array_type_decls<U: Utilities, T: TypeMapper>(
                     let type_name = templates.codec_template.scope()
                         .var("item_type", type_path_map.get(&v.item_type))
                         .var("codec", U::get_value_type(field.endianness, v.ty))
-                        .render("decl", &["array"])
+                        .render("", &["array"])
                         .unwrap();
                     Some(scope.var("type_name", type_name).render(function, &["array"]).unwrap())
                 },
@@ -108,7 +108,7 @@ pub fn gen_message_array_type_decls<U: Utilities, T: TypeMapper>(
                     let type_name = templates.codec_template.scope()
                         .var("item_type", type_path_map.get(&v.item_type))
                         .var("codec", U::get_value_type(field.endianness, v.ty))
-                        .render("decl", &["list"])
+                        .render("", &["list"])
                         .unwrap();
                     Some(scope.var("type_name", type_name).render(function, &["list"]).unwrap())
                 },
@@ -119,7 +119,7 @@ pub fn gen_message_array_type_decls<U: Utilities, T: TypeMapper>(
                         .var("item_type", type_path_map.get(&v.item_type))
                         .var("codec", U::get_value_type(field.endianness, v.ty))
                         .var("size_codec", U::get_value_type(field.endianness, v.size_ty))
-                        .render("decl", &["sized_list"])
+                        .render("", &["sized_list"])
                         .unwrap();
                     Some(scope.var("type_name", type_name).render(function, &["list"]).unwrap())
                 },
