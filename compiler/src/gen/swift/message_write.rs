@@ -29,15 +29,21 @@
 use crate::compiler::message::Message;
 use crate::compiler::Protocol;
 use crate::gen::base::map::TypePathMapper;
+use crate::gen::base::message::Templates;
 use crate::gen::base::message_write::generate;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::Template;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.write.template");
+const TEMPLATE_CODEC: &[u8] = include_bytes!("./default_codec/write.template");
 
 pub fn gen_message_write_impl(proto: &Protocol, msg: &Message) -> String {
     let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
+    let templates = Templates {
+        codec_template: Template::compile(TEMPLATE_CODEC).unwrap(),
+        template: Template::compile(TEMPLATE).unwrap()
+    };
     let mut template = Template::compile(TEMPLATE).unwrap();
     template.var("proto_name", proto.name());
-    generate::<SwiftUtils, _>(template, msg, &type_path_map, "impl")
+    generate::<SwiftUtils, _>(templates, msg, &type_path_map, "impl")
 }
