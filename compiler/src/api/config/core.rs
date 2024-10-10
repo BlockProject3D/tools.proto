@@ -51,8 +51,8 @@ pub fn compile<'a, T, I: ImportSolver>(config: &Config<T>, solver: &'a I) -> Res
 }
 
 pub fn generate<'a, G: crate::gen::Generator, T, I: ImportSolver, F: Fn(&T) -> Option<G::Params<'_>>>(
-    generator: &'a Generator<'a, I, G>,
-    context: &mut Context<'a>,
+    generator: &'a Generator<'a, G>,
+    context: &mut Context<'a, I>,
     config: &Config<T>,
     generator_params_converter: F,
     generator_default_params: &G::Params<'_>,
@@ -85,12 +85,12 @@ pub fn generate<'a, G: crate::gen::Generator, T, I: ImportSolver, F: Fn(&T) -> O
                 p.use_messages = flag;
             }
             if let Some(gp) = generator_params_converter(&params.inner) {
-                generator.generate(context, protocol_path, &p, &gp)?;
+                context.generate(generator, protocol_path, &p, &gp)?;
             } else {
-                generator.generate(context, protocol_path, &p, generator_default_params)?;
+                context.generate(generator, protocol_path, &p, generator_default_params)?;
             }
         }
     }
     let params = Params::default();
-    generator.generate_all(context, &params, generator_default_params)
+    context.generate_all(generator, &params, generator_default_params)
 }

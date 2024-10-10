@@ -34,6 +34,7 @@ mod functions;
 mod options;
 mod parse_tree;
 pub mod util;
+pub mod loader;
 
 pub use core::Scope;
 pub use core::Template;

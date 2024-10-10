@@ -31,6 +31,7 @@ simple_error! {
     pub Error {
         Io(std::io::Error) => "error loading config: {}",
         Config(toml::de::Error) => "error parsing config: {}",
-        (impl From) Core(crate::api::core::Error) => "core error: {}"
+        (impl From) Core(crate::api::core::Error) => "core error: {}",
+        TemplateLoader(crate::gen::template::loader::Error) => "template loader error: {}"
     }
 }

@@ -99,6 +99,10 @@ impl Protocol {
         }
     }
 
+    pub fn iter_codecs(&self) -> impl Iterator<Item = &str> {
+        self.messages.iter().map(|v| v.fields.iter().filter_map(|v| v.codec.as_deref())).flatten()
+    }
+
     pub fn from_model<T: ImportSolver>(
         mut value: crate::model::Protocol,
         protocols: &ProtocolStore<T>,

@@ -50,8 +50,8 @@ impl GenTools for Rust {
     }
 
     fn generate<'a, 'b>(
-        generator: &'b Generator<'a, Self::Solver, Self::Generator>,
-        context: &mut Context<'b>,
+        generator: &'b Generator<'a, Self::Generator>,
+        context: &mut Context<'b, Self::Solver>,
         config: &Config<Self::Params<'_>>,
     ) -> Result<(), Error> {
         config::core::generate(

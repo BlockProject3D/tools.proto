@@ -218,6 +218,7 @@ pub struct Field {
     pub size: SizeInfo,
     pub endianness: Endianness,
     pub description: Option<Description>,
+    pub codec: Option<String>
 }
 
 impl Display for Field {
@@ -263,6 +264,7 @@ impl Field {
                                 is_dyn_sized: true,
                             },
                             endianness: proto.endianness,
+                            codec: value.codec
                         }),
                         Referenced::Message(item_type) => {
                             if let Some(max_size) = max_size {
@@ -280,6 +282,7 @@ impl Field {
                                         is_dyn_sized: false,
                                     },
                                     endianness: proto.endianness,
+                                    codec: value.codec
                                 })
                             } else {
                                 item_type.embedded.set(true);
@@ -293,6 +296,7 @@ impl Field {
                                         is_dyn_sized: true,
                                     },
                                     endianness: proto.endianness,
+                                    codec: value.codec
                                 })
                             }
                         }
@@ -309,6 +313,7 @@ impl Field {
                             is_dyn_sized: true,
                         },
                         endianness: proto.endianness,
+                        codec: value.codec
                     }),
                     Some(max_len) => {
                         if max_len == 0 {
@@ -325,6 +330,7 @@ impl Field {
                                 is_dyn_sized: true,
                             },
                             endianness: proto.endianness,
+                            codec: value.codec
                         })
                     }
                 },
@@ -358,6 +364,7 @@ impl Field {
                         optional: false,
                         size: r.size,
                         endianness: proto.endianness,
+                        codec: value.codec
                     })
                 }
                 MessageFieldType::Payload => Ok(Field {
@@ -370,6 +377,7 @@ impl Field {
                         is_element_dyn_sized: true,
                     },
                     endianness: proto.endianness,
+                    codec: value.codec
                 }),
                 MessageFieldType::Unsigned { bits } => {
                     let ty = FixedFieldType::from_model(StructFieldType::Unsigned { bits })?;
@@ -383,6 +391,7 @@ impl Field {
                             is_element_dyn_sized: false,
                         },
                         endianness: proto.endianness,
+                        codec: value.codec
                     })
                 }
             }
@@ -407,6 +416,7 @@ impl Field {
                                 is_element_dyn_sized: false,
                             },
                             endianness: proto.endianness,
+                            codec: value.codec
                         })
                     } else {
                         Ok(Field {
@@ -419,6 +429,7 @@ impl Field {
                                 is_element_dyn_sized: false,
                             },
                             endianness: proto.endianness,
+                            codec: value.codec
                         })
                     }
                 }
@@ -429,6 +440,7 @@ impl Field {
                     size: r.size,
                     ty: FieldType::Ref(Referenced::Message(r)),
                     endianness: proto.endianness,
+                    codec: value.codec
                 }),
             }
         }

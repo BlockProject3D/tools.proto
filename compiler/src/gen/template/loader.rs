@@ -26,34 +26,51 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::api::config;
-use crate::api::config::model::Config;
-use crate::api::core::generator::{Context, Generator};
-use crate::api::tools::Error;
-use crate::api::tools::GenTools;
-use crate::gen::{GeneratorSwift, SwiftImportSolver};
+use std::collections::HashMap;
+use std::path::Path;
+use bp3d_util::simple_error;
+use crate::gen::template::Template;
 
-pub struct Swift;
+simple_error! {
+    pub Error {
+        Io(std::io::Error) => "io error: {}",
+        NotFound(String) => "template not found: {}",
+        Compiler(crate::gen::template::Error) => "compiler error: {}"
+    }
+}
 
-impl GenTools for Swift {
-    type Params<'a> = ();
-    type Generator = GeneratorSwift;
-    type Solver = SwiftImportSolver;
+pub struct TemplateLoader<'a> {
+    paths: Vec<&'a Path>,
+    templates: HashMap<String, String>
+}
 
-    fn new_solver() -> Self::Solver {
-        SwiftImportSolver
+impl<'a> TemplateLoader<'a> {
+    pub fn new() -> Self {
+        Self {
+            paths: Vec::new(),
+            templates: HashMap::new()
+        }
     }
 
-    fn new_generator() -> Self::Generator {
-        GeneratorSwift
+    pub fn add_search_path(&mut self, path: &'a Path) {
+        self.paths.push(path);
     }
 
-    fn generate<'a, 'b>(
-        generator: &'b Generator<'a, Self::Generator>,
-        context: &mut Context<'b, Self::Solver>,
-        config: &Config<Self::Params<'a>>,
-    ) -> Result<(), Error> {
-        config::core::generate(generator, context, config, |_| None, context.protocols)?;
-        Ok(())
+    pub fn load(&mut self, name: String) -> Result<(), Error> {
+        let file_name = name.clone() + ".template";
+        for path in &self.paths {
+            let path = path.join(&file_name);
+            if path.exists() {
+                let data = std::fs::read_to_string(path).map_err(Error::Io)?;
+                self.templates.insert(name, data);
+                return Ok(());
+            }
+        }
+        Err(Error::NotFound(file_name))
+    }
+
+    pub fn compile(&self, name: &str) -> Result<Template, Error> {
+        let template_code = self.templates.get(name).ok_or_else(|| Error::NotFound(name.into()))?;
+        Template::compile(template_code.as_bytes()).map_err(Error::Compiler)
     }
 }

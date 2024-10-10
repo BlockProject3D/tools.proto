@@ -58,7 +58,8 @@ pub struct MessageField {
     pub info: Option<MessageFieldType>,
     pub optional: Option<bool>,
     pub description: Option<Description>,
-    pub item_type: Option<String>
+    pub item_type: Option<String>,
+    pub codec: Option<String>
 }
 
 #[derive(Clone, Debug, Deserialize)]

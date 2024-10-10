@@ -27,15 +27,15 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::Args;
-use bp3d_protoc::api::core::generator::{Context, Generator, Params};
+use bp3d_protoc::api::core::generator::{Generator, Params};
 use bp3d_protoc::api::core::loader::Loader;
-use bp3d_protoc::compiler::util::imports::ImportSolver;
+use bp3d_protoc::compiler::util::imports::{ImportSolver, ProtocolStore};
 use bp3d_util::result::ResultExt;
 use std::path::Path;
 
 pub struct Builder<'a, I, G> {
-    pub context: Context<'a>,
-    pub generator: Generator<'a, I, G>,
+    pub protocols: ProtocolStore<'a, I>,
+    pub generator: Generator<'a, G>,
     pub params: Params,
 }
 
@@ -52,14 +52,14 @@ impl<'a, I: ImportSolver, G: bp3d_protoc::gen::Generator> Builder<'a, I, G> {
             Params::default()
         };
         let output = args.output.as_deref().unwrap_or(Path::new("./"));
-        let (context, mut generator) = Generator::new(protocols, &output, generator);
+        let mut generator = Generator::new(&output, generator);
         if let Some(file_header) = &args.file_header {
             generator.set_file_header(file_header);
         }
         Self {
-            context,
+            protocols,
             generator,
-            params,
+            params
         }
     }
 }

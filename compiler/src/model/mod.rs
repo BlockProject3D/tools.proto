@@ -33,6 +33,7 @@
 //TODO: Support for padding in structure fields
 //TODO: Support custom string, list/array and payload types in messages (use the new codec template
 // system in the base generator)
+//TODO: Re-allign model to use a single naming convention
 
 pub mod message;
 pub mod protocol;

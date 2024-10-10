@@ -33,10 +33,7 @@ use crate::gen::swift::message_write::gen_message_write_impl;
 use crate::gen::swift::r#enum::gen_enum_decl;
 use crate::gen::swift::structure::gen_structure_decl;
 use crate::gen::swift::union::gen_union_decl;
-use crate::gen::{
-    file::{File, FileType},
-    Generator,
-};
+use crate::gen::{file::{File, FileType}, Codec, CodecMap, Generator};
 use bp3d_util::simple_error;
 
 mod r#enum;
@@ -60,11 +57,19 @@ use crate::gen::file::B;
 use crate::gen::swift::imports::gen_imports;
 pub use solver::SwiftImportSolver;
 
+const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("./default_codec/decl.template");
+const TEMPLATE_CODEC_FROM_BYTES: &[u8] = include_bytes!("./default_codec/from_bytes.template");
+const TEMPLATE_CODEC_WRITE: &[u8] = include_bytes!("./default_codec/write.template");
+
 pub struct GeneratorSwift;
 
 impl Generator for GeneratorSwift {
     type Error = Error;
     type Params<'a> = ProtocolStore<'a, SwiftImportSolver>;
+
+    fn get_default_codecs<'fragment, 'variable>() -> CodecMap<'fragment, 'variable> {
+        CodecMap::with_default(Codec::from_static_bytes(TEMPLATE_CODEC_DECL, TEMPLATE_CODEC_FROM_BYTES, TEMPLATE_CODEC_WRITE))
+    }
 
     fn generate(proto: &Protocol, params: &ProtocolStore<SwiftImportSolver>) -> Result<Vec<File>, Self::Error> {
         let imports = gen_imports(params);

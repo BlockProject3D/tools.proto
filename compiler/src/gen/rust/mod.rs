@@ -47,14 +47,13 @@ use crate::gen::rust::message_write::gen_message_write_impl;
 use crate::gen::rust::r#enum::gen_enum_decl;
 use crate::gen::rust::structure::gen_structure_decl;
 use crate::gen::rust::union::gen_union_decl;
-use crate::gen::{
-    file::{File, FileType},
-    Generator,
-};
+use crate::gen::{file::{File, FileType}, Codec, CodecMap, Generator};
 use bp3d_debug::trace;
 use bp3d_util::simple_error;
 use std::collections::HashSet;
 use std::path::Path;
+
+//TODO: refactor separate in multiple files
 
 simple_error! {
     pub Error {
@@ -116,11 +115,19 @@ impl<'a> Params<'a> {
     }
 }
 
+const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("./default_codec/decl.template");
+const TEMPLATE_CODEC_FROM_BYTES: &[u8] = include_bytes!("./default_codec/from_bytes.template");
+const TEMPLATE_CODEC_WRITE: &[u8] = include_bytes!("./default_codec/write.template");
+
 pub struct GeneratorRust;
 
 impl Generator for GeneratorRust {
     type Error = Error;
     type Params<'a> = Params<'a>;
+
+    fn get_default_codecs<'fragment, 'variable>() -> CodecMap<'fragment, 'variable> {
+        CodecMap::with_default(Codec::from_static_bytes(TEMPLATE_CODEC_DECL, TEMPLATE_CODEC_FROM_BYTES, TEMPLATE_CODEC_WRITE))
+    }
 
     fn generate(proto: &Protocol, params: &Params) -> Result<Vec<File>, Self::Error> {
         trace!({?params}, "Generating protocol {}", proto.full_name);

@@ -39,6 +39,7 @@ use crate::compiler::util::imports::ImportSolver;
 pub use error::Error;
 use serde::Deserialize;
 use std::path::Path;
+use crate::gen::template::loader::TemplateLoader;
 
 pub trait GenTools {
     type Params<'a>: Deserialize<'a>;
@@ -48,22 +49,39 @@ pub trait GenTools {
     fn new_solver() -> Self::Solver;
     fn new_generator() -> Self::Generator;
     fn generate<'a, 'b>(
-        generator: &'b Generator<'a, Self::Solver, Self::Generator>,
-        context: &mut Context<'b>,
+        generator: &'b Generator<'a, Self::Generator>,
+        context: &mut Context<'b, Self::Solver>,
         config: &config::model::Config<Self::Params<'_>>,
     ) -> Result<(), Error>;
 
     fn run(
         config: &config::model::Config<Self::Params<'_>>,
         out_dir: impl AsRef<Path>,
-        post_generation: impl FnOnce(&Context),
+        post_generation: impl FnOnce(&Context<Self::Solver>),
     ) -> Result<(), Error> {
         let motherfuckingrust = Self::new_solver();
         let protocols = config::core::compile(config, &motherfuckingrust)?;
-        let (mut context, mut generator) = Generator::new(protocols, out_dir.as_ref(), Self::new_generator());
+        let mut generator = Generator::new(out_dir.as_ref(), Self::new_generator());
+        let mut loader = TemplateLoader::new();
+        for v in protocols.iter().map(|v| v.iter_codecs()).flatten() {
+            let base = String::from(v);
+            loader.load(base.clone() + "/decl").map_err(Error::TemplateLoader)?;
+            loader.load(base.clone() + "/from_bytes").map_err(Error::TemplateLoader)?;
+            loader.load(base + "/write").map_err(Error::TemplateLoader)?;
+        }
+        for v in protocols.iter().map(|v| v.iter_codecs()).flatten() {
+            let base = String::from(v);
+            let codec = Codec {
+                decl: loader.compile(&(base.clone() + "/decl")).map_err(Error::TemplateLoader)?,
+                from_bytes: loader.compile(&(base.clone() + "/from_bytes")).map_err(Error::TemplateLoader)?,
+                write: loader.compile(&(base.clone() + "/write")).map_err(Error::TemplateLoader)?
+            };
+            generator.add_codec(v, codec);
+        }
         if let Some(file_header) = config.package.file_header {
             generator.set_file_header(file_header);
         }
+        let mut context = Context::new(&protocols);
         Self::generate(&generator, &mut context, &config)?;
         post_generation(&context);
         Ok(())
@@ -72,7 +90,7 @@ pub trait GenTools {
     fn run_string(
         config: impl AsRef<str>,
         out_dir: impl AsRef<Path>,
-        post_generation: impl FnOnce(&Context),
+        post_generation: impl FnOnce(&Context<Self::Solver>),
     ) -> Result<(), Error> {
         let config = config::core::parse::<Self::Params<'_>>(config.as_ref()).map_err(Error::Config)?;
         Self::run(&config, out_dir, post_generation)
@@ -81,7 +99,7 @@ pub trait GenTools {
     fn run_file(
         config_file: impl AsRef<Path>,
         out_dir: impl AsRef<Path>,
-        post_generation: impl FnOnce(&Context),
+        post_generation: impl FnOnce(&Context<Self::Solver>),
     ) -> Result<(), Error> {
         let str = std::fs::read_to_string(config_file).map_err(Error::Io)?;
         Self::run_string(str, out_dir, post_generation)
@@ -93,3 +111,4 @@ pub use rust::Rust;
 
 #[cfg(feature = "gen-swift")]
 pub use swift::Swift;
+use crate::gen::Codec;

@@ -26,14 +26,64 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::collections::HashMap;
 use crate::compiler::Protocol;
 use crate::gen::file::File;
 use itertools::Itertools;
 use std::path::Path;
+use crate::gen::template::Template;
+
+//TODO: Implement TemplateLoader to load the templates required for codecs from files
+
+pub struct Codec<'fragment, 'variable> {
+    pub decl: Template<'fragment, 'variable>,
+    pub from_bytes: Template<'fragment, 'variable>,
+    pub write: Template<'fragment, 'variable>
+}
+
+impl<'fragment, 'variable> Codec<'fragment, 'variable> {
+    pub fn from_static_bytes(decl: &'static [u8], from_bytes: &'static [u8], write: &'static [u8]) -> Self {
+        Self {
+            decl: Template::compile(decl).unwrap(),
+            from_bytes: Template::compile(from_bytes).unwrap(),
+            write: Template::compile(write).unwrap()
+        }
+    }
+}
+
+pub struct CodecMap<'fragment, 'variable> {
+    map: HashMap<&'fragment str, Codec<'fragment, 'variable>>
+}
+
+impl<'fragment, 'variable> CodecMap<'fragment, 'variable> {
+    pub fn new() -> Self {
+        Self {
+            map: HashMap::new()
+        }
+    }
+
+    pub fn with_default(codec: Codec<'fragment, 'variable>) -> Self {
+        let mut map = Self::new();
+        map.insert("default", codec);
+        map
+    }
+
+    pub fn insert(&mut self, name: &'fragment str, codec: Codec<'fragment, 'variable>) {
+        self.map.insert(name, codec);
+    }
+
+    pub fn get(&self, name: &str) -> Option<&Codec<'fragment, 'variable>> {
+        self.map.get(name)
+    }
+}
 
 pub trait Generator {
     type Error: std::error::Error;
     type Params<'a>;
+
+    fn get_default_codecs<'fragment, 'variable>() -> CodecMap<'fragment, 'variable> {
+        CodecMap::new()
+    }
 
     fn generate(proto: &Protocol, params: &Self::Params<'_>) -> Result<Vec<File>, Self::Error>;
 
