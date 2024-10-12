@@ -232,6 +232,10 @@ impl Display for Field {
 }
 
 impl Field {
+    pub fn codec(&self) -> &str {
+        self.codec.as_deref().unwrap_or("default")
+    }
+
     fn from_model(
         proto: &Protocol,
         unsorted: &[Field],

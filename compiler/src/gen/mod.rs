@@ -53,3 +53,5 @@ pub use rust::RustImportSolver;
 pub use swift::GeneratorSwift;
 #[cfg(feature = "gen-swift")]
 pub use swift::SwiftImportSolver;
+
+//TODO: Support generating enum to string and from string

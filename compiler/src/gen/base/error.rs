@@ -26,14 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod r#enum;
-pub mod map;
-pub mod message;
-mod message_common;
-pub mod message_from_bytes;
-pub mod message_write;
-pub mod structure;
-pub mod union;
-mod error;
+use bp3d_util::simple_error;
 
-pub use error::Error;
+simple_error! {
+    pub Error {
+        CodecNotFound(String) => "codec not found: {}",
+        Codec(crate::gen::template::Error) => "codec error: {}"
+    }
+}

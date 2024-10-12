@@ -32,27 +32,29 @@ use crate::gen::base::map::TypePathMapper;
 use crate::gen::base::message::{Templates, Utilities};
 use crate::gen::base::message_common::generate_field_type_inline;
 use itertools::Itertools;
+use crate::gen::base::Error;
 
 fn gen_field_from_bytes_impl<U: Utilities, T: TypeMapper>(
     field: &Field,
     templates: &Templates,
     type_path_map: &TypePathMapper<T>,
     function: &str,
-) -> String {
+) -> Result<String, Error> {
     let mut scope = templates.template.scope();
     scope.var("name", &field.name);
-    let msg_type = generate_field_type_inline::<U, T>(field, &templates.codec_template, type_path_map);
+    let codec_template = templates.get_from_bytes(field.codec())?;
+    let msg_type = generate_field_type_inline::<U, T>(field, codec_template, type_path_map)?;
     let union = field.ty.as_union();
     if let Some(v) = union {
         scope.var("on_name", &v.on_name);
     }
     scope.var("type", msg_type);
     if union.is_some() {
-        scope.render(function, &["field_union"]).unwrap()
+        Ok(scope.render(function, &["field_union"]).unwrap())
     } else if field.ty.is_message_reference() {
-        scope.render(function, &["field_msg"]).unwrap()
+        Ok(scope.render(function, &["field_msg"]).unwrap())
     } else {
-        scope.render(function, &["field"]).unwrap()
+        Ok(scope.render(function, &["field"]).unwrap())
     }
 }
 
@@ -61,23 +63,23 @@ pub fn generate_from_bytes_impl<U: Utilities, T: TypeMapper>(
     templates: &Templates,
     type_path_map: &TypePathMapper<T>,
     function: &str,
-) -> String {
+) -> Result<String, Error> {
     let fields = msg
         .fields
         .iter()
         .map(|field| gen_field_from_bytes_impl::<U, T>(field, templates, type_path_map, function))
-        .join("");
+        .collect::<Result<Vec<String>, Error>>()?.join("");
     let field_names = msg
         .fields
         .iter()
         .map(|field| templates.template.scope().var("name", &field.name).render(function, &["field_name"]).unwrap())
         .join("");
-    templates.template
+    Ok(templates.template
         .scope()
         .var("fields", fields)
         .var("field_names", field_names)
         .render("", &[function])
-        .unwrap()
+        .unwrap())
 }
 
 pub fn generate<'variable, U: Utilities, T: TypeMapper>(
@@ -85,7 +87,7 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     msg: &'variable Message,
     type_path_map: &TypePathMapper<T>,
     function: &str,
-) -> String {
+) -> Result<String, Error> {
     templates.template.var("msg_name", &msg.name);
     generate_from_bytes_impl::<U, T>(msg, &templates, type_path_map, function)
 }
