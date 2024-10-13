@@ -26,15 +26,58 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod r#enum;
-mod message;
-mod solver;
-mod structure;
-mod union;
-mod util;
-mod core;
-mod params;
+use std::collections::HashSet;
 
-pub use solver::RustImportSolver;
-pub use core::GeneratorRust;
-pub use params::Params;
+#[derive(Default, Debug)]
+pub struct Params<'a> {
+    pub(crate) enable_struct_to_mut: bool,
+    pub(crate) enable_struct_dupe: HashSet<&'a str>,
+    pub(crate) enable_write_async: bool,
+    pub(crate) enable_union_set_discriminant: bool,
+    pub(crate) enable_list_wrappers: bool,
+    pub(crate) enable_message_offsets: bool,
+    pub(crate) disable_read: HashSet<&'a str>,
+    pub(crate) disable_write: HashSet<&'a str>,
+}
+
+impl<'a> Params<'a> {
+    pub fn enable_struct_to_mut(mut self, flag: bool) -> Self {
+        self.enable_struct_to_mut = flag;
+        self
+    }
+
+    pub fn enable_struct_dupe(mut self, name: &'a str) -> Self {
+        self.enable_struct_dupe.insert(name);
+        self
+    }
+
+    pub fn enable_union_set_discriminant(mut self, flag: bool) -> Self {
+        self.enable_union_set_discriminant = flag;
+        self
+    }
+
+    pub fn enable_list_wrappers(mut self, flag: bool) -> Self {
+        self.enable_list_wrappers = flag;
+        self
+    }
+
+    pub fn enable_message_offsets(mut self, flag: bool) -> Self {
+        self.enable_message_offsets = flag;
+        self
+    }
+
+    pub fn enable_write_async(mut self, flag: bool) -> Self {
+        self.enable_write_async = flag;
+        self
+    }
+
+    pub fn disable_read(mut self, name: &'a str) -> Self {
+        self.disable_read.insert(name);
+        self
+    }
+
+    pub fn disable_write(mut self, name: &'a str) -> Self {
+        self.disable_write.insert(name);
+        self
+    }
+}
