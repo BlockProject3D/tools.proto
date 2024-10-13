@@ -31,7 +31,7 @@ use std::borrow::Cow;
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use crate::gen::content::Content;
+use crate::gen::file::Content;
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub enum FileType {

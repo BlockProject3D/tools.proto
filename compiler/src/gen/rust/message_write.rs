@@ -32,7 +32,7 @@ use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::base::message_write::generate;
 use crate::gen::rust::util::{gen_where_clause, RustUtils};
 use crate::gen::template::Template;
-use crate::gen::{CodecMap, RustParams};
+use crate::gen::{codec::CodecMap, RustParams};
 use itertools::Itertools;
 use crate::gen::base::Error;
 use crate::gen::base::message::Templates;

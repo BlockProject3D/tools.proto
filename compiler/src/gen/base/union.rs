@@ -30,7 +30,7 @@ use crate::compiler::message::Referenced;
 use crate::compiler::union::{DiscriminantField, Union};
 use crate::compiler::util::types::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
-use crate::gen::hook::TemplateHooks;
+use crate::gen::template::hook::TemplateHooks;
 use crate::gen::template::Template;
 use itertools::Itertools;
 

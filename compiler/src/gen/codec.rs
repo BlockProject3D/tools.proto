@@ -26,32 +26,47 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::Message;
-use crate::compiler::util::types::TypePathMap;
-use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
-use crate::gen::base::message::{gen_message_array_type_decls, generate, Templates};
-use crate::gen::rust::util::RustUtils;
+use std::collections::HashMap;
 use crate::gen::template::Template;
-use crate::gen::RustParams;
-use crate::gen::base::Error;
-use crate::gen::codec::CodecMap;
 
-const TEMPLATE: &[u8] = include_bytes!("./message.template");
-const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
+pub struct Codec<'fragment, 'variable> {
+    pub decl: Template<'fragment, 'variable>,
+    pub from_bytes: Template<'fragment, 'variable>,
+    pub write: Template<'fragment, 'variable>
+}
 
-pub fn gen_message_decl(msg: &Message, codec_map: &CodecMap, type_path_map: &TypePathMap, params: &RustParams) -> Result<String, Error> {
-    let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
-    let mut templates = Templates {
-        template: Template::compile(TEMPLATE_EXT).unwrap(),
-        codec_map
-    };
-    templates.template.var("msg_name", &msg.name);
-    let mut code = String::new();
-    if params.enable_list_wrappers {
-        code += &gen_message_array_type_decls::<RustUtils, _>(&templates, "wrappers", msg, &type_path_map)?;
+impl<'fragment, 'variable> Codec<'fragment, 'variable> {
+    pub fn from_static_bytes(decl: &'static [u8], from_bytes: &'static [u8], write: &'static [u8]) -> Self {
+        Self {
+            decl: Template::compile(decl).unwrap(),
+            from_bytes: Template::compile(from_bytes).unwrap(),
+            write: Template::compile(write).unwrap()
+        }
     }
-    templates.template = Template::compile(TEMPLATE).unwrap();
-    templates.template.var("generics", RustUtils::get_generics(msg, &type_path_map).to_string_with_defaults());
-    code += &generate::<RustUtils, _>(templates, msg, &type_path_map)?;
-    Ok(code)
+}
+
+pub struct CodecMap<'fragment, 'variable> {
+    map: HashMap<&'fragment str, Codec<'fragment, 'variable>>
+}
+
+impl<'fragment, 'variable> CodecMap<'fragment, 'variable> {
+    pub fn new() -> Self {
+        Self {
+            map: HashMap::new()
+        }
+    }
+
+    pub fn with_default(codec: Codec<'fragment, 'variable>) -> Self {
+        let mut map = Self::new();
+        map.insert("default", codec);
+        map
+    }
+
+    pub fn insert(&mut self, name: &'fragment str, codec: Codec<'fragment, 'variable>) {
+        self.map.insert(name, codec);
+    }
+
+    pub fn get(&self, name: &str) -> Option<&Codec<'fragment, 'variable>> {
+        self.map.get(name)
+    }
 }

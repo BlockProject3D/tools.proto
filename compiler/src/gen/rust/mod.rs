@@ -46,12 +46,12 @@ use crate::gen::rust::message_write::gen_message_write_impl;
 use crate::gen::rust::r#enum::gen_enum_decl;
 use crate::gen::rust::structure::gen_structure_decl;
 use crate::gen::rust::union::gen_union_decl;
-use crate::gen::{file::{File, FileType}, Codec, CodecMap, Generator};
+use crate::gen::{file::{File, FileType}, codec::{Codec, CodecMap}, Generator};
 use bp3d_debug::trace;
 use std::collections::HashSet;
 use std::path::Path;
 use crate::gen::base::Error;
-use crate::gen::content::Content;
+use crate::gen::file::Content;
 //TODO: refactor separate in multiple files
 
 #[derive(Default, Debug)]

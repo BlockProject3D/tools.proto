@@ -29,7 +29,7 @@
 use crate::compiler::structure::{Field, FieldType, FieldView, FixedField, FixedFieldType, Structure};
 use crate::compiler::util::types::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
-use crate::gen::hook::{Render, TemplateHooks};
+use crate::gen::template::hook::{Render, TemplateHooks};
 use crate::gen::template::{Scope, Template};
 use crate::model::protocol::{Description, Endianness};
 use itertools::Itertools;

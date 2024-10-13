@@ -31,9 +31,9 @@
 #[cfg(feature = "gen-base")]
 pub mod base;
 pub mod file;
-pub mod hook;
 mod interface;
 pub mod template;
+pub mod codec;
 
 pub use interface::*;
 
@@ -42,7 +42,6 @@ mod rust;
 
 #[cfg(feature = "gen-swift")]
 mod swift;
-mod content;
 
 #[cfg(feature = "gen-rust")]
 pub use rust::GeneratorRust;

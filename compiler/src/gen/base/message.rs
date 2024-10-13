@@ -33,7 +33,7 @@ use crate::gen::base::map::TypePathMapper;
 use crate::gen::template::Template;
 use crate::model::protocol::Endianness;
 use crate::gen::base::Error;
-use crate::gen::CodecMap;
+use crate::gen::codec::CodecMap;
 
 pub trait Utilities: crate::gen::base::structure::Utilities {
     fn get_value_type(endianness: Endianness, ty: FixedFieldType) -> &'static str;

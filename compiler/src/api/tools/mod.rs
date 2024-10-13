@@ -26,12 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#[cfg(feature = "gen-rust")]
-mod rust;
-
 mod error;
-#[cfg(feature = "gen-swift")]
-mod swift;
 
 use crate::api::config;
 use crate::api::core::generator::{Context, Generator};
@@ -40,6 +35,7 @@ pub use error::Error;
 use serde::Deserialize;
 use std::path::Path;
 use crate::gen::template::loader::TemplateLoader;
+use crate::gen::codec::Codec;
 
 pub trait GenTools {
     type Params<'a>: Deserialize<'a>;
@@ -106,9 +102,13 @@ pub trait GenTools {
     }
 }
 
+#[cfg(feature = "gen-swift")]
+mod swift;
+#[cfg(feature = "gen-rust")]
+mod rust;
+
 #[cfg(feature = "gen-rust")]
 pub use rust::Rust;
 
 #[cfg(feature = "gen-swift")]
 pub use swift::Swift;
-use crate::gen::Codec;

@@ -35,7 +35,7 @@ use bp3d_util::index_map::IndexMap;
 use bp3d_util::path::PathExt;
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
-use crate::gen::{Codec, CodecMap};
+use crate::gen::codec::{Codec, CodecMap};
 
 pub struct Context<'a, I: ImportSolver> {
     items: IndexMap<Item<'a>>,

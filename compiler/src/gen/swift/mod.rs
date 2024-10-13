@@ -33,7 +33,7 @@ use crate::gen::swift::message_write::gen_message_write_impl;
 use crate::gen::swift::r#enum::gen_enum_decl;
 use crate::gen::swift::structure::gen_structure_decl;
 use crate::gen::swift::union::gen_union_decl;
-use crate::gen::{file::{File, FileType}, Codec, CodecMap, Generator};
+use crate::gen::{file::{File, FileType}, codec::{Codec, CodecMap}, Generator};
 
 mod r#enum;
 mod imports;
@@ -49,7 +49,7 @@ use crate::compiler::util::imports::ProtocolStore;
 use crate::gen::swift::imports::gen_imports;
 pub use solver::SwiftImportSolver;
 use crate::gen::base::Error;
-use crate::gen::content::Content;
+use crate::gen::file::Content;
 
 const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("./default_codec/decl.template");
 const TEMPLATE_CODEC_FROM_BYTES: &[u8] = include_bytes!("./default_codec/from_bytes.template");

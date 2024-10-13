@@ -34,7 +34,7 @@ use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::Template;
 use itertools::Itertools;
 use crate::gen::base::Error;
-use crate::gen::CodecMap;
+use crate::gen::codec::CodecMap;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");

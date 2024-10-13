@@ -30,7 +30,7 @@ use crate::compiler::structure::Structure;
 use crate::compiler::util::types::{Name, TypePathMap};
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::base::structure::{generate, Templates};
-use crate::gen::hook::{Fragment, TemplateHooks};
+use crate::gen::template::hook::{Fragment, TemplateHooks};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::{Options, Template};
 use crate::gen::RustParams;
