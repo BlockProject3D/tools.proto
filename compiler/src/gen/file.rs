@@ -27,124 +27,11 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use bp3d_util::path::PathExt;
-use itertools::Itertools;
 use std::borrow::Cow;
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
 use std::path::{Path, PathBuf};
-
-pub struct B<T>(pub T);
-
-pub trait Content {
-    fn to_string(self) -> Option<String>;
-}
-
-impl Content for String {
-    fn to_string(self) -> Option<String> {
-        Some(self)
-    }
-}
-
-impl<'a> Content for &'a str {
-    fn to_string(self) -> Option<String> {
-        Some(self.into())
-    }
-}
-
-trait Content2<I> {
-    fn to_string(self) -> Option<String>;
-}
-
-trait Content3<I> {
-    fn to_string(self) -> Option<String>;
-}
-
-trait Content1<I> {
-    fn to_string(self) -> Option<String>;
-}
-
-impl<'a, H: AsRef<str>, B: Iterator<Item = &'a str>, F: AsRef<String>> Content3<&'a str> for (H, B, F) {
-    fn to_string(mut self) -> Option<String> {
-        let data = self.1.join("\n");
-        if data.is_empty() {
-            None
-        } else {
-            Some(format!("{}{}{}", self.0.as_ref(), data, self.2.as_ref()))
-        }
-    }
-}
-
-impl<H: AsRef<str>, B: Iterator<Item = String>, F: AsRef<String>> Content3<String> for (H, B, F) {
-    fn to_string(mut self) -> Option<String> {
-        let data = self.1.join("\n");
-        if data.is_empty() {
-            None
-        } else {
-            Some(format!("{}{}{}", self.0.as_ref(), data, self.2.as_ref()))
-        }
-    }
-}
-
-impl<'a, H: AsRef<str>, B: Iterator<Item = &'a str>> Content2<&'a str> for (H, B) {
-    fn to_string(mut self) -> Option<String> {
-        let data = self.1.join("\n");
-        if data.is_empty() {
-            None
-        } else {
-            Some(format!("{}{}", self.0.as_ref(), data))
-        }
-    }
-}
-
-impl<H: AsRef<str>, B: Iterator<Item = String>> Content2<String> for (H, B) {
-    fn to_string(mut self) -> Option<String> {
-        let data = self.1.join("\n");
-        if data.is_empty() {
-            None
-        } else {
-            Some(format!("{}{}", self.0.as_ref(), data))
-        }
-    }
-}
-
-impl<'a, B: Iterator<Item = &'a str>> Content1<&'a str> for B {
-    fn to_string(mut self) -> Option<String> {
-        Some(self.join("\n"))
-    }
-}
-
-impl<B: Iterator<Item = String>> Content1<String> for B {
-    fn to_string(mut self) -> Option<String> {
-        Some(self.join("\n"))
-    }
-}
-
-impl<T: Iterator> Content for B<T>
-where
-    T: Content1<T::Item>,
-{
-    fn to_string(self) -> Option<String> {
-        <T as Content1<T::Item>>::to_string(self.0)
-    }
-}
-
-impl<H, B: Iterator, F> Content for (H, B, F)
-where
-    Self: Content3<B::Item>,
-{
-    fn to_string(self) -> Option<String> {
-        <Self as Content3<B::Item>>::to_string(self)
-    }
-}
-
-impl<H, B: Iterator> Content for (H, B)
-where
-    Self: Content2<B::Item>,
-{
-    fn to_string(self) -> Option<String> {
-        <Self as Content2<B::Item>>::to_string(self)
-    }
-}
+use crate::gen::content::Content;
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub enum FileType {
@@ -169,7 +56,7 @@ impl Debug for File {
 }
 
 impl File {
-    pub fn new(ty: FileType, name: impl Into<Cow<'static, str>>, data: impl Content) -> Self {
+    pub fn new(ty: FileType, name: impl Into<Cow<'static, str>>, data: &Content) -> Self {
         Self {
             name: name.into(),
             ty,

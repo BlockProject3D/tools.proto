@@ -33,17 +33,18 @@ use crate::gen::base::message_from_bytes::generate;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::{Options, Template};
 use std::borrow::Cow;
+use crate::gen::base::Error;
 use crate::gen::base::message::Templates;
+use crate::gen::CodecMap;
 
 const TEMPLATE: &[u8] = include_bytes!("message.from_bytes.template");
-const TEMPLATE_CODEC: &[u8] = include_bytes!("default_codec/from_bytes.template");
 
-pub fn gen_message_from_slice_impl(proto: &Protocol, msg: &Message) -> String {
+pub fn gen_message_from_slice_impl(proto: &Protocol, codec_map: &CodecMap, msg: &Message) -> Result<String, Error> {
     let mut options = Options::default();
     options.functions_mut().add("remove_leading_coma", |v| Cow::Borrowed(&v[..v.len() - 2]));
     let mut templates = Templates {
         template: Template::compile_with_options(TEMPLATE, &options).unwrap(),
-        codec_template: Template::compile(TEMPLATE_CODEC).unwrap()
+        codec_map
     };
     templates.template.var("proto_name", proto.name());
     let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));

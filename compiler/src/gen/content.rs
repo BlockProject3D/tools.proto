@@ -26,24 +26,60 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::Message;
-use crate::compiler::Protocol;
-use crate::gen::base::Error;
-use crate::gen::base::map::TypePathMapper;
-use crate::gen::base::message::Templates;
-use crate::gen::base::message_write::generate;
-use crate::gen::CodecMap;
-use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
-use crate::gen::template::Template;
+use std::fmt::Display;
+use itertools::Itertools;
 
-const TEMPLATE: &[u8] = include_bytes!("./message.write.template");
+pub struct Content<'a> {
+    header: Option<&'a str>,
+    body: String,
+    footer: Option<&'a str>
+}
 
-pub fn gen_message_write_impl(proto: &Protocol, codec_map: &CodecMap, msg: &Message) -> Result<String, Error> {
-    let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
-    let mut templates = Templates {
-        template: Template::compile(TEMPLATE).unwrap(),
-        codec_map
-    };
-    templates.template.var("proto_name", proto.name());
-    generate::<SwiftUtils, _>(templates, msg, &type_path_map, "impl")
+impl<'a> Content<'a> {
+    pub fn from_iter<D: Display>(mut iter: impl Iterator<Item = D>) -> Self {
+        Self {
+            header: None,
+            body: iter.join("\n"),
+            footer: None,
+        }
+    }
+
+    pub fn try_from_iter<D: Display, E>(iter: impl Iterator<Item = Result<D, E>>) -> Result<Self, E> {
+        let data = iter.collect::<Result<Vec<D>, E>>()?;
+        Ok(Self {
+            header: None,
+            body: data.iter().join("\n"),
+            footer: None
+        })
+    }
+
+    pub fn from_string(value: String) -> Self {
+        Self {
+            header: None,
+            body: value,
+            footer: None,
+        }
+    }
+
+    pub fn header(&mut self, header: &'a str) -> &mut Self {
+        self.header = Some(header);
+        self
+    }
+
+    pub fn footer(&mut self, footer: &'a str) -> &mut Self {
+        self.footer = Some(footer);
+        self
+    }
+
+    pub fn to_string(&self) -> Option<String> {
+        if self.body.is_empty() {
+            return None;
+        }
+        Some(match (self.header, self.footer) {
+            (Some(header), None) => format!("{header}{}", self.body),
+            (Some(header), Some(footer)) => format!("{header}{}{footer}", self.body),
+            (None, Some(footer)) => format!("{}{footer}", self.body),
+            (None, None) => self.body.to_string()
+        })
+    }
 }

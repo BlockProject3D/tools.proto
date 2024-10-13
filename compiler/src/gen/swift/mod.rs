@@ -34,7 +34,6 @@ use crate::gen::swift::r#enum::gen_enum_decl;
 use crate::gen::swift::structure::gen_structure_decl;
 use crate::gen::swift::union::gen_union_decl;
 use crate::gen::{file::{File, FileType}, Codec, CodecMap, Generator};
-use bp3d_util::simple_error;
 
 mod r#enum;
 mod imports;
@@ -46,16 +45,11 @@ mod structure;
 mod union;
 mod util;
 
-simple_error! {
-    pub Error {
-        Unknown => "unknown"
-    }
-}
-
 use crate::compiler::util::imports::ProtocolStore;
-use crate::gen::file::B;
 use crate::gen::swift::imports::gen_imports;
 pub use solver::SwiftImportSolver;
+use crate::gen::base::Error;
+use crate::gen::content::Content;
 
 const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("./default_codec/decl.template");
 const TEMPLATE_CODEC_FROM_BYTES: &[u8] = include_bytes!("./default_codec/from_bytes.template");
@@ -71,40 +65,40 @@ impl Generator for GeneratorSwift {
         CodecMap::with_default(Codec::from_static_bytes(TEMPLATE_CODEC_DECL, TEMPLATE_CODEC_FROM_BYTES, TEMPLATE_CODEC_WRITE))
     }
 
-    fn generate(proto: &Protocol, params: &ProtocolStore<SwiftImportSolver>) -> Result<Vec<File>, Self::Error> {
+    fn generate(proto: &Protocol, codec_map: &CodecMap, params: &ProtocolStore<SwiftImportSolver>) -> Result<Vec<File>, Self::Error> {
         let imports = gen_imports(params);
         let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(&proto, v));
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(&proto, v));
-        let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(&proto, v));
-        let impl_from_slice_messages_code = proto.messages.iter().map(|v| gen_message_from_slice_impl(&proto, v));
-        let impl_write_messages_code = proto.messages.iter().map(|v| gen_message_write_impl(&proto, v));
+        let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(&proto, codec_map, v));
+        let impl_from_slice_messages_code = proto.messages.iter().map(|v| gen_message_from_slice_impl(&proto, codec_map, v));
+        let impl_write_messages_code = proto.messages.iter().map(|v| gen_message_write_impl(&proto, codec_map, v));
         let decl_unions = proto.unions.iter().map(|v| gen_union_decl(&proto, v));
         Ok(vec![
             File::new(
                 FileType::Structure,
                 format!("{}.structures.swift", proto.name()),
-                (&imports, decl_structures),
+                Content::from_iter(decl_structures).header(&imports),
             ),
-            File::new(FileType::Enum, format!("{}.enums.swift", proto.name()), B(decl_enums)),
+            File::new(FileType::Enum, format!("{}.enums.swift", proto.name()), &Content::from_iter(decl_enums)),
             File::new(
                 FileType::Message,
                 format!("{}.messages.swift", proto.name()),
-                (&imports, decl_messages_code),
+                Content::try_from_iter(decl_messages_code)?.header(&imports),
             ),
             File::new(
                 FileType::MessageWriting,
                 format!("{}.messages_write.swift", proto.name()),
-                (&imports, impl_write_messages_code),
+                Content::try_from_iter(impl_write_messages_code)?.header(&imports),
             ),
             File::new(
                 FileType::MessageReading,
                 format!("{}.messages_from_bytes.swift", proto.name()),
-                (&imports, impl_from_slice_messages_code),
+                Content::try_from_iter(impl_from_slice_messages_code)?.header(&imports),
             ),
             File::new(
                 FileType::Union,
                 format!("{}.unions.swift", proto.name()),
-                (&imports, decl_unions),
+                &Content::from_iter(decl_unions).header(&imports),
             ),
         ])
     }

@@ -44,7 +44,7 @@ pub trait Utilities: crate::gen::base::structure::Utilities {
 
 pub struct Templates<'fragment, 'variable> {
     pub template: Template<'fragment, 'variable>,
-    pub codec_map: CodecMap<'fragment, 'variable>,
+    pub codec_map: &'fragment CodecMap<'fragment, 'variable>,
 }
 
 impl<'fragment, 'variable> Templates<'fragment, 'variable> {

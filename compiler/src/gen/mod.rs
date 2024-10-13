@@ -42,6 +42,7 @@ mod rust;
 
 #[cfg(feature = "gen-swift")]
 mod swift;
+mod content;
 
 #[cfg(feature = "gen-rust")]
 pub use rust::GeneratorRust;

@@ -32,25 +32,25 @@ use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::base::message::{gen_message_array_type_decls, generate, Templates};
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
-use crate::gen::RustParams;
+use crate::gen::{CodecMap, RustParams};
+use crate::gen::base::Error;
 
 const TEMPLATE: &[u8] = include_bytes!("./message.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
-const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("default_codec/decl.template");
 
-pub fn gen_message_decl(msg: &Message, type_path_map: &TypePathMap, params: &RustParams) -> String {
+pub fn gen_message_decl(msg: &Message, codec_map: &CodecMap, type_path_map: &TypePathMap, params: &RustParams) -> Result<String, Error> {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let mut templates = Templates {
         template: Template::compile(TEMPLATE_EXT).unwrap(),
-        codec_template: Template::compile(TEMPLATE_CODEC_DECL).unwrap()
+        codec_map
     };
     templates.template.var("msg_name", &msg.name);
     let mut code = String::new();
     if params.enable_list_wrappers {
-        code += &gen_message_array_type_decls::<RustUtils, _>(&templates, "wrappers", msg, &type_path_map);
+        code += &gen_message_array_type_decls::<RustUtils, _>(&templates, "wrappers", msg, &type_path_map)?;
     }
     templates.template = Template::compile(TEMPLATE).unwrap();
     templates.template.var("generics", RustUtils::get_generics(msg, &type_path_map).to_string_with_defaults());
-    code += &generate::<RustUtils, _>(templates, msg, &type_path_map);
-    code
+    code += &generate::<RustUtils, _>(templates, msg, &type_path_map)?;
+    Ok(code)
 }

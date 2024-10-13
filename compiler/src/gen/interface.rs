@@ -85,7 +85,7 @@ pub trait Generator {
         CodecMap::new()
     }
 
-    fn generate(proto: &Protocol, params: &Self::Params<'_>) -> Result<Vec<File>, Self::Error>;
+    fn generate(proto: &Protocol, codec_map: &CodecMap, params: &Self::Params<'_>) -> Result<Vec<File>, Self::Error>;
 
     fn generate_umbrella<'a>(
         _: &str,

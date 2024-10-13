@@ -33,16 +33,17 @@ use crate::gen::base::message_from_bytes::generate;
 use crate::gen::rust::util::{gen_where_clause, RustUtils};
 use crate::gen::template::Template;
 use itertools::Itertools;
+use crate::gen::base::Error;
 use crate::gen::base::message::Templates;
+use crate::gen::CodecMap;
 
 const TEMPLATE: &[u8] = include_bytes!("message.from_bytes.template");
-pub const TEMPLATE_CODEC: &[u8] = include_bytes!("default_codec/from_bytes.template");
 
-pub fn gen_message_from_slice_impl(msg: &Message, type_path_map: &TypePathMap) -> String {
+pub fn gen_message_from_slice_impl(msg: &Message, codec_map: &CodecMap, type_path_map: &TypePathMap) -> Result<String, Error> {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let mut templates = Templates {
         template: Template::compile(TEMPLATE).unwrap(),
-        codec_template: Template::compile(TEMPLATE_CODEC).unwrap()
+        codec_map
     };
     let where_clauses =
         msg.fields.iter().map(|field| gen_where_clause(&templates.template, field, &type_path_map, "impl")).join("");

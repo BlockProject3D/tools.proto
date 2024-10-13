@@ -168,7 +168,7 @@ impl<'a, G: crate::gen::Generator> Generator<'a, G> {
             .map_err(Error::Io)?
             .map(|v| G::generate_file_header(v.lines()));
         let name = protocol.name();
-        let files = G::generate(protocol, &generator_params).map_err(|e| Error::Generator(e.to_string()))?;
+        let files = G::generate(protocol, &self.codec_map, &generator_params).map_err(|e| Error::Generator(e.to_string()))?;
         let out_path = self.out_directory.join(&name);
         if !out_path.exists() {
             std::fs::create_dir(&out_path).map_err(Error::Io)?;

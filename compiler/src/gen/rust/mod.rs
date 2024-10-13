@@ -39,7 +39,6 @@ mod util;
 pub use solver::RustImportSolver;
 
 use crate::compiler::Protocol;
-use crate::gen::file::B;
 use crate::gen::rust::message::gen_message_decl;
 use crate::gen::rust::message_from_bytes::gen_message_from_slice_impl;
 use crate::gen::rust::message_offsets::gen_message_offsets_decl;
@@ -49,17 +48,11 @@ use crate::gen::rust::structure::gen_structure_decl;
 use crate::gen::rust::union::gen_union_decl;
 use crate::gen::{file::{File, FileType}, Codec, CodecMap, Generator};
 use bp3d_debug::trace;
-use bp3d_util::simple_error;
 use std::collections::HashSet;
 use std::path::Path;
-
+use crate::gen::base::Error;
+use crate::gen::content::Content;
 //TODO: refactor separate in multiple files
-
-simple_error! {
-    pub Error {
-        Unknown => "unknown"
-    }
-}
 
 #[derive(Default, Debug)]
 pub struct Params<'a> {
@@ -129,39 +122,39 @@ impl Generator for GeneratorRust {
         CodecMap::with_default(Codec::from_static_bytes(TEMPLATE_CODEC_DECL, TEMPLATE_CODEC_FROM_BYTES, TEMPLATE_CODEC_WRITE))
     }
 
-    fn generate(proto: &Protocol, params: &Params) -> Result<Vec<File>, Self::Error> {
+    fn generate(proto: &Protocol, codec_map: &CodecMap, params: &Params) -> Result<Vec<File>, Self::Error> {
         trace!({?params}, "Generating protocol {}", proto.full_name);
-        let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(v, &proto.type_path_map, params));
+        let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(v, codec_map, &proto.type_path_map, params));
         let impl_from_slice_messages_code =
-            proto.messages.iter().map(|v| gen_message_from_slice_impl(v, &proto.type_path_map));
+            proto.messages.iter().map(|v| gen_message_from_slice_impl(v, codec_map, &proto.type_path_map));
         let impl_write_messages_code =
-            proto.messages.iter().map(|v| gen_message_write_impl(v, &proto.type_path_map, params));
+            proto.messages.iter().map(|v| gen_message_write_impl(v, codec_map, &proto.type_path_map, params));
         let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(v, &proto.type_path_map, params));
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(v));
         let decl_unions = proto.unions.iter().map(|v| gen_union_decl(v, &proto.type_path_map, params));
         let mut files = vec![
-            File::new(FileType::Message, "messages.rs", B(decl_messages_code)),
+            File::new(FileType::Message, "messages.rs", &Content::try_from_iter(decl_messages_code)?),
             File::new(
                 FileType::MessageReading,
                 "messages_from_bytes.rs",
-                B(impl_from_slice_messages_code),
+                &Content::try_from_iter(impl_from_slice_messages_code)?,
             ),
             File::new(
                 FileType::MessageWriting,
                 "messages_write.rs",
-                B(impl_write_messages_code),
+                &Content::try_from_iter(impl_write_messages_code)?,
             ),
-            File::new(FileType::Structure, "structures.rs", B(decl_structures)),
-            File::new(FileType::Enum, "enums.rs", B(decl_enums)),
-            File::new(FileType::Union, "unions.rs", B(decl_unions)),
+            File::new(FileType::Structure, "structures.rs", &Content::from_iter(decl_structures)),
+            File::new(FileType::Enum, "enums.rs", &Content::from_iter(decl_enums)),
+            File::new(FileType::Union, "unions.rs", &Content::from_iter(decl_unions)),
         ];
         if params.enable_message_offsets {
             let decl_messages_code_offsets =
-                proto.messages.iter().map(|v| gen_message_offsets_decl(v, &proto.type_path_map));
+                proto.messages.iter().map(|v| gen_message_offsets_decl(v, codec_map, &proto.type_path_map));
             files.push(File::new(
                 FileType::MessageReading,
                 "messages_offsets.rs",
-                B(decl_messages_code_offsets)
+                &Content::try_from_iter(decl_messages_code_offsets)?
             ));
         }
         Ok(files)
