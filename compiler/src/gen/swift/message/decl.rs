@@ -29,24 +29,46 @@
 use crate::compiler::message::Message;
 use crate::compiler::Protocol;
 use crate::gen::base::map::TypePathMapper;
-use crate::gen::base::message_from_bytes::generate;
+use crate::gen::base::message::{gen_msg_field_decl, generate, Templates};
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
-use crate::gen::template::{Options, Template};
-use std::borrow::Cow;
+use crate::gen::template::Template;
+use itertools::Itertools;
 use crate::gen::base::Error;
-use crate::gen::base::message::Templates;
 use crate::gen::codec::CodecMap;
 
-const TEMPLATE: &[u8] = include_bytes!("message.from_bytes.template");
+const TEMPLATE: &[u8] = include_bytes!("decl.template");
+const TEMPLATE_EXT: &[u8] = include_bytes!("ext.template");
 
-pub fn gen_message_from_slice_impl(proto: &Protocol, codec_map: &CodecMap, msg: &Message) -> Result<String, Error> {
-    let mut options = Options::default();
-    options.functions_mut().add("remove_leading_coma", |v| Cow::Borrowed(&v[..v.len() - 2]));
+fn gen_initializer(templates: &Templates, msg: &Message, type_path_map: &TypePathMapper<SwiftTypeMapper>) -> Result<String, Error> {
+    let init_field_list = msg
+        .fields
+        .iter()
+        .map(|field| gen_msg_field_decl::<SwiftUtils, _>(field, templates, type_path_map))
+        .collect::<Result<Vec<String>, Error>>()?.into_iter()
+        .map(|v| v[..v.len() - 1].to_string())
+        .join(", ");
+    let initializers = msg
+        .fields
+        .iter()
+        .map(|field| templates.template.scope().var("name", &field.name).render("decl", &["initializer"]).unwrap())
+        .join("");
+    Ok(templates.template
+        .scope()
+        .var("init_field_list", init_field_list)
+        .var("initializers", initializers)
+        .render("", &["decl"])
+        .unwrap())
+}
+
+pub fn gen_message_decl(proto: &Protocol, codec_map: &CodecMap, msg: &Message) -> Result<String, Error> {
+    let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
     let mut templates = Templates {
-        template: Template::compile_with_options(TEMPLATE, &options).unwrap(),
+        template: Template::compile(TEMPLATE_EXT).unwrap(),
         codec_map
     };
-    templates.template.var("proto_name", proto.name());
-    let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
-    generate::<SwiftUtils, _>(templates, msg, &type_path_map, "impl")
+    templates.template.var("proto_name", proto.name()).var("msg_name", &msg.name);
+    let initializer = gen_initializer(&templates, msg, &type_path_map)?;
+    templates.template = Template::compile(TEMPLATE).unwrap();
+    templates.template.var("proto_name", proto.name()).var("initializer", initializer);
+    generate::<SwiftUtils, _>(templates, msg, &type_path_map)
 }

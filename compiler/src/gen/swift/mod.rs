@@ -28,18 +28,16 @@
 
 use crate::compiler::Protocol;
 use crate::gen::swift::message::gen_message_decl;
-use crate::gen::swift::message_from_bytes::gen_message_from_slice_impl;
-use crate::gen::swift::message_write::gen_message_write_impl;
+use message::gen_message_from_slice_impl;
+use message::gen_message_write_impl;
 use crate::gen::swift::r#enum::gen_enum_decl;
 use crate::gen::swift::structure::gen_structure_decl;
 use crate::gen::swift::union::gen_union_decl;
-use crate::gen::{file::{File, FileType}, codec::{Codec, CodecMap}, Generator};
+use crate::gen::{codec::{Codec, CodecMap}, file::{File, FileType}, Generator};
 
 mod r#enum;
 mod imports;
 mod message;
-mod message_from_bytes;
-mod message_write;
 mod solver;
 mod structure;
 mod union;

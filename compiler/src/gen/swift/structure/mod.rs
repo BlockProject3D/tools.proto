@@ -26,49 +26,26 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::message::Message;
+use crate::compiler::structure::Structure;
 use crate::compiler::Protocol;
 use crate::gen::base::map::TypePathMapper;
-use crate::gen::base::message::{gen_msg_field_decl, generate, Templates};
+use crate::gen::base::structure::{generate, Templates};
+use crate::gen::template::hook::TemplateHooks;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::Template;
-use itertools::Itertools;
-use crate::gen::base::Error;
-use crate::gen::codec::CodecMap;
 
-const TEMPLATE: &[u8] = include_bytes!("./message.template");
-const TEMPLATE_EXT: &[u8] = include_bytes!("./message.ext.template");
+const STRUCT_TEMPLATE: &[u8] = include_bytes!("core.template");
+const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("field.template");
 
-fn gen_initializer(templates: &Templates, msg: &Message, type_path_map: &TypePathMapper<SwiftTypeMapper>) -> Result<String, Error> {
-    let init_field_list = msg
-        .fields
-        .iter()
-        .map(|field| gen_msg_field_decl::<SwiftUtils, _>(field, templates, type_path_map))
-        .collect::<Result<Vec<String>, Error>>()?.into_iter()
-        .map(|v| v[..v.len() - 1].to_string())
-        .join(", ");
-    let initializers = msg
-        .fields
-        .iter()
-        .map(|field| templates.template.scope().var("name", &field.name).render("decl", &["initializer"]).unwrap())
-        .join("");
-    Ok(templates.template
-        .scope()
-        .var("init_field_list", init_field_list)
-        .var("initializers", initializers)
-        .render("", &["decl"])
-        .unwrap())
-}
-
-pub fn gen_message_decl(proto: &Protocol, codec_map: &CodecMap, msg: &Message) -> Result<String, Error> {
+pub fn gen_structure_decl(proto: &Protocol, s: &Structure) -> String {
     let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
-    let mut templates = Templates {
-        template: Template::compile(TEMPLATE_EXT).unwrap(),
-        codec_map
+    let mut template = Template::compile(STRUCT_TEMPLATE).unwrap();
+    let mut field_template = Template::compile(STRUCT_FIELD_TEMPLATE).unwrap();
+    template.var("proto_name", proto.name());
+    field_template.var("proto_name", proto.name());
+    let templates = Templates {
+        template,
+        field_template,
     };
-    templates.template.var("proto_name", proto.name()).var("msg_name", &msg.name);
-    let initializer = gen_initializer(&templates, msg, &type_path_map)?;
-    templates.template = Template::compile(TEMPLATE).unwrap();
-    templates.template.var("proto_name", proto.name()).var("initializer", initializer);
-    generate::<SwiftUtils, _>(templates, msg, &type_path_map)
+    generate::<SwiftUtils, _>(templates, s, &type_path_map, &TemplateHooks::default())
 }

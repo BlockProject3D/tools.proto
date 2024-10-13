@@ -26,26 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::structure::Structure;
-use crate::compiler::Protocol;
-use crate::gen::base::map::TypePathMapper;
-use crate::gen::base::structure::{generate, Templates};
-use crate::gen::template::hook::TemplateHooks;
-use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
-use crate::gen::template::Template;
+mod decl;
+mod from_bytes;
+mod write;
 
-const STRUCT_TEMPLATE: &[u8] = include_bytes!("./structure.template");
-const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("./structure.field.template");
-
-pub fn gen_structure_decl(proto: &Protocol, s: &Structure) -> String {
-    let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
-    let mut template = Template::compile(STRUCT_TEMPLATE).unwrap();
-    let mut field_template = Template::compile(STRUCT_FIELD_TEMPLATE).unwrap();
-    template.var("proto_name", proto.name());
-    field_template.var("proto_name", proto.name());
-    let templates = Templates {
-        template,
-        field_template,
-    };
-    generate::<SwiftUtils, _>(templates, s, &type_path_map, &TemplateHooks::default())
-}
+pub use decl::gen_message_decl;
+pub use from_bytes::gen_message_from_slice_impl;
+pub use write::gen_message_write_impl;

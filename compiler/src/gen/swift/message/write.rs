@@ -36,7 +36,7 @@ use crate::gen::codec::CodecMap;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
 use crate::gen::template::Template;
 
-const TEMPLATE: &[u8] = include_bytes!("./message.write.template");
+const TEMPLATE: &[u8] = include_bytes!("write.template");
 
 pub fn gen_message_write_impl(proto: &Protocol, codec_map: &CodecMap, msg: &Message) -> Result<String, Error> {
     let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
