@@ -35,8 +35,8 @@ use crate::gen::rust::util::RustUtils;
 use crate::gen::template::{Options, Template};
 use crate::gen::RustParams;
 
-const STRUCT_TEMPLATE: &[u8] = include_bytes!("./structure.template");
-const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("./structure.field.template");
+const STRUCT_TEMPLATE: &[u8] = include_bytes!("core.template");
+const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("field.template");
 
 pub fn gen_structure_decl(s: &Structure, type_path_map: &TypePathMap, params: &RustParams) -> String {
     let mut options = Options::default();

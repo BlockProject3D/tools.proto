@@ -28,9 +28,6 @@
 
 mod r#enum;
 mod message;
-mod message_from_bytes;
-mod message_offsets;
-mod message_write;
 mod solver;
 pub mod structure;
 mod union;
@@ -39,14 +36,14 @@ mod util;
 pub use solver::RustImportSolver;
 
 use crate::compiler::Protocol;
-use crate::gen::rust::message::gen_message_decl;
-use crate::gen::rust::message_from_bytes::gen_message_from_slice_impl;
-use crate::gen::rust::message_offsets::gen_message_offsets_decl;
-use crate::gen::rust::message_write::gen_message_write_impl;
+use message::gen_message_from_slice_impl;
+use message::gen_message_offsets_decl;
+use message::gen_message_write_impl;
+use message::gen_message_decl;
 use crate::gen::rust::r#enum::gen_enum_decl;
 use crate::gen::rust::structure::gen_structure_decl;
 use crate::gen::rust::union::gen_union_decl;
-use crate::gen::{file::{File, FileType}, codec::{Codec, CodecMap}, Generator};
+use crate::gen::{codec::{Codec, CodecMap}, file::{File, FileType}, Generator};
 use bp3d_debug::trace;
 use std::collections::HashSet;
 use std::path::Path;
