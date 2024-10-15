@@ -1,5 +1,5 @@
 #fragment push decl
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub enum {union_name}{generics} {{
 {cases}
 #fragment push struct

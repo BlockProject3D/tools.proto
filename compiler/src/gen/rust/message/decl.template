@@ -2,7 +2,7 @@
 /// Message declaration for {msg_name}.
 ///
 /// {msg_description}
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct {msg_name}{generics} {{
 {fields}
 #fragment push field
