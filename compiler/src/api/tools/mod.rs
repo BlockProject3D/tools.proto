@@ -59,6 +59,7 @@ pub trait GenTools {
         let protocols = config::core::compile(config, &motherfuckingrust)?;
         let mut generator = Generator::new(out_dir.as_ref(), Self::new_generator());
         let mut loader = TemplateLoader::new();
+        loader.add_search_path(Path::new("."));
         for v in protocols.iter().map(|v| v.iter_codecs()).flatten() {
             let base = String::from(v);
             loader.load(base.clone() + "/decl").map_err(Error::TemplateLoader)?;
