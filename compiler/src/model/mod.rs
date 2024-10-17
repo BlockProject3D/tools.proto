@@ -31,8 +31,6 @@
 //TODO: Support for static sized unions in structures
 //TODO: Support for offset in bits in structure fields
 //TODO: Support for offset relative to another field in the same structure in bits
-//TODO: Support for padding in structure fields
-//TODO: Re-allign model to use a single naming convention
 //TODO: Support loading a message referencing a union in the same protocol
 
 pub mod message;

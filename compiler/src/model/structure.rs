@@ -30,7 +30,7 @@ use crate::model::protocol::Description;
 use serde::Deserialize;
 
 #[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
 pub enum StructFieldView {
     Enum { name: String },
@@ -39,7 +39,7 @@ pub enum StructFieldView {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
 pub enum StructFieldRaw {
     Signed { bits: usize },

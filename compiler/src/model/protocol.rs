@@ -43,7 +43,7 @@ pub enum Description {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "snake_case")]
 pub enum Endianness {
     Little,
     Big,

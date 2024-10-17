@@ -11,7 +11,7 @@
                         bits: 17
                     },
                     view: {
-                        type: "float-range",
+                        type: "float_range",
                         min: 0,
                         max: 10
                     }
@@ -23,7 +23,7 @@
                         bits: 7
                     },
                     view: {
-                        type: "float-multiplier",
+                        type: "float_multiplier",
                         multiplier: 0.1
                     }
                 }
