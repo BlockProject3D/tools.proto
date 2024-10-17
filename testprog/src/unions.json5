@@ -42,13 +42,13 @@
                 { name: "header", item_type: "Header" },
                 {
                     name: "name",
-                    info: {
+                    value: {
                         type: "string"
                     }
                 },
                 {
                     name: "value",
-                    info: {
+                    value: {
                         type: "union",
                         on: "header",
                         item_type: "Value"

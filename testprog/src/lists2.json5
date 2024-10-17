@@ -31,7 +31,7 @@
                 { name: "times", item_type: "Times" },
                 {
                     name: "vars",
-                    info: {
+                    value: {
                         type: "list",
                         max_len: 255,
                         max_size: 512,
@@ -45,7 +45,7 @@
             fields: [
                 {
                     name: "runs",
-                    info: {
+                    value: {
                         type: "list",
                         max_len: 999999,
                         item_type: "SpanRun"

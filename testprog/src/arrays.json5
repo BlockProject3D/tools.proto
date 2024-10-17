@@ -34,7 +34,7 @@
             fields: [
                 {
                     name: "items",
-                    info: {
+                    value: {
                         type: "list",
                         max_len: 255,
                         item_type: "Item"
@@ -47,7 +47,7 @@
             fields: [
                 {
                     name: "items",
-                    info: {
+                    value: {
                         type: "list",
                         max_len: 255,
                         item_type: "Item"

@@ -32,7 +32,7 @@ use crate::compiler::union::Union;
 use crate::compiler::util::store::name_index;
 use crate::compiler::util::types::{Name, PtrKey};
 use crate::compiler::Protocol;
-use crate::model::message::MessageFieldType;
+use crate::model::message::MessageFieldValue;
 use crate::model::protocol::{Description, Endianness};
 use crate::model::structure::StructFieldType;
 use std::cell::Cell;
@@ -241,12 +241,12 @@ impl Field {
         unsorted: &[Field],
         value: crate::model::message::MessageField,
     ) -> Result<Self, Error> {
-        if (value.info.is_none() && value.item_type.is_none()) || (value.info.is_some() && value.item_type.is_some()) {
+        if (value.value.is_none() && value.item_type.is_none()) || (value.value.is_some() && value.item_type.is_some()) {
             return Err(Error::BadFieldType)
         }
-        if let Some(info) = value.info {
+        if let Some(info) = value.value {
             match info {
-                MessageFieldType::List {
+                MessageFieldValue::List {
                     max_len,
                     item_type,
                     max_size,
@@ -306,7 +306,7 @@ impl Field {
                         }
                     }
                 }
-                MessageFieldType::String { max_len } => match max_len {
+                MessageFieldValue::String { max_len } => match max_len {
                     None => Ok(Field {
                         name: value.name,
                         description: value.description,
@@ -338,7 +338,7 @@ impl Field {
                         })
                     }
                 },
-                MessageFieldType::Union { on, item_type } => {
+                MessageFieldValue::Union { on, item_type } => {
                     let (on_index, on_field) = unsorted
                         .iter()
                         .enumerate()
@@ -371,7 +371,7 @@ impl Field {
                         codec: value.codec
                     })
                 }
-                MessageFieldType::Payload => Ok(Field {
+                MessageFieldValue::Payload => Ok(Field {
                     name: value.name,
                     description: value.description,
                     ty: FieldType::Payload,
@@ -383,7 +383,7 @@ impl Field {
                     endianness: proto.endianness,
                     codec: value.codec
                 }),
-                MessageFieldType::Unsigned { bits } => {
+                MessageFieldValue::Unsigned { bits } => {
                     let ty = FixedFieldType::from_model(StructFieldType::Unsigned { bits })?;
                     Ok(Field {
                         name: value.name,

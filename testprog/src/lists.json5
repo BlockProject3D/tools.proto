@@ -6,7 +6,7 @@
     types: [
         {
             name: "VarList",
-            info: {
+            value: {
                 type: "list",
                 max_len: 255,
                 item_type: "Item",
@@ -15,7 +15,7 @@
         },
         {
             name: "RunList",
-            info: {
+            value: {
                 type: "list",
                 max_len: 999999,
                 item_type: "SpanRun"

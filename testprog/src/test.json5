@@ -6,13 +6,13 @@
             fields: [
                 {
                     name: "s1",
-                    info: {
+                    value: {
                         type: "string"
                     }
                 },
                 {
                     name: "p1",
-                    info: {
+                    value: {
                         type: "unsigned",
                         bits: 32
                     }
@@ -24,13 +24,13 @@
             fields: [
                 {
                     name: "s1",
-                    info: {
+                    value: {
                         type: "string"
                     }
                 },
                 {
                     name: "s2",
-                    info: {
+                    value: {
                         type: "string",
                         max_len: 32
                     },
