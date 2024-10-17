@@ -6,7 +6,7 @@
             fields: [
                 {
                     name: "p1",
-                    info: {
+                    raw: {
                         type: "unsigned",
                         bits: 32
                     }
@@ -14,7 +14,7 @@
                 {
                     // Block of 32 characters (should be accessible as a &[u8] from rust).
                     name: "p2",
-                    info: {
+                    raw: {
                         type: "unsigned",
                         bits: 8
                     },
@@ -22,7 +22,7 @@
                 },
                 {
                     name: "p3",
-                    info: {
+                    raw: {
                         type: "float",
                         bits: 32
                     },
@@ -30,7 +30,7 @@
                 },
                 {
                     name: "p4",
-                    info: {
+                    raw: {
                         type: "unsigned",
                         bits: 24
                     },

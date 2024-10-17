@@ -38,7 +38,7 @@ const UNSUPPORTED_VIEW_TYPE_FLOAT_INT_1: &str = "
         {
             name: \"Test\",
             fields: [
-                { name: \"v\", info: { type: \"unsigned\", bits: 32 }, view: { type: \"float-multiplier\", multiplier: 0.1 } }
+                { name: \"v\", raw: { type: \"unsigned\", bits: 32 }, view: { type: \"float-multiplier\", multiplier: 0.1 } }
             ]
         }
     ]
@@ -52,7 +52,7 @@ const UNSUPPORTED_VIEW_TYPE_FLOAT_INT_2: &str = "
         {
             name: \"Test\",
             fields: [
-                { name: \"v\", info: { type: \"signed\", bits: 32 }, view: { type: \"float-range\", min: 0.1, max: 10.0 } }
+                { name: \"v\", raw: { type: \"signed\", bits: 32 }, view: { type: \"float-range\", min: 0.1, max: 10.0 } }
             ]
         }
     ]
@@ -66,7 +66,7 @@ const UNSUPPORTED_VIEW_TYPE_FLOAT_ENUM: &str = "
         {
             name: \"Test\",
             fields: [
-                { name: \"v\", info: { type: \"float\", bits: 32 }, view: { type: \"enum\", name: \"Test\" } }
+                { name: \"v\", raw: { type: \"float\", bits: 32 }, view: { type: \"enum\", name: \"Test\" } }
             ]
         }
     ]
@@ -80,7 +80,7 @@ const UNSUPPORTED_VIEW_TYPE_FLOAT_NONE: &str = "
         {
             name: \"Test\",
             fields: [
-                { name: \"v\", info: { type: \"float\", bits: 24 } }
+                { name: \"v\", raw: { type: \"float\", bits: 24 } }
             ]
         }
     ]

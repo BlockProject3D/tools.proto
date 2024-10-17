@@ -6,7 +6,7 @@
             fields: [
                 {
                     name: "a",
-                    info: {
+                    raw: {
                         type: "float",
                         bits: 17
                     },
@@ -18,7 +18,7 @@
                 },
                 {
                     name: "b",
-                    info: {
+                    raw: {
                         type: "float",
                         bits: 7
                     },

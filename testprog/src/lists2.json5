@@ -9,14 +9,14 @@
             fields: [
                 {
                     name: "start",
-                    info: {
+                    raw: {
                         type: "unsigned",
                         bits: 64
                     }
                 },
                 {
                     name: "end",
-                    info: {
+                    raw: {
                         type: "unsigned",
                         bits: 64
                     }

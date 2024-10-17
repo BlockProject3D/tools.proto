@@ -25,7 +25,7 @@
             fields: [
                 {
                     name: "test",
-                    info: {
+                    raw: {
                         type: "unsigned",
                         bits: 1
                     },
@@ -36,7 +36,7 @@
                 },
                 {
                     name: "test2",
-                    info: {
+                    raw: {
                         type: "signed",
                         bits: 7
                     }

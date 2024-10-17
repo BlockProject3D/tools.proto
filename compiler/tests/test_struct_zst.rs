@@ -49,7 +49,7 @@ const ZST2: &str = "
         {
             name: \"Test\",
             fields: [
-                { name: \"v\", info: { type: \"unsigned\", bits: 0 } }
+                { name: \"v\", raw: { type: \"unsigned\", bits: 0 } }
             ]
         }
     ]
@@ -63,7 +63,7 @@ const ZST3: &str = "
         {
             name: \"Test\",
             fields: [
-                { name: \"v\", info: { type: \"unsigned\", bits: 8 }, array_len: 0 }
+                { name: \"v\", raw: { type: \"unsigned\", bits: 8 }, array_len: 0 }
             ]
         }
     ]

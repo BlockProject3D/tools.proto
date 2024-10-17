@@ -37,7 +37,7 @@ const UNALIGNED_ARRAY: &str = "
         {
             name: \"Test\",
             fields: [
-                { name: \"v\", info: { type: \"unsigned\", bits: 2 }, array_len: 4 }
+                { name: \"v\", raw: { type: \"unsigned\", bits: 2 }, array_len: 4 }
             ]
         }
     ]

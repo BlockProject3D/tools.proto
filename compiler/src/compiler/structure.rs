@@ -33,7 +33,7 @@ use crate::compiler::util::try2;
 use crate::compiler::util::types::Name;
 use crate::compiler::Protocol;
 use crate::model::protocol::{Description, Endianness};
-use crate::model::structure::{SimpleType, StructFieldType, StructFieldView};
+use crate::model::structure::{SimpleType, StructFieldRaw, StructFieldView};
 use bp3d_debug::trace;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
@@ -112,10 +112,10 @@ impl FixedFieldType {
         } else {
             8
         };
-        Self::from_model(StructFieldType::Unsigned { bits: bit_size })
+        Self::from_model(StructFieldRaw::Unsigned { bits: bit_size })
     }
 
-    pub fn from_model(ty1: StructFieldType) -> Result<Self, Error> {
+    pub fn from_model(ty1: StructFieldRaw) -> Result<Self, Error> {
         let motherfuckingrust = ty1.clone();
         let ty = ty1.get_simple_type();
         let bit_size = ty1.get_bit_size();
@@ -176,7 +176,7 @@ impl Location {
     }
 
     pub fn get_unsigned_integer_type(&self) -> FixedFieldType {
-        FixedFieldType::from_model(StructFieldType::Unsigned { bits: self.bit_size }).unwrap()
+        FixedFieldType::from_model(StructFieldRaw::Unsigned { bits: self.bit_size }).unwrap()
     }
 }
 
@@ -329,10 +329,10 @@ impl Field {
         last_bit_offset: usize,
         value: crate::model::structure::StructField,
     ) -> Result<(Self, usize), Error> {
-        if (value.info.is_none() && value.item_type.is_none()) || (value.info.is_some() && value.item_type.is_some()) {
+        if (value.raw.is_none() && value.item_type.is_none()) || (value.raw.is_some() && value.item_type.is_some()) {
             return Err(Error::BadFieldType)
         }
-        if let Some(info) = value.info {
+        if let Some(info) = value.raw {
             let array_len = value.array_len.unwrap_or(1);
             if array_len == 0 {
                 return Err(Error::ZeroArray);

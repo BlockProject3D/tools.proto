@@ -41,7 +41,7 @@ pub enum StructFieldView {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 #[serde(tag = "type")]
-pub enum StructFieldType {
+pub enum StructFieldRaw {
     Signed { bits: usize },
     Unsigned { bits: usize },
     Float { bits: usize },
@@ -57,22 +57,22 @@ pub enum SimpleType {
     Struct,
 }
 
-impl StructFieldType {
+impl StructFieldRaw {
     pub fn get_simple_type(&self) -> SimpleType {
         match self {
-            StructFieldType::Signed { .. } => SimpleType::Signed,
-            StructFieldType::Unsigned { .. } => SimpleType::Unsigned,
-            StructFieldType::Float { .. } => SimpleType::Float,
-            StructFieldType::Boolean { .. } => SimpleType::Boolean
+            StructFieldRaw::Signed { .. } => SimpleType::Signed,
+            StructFieldRaw::Unsigned { .. } => SimpleType::Unsigned,
+            StructFieldRaw::Float { .. } => SimpleType::Float,
+            StructFieldRaw::Boolean { .. } => SimpleType::Boolean
         }
     }
 
     pub fn get_bit_size(&self) -> usize {
         match self {
-            StructFieldType::Signed { bits } => *bits,
-            StructFieldType::Unsigned { bits } => *bits,
-            StructFieldType::Float { bits } => *bits,
-            StructFieldType::Boolean { bits } => *bits
+            StructFieldRaw::Signed { bits } => *bits,
+            StructFieldRaw::Unsigned { bits } => *bits,
+            StructFieldRaw::Float { bits } => *bits,
+            StructFieldRaw::Boolean { bits } => *bits
         }
     }
 }
@@ -81,7 +81,7 @@ impl StructFieldType {
 pub struct StructField {
     pub name: String,
     pub description: Option<Description>,
-    pub info: Option<StructFieldType>,
+    pub raw: Option<StructFieldRaw>,
     pub view: Option<StructFieldView>,
     pub array_len: Option<usize>,
     pub item_type: Option<String>

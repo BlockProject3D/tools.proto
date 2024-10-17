@@ -6,21 +6,21 @@
             fields: [
                 {
                     name: "id",
-                    info: {
+                    raw: {
                         type: "unsigned",
                         bits: 8
                     }
                 },
                 {
                     name: "count",
-                    info: {
+                    raw: {
                         type: "unsigned",
                         bits: 11
                     }
                 },
                 {
                     name: "slot",
-                    info: {
+                    raw: {
                         type: "unsigned",
                         bits: 5
                     }

@@ -34,7 +34,7 @@ use crate::compiler::util::types::{Name, PtrKey};
 use crate::compiler::Protocol;
 use crate::model::message::MessageFieldValue;
 use crate::model::protocol::{Description, Endianness};
-use crate::model::structure::StructFieldType;
+use crate::model::structure::StructFieldRaw;
 use std::cell::Cell;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
@@ -384,7 +384,7 @@ impl Field {
                     codec: value.codec
                 }),
                 MessageFieldValue::Unsigned { bits } => {
-                    let ty = FixedFieldType::from_model(StructFieldType::Unsigned { bits })?;
+                    let ty = FixedFieldType::from_model(StructFieldRaw::Unsigned { bits })?;
                     Ok(Field {
                         name: value.name,
                         description: value.description,

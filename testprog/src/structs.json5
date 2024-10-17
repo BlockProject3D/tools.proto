@@ -6,42 +6,42 @@
             fields: [
                 {
                     name: "u_a",
-                    info: {
+                    raw: {
                         type: "unsigned",
                         bits: 32
                     }
                 },
                 {
                     name: "a",
-                    info: {
+                    raw: {
                         type: "signed",
                         bits: 32
                     }
                 },
                 {
                     name: "u_b",
-                    info: {
+                    raw: {
                         type: "unsigned",
                         bits: 16
                     }
                 },
                 {
                     name: "b",
-                    info: {
+                    raw: {
                         type: "signed",
                         bits: 16
                     }
                 },
                 {
                     name: "u_c",
-                    info: {
+                    raw: {
                         type: "unsigned",
                         bits: 8
                     }
                 },
                 {
                     name: "c",
-                    info: {
+                    raw: {
                         type: "signed",
                         bits: 8
                     }
@@ -53,28 +53,28 @@
             fields: [
                 {
                     name: "a",
-                    info: {
+                    raw: {
                         type: "boolean",
                         bits: 8
                     }
                 },
                 {
                     name: "b",
-                    info: {
+                    raw: {
                         type: "boolean",
                         bits: 16
                     }
                 },
                 {
                     name: "c",
-                    info: {
+                    raw: {
                         type: "boolean",
                         bits: 32
                     }
                 },
                 {
                     name: "d",
-                    info: {
+                    raw: {
                         type: "boolean",
                         bits: 64
                     }
@@ -86,14 +86,14 @@
             fields: [
                 {
                     name: "a",
-                    info: {
+                    raw: {
                         type: "float",
                         bits: 32
                     }
                 },
                 {
                     name: "b",
-                    info: {
+                    raw: {
                         type: "float",
                         bits: 64
                     }
