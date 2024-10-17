@@ -326,13 +326,14 @@ impl Display for Field {
 impl Field {
     fn from_model(
         proto: &Protocol,
-        last_bit_offset: usize,
+        fields: &Vec<Field>,
+        mut last_bit_offset: usize,
         value: crate::model::structure::StructField,
     ) -> Result<(Self, usize), Error> {
         if (value.raw.is_none() && value.item_type.is_none()) || (value.raw.is_some() && value.item_type.is_some()) {
             return Err(Error::BadFieldType)
         }
-        if let Some(info) = value.raw {
+        let (ty, bit_size) = if let Some(info) = value.raw {
             let array_len = value.array_len.unwrap_or(1);
             if array_len == 0 {
                 return Err(Error::ZeroArray);
@@ -341,54 +342,64 @@ impl Field {
             let view = FieldView::from_model(proto, info.get_simple_type(), bit_size, value.view)?;
             bit_size *= array_len;
             let ty = FixedFieldType::from_model(info)?;
-            let loc = Location::from_model(bit_size, last_bit_offset);
             if array_len > 1 {
                 if (bit_size / array_len) % 8 != 0 {
                     return Err(Error::UnalignedArrayCodec);
                 }
-                Ok((
-                    Self {
-                        name: value.name,
-                        ty: FieldType::Array(FixedArrayField {
-                            endianness: proto.endianness,
-                            array_len,
-                            ty,
-                            item_bit_size: loc.bit_size / array_len,
-                        }),
-                        loc,
-                        description: value.description,
-                    },
-                    last_bit_offset + bit_size,
-                ))
+                (FieldType::Array(FixedArrayField {
+                    endianness: proto.endianness,
+                    array_len,
+                    ty,
+                    item_bit_size: bit_size / array_len,
+                }), bit_size)
             } else {
-                Ok((
-                    Self {
-                        name: value.name,
-                        ty: FieldType::Fixed(FixedField {
-                            endianness: proto.endianness,
-                            ty,
-                            view,
-                        }),
-                        loc,
-                        description: value.description,
-                    },
-                    last_bit_offset + bit_size,
-                ))
+                (FieldType::Fixed(FixedField {
+                    endianness: proto.endianness,
+                    ty,
+                    view,
+                }), bit_size)
             }
         } else {
             let item_type = unsafe { value.item_type.unwrap_unchecked() };
             let r = try2!(proto.structs.get(&item_type) => Error::UndefinedReference(item_type));
             trace!("Solved reference {} => {:?}", item_type, r);
-            Ok((
-                Self {
-                    name: value.name,
-                    ty: FieldType::Struct(r.clone()),
-                    loc: Location::from_model(r.bit_size, last_bit_offset),
-                    description: value.description,
-                },
-                last_bit_offset + r.bit_size,
-            ))
-        }
+            (FieldType::Struct(r.clone()), r.bit_size)
+        };
+        let loc = match value.offset {
+            None => {
+                let loc = Location::from_model(bit_size, last_bit_offset);
+                last_bit_offset += bit_size;
+                loc
+            },
+            Some(v) => match v.relative_to {
+                None => {
+                    let start_bits = v.bits.unwrap_or(0);
+                    let end_bits = start_bits + bit_size;
+                    if end_bits > last_bit_offset {
+                        last_bit_offset = end_bits;
+                    }
+                    Location::from_model(bit_size, start_bits)
+                }
+                Some(name) => {
+                    let field = fields.iter().find(|v| &v.name == &name).ok_or(Error::UndefinedReference(name))?;
+                    let start_bits = field.loc.bit_offset + v.bits.unwrap_or(0);
+                    let end_bits = start_bits + bit_size;
+                    if end_bits > last_bit_offset {
+                        last_bit_offset = end_bits;
+                    }
+                    Location::from_model(bit_size, start_bits)
+                }
+            }
+        };
+        Ok((
+            Self {
+                name: value.name,
+                ty,
+                loc,
+                description: value.description
+            },
+            last_bit_offset
+        ))
     }
 }
 
@@ -403,18 +414,17 @@ pub struct Structure {
 
 impl Structure {
     pub fn from_model(proto: &Protocol, value: crate::model::structure::Structure) -> Result<Structure, Error> {
+        let mut fields = Vec::with_capacity(value.fields.len());
         let mut last_bit_offset = 0;
-        let fields = value.fields.into_iter().map(|v| {
-            let res = Field::from_model(proto, last_bit_offset, v);
-            if let Ok((_, new_offset)) = res {
-                last_bit_offset = new_offset
-            }
-            res.map(|(field, _)| field)
-        });
+        for field in value.fields {
+            let (field, new_offset) = Field::from_model(proto, &fields, last_bit_offset, field)?;
+            fields.push(field);
+            last_bit_offset = new_offset;
+        }
         let s = Structure {
             name: value.name,
             description: value.description,
-            fields: fields.collect::<Result<Vec<Field>, Error>>()?,
+            fields,
             bit_size: last_bit_offset,
             byte_size: if last_bit_offset % 8 != 0 {
                 (last_bit_offset / 8) + 1

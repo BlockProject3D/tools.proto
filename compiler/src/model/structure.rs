@@ -78,13 +78,20 @@ impl StructFieldRaw {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct Offset {
+    pub relative_to: Option<String>,
+    pub bits: Option<usize>
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct StructField {
     pub name: String,
     pub description: Option<Description>,
     pub raw: Option<StructFieldRaw>,
     pub view: Option<StructFieldView>,
     pub array_len: Option<usize>,
-    pub item_type: Option<String>
+    pub item_type: Option<String>,
+    pub offset: Option<Offset>
 }
 
 #[derive(Clone, Debug, Deserialize)]

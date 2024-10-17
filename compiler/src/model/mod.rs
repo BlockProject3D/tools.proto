@@ -29,8 +29,6 @@
 //! Low-level model based on serde.
 
 //TODO: Support for static sized unions in structures
-//TODO: Support for offset in bits in structure fields
-//TODO: Support for offset relative to another field in the same structure in bits
 //TODO: Support loading a message referencing a union in the same protocol
 
 pub mod message;

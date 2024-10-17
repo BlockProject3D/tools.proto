@@ -70,6 +70,14 @@ fn numbers() {
 }
 
 #[test]
+fn numbers_offsets() {
+    let mut nums = Numbers::new();
+    nums.set_u_a(0xFFFFFFFF).set_u_c(0xFF);
+    assert!(nums.get_b_a());
+    assert!(nums.get_b_c());
+}
+
+#[test]
 fn flags() {
     let mut flags = Flags::new();
     assert_eq!(flags.size(), 15);

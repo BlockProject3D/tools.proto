@@ -12,6 +12,14 @@
                     }
                 },
                 {
+                    name: "b_a",
+                    raw: {
+                        type: "boolean",
+                        bits: 1
+                    },
+                    offset: { bits: 0 }
+                },
+                {
                     name: "a",
                     raw: {
                         type: "signed",
@@ -44,6 +52,17 @@
                     raw: {
                         type: "signed",
                         bits: 8
+                    }
+                },
+                {
+                    name: "b_c",
+                    raw: {
+                        type: "boolean",
+                        bits: 1
+                    },
+                    offset: {
+                        relative_to: "u_c",
+                        bits: 0
                     }
                 }
             ]
