@@ -45,7 +45,7 @@ pub enum MessageFieldValue {
     Payload,
     Union {
         on: String,
-        item_type: String,
+        name: String,
     },
     Unsigned {
         bits: usize,

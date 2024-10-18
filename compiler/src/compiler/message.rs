@@ -338,13 +338,13 @@ impl Field {
                         })
                     }
                 },
-                MessageFieldValue::Union { on, item_type } => {
+                MessageFieldValue::Union { on, name } => {
                     let (on_index, on_field) = unsorted
                         .iter()
                         .enumerate()
                         .find_map(|(k, v)| if v.name == on { Some((k, v)) } else { None })
                         .ok_or(Error::UndefinedReference(on))?;
-                    let r = proto.unions.get(&item_type).ok_or(Error::UndefinedReference(item_type))?;
+                    let r = proto.unions.get(&name).ok_or(Error::UndefinedReference(name))?;
                     match &on_field.ty {
                         FieldType::Ref(Referenced::Struct(v)) => {
                             if !Rc::ptr_eq(&r.discriminant.root, v) {
