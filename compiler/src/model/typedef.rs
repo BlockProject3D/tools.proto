@@ -27,28 +27,70 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use serde::Deserialize;
-use crate::model::message::MessageField;
-use crate::model::structure::StructField;
+use crate::model::message::{MessageField, MessageFieldValue};
+use crate::model::protocol::Description;
+use crate::model::structure::{Offset, SimpleType, StructField, StructFieldRaw, StructFieldView};
 
 #[derive(Clone, Debug, Deserialize)]
-#[serde(untagged)]
-pub enum Typedef {
-    Message(MessageField),
-    Structure(StructField)
+pub struct Typedef {
+    pub name: String,
+    pub value: Option<MessageFieldValue>,
+    pub optional: Option<bool>,
+    pub description: Option<Description>,
+    pub item_type: Option<String>,
+    pub codec: Option<String>,
+    pub raw: Option<StructFieldRaw>,
+    pub view: Option<StructFieldView>,
+    pub array_len: Option<usize>,
+    pub offset: Option<Offset>
 }
 
 impl Typedef {
-    pub fn as_message(&self) -> Option<&MessageField> {
-        match self {
-            Typedef::Message(v) => Some(v),
-            Typedef::Structure(_) => None
+    pub fn to_struct(&self) -> Option<StructField> {
+        if self.raw.is_some() {
+            Some(StructField {
+                name: self.name.clone(),
+                raw: self.raw.clone(),
+                view: self.view.clone(),
+                offset: self.offset.clone(),
+                array_len: self.array_len,
+                description: self.description.clone(),
+                item_type: self.item_type.clone()
+            })
+        } else {
+            None
         }
     }
 
-    pub fn as_struct(&self) -> Option<&StructField> {
-        match self {
-            Typedef::Message(_) => None,
-            Typedef::Structure(v) => Some(v)
+    pub fn to_message(&self) -> Option<MessageField> {
+        match &self.raw {
+            None => {
+                Some(MessageField {
+                    name: self.name.clone(),
+                    value: self.value.clone(),
+                    codec: self.codec.clone(),
+                    description: self.description.clone(),
+                    optional: self.optional.clone(),
+                    item_type: self.item_type.clone()
+                })
+            }
+            Some(v) => {
+                let bit_size = v.get_bit_size();
+                if v.get_simple_type() == SimpleType::Unsigned && bit_size % 8 == 0 {
+                    Some(MessageField {
+                        name: self.name.clone(),
+                        description: self.description.clone(),
+                        codec: self.codec.clone(),
+                        optional: self.optional.clone(),
+                        item_type: self.item_type.clone(),
+                        value: Some(MessageFieldValue::Unsigned {
+                            bits: bit_size
+                        })
+                    })
+                } else {
+                    None
+                }
+            }
         }
     }
 }
