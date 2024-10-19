@@ -29,7 +29,6 @@
 //! Low-level model based on serde.
 
 //TODO: Support for static sized unions in structures
-//TODO: Support loading a message referencing a union in the same protocol
 
 pub mod message;
 pub mod protocol;
