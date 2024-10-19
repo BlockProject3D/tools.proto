@@ -62,9 +62,31 @@ pub struct MessageField {
     pub codec: Option<String>
 }
 
+impl MessageField {
+    pub fn references(&self, name1: &str) -> bool {
+        if self.item_type.as_deref() == Some(name1) {
+            return true;
+        }
+        match &self.value {
+            None => false,
+            Some(v) => match v {
+                MessageFieldValue::List { item_type, .. } => name1 == item_type,
+                MessageFieldValue::Union { name, on } => name1 == on || name == name1,
+                _ => false
+            }
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct Message {
     pub name: String,
     pub description: Option<Description>,
     pub fields: Vec<MessageField>,
+}
+
+impl Message {
+    pub fn references(&self, name1: &str) -> bool {
+        self.fields.iter().any(|v| v.references(name1))
+    }
 }

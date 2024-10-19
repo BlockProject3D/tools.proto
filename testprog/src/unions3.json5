@@ -41,6 +41,19 @@
                     }
                 }
             ]
+        },
+        {
+            name: "List",
+            fields: [
+                {
+                    name: "data",
+                    value: {
+                        type: "list",
+                        item_type: "Main",
+                        max_len: 255
+                    }
+                }
+            ]
         }
     ],
     unions: [

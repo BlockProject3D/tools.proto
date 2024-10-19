@@ -37,6 +37,7 @@ use crate::compiler::util::types::{Name, TypePathMap};
 use crate::model::protocol::{Description, Endianness};
 use bp3d_debug::{info, trace};
 use std::borrow::Cow;
+use std::collections::BTreeMap;
 use std::rc::Rc;
 use crate::compiler::imports::Import;
 use crate::model::message::MessageFieldValue;
@@ -178,6 +179,7 @@ impl Protocol {
         }
         info!("Running compiler pass...");
         if let Some(enums) = value.enums {
+            trace!(">> Compiling enums...");
             for v in enums {
                 trace!({model=?&v}, "Compiling enum");
                 let v = Rc::new(Enum::from_model(v)?);
@@ -185,14 +187,16 @@ impl Protocol {
             }
         }
         if let Some(structs) = value.structs {
+            trace!(">> Compiling structures...");
             for v in structs {
                 trace!({model=?&v}, "Compiling structure");
                 let v = Rc::new(Structure::from_model(&proto, v)?);
                 proto.structs.insert(v);
             }
         }
+        let mut union_messages = BTreeMap::new();
         if let Some(mut messages) = value.messages {
-            let mut v = Vec::new();
+            trace!(">> Extracting unions and messages with references to unions...");
             let len = messages.len();
             for i in 1..len + 1 {
                 let i = len - i;
@@ -203,32 +207,43 @@ impl Protocol {
                         _ => false
                     }
                 });
-                if !has_unions {
+                if has_unions {
                     let msg = messages.remove(i);
-                    v.insert(0, msg);
+                    union_messages.insert(i, msg);
                 }
             }
-            for v in v {
-                trace!({model=?&v}, "Compiling message");
-                let v = Rc::new(Message::from_model(&proto, v)?);
-                proto.messages.insert(v);
+            let pos = len;
+            let len = messages.len();
+            for i in 1..len + 1 {
+                let i = len - i;
+                let has_ref = union_messages.values().any(|union| messages[i].references(&union.name));
+                if has_ref {
+                    let msg = messages.remove(i);
+                    union_messages.insert(pos + i, msg);
+                }
             }
-            value.messages = Some(messages)
-        }
-        if let Some(unions) = value.unions {
-            for v in unions {
-                trace!({model=?&v}, "Compiling union");
-                let v = Rc::new(Union::from_model(&proto, v)?);
-                proto.unions.insert(v);
-            }
-        }
-        if let Some(messages) = value.messages {
+            trace!(">> Compiling messages with no references to unions...");
             for v in messages {
                 trace!({model=?&v}, "Compiling message");
                 let v = Rc::new(Message::from_model(&proto, v)?);
                 proto.messages.insert(v);
             }
         }
+        if let Some(unions) = value.unions {
+            trace!(">> Compiling unions...");
+            for v in unions {
+                trace!({model=?&v}, "Compiling union");
+                let v = Rc::new(Union::from_model(&proto, v)?);
+                proto.unions.insert(v);
+            }
+        }
+        trace!(">> Compiling messages with references to unions...");
+        for (_, msg) in union_messages {
+            trace!({model=?&msg}, "Compiling message");
+            let v = Rc::new(Message::from_model(&proto, msg)?);
+            proto.messages.insert(v);
+        }
+
         info!("Running list sanitizer pass...");
         for msg in proto.messages.iter() {
             if msg.is_embedded() {
