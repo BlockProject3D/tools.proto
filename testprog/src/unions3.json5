@@ -1,0 +1,56 @@
+{
+    name: "unions3",
+    structs: [
+        {
+            name: "H",
+            fields: [
+                {
+                    name: "a",
+                    raw: {
+                        type: "unsigned",
+                        bits: 8
+                    }
+                }
+            ]
+        },
+        {
+            name: "A",
+            fields: [
+                {
+                    name: "a",
+                    raw: {
+                        type: "unsigned",
+                        bits: 8
+                    }
+                }
+            ]
+        }
+    ],
+    messages: [
+        { name: "B", fields: [ { name: "a", value: { type: "string" } } ] },
+        {
+            name: "Main",
+            fields: [
+                { name: "h", item_type: "H" },
+                {
+                    name: "a",
+                    value: {
+                        type: "union",
+                        on: "h",
+                        name: "Union"
+                    }
+                }
+            ]
+        }
+    ],
+    unions: [
+        {
+            name: "Union",
+            discriminant: "H.a",
+            cases: [
+                { case: "10", name: "A", item_type: "A" },
+                { case: "20", name: "B", item_type: "B" }
+            ]
+        }
+    ]
+}

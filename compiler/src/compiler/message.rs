@@ -38,6 +38,7 @@ use crate::model::structure::StructFieldRaw;
 use std::cell::Cell;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
+use bp3d_debug::error;
 
 #[derive(Clone, Debug)]
 pub enum Referenced {
@@ -239,6 +240,7 @@ impl Field {
     fn from_model(
         proto: &Protocol,
         unsorted: &[Field],
+        has_unions: bool,
         value: crate::model::message::MessageField,
     ) -> Result<Self, Error> {
         if (value.value.is_none() && value.item_type.is_none()) || (value.value.is_some() && value.item_type.is_some()) {
@@ -348,10 +350,14 @@ impl Field {
                     match &on_field.ty {
                         FieldType::Ref(Referenced::Struct(v)) => {
                             if !Rc::ptr_eq(&r.discriminant.root, v) {
+                                error!("Union discriminant type mismatch, expected {}, got {}", v.name, r.discriminant.root.name);
                                 return Err(Error::UnionTypeMismatch);
                             }
                         }
-                        _ => return Err(Error::UnionTypeMismatch),
+                        v => {
+                            error!("Union discriminant type mismatch expected {}, got field {:?}", r.discriminant.root.name, v);
+                            return Err(Error::UnionTypeMismatch)
+                        },
                     }
                     let on_name = on_field.name.clone();
                     if value.optional.unwrap_or_default() {
@@ -404,7 +410,7 @@ impl Field {
             let r = Referenced::lookup(proto, &item_type).ok_or(Error::UndefinedReference(item_type))?;
             match r {
                 Referenced::Struct(r) => {
-                    if r.fields.len() == 1
+                    if !has_unions && r.fields.len() == 1
                         && r.fields[0].ty.as_fixed().is_some()
                         && r.fields[0].ty.as_fixed().map(|v| v.view.is_transmute()).unwrap_or_default()
                         && r.fields[0].loc.bit_size % 8 == 0
@@ -469,8 +475,15 @@ impl Message {
         let mut fields = Vec::with_capacity(value.fields.len());
         let mut dyn_sized_elem_count = 0;
         let mut is_dyn_sized = false;
+        let has_unions = value.fields.iter().any(|v| match &v.value {
+            None => false,
+            Some(v) => match v {
+                MessageFieldValue::Union { .. } => true,
+                _ => false
+            }
+        });
         for v in value.fields {
-            let field = Field::from_model(proto, &fields, v)?;
+            let field = Field::from_model(proto, &fields, has_unions, v)?;
             if field.size.is_dyn_sized {
                 is_dyn_sized = true;
             }

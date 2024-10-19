@@ -39,6 +39,7 @@ use bp3d_debug::{info, trace};
 use std::borrow::Cow;
 use std::rc::Rc;
 use crate::compiler::imports::Import;
+use crate::model::message::MessageFieldValue;
 use crate::model::typedef::Typedef;
 
 name_index!(Typedef => name);
@@ -189,6 +190,30 @@ impl Protocol {
                 let v = Rc::new(Structure::from_model(&proto, v)?);
                 proto.structs.insert(v);
             }
+        }
+        if let Some(mut messages) = value.messages {
+            let mut v = Vec::new();
+            let len = messages.len();
+            for i in 1..len + 1 {
+                let i = len - i;
+                let has_unions = messages[i].fields.iter().any(|v| match &v.value {
+                    None => false,
+                    Some(v) => match v {
+                        MessageFieldValue::Union { .. } => true,
+                        _ => false
+                    }
+                });
+                if !has_unions {
+                    let msg = messages.remove(i);
+                    v.insert(0, msg);
+                }
+            }
+            for v in v {
+                trace!({model=?&v}, "Compiling message");
+                let v = Rc::new(Message::from_model(&proto, v)?);
+                proto.messages.insert(v);
+            }
+            value.messages = Some(messages)
         }
         if let Some(unions) = value.unions {
             for v in unions {
