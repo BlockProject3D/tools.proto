@@ -26,9 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::collections::HashSet;
 use crate::compiler::message::Referenced;
 use crate::compiler::union::{DiscriminantField, Union};
-use crate::compiler::util::types::TypeMapper;
+use crate::compiler::util::types::{PtrKey, TypeMapper};
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::template::hook::TemplateHooks;
 use crate::gen::template::Template;
@@ -160,6 +161,49 @@ fn gen_decl<T: TypeMapper>(
     template.scope().var("cases", cases).render("", &[function]).unwrap()
 }
 
+fn gen_decl_unique<T: TypeMapper>(
+    u: &Union,
+    template: &Template,
+    type_path_map: &TypePathMapper<T>,
+    function: &str,
+) -> String {
+    let mut found = HashSet::new();
+    let cases = u
+        .cases
+        .iter()
+        .filter_map(|case| match &case.item_type {
+            None => Some(template.scope().var("name", &case.name).render(function, &["none"]).unwrap()),
+            Some(Referenced::Struct(v)) => {
+                if !found.contains(&v.ptr_key()) {
+                    found.insert(v.ptr_key());
+                    Some(template
+                        .scope()
+                        .var("name", &case.name)
+                        .var("type_name", type_path_map.get(v))
+                        .render(function, &["struct"])
+                        .unwrap())
+                } else {
+                    None
+                }
+            },
+            Some(Referenced::Message(v)) => {
+                if !found.contains(&v.ptr_key()) {
+                    found.insert(v.ptr_key());
+                    Some(template
+                        .scope()
+                        .var("name", &case.name)
+                        .var("type_name", type_path_map.get(v))
+                        .render(function, &["message"])
+                        .unwrap())
+                } else {
+                    None
+                }
+            },
+        })
+        .join("");
+    template.scope().var("cases", cases).render("", &[function]).unwrap()
+}
+
 pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     mut template: Template<'_, 'variable>,
     u: &'variable Union,
@@ -178,6 +222,9 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     let mut code = gen_decl(u, &template, type_path_map, "decl");
     for func in hooks.get_functions("decl") {
         code += &gen_decl(u, &template, type_path_map, func);
+    }
+    for func in hooks.get_functions("decl_unique") {
+        code += &gen_decl_unique(u, &template, type_path_map, func);
     }
     code += &gen_union_from_slice_impl::<T>(u, &template, type_path_map, "from_bytes");
     for func in hooks.get_functions("from_bytes") {

@@ -93,7 +93,7 @@ pub fn gen_union_decl(u: &Union, type_path_map: &TypePathMap, params: &RustParam
         options.disable("decl");
         hooks.hook("decl", "empty");
     } else {
-        hooks.hook("decl", "from_value");
+        hooks.hook("decl_unique", "from_value");
     }
     let mut template = Template::compile_with_options(TEMPLATE, &options).unwrap();
     template.var("generics", get_generics(u));
