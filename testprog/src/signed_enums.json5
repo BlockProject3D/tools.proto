@@ -23,17 +23,17 @@
             name: "Type",
             variants: {
                 "Null":  0,
-                "String": -1,
-                "Int8":  -2,
-                "Int16": -3,
-                "Int32":  -4,
-                "Int64": -5,
-                "UInt8":  -6,
-                "UInt16": -7,
-                "UInt32":  -8,
-                "UInt64": -9,
-                "Float":  -10,
-                "Double": -11,
+                "String": 2,
+                "Int8":  1,
+                "Int16": 3,
+                "Int32":  -1,
+                "Int64": -2,
+                "UInt8":  -3,
+                "UInt16": -4,
+                "UInt32":  -5,
+                "UInt64": -6,
+                "Float":  -7,
+                "Double": -8,
             }
         }
     ]

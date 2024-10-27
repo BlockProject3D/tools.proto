@@ -40,3 +40,15 @@ fn basic() {
     header.set_type(Type::Double);
     assert_eq!(header.get_type().unwrap(), Type::Double);
 }
+
+#[test]
+fn signed() {
+    let mut header = signed_enums::Header::new();
+    assert_eq!(header.get_type().unwrap(), signed_enums::Type::Null);
+    header.set_type(signed_enums::Type::String);
+    assert_eq!(header.get_type().unwrap(), signed_enums::Type::String);
+    header.set_raw_type(7);
+    assert!(header.get_type().is_none());
+    header.set_type(signed_enums::Type::Double);
+    assert_eq!(header.get_type().unwrap(), signed_enums::Type::Double);
+}
