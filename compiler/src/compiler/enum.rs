@@ -35,23 +35,25 @@ use std::collections::HashMap;
 #[derive(Clone, Debug)]
 pub struct Enum {
     pub name: String,
-    pub largest: usize,
+    pub largest: isize,
+    pub smallest: isize,
     pub description: Option<Description>,
     pub repr_type: FixedFieldType,
-    pub variants: Vec<(String, usize)>,
-    pub variants_map: HashMap<String, usize>,
+    pub variants: Vec<(String, isize)>,
+    pub variants_map: HashMap<String, isize>,
 }
 
 impl Enum {
     pub fn from_model(value: crate::model::protocol::Enum) -> Result<Enum, Error> {
-        let mut variants: Vec<(String, usize)> = value.variants.into_iter().collect();
+        let mut variants: Vec<(String, isize)> = value.variants.into_iter().collect();
         variants.sort_by(|(_, v), (_, v1)| v.cmp(v1));
         let mut variants_map = HashMap::new();
         let largest = variants.last().map(|(_, v)| *v).ok_or(Error::ZeroEnum)?;
+        let smallest = variants.first().map(|(_, v)| *v).ok_or(Error::ZeroEnum)?;
         for (k, v) in &variants {
             variants_map.insert(k.clone(), *v);
         }
-        let repr_type = FixedFieldType::from_max_value(largest)?;
+        let repr_type = FixedFieldType::from_min_max_value(smallest, largest)?;
         Ok(Enum {
             name: value.name,
             description: value.description,
@@ -59,6 +61,7 @@ impl Enum {
             variants,
             variants_map,
             largest,
+            smallest
         })
     }
 }

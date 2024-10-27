@@ -32,6 +32,7 @@ include!(env!("BP3D_PROTOC_BITS"));
 include!(env!("BP3D_PROTOC_VIEWS"));
 include!(env!("BP3D_PROTOC_STRUCT_ARRAYS"));
 include!(env!("BP3D_PROTOC_ENUMS"));
+include!(env!("BP3D_PROTOC_SIGNED_ENUMS"));
 include!(env!("BP3D_PROTOC_VALUES"));
 include!(env!("BP3D_PROTOC_UNIONS"));
 include!(env!("BP3D_PROTOC_UNIONS2"));

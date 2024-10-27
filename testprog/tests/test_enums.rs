@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use testprog::enums::{Header, Type};
+use testprog::signed_enums;
 
 #[test]
 fn basic() {

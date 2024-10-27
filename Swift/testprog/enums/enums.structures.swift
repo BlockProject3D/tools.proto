@@ -67,6 +67,7 @@ extension EnumsHeader where T: BP3DProto.Buffer {
     public var type: EnumsType? {
         let rawValue = self.rawType;
         return EnumsType(rawValue: rawValue);
+
     }
 
 }

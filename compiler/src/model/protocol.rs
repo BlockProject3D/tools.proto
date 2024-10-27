@@ -69,7 +69,7 @@ pub struct Import {
 pub struct Enum {
     pub name: String,
     pub description: Option<Description>,
-    pub variants: HashMap<String, usize>,
+    pub variants: HashMap<String, isize>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

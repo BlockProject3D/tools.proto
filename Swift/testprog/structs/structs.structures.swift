@@ -67,6 +67,18 @@ extension StructsNumbers where T: BP3DProto.Buffer {
     public var uA: UInt32 {
         self.rawUA
     }
+    public var rawBA: UInt8 {
+        BP3DProto.BitCodecLE.readAligned(UInt8.self, self.data[0...1], bitOffset: 0, bitSize: 1)
+
+    }
+    public var bA: Bool {
+        if self.rawBA != 0 {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
     public var rawA: UInt32 {
         BP3DProto.ByteCodecLE.readAligned(UInt32.self, self.data[4...8])
 
@@ -105,6 +117,18 @@ extension StructsNumbers where T: BP3DProto.Buffer {
         BP3DProto.transmute(self.rawC)
 
     }
+    public var rawBC: UInt8 {
+        BP3DProto.BitCodecLE.readAligned(UInt8.self, self.data[0...1], bitOffset: 0, bitSize: 1)
+
+    }
+    public var bC: Bool {
+        if self.rawBC != 0 {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
 
 }
 extension StructsNumbers where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
@@ -116,6 +140,21 @@ extension StructsNumbers where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer 
     @discardableResult
     public func setUA(_ value: UInt32) -> Self {
         self.setRawUA(value);
+        return self;
+    }
+    public func setRawBA(_ value: UInt8) {
+        var buffer = self.data[0...1];
+        BP3DProto.BitCodecLE.writeAligned(UInt8.self, &buffer, bitOffset: 0, bitSize: 1, value: value);
+
+    }
+    @discardableResult
+    public func setBA(_ value: Bool) -> Self {
+        if value {
+            self.setRawBA(1);
+        } else {
+            self.setRawBA(0);
+        }
+
         return self;
     }
     public func setRawA(_ value: UInt32) {
@@ -168,6 +207,21 @@ extension StructsNumbers where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer 
     @discardableResult
     public func setC(_ value: Int8) -> Self {
         self.setRawC(BP3DProto.transmute(value));
+
+        return self;
+    }
+    public func setRawBC(_ value: UInt8) {
+        var buffer = self.data[0...1];
+        BP3DProto.BitCodecLE.writeAligned(UInt8.self, &buffer, bitOffset: 0, bitSize: 1, value: value);
+
+    }
+    @discardableResult
+    public func setBC(_ value: Bool) -> Self {
+        if value {
+            self.setRawBC(1);
+        } else {
+            self.setRawBC(0);
+        }
 
         return self;
     }

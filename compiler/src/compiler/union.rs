@@ -49,8 +49,8 @@ impl UnionField {
     ) -> Result<Self, Error> {
         let case: usize = match &discriminant.view {
             FieldView::Float { .. } => return Err(Error::FloatInUnionDiscriminant),
-            FieldView::Enum(v) => {
-                v.variants_map.get(&value.case).copied().ok_or(Error::InvalidUnionCase(value.case))?
+            FieldView::Enum { r, .. } => {
+                r.variants_map.get(&value.case).copied().ok_or(Error::InvalidUnionCase(value.case))? as usize
             }
             FieldView::Transmute | FieldView::SignedCast { .. } => {
                 let value: isize = value.case.parse().map_err(|_| Error::InvalidUnionCase(value.case))?;

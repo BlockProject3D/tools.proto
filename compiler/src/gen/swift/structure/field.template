@@ -36,8 +36,21 @@ extension {proto_name:to_pascal_case}{struct_name} where T: BP3DProto.Buffer {{
 #fragment pop
 #fragment push view_enum
     public var {name:to_camel_case}: {view_type}? {{
+#fragment push signed
+        let rawValue = self.raw{name:to_pascal_case};
+        var enumValue;
+        if rawValue > {max_positive} {{
+            enumValue = -({repr_type}(((~rawValue) & {max_positive}) + 1));
+        }} else {{
+            enumValue = {repr_type}(rawValue & {max_positive});
+        }}
+        {view_type}(rawValue: enumValue)
+#fragment pop
+#fragment push unsigned
         let rawValue = self.raw{name:to_pascal_case};
         return {view_type}(rawValue: rawValue);
+#fragment pop
+{fragment}
     }}
 #fragment pop
 #fragment push view_transmute
@@ -109,7 +122,13 @@ extension {proto_name:to_pascal_case}{struct_name} where T: BP3DProto.Buffer, T:
 #fragment push view_enum
     @discardableResult
     public func set{name:to_pascal_case}(_ value: {view_type}) -> Self {{
+#fragment push signed:inline
+        self.setRaw{name:to_pascal_case}({raw_type}(bitPattern: value.rawValue));
+#fragment pop
+#fragment push unsigned:inline
         self.setRaw{name:to_pascal_case}({raw_type}(value.rawValue));
+#fragment pop
+        {fragment}
         return self;
     }}
 #fragment pop

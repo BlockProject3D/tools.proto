@@ -67,6 +67,7 @@ extension Unions2Header where T: BP3DProto.Buffer {
     public var test: Unions2Test? {
         let rawValue = self.rawTest;
         return Unions2Test(rawValue: rawValue);
+
     }
     public var rawTest2: UInt8 {
         BP3DProto.BitCodecLE.readAligned(UInt8.self, self.data[0...1], bitOffset: 1, bitSize: 7)

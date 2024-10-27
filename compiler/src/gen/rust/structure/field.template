@@ -52,7 +52,19 @@ impl<T: AsRef<[u8]>> {struct_name}<T> {{
     ///
     /// {description}
     pub fn get_{name}(&self) -> Option<{view_type}> {{
+#fragment push signed
+        let raw_value = self.get_raw_{name}();
+        let enum_value = if raw_value > {max_positive} {{
+            -((((!raw_value) & {max_positive}) + 1) as {repr_type})
+        }} else {{
+            (raw_value & {max_positive}) as {repr_type}
+        }};
+        {view_type}::from_raw(enum_value)
+#fragment pop
+#fragment push unsigned
         {view_type}::from_raw(self.get_raw_{name}())
+#fragment pop
+{fragment}
     }}
 #fragment pop
 #fragment push view_transmute
@@ -148,7 +160,13 @@ impl<T: AsMut<[u8]>> {struct_name}<T> {{
     ///
     /// {description}
     pub fn set_{name}(&mut self, value: {view_type}) -> &mut Self {{
+#fragment push signed:inline
+        self.set_raw_{name}(value.into_raw() as {raw_type});
+#fragment pop
+#fragment push unsigned:inline
         self.set_raw_{name}(value.into_raw());
+#fragment pop
+        {fragment}
         self
     }}
 #fragment pop

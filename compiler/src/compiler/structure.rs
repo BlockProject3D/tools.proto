@@ -102,6 +102,35 @@ impl FixedFieldType {
         }
     }
 
+    pub fn from_min_max_value(min_value: isize, max_value: isize) -> Result<Self, Error> {
+        match min_value < 0 {
+            true => {
+                let bit_size = if max_value > i32::MAX as isize || min_value < i32::MIN as isize {
+                    64
+                } else if max_value > i16::MAX as isize || min_value < i16::MIN as isize {
+                    32
+                } else if max_value > i8::MAX as isize || min_value < i8::MIN as isize {
+                    16
+                } else {
+                    8
+                };
+                Self::from_model(StructFieldRaw::Signed { bits: bit_size })
+            },
+            false => {
+                let bit_size = if max_value > u32::MAX as isize {
+                    64
+                } else if max_value > u16::MAX as isize {
+                    32
+                } else if max_value > u8::MAX as isize {
+                    16
+                } else {
+                    8
+                };
+                Self::from_model(StructFieldRaw::Unsigned { bits: bit_size })
+            }
+        }
+    }
+
     pub fn from_max_value(max_value: usize) -> Result<Self, Error> {
         let bit_size = if max_value > u32::MAX as usize {
             64
@@ -186,7 +215,11 @@ pub enum FieldView {
     Float { a: f64, b: f64, a_inv: f64, b_inv: f64 },
 
     /// Apply an enum view.
-    Enum(Rc<Enum>),
+    Enum {
+        r: Rc<Enum>,
+        is_signed: bool,
+        max_positive: usize
+    },
 
     /// Apply a raw C-like cast (used for unsigned > signed and unsigned > float of same bit size).
     Transmute,
@@ -212,11 +245,17 @@ impl FieldView {
     ) -> Result<Self, Error> {
         match value {
             Some(StructFieldView::Enum { name }) => {
-                if ty != SimpleType::Unsigned {
+                if ty != SimpleType::Unsigned && ty != SimpleType::Signed {
                     return Err(Error::UnsupportedViewType(ty));
                 }
+                let is_signed = ty == SimpleType::Signed;
+                let max_positive = (1 << (bit_size - 1)) - 1;
                 let r = proto.enums.get(&name).ok_or(Error::UndefinedReference(name))?;
-                Ok(FieldView::Enum(r.clone()))
+                Ok(FieldView::Enum{
+                    r: r.clone(),
+                    is_signed,
+                    max_positive
+                })
             }
             Some(StructFieldView::FloatRange { min, max }) => {
                 if ty != SimpleType::Float {

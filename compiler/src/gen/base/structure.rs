@@ -159,11 +159,16 @@ fn gen_field_view_getter<U: Utilities, T: TypeMapper>(
             .var("b", format!("{:?}", b))
             .render("getters", &["view_float"])
             .unwrap(),
-        FieldView::Enum(e) => scope
-            .var("view_type", type_path_map.get(e))
-            .var_d("enum_largest", e.largest)
-            .render("getters", &["view_enum"])
-            .unwrap(),
+        FieldView::Enum { r, is_signed, max_positive } => {
+            scope.var("view_type", type_path_map.get(r))
+                .var("repr_type", U::get_field_type(r.repr_type));
+            match is_signed {
+                true => scope.var_d("max_positive", max_positive)
+                    .render_to_var("getters.view_enum", &["signed"], "fragment").unwrap(),
+                false => scope.render_to_var("getters.view_enum", &["unsigned"], "fragment").unwrap()
+            };
+            scope.render("getters", &["view_enum"]).unwrap()
+        },
         FieldView::Transmute => {
             let field_type = U::get_field_type(field.ty);
             scope.var("view_type", field_type);
@@ -198,11 +203,16 @@ fn gen_field_view_setter<U: Utilities, T: TypeMapper>(
             .var("b_inv", format!("{:?}", b_inv))
             .render("setters", &["view_float"])
             .unwrap(),
-        FieldView::Enum(e) => scope
-            .var("view_type", type_path_map.get(e))
-            .var_d("enum_largest", e.largest)
-            .render("setters", &["view_enum"])
-            .unwrap(),
+        FieldView::Enum { r, is_signed, max_positive } => {
+            scope.var("view_type", type_path_map.get(r))
+                .var("repr_type", U::get_field_type(r.repr_type));
+            match is_signed {
+                true => scope.var_d("max_positive", max_positive)
+                    .render_to_var("setters.view_enum", &["signed"], "fragment").unwrap(),
+                false => scope.render_to_var("setters.view_enum", &["unsigned"], "fragment").unwrap()
+            };
+            scope.render("setters", &["view_enum"]).unwrap()
+        },
         FieldView::Transmute | FieldView::SignedCast { .. } => {
             let field_type = U::get_field_type(field.ty);
             scope.var("view_type", field_type);
