@@ -1,86 +1,31 @@
 #fragment push getters
 extension {proto_name:to_pascal_case}{struct_name} where T: BP3DProto.Buffer {{
 {fields}
-#fragment push fixed
-    public var raw{name:to_pascal_case}: {raw_type} {{
-{fragment}
-#fragment push bit.aligned
-        {codec}.readAligned({raw_type}.self, self.data[{start}...{end}], bitOffset: {bit_offset}, bitSize: {bit_size})
-#fragment pop
-#fragment push bit.unaligned
-        {codec}.readUnaligned({raw_type}.self, self.data[{start}...{end}], bitOffset: {bit_offset}, bitSize: {bit_size})
-#fragment pop
-#fragment push byte.aligned
-        {codec}.readAligned({raw_type}.self, self.data[{start}...{end}])
-#fragment pop
-#fragment push byte.unaligned
-        {codec}.readUnaligned({raw_type}.self, self.data[{start}...{end}])
-#fragment pop
-    }}
-#fragment pop
 #fragment push array
     public var {name:to_camel_case}: BP3DProto.ArrayCodec<T, {codec}, {raw_type}> {{
-        BP3DProto.ArrayCodec(buffer: self.data[{start}...{end}], itemBitSize: {bit_size})
+        BP3DProto.ArrayCodec(buffer: self._raw.bin.data[{start}...{end}], itemBitSize: {bit_size})
     }}
 #fragment pop
 #fragment push struct
     public var {name:to_camel_case}: {type_name}<T> {{
-        {type_name}(self.data[{start}...{end}])
+        {type_name}(self._raw.bin.data[{start}...{end}])
     }}
 #fragment pop
 #fragment push view_float
     public var {name:to_camel_case}: {view_type} {{
-        let rawValue = {view_type}(self.raw{name:to_pascal_case});
+        let rawValue = {view_type}(self._raw.{name:to_camel_case});
         return rawValue * {a} + {b};
     }}
 #fragment pop
 #fragment push view_enum
     public var {name:to_camel_case}: {view_type}? {{
-#fragment push signed
-        let rawValue = self.raw{name:to_pascal_case};
-        var enumValue;
-        if rawValue > {max_positive} {{
-            enumValue = -({repr_type}(((~rawValue) & {max_positive}) + 1));
-        }} else {{
-            enumValue = {repr_type}(rawValue & {max_positive});
-        }}
-        {view_type}(rawValue: enumValue)
-#fragment pop
-#fragment push unsigned
-        let rawValue = self.raw{name:to_pascal_case};
+        let rawValue = self._raw.{name:to_camel_case};
         return {view_type}(rawValue: rawValue);
-#fragment pop
-{fragment}
-    }}
-#fragment pop
-#fragment push view_transmute
-    public var {name:to_camel_case}: {view_type} {{
-{fragment}
-#fragment push bool
-        if self.raw{name:to_pascal_case} != 0 {{
-            return true;
-        }} else {{
-            return false;
-        }}
-#fragment pop
-#fragment push other
-        BP3DProto.transmute(self.raw{name:to_pascal_case})
-#fragment pop
-    }}
-#fragment pop
-#fragment push view_signed
-    public var {name:to_camel_case}: {view_type} {{
-        let rawValue = self.raw{name:to_pascal_case};
-        if rawValue > {max_positive} {{
-            return -({view_type}(((~rawValue) & {max_positive}) + 1));
-        }} else {{
-            return {view_type}(rawValue & {max_positive});
-        }}
     }}
 #fragment pop
 #fragment push view_none
     public var {name:to_camel_case}: {view_type} {{
-        self.raw{name:to_pascal_case}
+        self._raw.{name:to_camel_case}
     }}
 #fragment pop
 }}
@@ -89,24 +34,6 @@ extension {proto_name:to_pascal_case}{struct_name} where T: BP3DProto.Buffer {{
 #fragment push setters
 extension {proto_name:to_pascal_case}{struct_name} where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {{
 {fields}
-#fragment push fixed
-    public func setRaw{name:to_pascal_case}(_ value: {raw_type}) {{
-        var buffer = self.data[{start}...{end}];
-{fragment}
-#fragment push bit.aligned
-        {codec}.writeAligned({raw_type}.self, &buffer, bitOffset: {bit_offset}, bitSize: {bit_size}, value: value);
-#fragment pop
-#fragment push bit.unaligned
-        {codec}.writeUnaligned({raw_type}.self, &buffer, bitOffset: {bit_offset}, bitSize: {bit_size}, value: value);
-#fragment pop
-#fragment push byte.aligned
-        {codec}.writeAligned({raw_type}.self, &buffer, value: value);
-#fragment pop
-#fragment push byte.unaligned
-        {codec}.writeUnaligned({raw_type}.self, &buffer, value: value);
-#fragment pop
-    }}
-#fragment pop
 #fragment push array
 #fragment pop
 #fragment push struct
@@ -115,44 +42,21 @@ extension {proto_name:to_pascal_case}{struct_name} where T: BP3DProto.Buffer, T:
     @discardableResult
     public func set{name:to_pascal_case}(_ value: {view_type}) -> Self {{
         let rawValue = value * {a_inv} + {b_inv};
-        self.setRaw{name:to_pascal_case}({raw_type}(rawValue));
+        self._raw.set{name:to_pascal_case}({raw_type}(rawValue));
         return self;
     }}
 #fragment pop
 #fragment push view_enum
     @discardableResult
     public func set{name:to_pascal_case}(_ value: {view_type}) -> Self {{
-#fragment push signed:inline
-        self.setRaw{name:to_pascal_case}({raw_type}(bitPattern: value.rawValue));
-#fragment pop
-#fragment push unsigned:inline
-        self.setRaw{name:to_pascal_case}({raw_type}(value.rawValue));
-#fragment pop
-        {fragment}
-        return self;
-    }}
-#fragment pop
-#fragment push view_transmute
-    @discardableResult
-    public func set{name:to_pascal_case}(_ value: {view_type}) -> Self {{
-{fragment}
-#fragment push bool
-        if value {{
-            self.setRaw{name:to_pascal_case}(1);
-        }} else {{
-            self.setRaw{name:to_pascal_case}(0);
-        }}
-#fragment pop
-#fragment push other
-        self.setRaw{name:to_pascal_case}(BP3DProto.transmute(value));
-#fragment pop
+        self._raw.set{name:to_pascal_case}(value.rawValue);
         return self;
     }}
 #fragment pop
 #fragment push view_none
     @discardableResult
     public func set{name:to_pascal_case}(_ value: {view_type}) -> Self {{
-        self.setRaw{name:to_pascal_case}(value);
+        self._raw.set{name:to_pascal_case}(value);
         return self;
     }}
 #fragment pop

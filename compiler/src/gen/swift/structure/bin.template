@@ -1,0 +1,62 @@
+#fragment push decl
+/// Definition of the bits layout for {struct_name} structure.
+///
+/// The bits layout wraps a byte buffer and offers access
+/// to the raw bit patterns of each field in a structure.
+public struct {proto_name:to_pascal_case}Bin{struct_name}<T> {{
+    var data: T
+}}
+#fragment pop
+
+#fragment push getters
+extension {proto_name:to_pascal_case}Bin{struct_name} where T: BP3DProto.Buffer {{
+{fields}
+#fragment push field
+    /// Bit pattern accessor for field {info}.
+    ///
+    /// {description}
+    public var {name:to_camel_case}: {bits_type} {{
+{fragment}
+#fragment push bit.aligned
+        {codec}.readAligned({bits_type}.self, self.data[{start}...{end}], bitOffset: {bit_offset}, bitSize: {bit_size})
+#fragment pop
+#fragment push bit.unaligned
+        {codec}.readUnaligned({bits_type}.self, self.data[{start}...{end}], bitOffset: {bit_offset}, bitSize: {bit_size})
+#fragment pop
+#fragment push byte.aligned
+        {codec}.readAligned({bits_type}.self, self.data[{start}...{end}])
+#fragment pop
+#fragment push byte.unaligned
+        {codec}.readUnaligned({bits_type}.self, self.data[{start}...{end}])
+#fragment pop
+    }}
+#fragment pop
+}}
+#fragment pop
+
+#fragment push setters
+extension {proto_name:to_pascal_case}Bin{struct_name} where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {{
+{fields}
+#fragment push field
+    /// Bit pattern setter for field {info}.
+    ///
+    /// {description}
+    public func set{name:to_pascal_case}(_ value: {bits_type}) {{
+        var buffer = self.data[{start}...{end}];
+{fragment}
+#fragment push bit.aligned
+        {codec}.writeAligned({bits_type}.self, &buffer, bitOffset: {bit_offset}, bitSize: {bit_size}, value: value);
+#fragment pop
+#fragment push bit.unaligned
+        {codec}.writeUnaligned({bits_type}.self, &buffer, bitOffset: {bit_offset}, bitSize: {bit_size}, value: value);
+#fragment pop
+#fragment push byte.aligned
+        {codec}.writeAligned({bits_type}.self, &buffer, value: value);
+#fragment pop
+#fragment push byte.unaligned
+        {codec}.writeUnaligned({bits_type}.self, &buffer, value: value);
+#fragment pop
+    }}
+#fragment pop
+}}
+#fragment pop

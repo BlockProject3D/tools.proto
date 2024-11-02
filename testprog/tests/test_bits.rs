@@ -43,37 +43,37 @@ fn numbers() {
     assert_eq!(nums.get_c(), 65535);
     nums.set_a(-7);
     assert_eq!(nums.get_a(), -7);
-    assert_eq!(nums.get_raw_a(), 9);
+    assert_eq!(nums.bin().get_a(), 9);
     nums.set_a(-6);
     assert_eq!(nums.get_a(), -6);
-    assert_eq!(nums.get_raw_a(), 10);
+    assert_eq!(nums.bin().get_a(), 10);
     nums.set_a(-5);
     assert_eq!(nums.get_a(), -5);
-    assert_eq!(nums.get_raw_a(), 11);
+    assert_eq!(nums.bin().get_a(), 11);
     nums.set_a(1);
     assert_eq!(nums.get_a(), 1);
-    assert_eq!(nums.get_raw_a(), 1);
+    assert_eq!(nums.bin().get_a(), 1);
     nums.set_a(4);
     assert_eq!(nums.get_a(), 4);
-    assert_eq!(nums.get_raw_a(), 4);
+    assert_eq!(nums.bin().get_a(), 4);
 }
 
 #[test]
 fn numbers_raw() {
     let mut nums = Numbers::new();
-    nums.set_raw_a(15);
-    nums.set_raw_b(15);
-    nums.set_raw_c(65536);
-    nums.set_raw_d(127);
-    nums.set_raw_c(65536);
-    assert_eq!(nums.get_raw_a(), 15);
+    nums.bin_mut().set_a(15);
+    nums.bin_mut().set_b(15);
+    nums.bin_mut().set_c(65536);
+    nums.bin_mut().set_d(127);
+    nums.bin_mut().set_c(65536);
+    assert_eq!(nums.bin().get_a(), 15);
     assert_eq!(nums.get_a(), -1);
-    assert_eq!(nums.get_raw_b(), 15);
-    assert_eq!(nums.get_raw_c(), 65536);
-    assert_eq!(nums.get_raw_d(), 127);
+    assert_eq!(nums.bin().get_b(), 15);
+    assert_eq!(nums.bin().get_c(), 65536);
+    assert_eq!(nums.bin().get_d(), 127);
     let mut cur_a = 0;
     for i in 0..15 {
-        nums.set_raw_a(i);
+        nums.bin_mut().set_a(i);
         if i > 7 && cur_a > 0 {
             cur_a = -8
         }
@@ -95,37 +95,37 @@ fn numbers2() {
     assert_eq!(nums.get_c(), 65535);
     nums.set_a(-7);
     assert_eq!(nums.get_a(), -7);
-    assert_eq!(nums.get_raw_a(), 9);
+    assert_eq!(nums.bin().get_a(), 9);
     nums.set_a(-6);
     assert_eq!(nums.get_a(), -6);
-    assert_eq!(nums.get_raw_a(), 10);
+    assert_eq!(nums.bin().get_a(), 10);
     nums.set_a(-5);
     assert_eq!(nums.get_a(), -5);
-    assert_eq!(nums.get_raw_a(), 11);
+    assert_eq!(nums.bin().get_a(), 11);
     nums.set_a(1);
     assert_eq!(nums.get_a(), 1);
-    assert_eq!(nums.get_raw_a(), 1);
+    assert_eq!(nums.bin().get_a(), 1);
     nums.set_a(4);
     assert_eq!(nums.get_a(), 4);
-    assert_eq!(nums.get_raw_a(), 4);
+    assert_eq!(nums.bin().get_a(), 4);
 }
 
 #[test]
 fn numbers_raw2() {
     let mut nums = Numbers2::new();
-    nums.set_raw_a(15);
-    nums.set_raw_b(15);
-    nums.set_raw_c(65536);
-    nums.set_raw_d(127);
-    nums.set_raw_c(65536);
-    assert_eq!(nums.get_raw_a(), 15);
+    nums.bin_mut().set_a(15);
+    nums.bin_mut().set_b(15);
+    nums.bin_mut().set_c(65536);
+    nums.bin_mut().set_d(127);
+    nums.bin_mut().set_c(65536);
+    assert_eq!(nums.bin().get_a(), 15);
     assert_eq!(nums.get_a(), -1);
-    assert_eq!(nums.get_raw_b(), 15);
-    assert_eq!(nums.get_raw_c(), 65536);
-    assert_eq!(nums.get_raw_d(), 127);
+    assert_eq!(nums.bin().get_b(), 15);
+    assert_eq!(nums.bin().get_c(), 65536);
+    assert_eq!(nums.bin().get_d(), 127);
     let mut cur_a = 0;
     for i in 0..15 {
-        nums.set_raw_a(i);
+        nums.bin_mut().set_a(i);
         if i > 7 && cur_a > 0 {
             cur_a = -8
         }

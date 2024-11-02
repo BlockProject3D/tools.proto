@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::structure::{Field, FieldType, FieldView, FixedField, FixedFieldType, Structure};
+use crate::compiler::structure::{Field, FieldRaw, FieldType, FieldView, FixedField, FixedFieldType, Structure};
 use crate::compiler::util::types::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::template::hook::{Render, TemplateHooks};
@@ -50,11 +50,21 @@ pub trait Utilities {
     }
 }
 
-fn gen_field_getter<U: Utilities, T: TypeMapper>(
-    field: &Field,
-    template: &Template,
-    type_path_map: &TypePathMapper<T>,
-) -> String {
+enum Mode {
+    Getter,
+    Setter
+}
+
+impl Mode {
+    pub fn get_path<'a>(&self, getter: &'a str, setter: &'a str) -> &'a str {
+        match self {
+            Mode::Getter => getter,
+            Mode::Setter => setter
+        }
+    }
+}
+
+fn gen_structure_field_prologue<'a, 'fragment, 'variable: 'fragment, U: Utilities>(template: &'variable Template<'fragment, 'variable>, field: &'variable Field) -> Scope<'a, 'fragment, 'variable> {
     let mut scope = template.scope();
     scope
         .var_d("start", field.loc.byte_offset)
@@ -65,29 +75,87 @@ fn gen_field_getter<U: Utilities, T: TypeMapper>(
             field.description.as_ref().map(U::gen_description).unwrap_or("".into()),
         )
         .var_d("info", field);
+    scope
+}
+
+fn gen_structure_field<U: Utilities, T: TypeMapper, G: FnMut(Mode, &Field, &FixedField, Scope) -> String>(mode: Mode, field: &Field, template: &Template, field_generator: &mut G) -> Option<String> {
+    let mut scope = gen_structure_field_prologue::<U>(template, field);
     match &field.ty {
         FieldType::Fixed(v) => {
-            let raw_field_type = field.loc.get_unsigned_integer_type();
-            let raw_field_type = U::get_field_type(raw_field_type);
-            let fragment_name = U::get_fragment_name(field);
-            scope.var("raw_type", raw_field_type);
-            if field.loc.bit_size % 8 != 0 {
-                scope
-                    .var("codec", U::get_bit_codec_inline(v.endianness))
-                    .var_d("bit_offset", field.loc.bit_offset)
-                    .var_d("bit_size", field.loc.bit_size)
-                    .render_to_var("getters.fixed.bit", &[fragment_name], "fragment")
-                    .unwrap();
+            let bits_type = U::get_field_type(v.bits_type);
+            let raw_type = U::get_field_type(v.raw_type);
+            scope
+                .var("bits_type", bits_type)
+                .var("raw_type", raw_type)
+                .var_d("bit_offset", field.loc.bit_offset)
+                .var_d("bit_size", field.loc.bit_size);
+            Some(field_generator(mode, field, v, scope))
+        },
+        _ => None
+    }
+}
+
+fn gen_structure<'fragment, 'variable, U: Utilities, T: TypeMapper, G: FnMut(Mode, &Field, &FixedField, Scope) -> String>(s: &'variable Structure, mut template: Template<'fragment, 'variable>, mut field_generator: G) -> String {
+    template
+        .var("struct_name", &s.name)
+        .var("struct_description", s.description.as_ref().map(U::gen_description).unwrap_or("".into()));
+    let getters = s.fields.iter().filter_map(|v| gen_structure_field::<U, T, G>(Mode::Getter, v, &template, &mut field_generator)).join("");
+    let setters = s.fields.iter().filter_map(|v| gen_structure_field::<U, T, G>(Mode::Setter, v, &template, &mut field_generator)).join("");
+    let mut code = template.render("", &["decl"]).unwrap();
+    if !getters.is_empty() {
+        code += &template.var("fields", getters).render("", &["getters"]).unwrap();
+    }
+    if !setters.is_empty() {
+        code += &template.var("fields", setters).render("", &["setters"]).unwrap();
+    }
+    code
+}
+
+fn gen_field_raw<'a, 'fragment, 'variable, U: Utilities, T: TypeMapper>(mode: Mode, field: &'variable Field, fixed: &'variable FixedField, mut scope: Scope<'a, 'fragment, 'variable>) -> String {
+    let path = mode.get_path("getters.field", "setters.field");
+    match &fixed.raw {
+        FieldRaw::Transmute => {
+            if fixed.raw_type == FixedFieldType::Bool {
+                scope.render_to_var(path, &["transmute_bool"], "fragment").unwrap()
             } else {
-                scope
-                    .var("codec", U::get_byte_codec_inline(v.endianness))
-                    .render_to_var("getters.fixed.byte", &[fragment_name], "fragment")
-                    .unwrap();
+                scope.render_to_var(path, &["transmute_other"], "fragment").unwrap()
             }
-            let mut code = scope.render("getters", &["fixed"]).unwrap();
-            code += &gen_field_view_getter::<U, T>(v, &scope, type_path_map);
-            code
         }
+        FieldRaw::SignedCast(max_positive) => scope
+            .var_d("max_positive", max_positive)
+            .render_to_var(path, &["signed"], "fragment")
+            .unwrap(),
+        FieldRaw::None => scope.render_to_var(path, &["none"], "fragment").unwrap()
+    };
+    scope.render(mode.get_path("getters", "setters"), &["field"]).unwrap()
+}
+
+fn gen_field_bits<'a, 'fragment, 'variable, U: Utilities, T: TypeMapper>(mode: Mode, field: &'variable Field, fixed: &'variable FixedField, mut scope: Scope<'a, 'fragment, 'variable>) -> String {
+    let fragment_name = U::get_fragment_name(field);
+    if field.loc.bit_size % 8 != 0 {
+        let path = mode.get_path("getters.field.bit", "setters.field.bit");
+        scope
+            .var("codec", U::get_bit_codec_inline(fixed.endianness))
+            .render_to_var(path, &[fragment_name], "fragment")
+            .unwrap();
+    } else {
+        let path = mode.get_path("getters.field.byte", "setters.field.byte");
+        scope
+            .var("codec", U::get_byte_codec_inline(fixed.endianness))
+            .render_to_var(path, &[fragment_name], "fragment")
+            .unwrap();
+    }
+    scope.render(mode.get_path("getters", "setters"), &["field"]).unwrap()
+}
+
+fn gen_field_getter<U: Utilities, T: TypeMapper>(
+    field: &Field,
+    template: &Template,
+    type_path_map: &TypePathMapper<T>,
+) -> String {
+    let mut scope = gen_structure_field_prologue::<U>(template, field);
+    match &field.ty {
+        FieldType::Fixed(v) => gen_field_view_getter::<U, T>(v, &scope, type_path_map),
         FieldType::Array(v) => scope
             .var("raw_type", U::get_field_type(v.ty))
             .var("codec", U::get_byte_codec(v.endianness))
@@ -103,39 +171,9 @@ fn gen_field_setter<U: Utilities, T: TypeMapper>(
     template: &Template,
     type_path_map: &TypePathMapper<T>,
 ) -> String {
-    let mut scope = template.scope();
-    scope
-        .var_d("start", field.loc.byte_offset)
-        .var_d("end", field.loc.byte_offset + field.loc.byte_size)
-        .var("name", &field.name)
-        .var(
-            "description",
-            field.description.as_ref().map(U::gen_description).unwrap_or("".into()),
-        )
-        .var_d("info", field);
+    let mut scope = gen_structure_field_prologue::<U>(template, field);
     match &field.ty {
-        FieldType::Fixed(v) => {
-            let raw_field_type = field.loc.get_unsigned_integer_type();
-            let raw_field_type = U::get_field_type(raw_field_type);
-            let fragment_name = U::get_fragment_name_mut(field);
-            scope.var("raw_type", raw_field_type);
-            if field.loc.bit_size % 8 != 0 {
-                scope
-                    .var("codec", U::get_bit_codec_inline(v.endianness))
-                    .var_d("bit_offset", field.loc.bit_offset)
-                    .var_d("bit_size", field.loc.bit_size)
-                    .render_to_var("setters.fixed.bit", &[fragment_name], "fragment")
-                    .unwrap();
-            } else {
-                scope
-                    .var("codec", U::get_byte_codec_inline(v.endianness))
-                    .render_to_var("setters.fixed.byte", &[fragment_name], "fragment")
-                    .unwrap();
-            }
-            let mut code = scope.render("setters", &["fixed"]).unwrap();
-            code += &gen_field_view_setter::<U, T>(v, &scope, type_path_map);
-            code
-        }
+        FieldType::Fixed(v) => gen_field_view_setter::<U, T>(v, &scope, type_path_map),
         FieldType::Array(v) => scope
             .var("raw_type", U::get_field_type(v.ty))
             .var("codec", U::get_byte_codec(v.endianness))
@@ -152,41 +190,20 @@ fn gen_field_view_getter<U: Utilities, T: TypeMapper>(
     type_path_map: &TypePathMapper<T>,
 ) -> String {
     let mut scope = scope.clone();
+    scope.var("raw_type", U::get_field_type(field.raw_type));
     match &field.view {
         FieldView::Float { a, b, .. } => scope
-            .var("view_type", U::get_field_type(field.ty))
+            .var("view_type", U::get_field_type(field.view_type))
             .var("a", format!("{:?}", a))
             .var("b", format!("{:?}", b))
             .render("getters", &["view_float"])
             .unwrap(),
-        FieldView::Enum { r, is_signed, max_positive } => {
-            scope.var("view_type", type_path_map.get(r))
-                .var("repr_type", U::get_field_type(r.repr_type));
-            match is_signed {
-                true => scope.var_d("max_positive", max_positive)
-                    .render_to_var("getters.view_enum", &["signed"], "fragment").unwrap(),
-                false => scope.render_to_var("getters.view_enum", &["unsigned"], "fragment").unwrap()
-            };
-            scope.render("getters", &["view_enum"]).unwrap()
-        },
-        FieldView::Transmute => {
-            let field_type = U::get_field_type(field.ty);
-            scope.var("view_type", field_type);
-            if field.ty == FixedFieldType::Bool {
-                scope.render_to_var("getters.view_transmute", &["bool"], "fragment").unwrap();
-            } else {
-                scope.render_to_var("getters.view_transmute", &["other"], "fragment").unwrap();
-            }
-            scope.render("getters", &["view_transmute"]).unwrap()
-        }
-        FieldView::SignedCast(max_positive) => scope
-            .var("view_type", U::get_field_type(field.ty))
-            .var_d("max_positive", max_positive)
-            .render("getters", &["view_signed"])
-            .unwrap(),
-        FieldView::None => {
-            scope.var("view_type", U::get_field_type(field.ty)).render("getters", &["view_none"]).unwrap()
-        }
+        FieldView::Enum(r) => scope.var("view_type", type_path_map.get(r))
+                .var("repr_type", U::get_field_type(r.repr_type))
+                .render("getters", &["view_enum"]).unwrap(),
+        FieldView::None => scope
+            .var("view_type", U::get_field_type(field.view_type))
+            .render("getters", &["view_none"]).unwrap()
     }
 }
 
@@ -196,36 +213,19 @@ fn gen_field_view_setter<U: Utilities, T: TypeMapper>(
     type_path_map: &TypePathMapper<T>,
 ) -> String {
     let mut scope = scope.clone();
+    scope.var("raw_type", U::get_field_type(field.raw_type));
     match &field.view {
         FieldView::Float { a_inv, b_inv, .. } => scope
-            .var("view_type", U::get_field_type(field.ty))
+            .var("view_type", U::get_field_type(field.view_type))
             .var("a_inv", format!("{:?}", a_inv))
             .var("b_inv", format!("{:?}", b_inv))
             .render("setters", &["view_float"])
             .unwrap(),
-        FieldView::Enum { r, is_signed, max_positive } => {
-            scope.var("view_type", type_path_map.get(r))
-                .var("repr_type", U::get_field_type(r.repr_type));
-            match is_signed {
-                true => scope.var_d("max_positive", max_positive)
-                    .render_to_var("setters.view_enum", &["signed"], "fragment").unwrap(),
-                false => scope.render_to_var("setters.view_enum", &["unsigned"], "fragment").unwrap()
-            };
-            scope.render("setters", &["view_enum"]).unwrap()
-        },
-        FieldView::Transmute | FieldView::SignedCast { .. } => {
-            let field_type = U::get_field_type(field.ty);
-            scope.var("view_type", field_type);
-            if field.ty == FixedFieldType::Bool {
-                scope.render_to_var("setters.view_transmute", &["bool"], "fragment").unwrap();
-            } else {
-                scope.render_to_var("setters.view_transmute", &["other"], "fragment").unwrap();
-            }
-            scope.render("setters", &["view_transmute"]).unwrap()
-        }
-        FieldView::None => {
-            scope.var("view_type", U::get_field_type(field.ty)).render("setters", &["view_none"]).unwrap()
-        }
+        FieldView::Enum(r) => scope.var("view_type", type_path_map.get(r))
+            .var("repr_type", U::get_field_type(r.repr_type))
+            .render("setters", &["view_enum"]).unwrap(),
+        FieldView::None => scope.var("view_type", U::get_field_type(field.view_type))
+            .render("setters", &["view_none"]).unwrap()
     }
 }
 
@@ -252,6 +252,8 @@ fn gen_structure_setters<U: Utilities, T: TypeMapper>(
 pub struct Templates<'fragment, 'variable> {
     pub field_template: Template<'fragment, 'variable>,
     pub template: Template<'fragment, 'variable>,
+    pub bits_template: Template<'fragment, 'variable>,
+    pub raw_template: Template<'fragment, 'variable>
 }
 
 pub fn generate<'variable, U: Utilities, T: TypeMapper>(
@@ -276,5 +278,7 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     }
     code += &gen_structure_getters::<U, T>(s, &field_template, type_path_map);
     code += &gen_structure_setters::<U, T>(s, &field_template, type_path_map);
+    code += &gen_structure::<U, T, _>(s, templates.bits_template, |mode, field, fixed, scope| gen_field_bits::<U, T>(mode, field, fixed, scope));
+    code += &gen_structure::<U, T, _>(s, templates.raw_template, |mode, field, fixed, scope| gen_field_raw::<U, T>(mode, field, fixed, scope));
     code
 }

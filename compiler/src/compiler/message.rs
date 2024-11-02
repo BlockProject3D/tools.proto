@@ -412,14 +412,14 @@ impl Field {
                 Referenced::Struct(r) => {
                     if !has_unions && r.fields.len() == 1
                         && r.fields[0].ty.as_fixed().is_some()
-                        && r.fields[0].ty.as_fixed().map(|v| v.view.is_transmute()).unwrap_or_default()
+                        && r.fields[0].ty.as_fixed().map(|v| v.raw.is_transmute()).unwrap_or_default()
                         && r.fields[0].loc.bit_size % 8 == 0
                     {
                         let fixed = unsafe { r.fields[0].ty.as_fixed().unwrap_unchecked() };
                         Ok(Field {
                             name: value.name,
                             description: value.description,
-                            ty: FieldType::Fixed(FixedField { ty: fixed.ty }),
+                            ty: FieldType::Fixed(FixedField { ty: fixed.bits_type }),
                             optional: value.optional.unwrap_or_default(),
                             size: SizeInfo {
                                 is_dyn_sized: false,

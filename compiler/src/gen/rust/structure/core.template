@@ -3,7 +3,35 @@
 impl<T> {name}<T> {{
     /// Returns the underlying wrapped data.
     pub fn into_inner(self) -> T {{
-        self.data
+        self.raw.bin.data
+    }}
+
+    /// Returns an immutable reference to the binary representation of this structure.
+    ///
+    /// This is the lowest-level values without any processing.
+    pub fn bin(&self) -> &Bin{name}<T> {{
+        &self.raw.bin
+    }}
+
+    /// Returns an immutable reference to the raw value representation of this structure.
+    ///
+    /// This is the mid-level value which includes basic processing (transmute, unsigned/signed, bool).
+    pub fn raw(&self) -> &Raw{name}<T> {{
+        &self.raw
+    }}
+
+    /// Returns a mutable reference to the binary representation of this structure.
+    ///
+    /// This is the lowest-level values without any processing.
+    pub fn bin_mut(&mut self) -> &mut Bin{name}<T> {{
+        &mut self.raw.bin
+    }}
+
+    /// Returns a mutable reference to the raw value representation of this structure.
+    ///
+    /// This is the mid-level value which includes basic processing (transmute, unsigned/signed, bool).
+    pub fn raw_mut(&mut self) -> &mut Raw{name}<T> {{
+        &mut self.raw
     }}
 }}
 
@@ -11,7 +39,8 @@ impl<T> {name}<T> {{
 impl {name}<[u8; {byte_size}]> {{
     /// Allocates a new default initialized instance of this structure onto the stack.
     pub fn new() -> Self {{
-        Self {{ data: [0; {byte_size}] }}
+        use bp3d_proto::util::Wrap;
+        unsafe {{ Self::wrap_unchecked([0; {byte_size}]) }}
     }}
 }}
 
@@ -21,25 +50,32 @@ impl<'a, T: AsRef<[u8]>> {name}<T> {{
     ///
     /// This gets a new instance of this structure by immutably referencing the data buffer contained within itself.
     pub fn to_ref(&'a self) -> {name}<&'a [u8]> {{
-        {name} {{ data: self.data.as_ref() }}
+        use bp3d_proto::util::Wrap;
+        unsafe {{ {name}::wrap_unchecked(self.raw.bin.data.as_ref()) }}
     }}
 }}
 
 impl<T: AsRef<[u8]>> AsRef<[u8]> for {name}<T> {{
     fn as_ref(&self) -> &[u8] {{
-        self.data.as_ref()
+        self.raw.bin.data.as_ref()
     }}
 }}
 
 impl<T: AsMut<[u8]>> AsMut<[u8]> for {name}<T> {{
     fn as_mut(&mut self) -> &mut [u8] {{
-        self.data.as_mut()
+        self.raw.bin.data.as_mut()
     }}
 }}
 
 impl<T: AsRef<[u8]>> bp3d_proto::util::Wrap<T> for {name}<T> {{
     unsafe fn wrap_unchecked(data: T) -> Self {{
-        Self {{ data }}
+        Self {{
+            raw: Raw{name} {{
+                bin: Bin{name} {{
+                    data
+                }}
+            }}
+        }}
     }}
 }}
 
@@ -54,7 +90,8 @@ impl<'a, T: AsMut<[u8]>> {name}<T> {{
     ///
     /// This gets a new instance of this structure by mutably referencing the data buffer contained within itself.
     pub fn to_mut(&'a mut self) -> {name}<&'a mut [u8]> {{
-        {name} {{ data: self.data.as_mut() }}
+        use bp3d_proto::util::Wrap;
+        unsafe {{ {name}::wrap_unchecked(self.raw.bin.data.as_mut()) }}
     }}
 }}
 #fragment pop
@@ -67,11 +104,12 @@ impl<T: AsRef<[u8]>> {name}<T> {{
     /// [new](Self::new) function.
     pub fn dupe(&self) -> {name}<[u8; {byte_size}]> {{
         use std::mem::MaybeUninit;
+        use bp3d_proto::util::Wrap;
         let mut data: [MaybeUninit<u8>; {byte_size}] = unsafe {{ MaybeUninit::uninit().assume_init() }};
         unsafe {{
             #[allow(clippy::missing_transmute_annotations)]
-            std::ptr::copy_nonoverlapping(self.data.as_ref().as_ptr(), std::mem::transmute(data.as_mut_ptr()), {byte_size});
-            {name} {{ data: std::mem::transmute::<[MaybeUninit<u8>; {byte_size}], [u8; {byte_size}]>(data) }}
+            std::ptr::copy_nonoverlapping(self.raw.bin.data.as_ref().as_ptr(), std::mem::transmute(data.as_mut_ptr()), {byte_size});
+            {name}::wrap_unchecked(std::mem::transmute::<[MaybeUninit<u8>; {byte_size}], [u8; {byte_size}]>(data))
         }}
     }}
 }}
@@ -83,7 +121,7 @@ impl<T: AsRef<[u8]>> {name}<T> {{
 /// {struct_description}
 #[derive(Copy, Clone, Default, Debug)]
 pub struct {name}<T> {{
-    data: T
+    raw: Raw{name}<T>
 }}
 #fragment pop
 
@@ -98,7 +136,7 @@ impl<'a> bp3d_proto::message::WriteTo for {name}<&'a [u8]> {{
     type Input<'b> = Self;
 
     fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {{
-        unsafe {{ out.write_all(input.data.get_unchecked(..{byte_size}))? }};
+        unsafe {{ out.write_all(input.raw.bin.data.get_unchecked(..{byte_size}))? }};
         Ok(())
     }}
 }}
@@ -107,7 +145,7 @@ impl<'a> bp3d_proto::message::WriteTo for {name}<&'a [u8]> {{
 #fragment push write_to_async
 impl<'a> bp3d_proto::message::WriteToAsync for {name}<&'a [u8]> {{
     async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> bp3d_proto::message::Result<()> {{
-        unsafe {{ out.write_all(input.data.get_unchecked(..{byte_size})).await? }};
+        unsafe {{ out.write_all(input.raw.bin.data.get_unchecked(..{byte_size})).await? }};
         Ok(())
     }}
 }}
@@ -123,7 +161,15 @@ impl<'a> bp3d_proto::message::FromBytes<'a> for {name}<&'a [u8]> {{
         if bytes.len() < {byte_size} {{
             Err(bp3d_proto::message::Error::Truncated)
         }} else {{
-            unsafe {{ Ok(bp3d_proto::message::Message::new({byte_size}, Self {{ data: bytes.get_unchecked(..{byte_size}) }})) }}
+            unsafe {{
+                Ok(bp3d_proto::message::Message::new({byte_size}, Self {{
+                    raw: Raw{name} {{
+                        bin: Bin{name} {{
+                            data: bytes.get_unchecked(..{byte_size})
+                        }}
+                    }}
+                }}))
+            }}
         }}
     }}
 }}

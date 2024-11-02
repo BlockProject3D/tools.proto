@@ -36,16 +36,24 @@ use crate::gen::template::Template;
 
 const STRUCT_TEMPLATE: &[u8] = include_bytes!("core.template");
 const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("field.template");
+const STRUCT_BITS_TEMPLATE: &[u8] = include_bytes!("bin.template");
+const STRUCT_RAW_TEMPLATE: &[u8] = include_bytes!("raw.template");
 
 pub fn gen_structure_decl(proto: &Protocol, s: &Structure) -> String {
     let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
     let mut template = Template::compile(STRUCT_TEMPLATE).unwrap();
     let mut field_template = Template::compile(STRUCT_FIELD_TEMPLATE).unwrap();
+    let mut bits_template = Template::compile(STRUCT_BITS_TEMPLATE).unwrap();
+    let mut raw_template = Template::compile(STRUCT_RAW_TEMPLATE).unwrap();
     template.var("proto_name", proto.name());
     field_template.var("proto_name", proto.name());
+    bits_template.var("proto_name", proto.name());
+    raw_template.var("proto_name", proto.name());
     let templates = Templates {
         template,
         field_template,
+        bits_template,
+        raw_template
     };
     generate::<SwiftUtils, _>(templates, s, &type_path_map, &TemplateHooks::default())
 }

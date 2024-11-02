@@ -49,13 +49,10 @@ impl UnionField {
     ) -> Result<Self, Error> {
         let case: usize = match &discriminant.view {
             FieldView::Float { .. } => return Err(Error::FloatInUnionDiscriminant),
-            FieldView::Enum { r, .. } => {
+            FieldView::Enum(r) => {
                 r.variants_map.get(&value.case).copied().ok_or(Error::InvalidUnionCase(value.case))? as usize
             }
-            FieldView::Transmute | FieldView::SignedCast { .. } => {
-                let value: isize = value.case.parse().map_err(|_| Error::InvalidUnionCase(value.case))?;
-                value as usize
-            }
+            //TODO: Check how unions work with the new bits-type/raw-type/view-type separation
             FieldView::None => value.case.parse().map_err(|_| Error::InvalidUnionCase(value.case))?,
         };
         let item_type = value

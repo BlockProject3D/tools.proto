@@ -1,0 +1,62 @@
+#fragment push decl
+/// Definition of the bits layout for {struct_name} structure.
+///
+/// The bits layout wraps a byte buffer and offers access
+/// to the raw bit patterns of each field in a structure.
+#[derive(Copy, Clone, Default, Debug)]
+pub struct Bin{struct_name}<T> {{
+    data: T
+}}
+#fragment pop
+
+#fragment push getters
+impl<T: AsRef<[u8]>> Bin{struct_name}<T> {{
+{fields}
+#fragment push field
+    /// Bit pattern accessor for field {info}.
+    ///
+    /// {description}
+    pub fn get_{name}(&self) -> {bits_type} {{
+{fragment}
+#fragment push bit.aligned
+        unsafe {{ {codec}::read_aligned::<{bits_type}, {bit_offset}, {bit_size}>(self.data.as_ref().get_unchecked({start}..{end})) }}
+#fragment pop
+#fragment push bit.unaligned
+        unsafe {{ {codec}::read_unaligned::<{bits_type}, {bit_offset}, {bit_size}>(self.data.as_ref().get_unchecked({start}..{end})) }}
+#fragment pop
+#fragment push byte.aligned
+        unsafe {{ {codec}::read_aligned::<{bits_type}>(self.data.as_ref().get_unchecked({start}..{end})) }}
+#fragment pop
+#fragment push byte.unaligned
+        unsafe {{ {codec}::read_unaligned::<{bits_type}>(self.data.as_ref().get_unchecked({start}..{end})) }}
+#fragment pop
+    }}
+#fragment pop
+}}
+#fragment pop
+
+#fragment push setters
+impl<T: AsMut<[u8]>> Bin{struct_name}<T> {{
+{fields}
+#fragment push field
+    /// Bit pattern setter for field {info}.
+    ///
+    /// {description}
+    pub fn set_{name}(&mut self, value: {bits_type}) {{
+{fragment}
+#fragment push bit.aligned
+        unsafe {{ {codec}::write_aligned::<{bits_type}, {bit_offset}, {bit_size}>(self.data.as_mut().get_unchecked_mut({start}..{end}), value) }}
+#fragment pop
+#fragment push bit.unaligned
+        unsafe {{ {codec}::write_unaligned::<{bits_type}, {bit_offset}, {bit_size}>(self.data.as_mut().get_unchecked_mut({start}..{end}), value) }}
+#fragment pop
+#fragment push byte.aligned
+        unsafe {{ {codec}::write_aligned::<{bits_type}>(self.data.as_mut().get_unchecked_mut({start}..{end}), value) }}
+#fragment pop
+#fragment push byte.unaligned
+        unsafe {{ {codec}::write_unaligned::<{bits_type}>(self.data.as_mut().get_unchecked_mut({start}..{end}), value) }}
+#fragment pop
+    }}
+#fragment pop
+}}
+#fragment pop

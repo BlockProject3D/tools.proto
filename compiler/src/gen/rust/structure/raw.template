@@ -1,0 +1,72 @@
+#fragment push decl
+/// Definition of the raw layout for {struct_name} structure.
+///
+/// The raw layout wraps a bits layout and offers access
+/// to the raw values (as specified in the model) of
+/// each field in a structure.
+#[derive(Copy, Clone, Default, Debug)]
+pub struct Raw{struct_name}<T> {{
+    bin: Bin{struct_name}<T>
+}}
+#fragment pop
+
+#fragment push getters
+impl<T: AsRef<[u8]>> Raw{struct_name}<T> {{
+{fields}
+#fragment push field
+    /// Raw field accessor for {info}.
+    ///
+    /// {description}
+    pub fn get_{name}(&self) -> {raw_type} {{
+{fragment}
+#fragment push transmute_bool
+        self.bin.get_{name}() != 0
+#fragment pop
+#fragment push transmute_other
+        bp3d_proto::transmute!(<{bits_type}, {raw_type}>(self.bin.get_{name}()))
+#fragment pop
+#fragment push signed
+        let raw_value = self.bin.get_{name}();
+        if raw_value > {max_positive} {{
+            -((((!raw_value) & {max_positive}) + 1) as {raw_type})
+        }} else {{
+            (raw_value & {max_positive}) as {raw_type}
+        }}
+#fragment pop
+#fragment push none
+        self.bin.get_{name}()
+#fragment pop
+    }}
+#fragment pop
+}}
+#fragment pop
+
+#fragment push setters
+impl<T: AsMut<[u8]>> Raw{struct_name}<T> {{
+{fields}
+#fragment push field
+    /// Raw field setter for {info}.
+    ///
+    /// {description}
+    pub fn set_{name}(&mut self, value: {raw_type}) {{
+{fragment}
+#fragment push transmute_bool
+        if value {{
+            self.bin.set_{name}(1);
+        }} else {{
+            self.bin.set_{name}(0);
+        }}
+#fragment pop
+#fragment push transmute_other
+        self.bin.set_{name}(bp3d_proto::transmute!(<{raw_type}, {bits_type}>(value)));
+#fragment pop
+#fragment push signed
+        self.bin.set_{name}(bp3d_proto::transmute!(<{raw_type}, {bits_type}>(value)));
+#fragment pop
+#fragment push none
+        self.bin.set_{name}(value);
+#fragment pop
+    }}
+#fragment pop
+}}
+#fragment pop

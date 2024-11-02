@@ -213,7 +213,7 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     template
         .var(
             "discriminant_raw_type",
-            U::get_field_type(u.discriminant.get_leaf_fixed().ty),
+            U::get_field_type(u.discriminant.get_leaf_fixed().bits_type),
         )
         .var("union_name", &u.name)
         .var("discriminant_path_mut", U::gen_discriminant_path_mut(&u.discriminant))

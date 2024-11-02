@@ -1,0 +1,75 @@
+#fragment push decl
+/// Definition of the raw layout for {struct_name} structure.
+///
+/// The raw layout wraps a bits layout and offers access
+/// to the raw values (as specified in the model) of
+/// each field in a structure.
+public struct {proto_name:to_pascal_case}Raw{struct_name}<T> {{
+    var bin: {proto_name:to_pascal_case}Bin{struct_name}<T>
+}}
+#fragment pop
+
+#fragment push getters
+extension {proto_name:to_pascal_case}Raw{struct_name} where T: BP3DProto.Buffer {{
+{fields}
+#fragment push field
+    /// Raw field accessor for {info}.
+    ///
+    /// {description}
+    public var {name:to_camel_case}: {raw_type} {{
+{fragment}
+#fragment push transmute_bool
+        if self.bin.{name:to_camel_case} != 0 {{
+            return true;
+        }} else {{
+            return false;
+        }}
+#fragment pop
+#fragment push transmute_other
+        BP3DProto.transmute(self.bin.{name:to_camel_case})
+#fragment pop
+#fragment push signed
+        let rawValue = self.bin.{name:to_camel_case};
+        if rawValue > {max_positive} {{
+            return -({raw_type}(((~rawValue) & {max_positive}) + 1));
+        }} else {{
+            return {raw_type}(rawValue & {max_positive});
+        }}
+#fragment pop
+#fragment push none
+        self.bin.{name:to_camel_case}
+#fragment pop
+    }}
+#fragment pop
+}}
+#fragment pop
+
+#fragment push setters
+extension {proto_name:to_pascal_case}Raw{struct_name} where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {{
+{fields}
+#fragment push field
+    /// Raw field setter for {info}.
+    ///
+    /// {description}
+    public func set{name:to_pascal_case}(_ value: {raw_type}) {{
+{fragment}
+#fragment push transmute_bool
+        if value {{
+            self.bin.set{name:to_pascal_case}(1);
+        }} else {{
+            self.bin.set{name:to_pascal_case}(0);
+        }}
+#fragment pop
+#fragment push signed
+        self.bin.set{name:to_pascal_case}(BP3DProto.transmute(value));
+#fragment pop
+#fragment push transmute_other
+        self.bin.set{name:to_pascal_case}(BP3DProto.transmute(value));
+#fragment pop
+#fragment push none
+        self.bin.set{name:to_pascal_case}(value);
+#fragment pop
+    }}
+#fragment pop
+}}
+#fragment pop

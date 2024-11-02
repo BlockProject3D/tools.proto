@@ -5,18 +5,26 @@
 public struct {proto_name:to_pascal_case}{name}<T>: BP3DProto.FixedSize, FromBuffer {{
     public typealias Buffer = T
 
-    var data: T
+    private var _raw: {proto_name:to_pascal_case}Raw{name}<T>
 
     public static var size: Int {{ {byte_size} }}
 
     public init(_ data: T) {{
-        self.data = data;
+        self._raw = {proto_name:to_pascal_case}Raw{name}(bin: {proto_name:to_pascal_case}Bin{name}(data: data));
+    }}
+
+    public var raw: {proto_name:to_pascal_case}Raw{name}<T> {{
+        return _raw;
+    }}
+
+    public var bin: {proto_name:to_pascal_case}Bin{name}<T> {{
+        return _raw.bin;
     }}
 }}
 
 extension {proto_name:to_pascal_case}{name}<BP3DProto.DataBuffer> {{
     public init() {{
-        self.data = BP3DProto.DataBuffer(size: {byte_size})
+        self._raw = {proto_name:to_pascal_case}Raw{name}(bin: {proto_name:to_pascal_case}Bin{name}(data: BP3DProto.DataBuffer(size: {byte_size})));
     }}
 }}
 
@@ -31,7 +39,7 @@ extension {proto_name:to_pascal_case}{name}: BP3DProto.WriteTo where T: BP3DProt
     public typealias Input = {proto_name:to_pascal_case}{name};
 
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {{
-        out.write(bytes: input.data[...{byte_size}].toData());
+        out.write(bytes: input._raw.bin.data[...{byte_size}].toData());
     }}
 }}
 #fragment pop

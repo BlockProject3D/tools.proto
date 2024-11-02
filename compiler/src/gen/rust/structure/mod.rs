@@ -37,6 +37,8 @@ use crate::gen::RustParams;
 
 const STRUCT_TEMPLATE: &[u8] = include_bytes!("core.template");
 const STRUCT_FIELD_TEMPLATE: &[u8] = include_bytes!("field.template");
+const STRUCT_BITS_TEMPLATE: &[u8] = include_bytes!("bin.template");
+const STRUCT_RAW_TEMPLATE: &[u8] = include_bytes!("raw.template");
 
 pub fn gen_structure_decl(s: &Structure, type_path_map: &TypePathMap, params: &RustParams) -> String {
     let mut options = Options::default();
@@ -49,6 +51,9 @@ pub fn gen_structure_decl(s: &Structure, type_path_map: &TypePathMap, params: &R
     let templates = Templates {
         template: Template::compile_with_options(STRUCT_TEMPLATE, &options).unwrap(),
         field_template: Template::compile_with_options(STRUCT_FIELD_TEMPLATE, &options).unwrap(),
+        bits_template: Template::compile_with_options(STRUCT_BITS_TEMPLATE, &options).unwrap(),
+        raw_template: Template::compile_with_options(STRUCT_RAW_TEMPLATE, &options).unwrap()
+
     };
     let mut hooks = TemplateHooks::new();
     if params.enable_write_async {
@@ -85,7 +90,7 @@ mod tests {
 /// 
 #[derive(Copy, Clone, Default, Debug)]
 pub struct Test<T> {
-    data: T
+    raw: RawTest<T>
 }
 "
         )

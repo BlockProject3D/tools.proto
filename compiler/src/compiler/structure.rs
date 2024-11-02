@@ -203,9 +203,38 @@ impl Location {
             },
         }
     }
+}
 
-    pub fn get_unsigned_integer_type(&self) -> FixedFieldType {
-        FixedFieldType::from_model(StructFieldRaw::Unsigned { bits: self.bit_size }).unwrap()
+#[derive(Clone, Debug)]
+pub enum FieldRaw {
+    /// Apply a raw C-like cast (used for unsigned > signed and unsigned > float of same bit size).
+    Transmute,
+
+    /// Apply a unsigned > signed cast on a non T-aligned value,
+    /// the maximum positive value is passed in.
+    SignedCast(usize),
+
+    /// Don't do anything special, just return the raw value.
+    None
+}
+
+impl FieldRaw {
+    pub fn is_transmute(&self) -> bool {
+        matches!(self, Self::Transmute)
+    }
+
+    fn from_model(ty: SimpleType, bit_size: usize) -> FieldRaw {
+        if ty == SimpleType::Float && bit_size != 32 && bit_size != 64 {
+            return FieldRaw::None;
+        }
+        if ty == SimpleType::Signed && bit_size != 8 && bit_size != 16 && bit_size != 32 && bit_size != 64 {
+            let max_value = 1 << (bit_size - 1);
+            FieldRaw::SignedCast(max_value - 1)
+        } else if ty == SimpleType::Unsigned {
+            FieldRaw::None
+        } else {
+            FieldRaw::Transmute
+        }
     }
 }
 
@@ -215,28 +244,13 @@ pub enum FieldView {
     Float { a: f64, b: f64, a_inv: f64, b_inv: f64 },
 
     /// Apply an enum view.
-    Enum {
-        r: Rc<Enum>,
-        is_signed: bool,
-        max_positive: usize
-    },
-
-    /// Apply a raw C-like cast (used for unsigned > signed and unsigned > float of same bit size).
-    Transmute,
-
-    /// Apply a unsigned > signed cast on a non T-aligned value,
-    /// the maximum positive value is passed in.
-    SignedCast(usize),
+    Enum(Rc<Enum>),
 
     /// Don't do anything special, just return the raw value.
     None,
 }
 
 impl FieldView {
-    pub fn is_transmute(&self) -> bool {
-        matches!(self, FieldView::Transmute | FieldView::None)
-    }
-
     fn from_model(
         proto: &Protocol,
         ty: SimpleType,
@@ -248,14 +262,8 @@ impl FieldView {
                 if ty != SimpleType::Unsigned && ty != SimpleType::Signed {
                     return Err(Error::UnsupportedViewType(ty));
                 }
-                let is_signed = ty == SimpleType::Signed;
-                let max_positive = (1 << (bit_size - 1)) - 1;
                 let r = proto.enums.get(&name).ok_or(Error::UndefinedReference(name))?;
-                Ok(FieldView::Enum{
-                    r: r.clone(),
-                    is_signed,
-                    max_positive
-                })
+                Ok(FieldView::Enum(r.clone()))
             }
             Some(StructFieldView::FloatRange { min, max }) => {
                 if ty != SimpleType::Float {
@@ -278,33 +286,24 @@ impl FieldView {
                 let b_inv = 0.0;
                 Ok(FieldView::Float { a, b, a_inv, b_inv })
             }
-            None => {
-                if ty == SimpleType::Float && bit_size != 32 && bit_size != 64 {
-                    return Err(Error::UnsupportedViewType(ty));
-                }
-                if ty == SimpleType::Signed && bit_size != 8 && bit_size != 16 && bit_size != 32 && bit_size != 64 {
-                    let max_value = 1 << (bit_size - 1);
-                    Ok(FieldView::SignedCast(max_value - 1))
-                } else if ty == SimpleType::Unsigned {
-                    Ok(FieldView::None)
-                } else {
-                    Ok(FieldView::Transmute)
-                }
-            }
+            None => Ok(FieldView::None)
         }
     }
 }
 
 #[derive(Clone, Debug)]
 pub struct FixedField {
-    pub ty: FixedFieldType,
+    pub bits_type: FixedFieldType,
+    pub raw_type: FixedFieldType,
+    pub view_type: FixedFieldType,
+    pub raw: FieldRaw,
     pub view: FieldView,
     pub endianness: Endianness,
 }
 
 impl Display for FixedField {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}, {} endian", self.ty, self.endianness)
+        write!(f, "{}, {} endian", self.bits_type, self.endianness)
     }
 }
 
@@ -379,6 +378,7 @@ impl Field {
             }
             let mut bit_size = info.get_bit_size();
             let view = FieldView::from_model(proto, info.get_simple_type(), bit_size, value.view)?;
+            let raw = FieldRaw::from_model(info.get_simple_type(), bit_size);
             bit_size *= array_len;
             let ty = FixedFieldType::from_model(info)?;
             if array_len > 1 {
@@ -392,10 +392,21 @@ impl Field {
                     item_bit_size: bit_size / array_len,
                 }), bit_size)
             } else {
+                let bits_type = FixedFieldType::from_model(StructFieldRaw::Unsigned { bits: bit_size }).unwrap();
+                let raw_type = match (bit_size, ty) {
+                    (32, FixedFieldType::Float32) => FixedFieldType::Float32,
+                    (64, FixedFieldType::Float64) => FixedFieldType::Float64,
+                    (_, FixedFieldType::Float32) => bits_type,
+                    (_, FixedFieldType::Float64) => bits_type,
+                    _ => ty
+                };
                 (FieldType::Fixed(FixedField {
                     endianness: proto.endianness,
-                    ty,
+                    bits_type,
+                    raw_type,
+                    view_type: ty,
                     view,
+                    raw
                 }), bit_size)
             }
         } else {
