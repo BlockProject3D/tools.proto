@@ -48,36 +48,36 @@ final class BitsTests: XCTestCase {
         XCTAssertEqual(nums.c, 65535);
         nums.setA(-7);
         XCTAssertEqual(nums.a, -7);
-        XCTAssertEqual(nums.rawA, 9);
+        XCTAssertEqual(nums.bin.a, 9);
         nums.setA(-6);
         XCTAssertEqual(nums.a, -6);
-        XCTAssertEqual(nums.rawA, 10);
+        XCTAssertEqual(nums.bin.a, 10);
         nums.setA(-5);
         XCTAssertEqual(nums.a, -5);
-        XCTAssertEqual(nums.rawA, 11);
+        XCTAssertEqual(nums.bin.a, 11);
         nums.setA(1);
         XCTAssertEqual(nums.a, 1);
-        XCTAssertEqual(nums.rawA, 1);
+        XCTAssertEqual(nums.bin.a, 1);
         nums.setA(4);
         XCTAssertEqual(nums.a, 4);
-        XCTAssertEqual(nums.rawA, 4);
+        XCTAssertEqual(nums.bin.a, 4);
     }
     
     func testNumbersRaw() throws {
         let nums = BitsNumbers();
-        nums.setRawA(15);
-        nums.setRawB(15);
-        nums.setRawC(65536);
-        nums.setRawD(127);
-        nums.setRawC(65536);
-        XCTAssertEqual(nums.rawA, 15);
+        nums.bin.setA(15);
+        nums.bin.setB(15);
+        nums.bin.setC(65536);
+        nums.bin.setD(127);
+        nums.bin.setC(65536);
+        XCTAssertEqual(nums.bin.a, 15);
         XCTAssertEqual(nums.a, -1);
-        XCTAssertEqual(nums.rawB, 15);
-        XCTAssertEqual(nums.rawC, 65536);
-        XCTAssertEqual(nums.rawD, 127);
+        XCTAssertEqual(nums.bin.b, 15);
+        XCTAssertEqual(nums.bin.c, 65536);
+        XCTAssertEqual(nums.bin.d, 127);
         var cur_a = 0;
         for i in 0...15 {
-            nums.setRawA(UInt8(i));
+            nums.bin.setA(UInt8(i));
             if i > 7 && cur_a > 0 {
                 cur_a = -8
             }
@@ -98,36 +98,36 @@ final class BitsTests: XCTestCase {
         XCTAssertEqual(nums.c, 65535);
         nums.setA(-7);
         XCTAssertEqual(nums.a, -7);
-        XCTAssertEqual(nums.rawA, 9);
+        XCTAssertEqual(nums.bin.a, 9);
         nums.setA(-6);
         XCTAssertEqual(nums.a, -6);
-        XCTAssertEqual(nums.rawA, 10);
+        XCTAssertEqual(nums.bin.a, 10);
         nums.setA(-5);
         XCTAssertEqual(nums.a, -5);
-        XCTAssertEqual(nums.rawA, 11);
+        XCTAssertEqual(nums.bin.a, 11);
         nums.setA(1);
         XCTAssertEqual(nums.a, 1);
-        XCTAssertEqual(nums.rawA, 1);
+        XCTAssertEqual(nums.bin.a, 1);
         nums.setA(4);
         XCTAssertEqual(nums.a, 4);
-        XCTAssertEqual(nums.rawA, 4);
+        XCTAssertEqual(nums.bin.a, 4);
     }
 
     func testNumbersRaw2() throws {
         let nums = Bits2Numbers();
-        nums.setRawA(15);
-        nums.setRawB(15);
-        nums.setRawC(65536);
-        nums.setRawD(127);
-        nums.setRawC(65536);
-        XCTAssertEqual(nums.rawA, 15);
+        nums.bin.setA(15);
+        nums.bin.setB(15);
+        nums.bin.setC(65536);
+        nums.bin.setD(127);
+        nums.bin.setC(65536);
+        XCTAssertEqual(nums.bin.a, 15);
         XCTAssertEqual(nums.a, -1);
-        XCTAssertEqual(nums.rawB, 15);
-        XCTAssertEqual(nums.rawC, 65536);
-        XCTAssertEqual(nums.rawD, 127);
+        XCTAssertEqual(nums.bin.b, 15);
+        XCTAssertEqual(nums.bin.c, 65536);
+        XCTAssertEqual(nums.bin.d, 127);
         var cur_a = 0;
         for i in 0...15 {
-            nums.setRawA(UInt8(i));
+            nums.bin.setA(UInt8(i));
             if i > 7 && cur_a > 0 {
                 cur_a = -8
             }

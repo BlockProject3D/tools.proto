@@ -31,22 +31,28 @@ import BP3DProto;
 
 public struct EnumsHeader<T>: BP3DProto.FixedSize, FromBuffer {
     public typealias Buffer = T
-    var data: T
+    private var _raw: EnumsRawHeader<T>
     public static var size: Int { 1 }
     public init(_ data: T) {
-        self.data = data;
+        self._raw = EnumsRawHeader(bin: EnumsBinHeader(data: data));
+    }
+    public var raw: EnumsRawHeader<T> {
+        return _raw;
+    }
+    public var bin: EnumsBinHeader<T> {
+        return _raw.bin;
     }
 }
 extension EnumsHeader<BP3DProto.DataBuffer> {
     public init() {
-        self.data = BP3DProto.DataBuffer(size: 1)
+        self._raw = EnumsRawHeader(bin: EnumsBinHeader(data: BP3DProto.DataBuffer(size: 1)));
     }
 }
 public let SIZE_ENUMS_HEADER: Int = 1;
 extension EnumsHeader: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = EnumsHeader;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data[...1].toData());
+        out.write(bytes: input._raw.bin.data[...1].toData());
     }
 }
 extension EnumsHeader: BP3DProto.FromBytes where T: BP3DProto.Buffer {
@@ -60,27 +66,73 @@ extension EnumsHeader: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     }
 }
 extension EnumsHeader where T: BP3DProto.Buffer {
-    public var rawType: UInt8 {
-        BP3DProto.ByteCodecLE.readAligned(UInt8.self, self.data[0...1])
-
-    }
     public var type: EnumsType? {
-        let rawValue = self.rawType;
+        let rawValue = self._raw.type;
         return EnumsType(rawValue: rawValue);
-
     }
 
 }
 extension EnumsHeader where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
-    public func setRawType(_ value: UInt8) {
+    @discardableResult
+    public func setType(_ value: EnumsType) -> Self {
+        self._raw.setType(value.rawValue);
+        return self;
+    }
+
+}
+/// Definition of the bits layout for Header structure.
+///
+/// The bits layout wraps a byte buffer and offers access
+/// to the raw bit patterns of each field in a structure.
+public struct EnumsBinHeader<T> {
+    var data: T
+}
+extension EnumsBinHeader where T: BP3DProto.Buffer {
+    /// Bit pattern accessor for field type: UInt8, little endian (bytes 0..1, bits 0..8).
+    ///
+    /// 
+    public var type: UInt8 {
+        BP3DProto.ByteCodecLE.readAligned(UInt8.self, self.data[0...1])
+
+    }
+
+}
+extension EnumsBinHeader where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
+    /// Bit pattern setter for field type: UInt8, little endian (bytes 0..1, bits 0..8).
+    ///
+    /// 
+    public func setType(_ value: UInt8) {
         var buffer = self.data[0...1];
         BP3DProto.ByteCodecLE.writeAligned(UInt8.self, &buffer, value: value);
 
     }
-    @discardableResult
-    public func setType(_ value: EnumsType) -> Self {
-        self.setRawType(UInt8(value.rawValue));
-        return self;
+
+}
+/// Definition of the raw layout for Header structure.
+///
+/// The raw layout wraps a bits layout and offers access
+/// to the raw values (as specified in the model) of
+/// each field in a structure.
+public struct EnumsRawHeader<T> {
+    var bin: EnumsBinHeader<T>
+}
+extension EnumsRawHeader where T: BP3DProto.Buffer {
+    /// Raw field accessor for type: UInt8, little endian (bytes 0..1, bits 0..8).
+    ///
+    /// 
+    public var type: UInt8 {
+        self.bin.type
+
+    }
+
+}
+extension EnumsRawHeader where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
+    /// Raw field setter for type: UInt8, little endian (bytes 0..1, bits 0..8).
+    ///
+    /// 
+    public func setType(_ value: UInt8) {
+        self.bin.setType(value);
+
     }
 
 }

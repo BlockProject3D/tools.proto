@@ -42,7 +42,7 @@ final class EnumsTests: XCTestCase {
         XCTAssertEqual(header.type!, EnumsType.null);
         header.setType(EnumsType.string);
         XCTAssertEqual(header.type!, EnumsType.string);
-        header.setRawType(0xFF);
+        header.raw.setType(0xFF);
         XCTAssert(header.type == nil);
         header.setType(EnumsType.double);
         XCTAssertEqual(header.type!, EnumsType.double);

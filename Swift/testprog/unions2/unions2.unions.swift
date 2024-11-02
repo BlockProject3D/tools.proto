@@ -36,7 +36,7 @@ public enum Unions2NestedDiscriminant<B: BP3DProto.Buffer> {
 }
 extension Unions2NestedDiscriminant {
     public static func from(bytes: B, discriminant: Unions2Header2<B>) throws -> BP3DProto.Message<Self> {
-        let discriminant = discriminant.inner.rawTest;
+        let discriminant = discriminant.inner.raw.test;
         switch discriminant {
             case 0:
                 return BP3DProto.Message(size: 0, data: Self.v1);
@@ -66,7 +66,7 @@ extension Unions2NestedDiscriminant {
                 break;
 
         };
-        discriminant.inner.setRawTest(discriminantValue);
+        discriminant.inner.raw.setTest(discriminantValue);
     }
 }
 extension Unions2NestedDiscriminant {

@@ -42,7 +42,7 @@ final class ViewsTests: XCTestCase {
         floats.setA(4.4242).setB(12.7);
         XCTAssertLessThanOrEqual(abs(floats.a - 4.4242), 0.0001);
         XCTAssertLessThanOrEqual(abs(floats.b - 12.7), 0.1);
-        floats.setRawB(127);
+        floats.raw.setB(127);
         XCTAssertLessThanOrEqual(abs(floats.b - 12.7), 0.1);
     }
 

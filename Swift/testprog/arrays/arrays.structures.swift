@@ -31,22 +31,28 @@ import BP3DProto;
 
 public struct ArraysItem<T>: BP3DProto.FixedSize, FromBuffer {
     public typealias Buffer = T
-    var data: T
+    private var _raw: ArraysRawItem<T>
     public static var size: Int { 3 }
     public init(_ data: T) {
-        self.data = data;
+        self._raw = ArraysRawItem(bin: ArraysBinItem(data: data));
+    }
+    public var raw: ArraysRawItem<T> {
+        return _raw;
+    }
+    public var bin: ArraysBinItem<T> {
+        return _raw.bin;
     }
 }
 extension ArraysItem<BP3DProto.DataBuffer> {
     public init() {
-        self.data = BP3DProto.DataBuffer(size: 3)
+        self._raw = ArraysRawItem(bin: ArraysBinItem(data: BP3DProto.DataBuffer(size: 3)));
     }
 }
 public let SIZE_ARRAYS_ITEM: Int = 3;
 extension ArraysItem: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = ArraysItem;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data[...3].toData());
+        out.write(bytes: input._raw.bin.data[...3].toData());
     }
 }
 extension ArraysItem: BP3DProto.FromBytes where T: BP3DProto.Buffer {
@@ -60,59 +66,146 @@ extension ArraysItem: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     }
 }
 extension ArraysItem where T: BP3DProto.Buffer {
-    public var rawId: UInt8 {
-        BP3DProto.ByteCodecLE.readAligned(UInt8.self, self.data[0...1])
-
-    }
     public var id: UInt8 {
-        self.rawId
-    }
-    public var rawCount: UInt16 {
-        BP3DProto.BitCodecLE.readAligned(UInt16.self, self.data[1...3], bitOffset: 0, bitSize: 11)
-
+        self._raw.id
     }
     public var count: UInt16 {
-        self.rawCount
-    }
-    public var rawSlot: UInt8 {
-        BP3DProto.BitCodecLE.readAligned(UInt8.self, self.data[2...3], bitOffset: 3, bitSize: 5)
-
+        self._raw.count
     }
     public var slot: UInt8 {
-        self.rawSlot
+        self._raw.slot
     }
 
 }
 extension ArraysItem where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
-    public func setRawId(_ value: UInt8) {
+    @discardableResult
+    public func setId(_ value: UInt8) -> Self {
+        self._raw.setId(value);
+        return self;
+    }
+    @discardableResult
+    public func setCount(_ value: UInt16) -> Self {
+        self._raw.setCount(value);
+        return self;
+    }
+    @discardableResult
+    public func setSlot(_ value: UInt8) -> Self {
+        self._raw.setSlot(value);
+        return self;
+    }
+
+}
+/// Definition of the bits layout for Item structure.
+///
+/// The bits layout wraps a byte buffer and offers access
+/// to the raw bit patterns of each field in a structure.
+public struct ArraysBinItem<T> {
+    var data: T
+}
+extension ArraysBinItem where T: BP3DProto.Buffer {
+    /// Bit pattern accessor for field id: UInt8, little endian (bytes 0..1, bits 0..8).
+    ///
+    /// 
+    public var id: UInt8 {
+        BP3DProto.ByteCodecLE.readAligned(UInt8.self, self.data[0...1])
+
+    }
+    /// Bit pattern accessor for field count: UInt16, little endian (bytes 1..3, bits 0..11).
+    ///
+    /// 
+    public var count: UInt16 {
+        BP3DProto.BitCodecLE.readAligned(UInt16.self, self.data[1...3], bitOffset: 0, bitSize: 11)
+
+    }
+    /// Bit pattern accessor for field slot: UInt8, little endian (bytes 2..3, bits 3..8).
+    ///
+    /// 
+    public var slot: UInt8 {
+        BP3DProto.BitCodecLE.readAligned(UInt8.self, self.data[2...3], bitOffset: 3, bitSize: 5)
+
+    }
+
+}
+extension ArraysBinItem where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
+    /// Bit pattern setter for field id: UInt8, little endian (bytes 0..1, bits 0..8).
+    ///
+    /// 
+    public func setId(_ value: UInt8) {
         var buffer = self.data[0...1];
         BP3DProto.ByteCodecLE.writeAligned(UInt8.self, &buffer, value: value);
 
     }
-    @discardableResult
-    public func setId(_ value: UInt8) -> Self {
-        self.setRawId(value);
-        return self;
-    }
-    public func setRawCount(_ value: UInt16) {
+    /// Bit pattern setter for field count: UInt16, little endian (bytes 1..3, bits 0..11).
+    ///
+    /// 
+    public func setCount(_ value: UInt16) {
         var buffer = self.data[1...3];
         BP3DProto.BitCodecLE.writeAligned(UInt16.self, &buffer, bitOffset: 0, bitSize: 11, value: value);
 
     }
-    @discardableResult
-    public func setCount(_ value: UInt16) -> Self {
-        self.setRawCount(value);
-        return self;
-    }
-    public func setRawSlot(_ value: UInt8) {
+    /// Bit pattern setter for field slot: UInt8, little endian (bytes 2..3, bits 3..8).
+    ///
+    /// 
+    public func setSlot(_ value: UInt8) {
         var buffer = self.data[2...3];
         BP3DProto.BitCodecLE.writeAligned(UInt8.self, &buffer, bitOffset: 3, bitSize: 5, value: value);
 
     }
-    @discardableResult
-    public func setSlot(_ value: UInt8) -> Self {
-        self.setRawSlot(value);
-        return self;
+
+}
+/// Definition of the raw layout for Item structure.
+///
+/// The raw layout wraps a bits layout and offers access
+/// to the raw values (as specified in the model) of
+/// each field in a structure.
+public struct ArraysRawItem<T> {
+    var bin: ArraysBinItem<T>
+}
+extension ArraysRawItem where T: BP3DProto.Buffer {
+    /// Raw field accessor for id: UInt8, little endian (bytes 0..1, bits 0..8).
+    ///
+    /// 
+    public var id: UInt8 {
+        self.bin.id
+
+    }
+    /// Raw field accessor for count: UInt16, little endian (bytes 1..3, bits 0..11).
+    ///
+    /// 
+    public var count: UInt16 {
+        self.bin.count
+
+    }
+    /// Raw field accessor for slot: UInt8, little endian (bytes 2..3, bits 3..8).
+    ///
+    /// 
+    public var slot: UInt8 {
+        self.bin.slot
+
+    }
+
+}
+extension ArraysRawItem where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
+    /// Raw field setter for id: UInt8, little endian (bytes 0..1, bits 0..8).
+    ///
+    /// 
+    public func setId(_ value: UInt8) {
+        self.bin.setId(value);
+
+    }
+    /// Raw field setter for count: UInt16, little endian (bytes 1..3, bits 0..11).
+    ///
+    /// 
+    public func setCount(_ value: UInt16) {
+        self.bin.setCount(value);
+
+    }
+    /// Raw field setter for slot: UInt8, little endian (bytes 2..3, bits 3..8).
+    ///
+    /// 
+    public func setSlot(_ value: UInt8) {
+        self.bin.setSlot(value);
+
     }
 
 }

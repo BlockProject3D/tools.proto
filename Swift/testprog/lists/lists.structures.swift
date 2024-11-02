@@ -31,22 +31,28 @@ import BP3DProto;
 
 public struct ListsTimes<T>: BP3DProto.FixedSize, FromBuffer {
     public typealias Buffer = T
-    var data: T
+    private var _raw: ListsRawTimes<T>
     public static var size: Int { 16 }
     public init(_ data: T) {
-        self.data = data;
+        self._raw = ListsRawTimes(bin: ListsBinTimes(data: data));
+    }
+    public var raw: ListsRawTimes<T> {
+        return _raw;
+    }
+    public var bin: ListsBinTimes<T> {
+        return _raw.bin;
     }
 }
 extension ListsTimes<BP3DProto.DataBuffer> {
     public init() {
-        self.data = BP3DProto.DataBuffer(size: 16)
+        self._raw = ListsRawTimes(bin: ListsBinTimes(data: BP3DProto.DataBuffer(size: 16)));
     }
 }
 public let SIZE_LISTS_TIMES: Int = 16;
 extension ListsTimes: BP3DProto.WriteTo where T: BP3DProto.Buffer {
     public typealias Input = ListsTimes;
     public static func write<B: BP3DProto.WritableBuffer>(input: Input, to out: inout B) throws {
-        out.write(bytes: input.data[...16].toData());
+        out.write(bytes: input._raw.bin.data[...16].toData());
     }
 }
 extension ListsTimes: BP3DProto.FromBytes where T: BP3DProto.Buffer {
@@ -60,42 +66,109 @@ extension ListsTimes: BP3DProto.FromBytes where T: BP3DProto.Buffer {
     }
 }
 extension ListsTimes where T: BP3DProto.Buffer {
-    public var rawStart: UInt64 {
-        BP3DProto.ByteCodecLE.readAligned(UInt64.self, self.data[0...8])
-
-    }
     public var start: UInt64 {
-        self.rawStart
-    }
-    public var rawEnd: UInt64 {
-        BP3DProto.ByteCodecLE.readAligned(UInt64.self, self.data[8...16])
-
+        self._raw.start
     }
     public var end: UInt64 {
-        self.rawEnd
+        self._raw.end
     }
 
 }
 extension ListsTimes where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
-    public func setRawStart(_ value: UInt64) {
+    @discardableResult
+    public func setStart(_ value: UInt64) -> Self {
+        self._raw.setStart(value);
+        return self;
+    }
+    @discardableResult
+    public func setEnd(_ value: UInt64) -> Self {
+        self._raw.setEnd(value);
+        return self;
+    }
+
+}
+/// Definition of the bits layout for Times structure.
+///
+/// The bits layout wraps a byte buffer and offers access
+/// to the raw bit patterns of each field in a structure.
+public struct ListsBinTimes<T> {
+    var data: T
+}
+extension ListsBinTimes where T: BP3DProto.Buffer {
+    /// Bit pattern accessor for field start: UInt64, little endian (bytes 0..8, bits 0..64).
+    ///
+    /// 
+    public var start: UInt64 {
+        BP3DProto.ByteCodecLE.readAligned(UInt64.self, self.data[0...8])
+
+    }
+    /// Bit pattern accessor for field end: UInt64, little endian (bytes 8..16, bits 0..64).
+    ///
+    /// 
+    public var end: UInt64 {
+        BP3DProto.ByteCodecLE.readAligned(UInt64.self, self.data[8...16])
+
+    }
+
+}
+extension ListsBinTimes where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
+    /// Bit pattern setter for field start: UInt64, little endian (bytes 0..8, bits 0..64).
+    ///
+    /// 
+    public func setStart(_ value: UInt64) {
         var buffer = self.data[0...8];
         BP3DProto.ByteCodecLE.writeAligned(UInt64.self, &buffer, value: value);
 
     }
-    @discardableResult
-    public func setStart(_ value: UInt64) -> Self {
-        self.setRawStart(value);
-        return self;
-    }
-    public func setRawEnd(_ value: UInt64) {
+    /// Bit pattern setter for field end: UInt64, little endian (bytes 8..16, bits 0..64).
+    ///
+    /// 
+    public func setEnd(_ value: UInt64) {
         var buffer = self.data[8...16];
         BP3DProto.ByteCodecLE.writeAligned(UInt64.self, &buffer, value: value);
 
     }
-    @discardableResult
-    public func setEnd(_ value: UInt64) -> Self {
-        self.setRawEnd(value);
-        return self;
+
+}
+/// Definition of the raw layout for Times structure.
+///
+/// The raw layout wraps a bits layout and offers access
+/// to the raw values (as specified in the model) of
+/// each field in a structure.
+public struct ListsRawTimes<T> {
+    var bin: ListsBinTimes<T>
+}
+extension ListsRawTimes where T: BP3DProto.Buffer {
+    /// Raw field accessor for start: UInt64, little endian (bytes 0..8, bits 0..64).
+    ///
+    /// 
+    public var start: UInt64 {
+        self.bin.start
+
+    }
+    /// Raw field accessor for end: UInt64, little endian (bytes 8..16, bits 0..64).
+    ///
+    /// 
+    public var end: UInt64 {
+        self.bin.end
+
+    }
+
+}
+extension ListsRawTimes where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
+    /// Raw field setter for start: UInt64, little endian (bytes 0..8, bits 0..64).
+    ///
+    /// 
+    public func setStart(_ value: UInt64) {
+        self.bin.setStart(value);
+
+    }
+    /// Raw field setter for end: UInt64, little endian (bytes 8..16, bits 0..64).
+    ///
+    /// 
+    public func setEnd(_ value: UInt64) {
+        self.bin.setEnd(value);
+
     }
 
 }
