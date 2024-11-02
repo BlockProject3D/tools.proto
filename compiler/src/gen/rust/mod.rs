@@ -26,15 +26,15 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+mod core;
 mod r#enum;
 mod message;
+mod params;
 mod solver;
 mod structure;
 mod union;
 mod util;
-mod core;
-mod params;
 
-pub use solver::RustImportSolver;
 pub use core::GeneratorRust;
 pub use params::Params;
+pub use solver::RustImportSolver;

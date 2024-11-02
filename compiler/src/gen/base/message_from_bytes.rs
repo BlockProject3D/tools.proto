@@ -31,8 +31,8 @@ use crate::compiler::util::types::TypeMapper;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::base::message::{Templates, Utilities};
 use crate::gen::base::message_common::generate_field_type_inline;
-use itertools::Itertools;
 use crate::gen::base::Error;
+use itertools::Itertools;
 
 fn gen_field_from_bytes_impl<U: Utilities, T: TypeMapper>(
     field: &Field,
@@ -68,13 +68,15 @@ pub fn generate_from_bytes_impl<U: Utilities, T: TypeMapper>(
         .fields
         .iter()
         .map(|field| gen_field_from_bytes_impl::<U, T>(field, templates, type_path_map, function))
-        .collect::<Result<Vec<String>, Error>>()?.join("");
+        .collect::<Result<Vec<String>, Error>>()?
+        .join("");
     let field_names = msg
         .fields
         .iter()
         .map(|field| templates.template.scope().var("name", &field.name).render(function, &["field_name"]).unwrap())
         .join("");
-    Ok(templates.template
+    Ok(templates
+        .template
         .scope()
         .var("fields", fields)
         .var("field_names", field_names)

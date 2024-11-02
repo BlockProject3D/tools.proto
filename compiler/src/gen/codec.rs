@@ -26,13 +26,13 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::collections::HashMap;
 use crate::gen::template::Template;
+use std::collections::HashMap;
 
 pub struct Codec<'fragment, 'variable> {
     pub decl: Template<'fragment, 'variable>,
     pub from_bytes: Template<'fragment, 'variable>,
-    pub write: Template<'fragment, 'variable>
+    pub write: Template<'fragment, 'variable>,
 }
 
 impl<'fragment, 'variable> Codec<'fragment, 'variable> {
@@ -40,20 +40,18 @@ impl<'fragment, 'variable> Codec<'fragment, 'variable> {
         Self {
             decl: Template::compile(decl).unwrap(),
             from_bytes: Template::compile(from_bytes).unwrap(),
-            write: Template::compile(write).unwrap()
+            write: Template::compile(write).unwrap(),
         }
     }
 }
 
 pub struct CodecMap<'fragment, 'variable> {
-    map: HashMap<&'fragment str, Codec<'fragment, 'variable>>
+    map: HashMap<&'fragment str, Codec<'fragment, 'variable>>,
 }
 
 impl<'fragment, 'variable> CodecMap<'fragment, 'variable> {
     pub fn new() -> Self {
-        Self {
-            map: HashMap::new()
-        }
+        Self { map: HashMap::new() }
     }
 
     pub fn with_default(codec: Codec<'fragment, 'variable>) -> Self {

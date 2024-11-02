@@ -45,7 +45,7 @@ pub enum StructFieldRaw {
     Signed { bits: usize },
     Unsigned { bits: usize },
     Float { bits: usize },
-    Boolean { bits: usize }
+    Boolean { bits: usize },
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -63,7 +63,7 @@ impl StructFieldRaw {
             StructFieldRaw::Signed { .. } => SimpleType::Signed,
             StructFieldRaw::Unsigned { .. } => SimpleType::Unsigned,
             StructFieldRaw::Float { .. } => SimpleType::Float,
-            StructFieldRaw::Boolean { .. } => SimpleType::Boolean
+            StructFieldRaw::Boolean { .. } => SimpleType::Boolean,
         }
     }
 
@@ -72,7 +72,7 @@ impl StructFieldRaw {
             StructFieldRaw::Signed { bits } => *bits,
             StructFieldRaw::Unsigned { bits } => *bits,
             StructFieldRaw::Float { bits } => *bits,
-            StructFieldRaw::Boolean { bits } => *bits
+            StructFieldRaw::Boolean { bits } => *bits,
         }
     }
 }
@@ -80,7 +80,7 @@ impl StructFieldRaw {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Offset {
     pub relative_to: Option<String>,
-    pub bits: Option<usize>
+    pub bits: Option<usize>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -91,7 +91,7 @@ pub struct StructField {
     pub view: Option<StructFieldView>,
     pub array_len: Option<usize>,
     pub item_type: Option<String>,
-    pub offset: Option<Offset>
+    pub offset: Option<Offset>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

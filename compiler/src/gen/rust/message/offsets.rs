@@ -29,13 +29,13 @@
 use crate::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::compiler::util::types::TypePathMap;
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
+use crate::gen::base::message::Templates;
 use crate::gen::base::message_from_bytes::generate_from_bytes_impl;
+use crate::gen::base::Error;
+use crate::gen::codec::CodecMap;
 use crate::gen::rust::util::{gen_where_clause, RustUtils};
 use crate::gen::template::Template;
 use itertools::Itertools;
-use crate::gen::base::Error;
-use crate::gen::base::message::Templates;
-use crate::gen::codec::CodecMap;
 
 const TEMPLATE: &[u8] = include_bytes!("offsets.template");
 
@@ -58,19 +58,31 @@ fn gen_message_offset_field(
     }
 }
 
-pub fn gen_message_offsets_decl(msg: &Message, codec_map: &CodecMap, type_path_map: &TypePathMap) -> Result<String, Error> {
+pub fn gen_message_offsets_decl(
+    msg: &Message,
+    codec_map: &CodecMap,
+    type_path_map: &TypePathMap,
+) -> Result<String, Error> {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let mut templates = Templates {
         template: Template::compile(TEMPLATE).unwrap(),
-        codec_map
+        codec_map,
     };
-    let where_clauses =
-        msg.fields.iter().map(|field| gen_where_clause(&templates.template, field, &type_path_map, "impl")).join("");
-    templates.template
+    let where_clauses = msg
+        .fields
+        .iter()
+        .map(|field| gen_where_clause(&templates.template, field, &type_path_map, "impl"))
+        .join("");
+    templates
+        .template
         .var("msg_name", &msg.name)
         .var("generics", RustUtils::get_generics(msg, &type_path_map).to_string())
         .var("where_clauses", where_clauses);
-    let fields = msg.fields.iter().map(|field| gen_message_offset_field(field, &templates.template, &type_path_map)).join("");
+    let fields = msg
+        .fields
+        .iter()
+        .map(|field| gen_message_offset_field(field, &templates.template, &type_path_map))
+        .join("");
     let mut code = templates.template.var("fields", fields).render("", &["decl"]).unwrap();
     code += "\n";
     code += &generate_from_bytes_impl::<RustUtils, _>(msg, &templates, &type_path_map, "impl")?;

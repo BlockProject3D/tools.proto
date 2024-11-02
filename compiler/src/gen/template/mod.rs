@@ -29,11 +29,11 @@
 mod core;
 mod error;
 mod functions;
+pub mod hook;
+pub mod loader;
 mod options;
 mod parse_tree;
 pub mod util;
-pub mod loader;
-pub mod hook;
 
 pub use core::Scope;
 pub use core::Template;

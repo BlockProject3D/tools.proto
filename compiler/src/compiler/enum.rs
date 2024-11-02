@@ -61,7 +61,7 @@ impl Enum {
             variants,
             variants_map,
             largest,
-            smallest
+            smallest,
         })
     }
 }

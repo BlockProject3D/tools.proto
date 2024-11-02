@@ -30,8 +30,8 @@ use crate::compiler::structure::Structure;
 use crate::compiler::Protocol;
 use crate::gen::base::map::TypePathMapper;
 use crate::gen::base::structure::{generate, Templates};
-use crate::gen::template::hook::TemplateHooks;
 use crate::gen::swift::util::{SwiftTypeMapper, SwiftUtils};
+use crate::gen::template::hook::TemplateHooks;
 use crate::gen::template::Template;
 
 const STRUCT_TEMPLATE: &[u8] = include_bytes!("core.template");
@@ -53,7 +53,7 @@ pub fn gen_structure_decl(proto: &Protocol, s: &Structure) -> String {
         template,
         field_template,
         bits_template,
-        raw_template
+        raw_template,
     };
     generate::<SwiftUtils, _>(templates, s, &type_path_map, &TemplateHooks::default())
 }

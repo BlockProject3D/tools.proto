@@ -115,7 +115,7 @@ impl FixedFieldType {
                     8
                 };
                 Self::from_model(StructFieldRaw::Signed { bits: bit_size })
-            },
+            }
             false => {
                 let bit_size = if max_value > u32::MAX as isize {
                     64
@@ -215,7 +215,7 @@ pub enum FieldRaw {
     SignedCast(usize),
 
     /// Don't do anything special, just return the raw value.
-    None
+    None,
 }
 
 impl FieldRaw {
@@ -374,7 +374,7 @@ impl Field {
         value: crate::model::structure::StructField,
     ) -> Result<(Self, usize), Error> {
         if (value.raw.is_none() && value.item_type.is_none()) || (value.raw.is_some() && value.item_type.is_some()) {
-            return Err(Error::BadFieldType)
+            return Err(Error::BadFieldType);
         }
         let (ty, bit_size) = if let Some(info) = value.raw {
             let array_len = value.array_len.unwrap_or(1);
@@ -390,12 +390,15 @@ impl Field {
                 if (bit_size / array_len) % 8 != 0 {
                     return Err(Error::UnalignedArrayCodec);
                 }
-                (FieldType::Array(FixedArrayField {
-                    endianness: proto.endianness,
-                    array_len,
-                    ty,
-                    item_bit_size: bit_size / array_len,
-                }), bit_size)
+                (
+                    FieldType::Array(FixedArrayField {
+                        endianness: proto.endianness,
+                        array_len,
+                        ty,
+                        item_bit_size: bit_size / array_len,
+                    }),
+                    bit_size,
+                )
             } else {
                 let bits_type = FixedFieldType::from_model(StructFieldRaw::Unsigned { bits: bit_size }).unwrap();
                 let raw_type = match (bit_size, ty) {
@@ -403,16 +406,19 @@ impl Field {
                     (64, FixedFieldType::Float64) => FixedFieldType::Float64,
                     (_, FixedFieldType::Float32) => bits_type,
                     (_, FixedFieldType::Float64) => bits_type,
-                    _ => ty
+                    _ => ty,
                 };
-                (FieldType::Fixed(FixedField {
-                    endianness: proto.endianness,
-                    bits_type,
-                    raw_type,
-                    view_type: ty,
-                    view,
-                    raw
-                }), bit_size)
+                (
+                    FieldType::Fixed(FixedField {
+                        endianness: proto.endianness,
+                        bits_type,
+                        raw_type,
+                        view_type: ty,
+                        view,
+                        raw,
+                    }),
+                    bit_size,
+                )
             }
         } else {
             let item_type = unsafe { value.item_type.unwrap_unchecked() };
@@ -425,7 +431,7 @@ impl Field {
                 let loc = Location::from_model(bit_size, last_bit_offset);
                 last_bit_offset += bit_size;
                 loc
-            },
+            }
             Some(v) => match v.relative_to {
                 None => {
                     let start_bits = v.bits.unwrap_or(0);
@@ -444,16 +450,16 @@ impl Field {
                     }
                     Location::from_model(bit_size, start_bits)
                 }
-            }
+            },
         };
         Ok((
             Self {
                 name: value.name,
                 ty,
                 loc,
-                description: value.description
+                description: value.description,
             },
-            last_bit_offset
+            last_bit_offset,
         ))
     }
 }

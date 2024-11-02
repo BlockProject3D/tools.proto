@@ -30,8 +30,8 @@ use crate::compiler::structure::Structure;
 use crate::compiler::util::types::{Name, TypePathMap};
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::base::structure::{generate, Templates};
-use crate::gen::template::hook::{Fragment, TemplateHooks};
 use crate::gen::rust::util::RustUtils;
+use crate::gen::template::hook::{Fragment, TemplateHooks};
 use crate::gen::template::{Options, Template};
 use crate::gen::RustParams;
 
@@ -52,8 +52,7 @@ pub fn gen_structure_decl(s: &Structure, type_path_map: &TypePathMap, params: &R
         template: Template::compile_with_options(STRUCT_TEMPLATE, &options).unwrap(),
         field_template: Template::compile_with_options(STRUCT_FIELD_TEMPLATE, &options).unwrap(),
         bits_template: Template::compile_with_options(STRUCT_BITS_TEMPLATE, &options).unwrap(),
-        raw_template: Template::compile_with_options(STRUCT_RAW_TEMPLATE, &options).unwrap()
-
+        raw_template: Template::compile_with_options(STRUCT_RAW_TEMPLATE, &options).unwrap(),
     };
     let mut hooks = TemplateHooks::new();
     if params.enable_write_async {

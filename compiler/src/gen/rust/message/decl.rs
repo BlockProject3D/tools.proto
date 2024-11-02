@@ -30,20 +30,25 @@ use crate::compiler::message::Message;
 use crate::compiler::util::types::TypePathMap;
 use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::base::message::{gen_message_array_type_decls, generate, Templates};
+use crate::gen::base::Error;
+use crate::gen::codec::CodecMap;
 use crate::gen::rust::util::RustUtils;
 use crate::gen::template::Template;
 use crate::gen::RustParams;
-use crate::gen::base::Error;
-use crate::gen::codec::CodecMap;
 
 const TEMPLATE: &[u8] = include_bytes!("decl.template");
 const TEMPLATE_EXT: &[u8] = include_bytes!("ext.template");
 
-pub fn gen_message_decl(msg: &Message, codec_map: &CodecMap, type_path_map: &TypePathMap, params: &RustParams) -> Result<String, Error> {
+pub fn gen_message_decl(
+    msg: &Message,
+    codec_map: &CodecMap,
+    type_path_map: &TypePathMap,
+    params: &RustParams,
+) -> Result<String, Error> {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let mut templates = Templates {
         template: Template::compile(TEMPLATE_EXT).unwrap(),
-        codec_map
+        codec_map,
     };
     templates.template.var("msg_name", &msg.name);
     let mut code = String::new();
@@ -51,7 +56,10 @@ pub fn gen_message_decl(msg: &Message, codec_map: &CodecMap, type_path_map: &Typ
         code += &gen_message_array_type_decls::<RustUtils, _>(&templates, "wrappers", msg, &type_path_map)?;
     }
     templates.template = Template::compile(TEMPLATE).unwrap();
-    templates.template.var("generics", RustUtils::get_generics(msg, &type_path_map).to_string_with_defaults());
+    templates.template.var(
+        "generics",
+        RustUtils::get_generics(msg, &type_path_map).to_string_with_defaults(),
+    );
     code += &generate::<RustUtils, _>(templates, msg, &type_path_map)?;
     Ok(code)
 }

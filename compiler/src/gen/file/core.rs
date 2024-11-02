@@ -26,12 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::gen::file::Content;
 use bp3d_util::path::PathExt;
 use std::borrow::Cow;
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use crate::gen::file::Content;
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub enum FileType {

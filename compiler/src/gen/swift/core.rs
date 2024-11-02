@@ -26,18 +26,18 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::Protocol;
 use crate::compiler::util::imports::ProtocolStore;
-use crate::gen::swift::imports::gen_imports;
+use crate::compiler::Protocol;
 use crate::gen::base::Error;
 use crate::gen::codec::{Codec, CodecMap};
 use crate::gen::file::{Content, File, FileType};
-use crate::gen::Generator;
+use crate::gen::swift::imports::gen_imports;
 use crate::gen::swift::message::{gen_message_decl, gen_message_from_slice_impl, gen_message_write_impl};
 use crate::gen::swift::r#enum::gen_enum_decl;
 use crate::gen::swift::solver::SwiftImportSolver;
 use crate::gen::swift::structure::gen_structure_decl;
 use crate::gen::swift::union::gen_union_decl;
+use crate::gen::Generator;
 
 const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("./default_codec/decl.template");
 const TEMPLATE_CODEC_FROM_BYTES: &[u8] = include_bytes!("./default_codec/from_bytes.template");
@@ -50,15 +50,24 @@ impl Generator for GeneratorSwift {
     type Params<'a> = ProtocolStore<'a, SwiftImportSolver>;
 
     fn get_default_codecs<'fragment, 'variable>() -> CodecMap<'fragment, 'variable> {
-        CodecMap::with_default(Codec::from_static_bytes(TEMPLATE_CODEC_DECL, TEMPLATE_CODEC_FROM_BYTES, TEMPLATE_CODEC_WRITE))
+        CodecMap::with_default(Codec::from_static_bytes(
+            TEMPLATE_CODEC_DECL,
+            TEMPLATE_CODEC_FROM_BYTES,
+            TEMPLATE_CODEC_WRITE,
+        ))
     }
 
-    fn generate(proto: &Protocol, codec_map: &CodecMap, params: &ProtocolStore<SwiftImportSolver>) -> Result<Vec<File>, Self::Error> {
+    fn generate(
+        proto: &Protocol,
+        codec_map: &CodecMap,
+        params: &ProtocolStore<SwiftImportSolver>,
+    ) -> Result<Vec<File>, Self::Error> {
         let imports = gen_imports(params);
         let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(&proto, v));
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(&proto, v));
         let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(&proto, codec_map, v));
-        let impl_from_slice_messages_code = proto.messages.iter().map(|v| gen_message_from_slice_impl(&proto, codec_map, v));
+        let impl_from_slice_messages_code =
+            proto.messages.iter().map(|v| gen_message_from_slice_impl(&proto, codec_map, v));
         let impl_write_messages_code = proto.messages.iter().map(|v| gen_message_write_impl(&proto, codec_map, v));
         let decl_unions = proto.unions.iter().map(|v| gen_union_decl(&proto, v));
         Ok(vec![
@@ -67,7 +76,11 @@ impl Generator for GeneratorSwift {
                 format!("{}.structures.swift", proto.name()),
                 Content::from_iter(decl_structures).header(&imports),
             ),
-            File::new(FileType::Enum, format!("{}.enums.swift", proto.name()), &Content::from_iter(decl_enums)),
+            File::new(
+                FileType::Enum,
+                format!("{}.enums.swift", proto.name()),
+                &Content::from_iter(decl_enums),
+            ),
             File::new(
                 FileType::Message,
                 format!("{}.messages.swift", proto.name()),

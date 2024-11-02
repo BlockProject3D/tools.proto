@@ -26,7 +26,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::collections::HashSet;
 use crate::compiler::message::Referenced;
 use crate::compiler::union::{DiscriminantField, Union};
 use crate::compiler::util::types::{PtrKey, TypeMapper};
@@ -34,6 +33,7 @@ use crate::gen::base::map::TypePathMapper;
 use crate::gen::template::hook::TemplateHooks;
 use crate::gen::template::Template;
 use itertools::Itertools;
+use std::collections::HashSet;
 
 pub trait Utilities: crate::gen::base::structure::Utilities {
     fn gen_discriminant_path(discriminant: &DiscriminantField) -> String;
@@ -176,29 +176,33 @@ fn gen_decl_unique<T: TypeMapper>(
             Some(Referenced::Struct(v)) => {
                 if !found.contains(&v.ptr_key()) {
                     found.insert(v.ptr_key());
-                    Some(template
-                        .scope()
-                        .var("name", &case.name)
-                        .var("type_name", type_path_map.get(v))
-                        .render(function, &["struct"])
-                        .unwrap())
+                    Some(
+                        template
+                            .scope()
+                            .var("name", &case.name)
+                            .var("type_name", type_path_map.get(v))
+                            .render(function, &["struct"])
+                            .unwrap(),
+                    )
                 } else {
                     None
                 }
-            },
+            }
             Some(Referenced::Message(v)) => {
                 if !found.contains(&v.ptr_key()) {
                     found.insert(v.ptr_key());
-                    Some(template
-                        .scope()
-                        .var("name", &case.name)
-                        .var("type_name", type_path_map.get(v))
-                        .render(function, &["message"])
-                        .unwrap())
+                    Some(
+                        template
+                            .scope()
+                            .var("name", &case.name)
+                            .var("type_name", type_path_map.get(v))
+                            .render(function, &["message"])
+                            .unwrap(),
+                    )
                 } else {
                     None
                 }
-            },
+            }
         })
         .join("");
     template.scope().var("cases", cases).render("", &[function]).unwrap()

@@ -35,10 +35,10 @@ use crate::compiler::Protocol;
 use crate::model::message::MessageFieldValue;
 use crate::model::protocol::{Description, Endianness};
 use crate::model::structure::StructFieldRaw;
+use bp3d_debug::error;
 use std::cell::Cell;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
-use bp3d_debug::error;
 
 #[derive(Clone, Debug)]
 pub enum Referenced {
@@ -101,7 +101,7 @@ impl Display for SizedStringField {
 pub struct ListField {
     pub ty: FixedFieldType,
     pub item_type: Rc<Message>,
-    pub nested: bool
+    pub nested: bool,
 }
 
 impl Display for ListField {
@@ -219,7 +219,7 @@ pub struct Field {
     pub size: SizeInfo,
     pub endianness: Endianness,
     pub description: Option<Description>,
-    pub codec: Option<String>
+    pub codec: Option<String>,
 }
 
 impl Display for Field {
@@ -243,8 +243,9 @@ impl Field {
         has_unions: bool,
         value: crate::model::message::MessageField,
     ) -> Result<Self, Error> {
-        if (value.value.is_none() && value.item_type.is_none()) || (value.value.is_some() && value.item_type.is_some()) {
-            return Err(Error::BadFieldType)
+        if (value.value.is_none() && value.item_type.is_none()) || (value.value.is_some() && value.item_type.is_some())
+        {
+            return Err(Error::BadFieldType);
         }
         if let Some(info) = value.value {
             match info {
@@ -252,7 +253,7 @@ impl Field {
                     max_len,
                     item_type,
                     max_size,
-                    nested
+                    nested,
                 } => {
                     if max_len == 0 {
                         return Err(Error::ZeroArray);
@@ -270,7 +271,7 @@ impl Field {
                                 is_dyn_sized: true,
                             },
                             endianness: proto.endianness,
-                            codec: value.codec
+                            codec: value.codec,
                         }),
                         Referenced::Message(item_type) => {
                             if let Some(max_size) = max_size {
@@ -288,21 +289,25 @@ impl Field {
                                         is_dyn_sized: false,
                                     },
                                     endianness: proto.endianness,
-                                    codec: value.codec
+                                    codec: value.codec,
                                 })
                             } else {
                                 item_type.embedded.set(true);
                                 Ok(Field {
                                     name: value.name,
                                     description: value.description,
-                                    ty: FieldType::List(ListField { ty, item_type, nested: nested.unwrap_or_default() }),
+                                    ty: FieldType::List(ListField {
+                                        ty,
+                                        item_type,
+                                        nested: nested.unwrap_or_default(),
+                                    }),
                                     optional: value.optional.unwrap_or_default(),
                                     size: SizeInfo {
                                         is_element_dyn_sized: true,
                                         is_dyn_sized: true,
                                     },
                                     endianness: proto.endianness,
-                                    codec: value.codec
+                                    codec: value.codec,
                                 })
                             }
                         }
@@ -319,7 +324,7 @@ impl Field {
                             is_dyn_sized: true,
                         },
                         endianness: proto.endianness,
-                        codec: value.codec
+                        codec: value.codec,
                     }),
                     Some(max_len) => {
                         if max_len == 0 {
@@ -336,7 +341,7 @@ impl Field {
                                 is_dyn_sized: true,
                             },
                             endianness: proto.endianness,
-                            codec: value.codec
+                            codec: value.codec,
                         })
                     }
                 },
@@ -350,14 +355,20 @@ impl Field {
                     match &on_field.ty {
                         FieldType::Ref(Referenced::Struct(v)) => {
                             if !Rc::ptr_eq(&r.discriminant.root, v) {
-                                error!("Union discriminant type mismatch, expected {}, got {}", v.name, r.discriminant.root.name);
+                                error!(
+                                    "Union discriminant type mismatch, expected {}, got {}",
+                                    v.name, r.discriminant.root.name
+                                );
                                 return Err(Error::UnionTypeMismatch);
                             }
                         }
                         v => {
-                            error!("Union discriminant type mismatch expected {}, got field {:?}", r.discriminant.root.name, v);
-                            return Err(Error::UnionTypeMismatch)
-                        },
+                            error!(
+                                "Union discriminant type mismatch expected {}, got field {:?}",
+                                r.discriminant.root.name, v
+                            );
+                            return Err(Error::UnionTypeMismatch);
+                        }
                     }
                     let on_name = on_field.name.clone();
                     if value.optional.unwrap_or_default() {
@@ -374,7 +385,7 @@ impl Field {
                         optional: false,
                         size: r.size,
                         endianness: proto.endianness,
-                        codec: value.codec
+                        codec: value.codec,
                     })
                 }
                 MessageFieldValue::Payload => Ok(Field {
@@ -387,7 +398,7 @@ impl Field {
                         is_element_dyn_sized: true,
                     },
                     endianness: proto.endianness,
-                    codec: value.codec
+                    codec: value.codec,
                 }),
                 MessageFieldValue::Unsigned { bits } => {
                     let ty = FixedFieldType::from_model(StructFieldRaw::Unsigned { bits })?;
@@ -401,7 +412,7 @@ impl Field {
                             is_element_dyn_sized: false,
                         },
                         endianness: proto.endianness,
-                        codec: value.codec
+                        codec: value.codec,
                     })
                 }
             }
@@ -410,7 +421,8 @@ impl Field {
             let r = Referenced::lookup(proto, &item_type).ok_or(Error::UndefinedReference(item_type))?;
             match r {
                 Referenced::Struct(r) => {
-                    if !has_unions && r.fields.len() == 1
+                    if !has_unions
+                        && r.fields.len() == 1
                         && r.fields[0].ty.as_fixed().is_some()
                         && r.fields[0].ty.as_fixed().map(|v| v.raw.is_transmute()).unwrap_or_default()
                         && r.fields[0].loc.bit_size % 8 == 0
@@ -426,7 +438,7 @@ impl Field {
                                 is_element_dyn_sized: false,
                             },
                             endianness: proto.endianness,
-                            codec: value.codec
+                            codec: value.codec,
                         })
                     } else {
                         Ok(Field {
@@ -439,7 +451,7 @@ impl Field {
                                 is_element_dyn_sized: false,
                             },
                             endianness: proto.endianness,
-                            codec: value.codec
+                            codec: value.codec,
                         })
                     }
                 }
@@ -450,7 +462,7 @@ impl Field {
                     size: r.size,
                     ty: FieldType::Ref(Referenced::Message(r)),
                     endianness: proto.endianness,
-                    codec: value.codec
+                    codec: value.codec,
                 }),
             }
         }
@@ -479,8 +491,8 @@ impl Message {
             None => false,
             Some(v) => match v {
                 MessageFieldValue::Union { .. } => true,
-                _ => false
-            }
+                _ => false,
+            },
         });
         for v in value.fields {
             let field = Field::from_model(proto, &fields, has_unions, v)?;

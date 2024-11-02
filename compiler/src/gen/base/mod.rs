@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 pub mod r#enum;
+mod error;
 pub mod map;
 pub mod message;
 mod message_common;
@@ -34,6 +35,5 @@ pub mod message_from_bytes;
 pub mod message_write;
 pub mod structure;
 pub mod union;
-mod error;
 
 pub use error::Error;

@@ -26,10 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::gen::template::Template;
+use bp3d_util::simple_error;
 use std::collections::HashMap;
 use std::path::Path;
-use bp3d_util::simple_error;
-use crate::gen::template::Template;
 
 simple_error! {
     pub Error {
@@ -41,14 +41,14 @@ simple_error! {
 
 pub struct TemplateLoader<'a> {
     paths: Vec<&'a Path>,
-    templates: HashMap<String, String>
+    templates: HashMap<String, String>,
 }
 
 impl<'a> TemplateLoader<'a> {
     pub fn new() -> Self {
         Self {
             paths: Vec::new(),
-            templates: HashMap::new()
+            templates: HashMap::new(),
         }
     }
 

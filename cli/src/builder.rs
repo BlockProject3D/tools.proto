@@ -59,7 +59,7 @@ impl<'a, I: ImportSolver, G: bp3d_protoc::gen::Generator> Builder<'a, I, G> {
         Self {
             protocols,
             generator,
-            params
+            params,
         }
     }
 }

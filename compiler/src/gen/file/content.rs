@@ -26,13 +26,13 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::fmt::Display;
 use itertools::Itertools;
+use std::fmt::Display;
 
 pub struct Content<'a> {
     header: Option<&'a str>,
     body: String,
-    footer: Option<&'a str>
+    footer: Option<&'a str>,
 }
 
 impl<'a> Content<'a> {
@@ -49,7 +49,7 @@ impl<'a> Content<'a> {
         Ok(Self {
             header: None,
             body: data.iter().join("\n"),
-            footer: None
+            footer: None,
         })
     }
 
@@ -79,7 +79,7 @@ impl<'a> Content<'a> {
             (Some(header), None) => format!("{header}{}", self.body),
             (Some(header), Some(footer)) => format!("{header}{}{footer}", self.body),
             (None, Some(footer)) => format!("{}{footer}", self.body),
-            (None, None) => self.body.to_string()
+            (None, None) => self.body.to_string(),
         })
     }
 }

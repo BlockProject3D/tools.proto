@@ -31,23 +31,25 @@ mod builder;
 
 use crate::args::{Args, Generator};
 use crate::builder::Builder;
+use bp3d_protoc::api::core::generator::Context;
 use bp3d_protoc::api::core::loader::Loader;
 use bp3d_protoc::gen::{GeneratorRust, GeneratorSwift, RustImportSolver, RustParams, SwiftImportSolver};
 use bp3d_util::result::ResultExt;
 use clap::Parser;
-use bp3d_protoc::api::core::generator::Context;
 
 fn build_swift(loader: Loader, args: &Args) {
     let mut builder = Builder::new(loader, args, &SwiftImportSolver, GeneratorSwift);
     let mut context = Context::new(&builder.protocols);
-    context.generate_all(&mut builder.generator, &builder.params, &builder.protocols)
+    context
+        .generate_all(&mut builder.generator, &builder.params, &builder.protocols)
         .expect_exit("failed to generate protocols", 1);
 }
 
 fn build_rust(loader: Loader, args: &Args) {
     let mut builder = Builder::new(loader, args, &RustImportSolver, GeneratorRust);
     let mut context = Context::new(&builder.protocols);
-    context.generate_all(&mut builder.generator, &builder.params, &RustParams::default())
+    context
+        .generate_all(&mut builder.generator, &builder.params, &RustParams::default())
         .expect_exit("failed to generate protocols", 1);
 }
 

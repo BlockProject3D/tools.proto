@@ -30,10 +30,10 @@
 
 #[cfg(feature = "gen-base")]
 pub mod base;
+pub mod codec;
 pub mod file;
 mod interface;
 pub mod template;
-pub mod codec;
 
 pub use interface::*;
 

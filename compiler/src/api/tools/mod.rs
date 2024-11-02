@@ -31,11 +31,11 @@ mod error;
 use crate::api::config;
 use crate::api::core::generator::{Context, Generator};
 use crate::compiler::util::imports::ImportSolver;
+use crate::gen::codec::Codec;
+use crate::gen::template::loader::TemplateLoader;
 pub use error::Error;
 use serde::Deserialize;
 use std::path::Path;
-use crate::gen::template::loader::TemplateLoader;
-use crate::gen::codec::Codec;
 
 pub trait GenTools {
     type Params<'a>: Deserialize<'a>;
@@ -71,7 +71,7 @@ pub trait GenTools {
             let codec = Codec {
                 decl: loader.compile(&(base.clone() + "/decl")).map_err(Error::TemplateLoader)?,
                 from_bytes: loader.compile(&(base.clone() + "/from_bytes")).map_err(Error::TemplateLoader)?,
-                write: loader.compile(&(base.clone() + "/write")).map_err(Error::TemplateLoader)?
+                write: loader.compile(&(base.clone() + "/write")).map_err(Error::TemplateLoader)?,
             };
             generator.add_codec(v, codec);
         }
@@ -103,10 +103,10 @@ pub trait GenTools {
     }
 }
 
-#[cfg(feature = "gen-swift")]
-mod swift;
 #[cfg(feature = "gen-rust")]
 mod rust;
+#[cfg(feature = "gen-swift")]
+mod swift;
 
 #[cfg(feature = "gen-rust")]
 pub use rust::Rust;

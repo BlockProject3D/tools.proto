@@ -26,18 +26,20 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::path::Path;
-use bp3d_debug::trace;
 use crate::compiler::Protocol;
 use crate::gen::base::Error;
 use crate::gen::codec::{Codec, CodecMap};
 use crate::gen::file::{Content, File, FileType};
-use crate::gen::Generator;
-use crate::gen::rust::message::{gen_message_decl, gen_message_from_slice_impl, gen_message_offsets_decl, gen_message_write_impl};
+use crate::gen::rust::message::{
+    gen_message_decl, gen_message_from_slice_impl, gen_message_offsets_decl, gen_message_write_impl,
+};
 use crate::gen::rust::params::Params;
 use crate::gen::rust::r#enum::gen_enum_decl;
 use crate::gen::rust::structure::gen_structure_decl;
 use crate::gen::rust::union::gen_union_decl;
+use crate::gen::Generator;
+use bp3d_debug::trace;
+use std::path::Path;
 
 const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("./default_codec/decl.template");
 const TEMPLATE_CODEC_FROM_BYTES: &[u8] = include_bytes!("./default_codec/from_bytes.template");
@@ -50,12 +52,17 @@ impl Generator for GeneratorRust {
     type Params<'a> = Params<'a>;
 
     fn get_default_codecs<'fragment, 'variable>() -> CodecMap<'fragment, 'variable> {
-        CodecMap::with_default(Codec::from_static_bytes(TEMPLATE_CODEC_DECL, TEMPLATE_CODEC_FROM_BYTES, TEMPLATE_CODEC_WRITE))
+        CodecMap::with_default(Codec::from_static_bytes(
+            TEMPLATE_CODEC_DECL,
+            TEMPLATE_CODEC_FROM_BYTES,
+            TEMPLATE_CODEC_WRITE,
+        ))
     }
 
     fn generate(proto: &Protocol, codec_map: &CodecMap, params: &Params) -> Result<Vec<File>, Self::Error> {
         trace!({?params}, "Generating protocol {}", proto.full_name);
-        let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(v, codec_map, &proto.type_path_map, params));
+        let decl_messages_code =
+            proto.messages.iter().map(|v| gen_message_decl(v, codec_map, &proto.type_path_map, params));
         let impl_from_slice_messages_code =
             proto.messages.iter().map(|v| gen_message_from_slice_impl(v, codec_map, &proto.type_path_map));
         let impl_write_messages_code =
@@ -64,7 +71,11 @@ impl Generator for GeneratorRust {
         let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(v));
         let decl_unions = proto.unions.iter().map(|v| gen_union_decl(v, &proto.type_path_map, params));
         let mut files = vec![
-            File::new(FileType::Message, "messages.rs", &Content::try_from_iter(decl_messages_code)?),
+            File::new(
+                FileType::Message,
+                "messages.rs",
+                &Content::try_from_iter(decl_messages_code)?,
+            ),
             File::new(
                 FileType::MessageReading,
                 "messages_from_bytes.rs",
@@ -75,7 +86,11 @@ impl Generator for GeneratorRust {
                 "messages_write.rs",
                 &Content::try_from_iter(impl_write_messages_code)?,
             ),
-            File::new(FileType::Structure, "structures.rs", &Content::from_iter(decl_structures)),
+            File::new(
+                FileType::Structure,
+                "structures.rs",
+                &Content::from_iter(decl_structures),
+            ),
             File::new(FileType::Enum, "enums.rs", &Content::from_iter(decl_enums)),
             File::new(FileType::Union, "unions.rs", &Content::from_iter(decl_unions)),
         ];
@@ -85,7 +100,7 @@ impl Generator for GeneratorRust {
             files.push(File::new(
                 FileType::MessageReading,
                 "messages_offsets.rs",
-                &Content::try_from_iter(decl_messages_code_offsets)?
+                &Content::try_from_iter(decl_messages_code_offsets)?,
             ));
         }
         Ok(files)

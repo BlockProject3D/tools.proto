@@ -27,10 +27,10 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::Protocol;
+use crate::gen::codec::CodecMap;
 use crate::gen::file::File;
 use itertools::Itertools;
 use std::path::Path;
-use crate::gen::codec::CodecMap;
 
 pub trait Generator {
     type Error: std::error::Error;

@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+mod core;
 mod r#enum;
 mod imports;
 mod message;
@@ -33,7 +34,6 @@ mod solver;
 mod structure;
 mod union;
 mod util;
-mod core;
 
-pub use solver::SwiftImportSolver;
 pub use core::GeneratorSwift;
+pub use solver::SwiftImportSolver;

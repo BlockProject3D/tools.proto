@@ -37,7 +37,7 @@ pub enum MessageFieldValue {
         max_len: usize,
         item_type: String,
         max_size: Option<usize>,
-        nested: Option<bool>
+        nested: Option<bool>,
     },
     String {
         max_len: Option<usize>,
@@ -59,7 +59,7 @@ pub struct MessageField {
     pub optional: Option<bool>,
     pub description: Option<Description>,
     pub item_type: Option<String>,
-    pub codec: Option<String>
+    pub codec: Option<String>,
 }
 
 impl MessageField {
@@ -72,8 +72,8 @@ impl MessageField {
             Some(v) => match v {
                 MessageFieldValue::List { item_type, .. } => name1 == item_type,
                 MessageFieldValue::Union { name, on } => name1 == on || name == name1,
-                _ => false
-            }
+                _ => false,
+            },
         }
     }
 }

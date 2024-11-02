@@ -29,5 +29,5 @@
 mod content;
 mod core;
 
-pub use core::*;
 pub use content::Content;
+pub use core::*;

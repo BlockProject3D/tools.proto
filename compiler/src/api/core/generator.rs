@@ -29,30 +29,37 @@
 use crate::api::core::Error;
 use crate::compiler;
 use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
+use crate::gen::codec::{Codec, CodecMap};
 use crate::gen::file::FileType;
 use bp3d_debug::trace;
 use bp3d_util::index_map::IndexMap;
 use bp3d_util::path::PathExt;
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
-use crate::gen::codec::{Codec, CodecMap};
 
 pub struct Context<'a, I: ImportSolver> {
     items: IndexMap<Item<'a>>,
-    pub protocols: &'a ProtocolStore<'a, I>
+    pub protocols: &'a ProtocolStore<'a, I>,
 }
 
 impl<'a, I: ImportSolver> Context<'a, I> {
     pub fn new(protocols: &'a ProtocolStore<'a, I>) -> Self {
         Self {
             items: IndexMap::with_capacity(protocols.len()),
-            protocols
+            protocols,
         }
     }
 
-    pub fn generate<G: crate::gen::Generator>(&mut self, generator: &Generator<G>, full_name: impl AsRef<str>, params: &Params, generator_params: &G::Params<'_>) -> Result<(), Error> {
+    pub fn generate<G: crate::gen::Generator>(
+        &mut self,
+        generator: &Generator<G>,
+        full_name: impl AsRef<str>,
+        params: &Params,
+        generator_params: &G::Params<'_>,
+    ) -> Result<(), Error> {
         if self.get(full_name.as_ref()).is_none() {
-            let protocol = self.protocols
+            let protocol = self
+                .protocols
                 .get(full_name.as_ref())
                 .ok_or_else(|| Error::ProtocolNotFound(full_name.as_ref().into()))?;
             self.items.insert(generator.generate(protocol, params, generator_params)?);
@@ -60,7 +67,12 @@ impl<'a, I: ImportSolver> Context<'a, I> {
         Ok(())
     }
 
-    pub fn generate_all<G: crate::gen::Generator>(&mut self, generator: &Generator<G>, params: &Params, generator_params: &G::Params<'_>) -> Result<(), Error> {
+    pub fn generate_all<G: crate::gen::Generator>(
+        &mut self,
+        generator: &Generator<G>,
+        params: &Params,
+        generator_params: &G::Params<'_>,
+    ) -> Result<(), Error> {
         for protocol in self.protocols.iter() {
             if self.get(&protocol.full_name).is_none() {
                 self.items.insert(generator.generate(protocol, params, generator_params)?);
@@ -132,7 +144,7 @@ pub struct Generator<'a, G> {
     generator: PhantomData<G>,
     out_directory: &'a Path,
     file_header: Option<&'a Path>,
-    codec_map: CodecMap<'a, 'a>
+    codec_map: CodecMap<'a, 'a>,
 }
 
 impl<'a, G: crate::gen::Generator> Generator<'a, G> {
@@ -141,7 +153,7 @@ impl<'a, G: crate::gen::Generator> Generator<'a, G> {
             out_directory,
             generator: PhantomData,
             file_header: None,
-            codec_map: G::get_default_codecs()
+            codec_map: G::get_default_codecs(),
         }
     }
 
@@ -168,7 +180,8 @@ impl<'a, G: crate::gen::Generator> Generator<'a, G> {
             .map_err(Error::Io)?
             .map(|v| G::generate_file_header(v.lines()));
         let name = protocol.name();
-        let files = G::generate(protocol, &self.codec_map, &generator_params).map_err(|e| Error::Generator(e.to_string()))?;
+        let files =
+            G::generate(protocol, &self.codec_map, &generator_params).map_err(|e| Error::Generator(e.to_string()))?;
         let out_path = self.out_directory.join(&name);
         if !out_path.exists() {
             std::fs::create_dir(&out_path).map_err(Error::Io)?;
