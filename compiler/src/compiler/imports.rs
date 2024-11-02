@@ -26,14 +26,14 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::rc::Rc;
 use crate::compiler::message::Message;
-use crate::compiler::Protocol;
 use crate::compiler::r#enum::Enum;
 use crate::compiler::structure::Structure;
 use crate::compiler::union::Union;
 use crate::compiler::util::types::{Name, PtrKey};
+use crate::compiler::Protocol;
 use crate::model::typedef::Typedef;
+use std::rc::Rc;
 
 #[derive(Copy, Clone)]
 pub enum Import<'a> {
@@ -41,7 +41,7 @@ pub enum Import<'a> {
     Enum(&'a Rc<Enum>),
     Union(&'a Rc<Union>),
     Message(&'a Rc<Message>),
-    Type(&'a Rc<Typedef>)
+    Type(&'a Rc<Typedef>),
 }
 
 impl<'a> Name for Import<'a> {

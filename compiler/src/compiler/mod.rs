@@ -31,12 +31,12 @@
 
 pub mod r#enum;
 mod error;
+mod imports;
 pub mod message;
 mod protocol;
 pub mod structure;
 pub mod union;
 pub mod util;
-mod imports;
 
 pub use error::Error;
 pub use protocol::Protocol;
