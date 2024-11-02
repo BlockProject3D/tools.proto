@@ -111,7 +111,7 @@ fn gen_structure<'fragment, 'variable, U: Utilities, T: TypeMapper, G: FnMut(Mod
     code
 }
 
-fn gen_field_raw<'a, 'fragment, 'variable, U: Utilities, T: TypeMapper>(mode: Mode, field: &'variable Field, fixed: &'variable FixedField, mut scope: Scope<'a, 'fragment, 'variable>) -> String {
+fn gen_field_raw<'a, 'fragment, 'variable, U: Utilities, T: TypeMapper>(mode: Mode, _: &'variable Field, fixed: &'variable FixedField, mut scope: Scope<'a, 'fragment, 'variable>) -> String {
     let path = mode.get_path("getters.field", "setters.field");
     match &fixed.raw {
         FieldRaw::Transmute => {

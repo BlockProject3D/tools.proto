@@ -286,7 +286,12 @@ impl FieldView {
                 let b_inv = 0.0;
                 Ok(FieldView::Float { a, b, a_inv, b_inv })
             }
-            None => Ok(FieldView::None)
+            None => {
+                if ty == SimpleType::Float && bit_size != 32 && bit_size != 64 {
+                    return Err(Error::UnsupportedViewType(ty));
+                }
+                Ok(FieldView::None)
+            }
         }
     }
 }
