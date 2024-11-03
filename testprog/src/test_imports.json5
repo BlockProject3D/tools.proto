@@ -1,0 +1,7 @@
+{
+    name: "test_imports",
+    imports: [
+        { protocol: "unions", type: "Value" },
+        { protocol: "lists", type: "VarList" }
+    ]
+}

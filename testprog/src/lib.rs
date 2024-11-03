@@ -41,3 +41,4 @@ include!(env!("BP3D_PROTOC_LISTS"));
 include!(env!("BP3D_PROTOC_BITS2"));
 include!(env!("BP3D_PROTOC_LISTS2"));
 include!(env!("BP3D_PROTOC_IMPORT_AMBIGUOUS"));
+include!(env!("BP3D_PROTOC_TEST_IMPORTS"));
