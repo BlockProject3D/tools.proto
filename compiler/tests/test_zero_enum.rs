@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::api::core::Error;
 use bp3d_protoc::api::core::loader::Loader;
+use bp3d_protoc::api::core::Error;
 use bp3d_protoc::gen::RustImportSolver;
 
 const ZERO_ENUM: &str = "
@@ -47,8 +47,5 @@ fn zero_enum() {
     let mut loader = Loader::new(1);
     loader.load_from_string(ZERO_ENUM, "").unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
-    assert!(matches!(
-        err,
-        Error::Compiler(bp3d_protoc::compiler::Error::ZeroEnum)
-    ));
+    assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::ZeroEnum)));
 }
