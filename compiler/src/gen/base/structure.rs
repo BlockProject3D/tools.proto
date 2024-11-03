@@ -81,7 +81,7 @@ fn gen_structure_field_prologue<'a, 'fragment, 'variable: 'fragment, U: Utilitie
     scope
 }
 
-fn gen_structure_field<U: Utilities, T: TypeMapper, G: FnMut(Mode, &Field, &FixedField, Scope) -> String>(
+fn gen_structure_field<U: Utilities, G: FnMut(Mode, &Field, &FixedField, Scope) -> String>(
     mode: Mode,
     field: &Field,
     template: &Template,
@@ -104,14 +104,13 @@ fn gen_structure_field<U: Utilities, T: TypeMapper, G: FnMut(Mode, &Field, &Fixe
 }
 
 fn gen_structure<
-    'fragment,
     'variable,
     U: Utilities,
     T: TypeMapper,
     G: FnMut(Mode, &Field, &FixedField, Scope) -> String,
 >(
     s: &'variable Structure,
-    mut template: Template<'fragment, 'variable>,
+    mut template: Template<'_, 'variable>,
     mut field_generator: G,
 ) -> String {
     template.var("struct_name", &s.name).var(
@@ -121,12 +120,12 @@ fn gen_structure<
     let getters = s
         .fields
         .iter()
-        .filter_map(|v| gen_structure_field::<U, T, G>(Mode::Getter, v, &template, &mut field_generator))
+        .filter_map(|v| gen_structure_field::<U, G>(Mode::Getter, v, &template, &mut field_generator))
         .join("");
     let setters = s
         .fields
         .iter()
-        .filter_map(|v| gen_structure_field::<U, T, G>(Mode::Setter, v, &template, &mut field_generator))
+        .filter_map(|v| gen_structure_field::<U, G>(Mode::Setter, v, &template, &mut field_generator))
         .join("");
     let mut code = template.render("", &["decl"]).unwrap();
     if !getters.is_empty() {
@@ -138,11 +137,11 @@ fn gen_structure<
     code
 }
 
-fn gen_field_raw<'a, 'fragment, 'variable, U: Utilities, T: TypeMapper>(
+fn gen_field_raw<'variable>(
     mode: Mode,
     _: &'variable Field,
     fixed: &'variable FixedField,
-    mut scope: Scope<'a, 'fragment, 'variable>,
+    mut scope: Scope<'_, '_, 'variable>,
 ) -> String {
     let path = mode.get_path("getters.field", "setters.field");
     match &fixed.raw {
@@ -161,11 +160,11 @@ fn gen_field_raw<'a, 'fragment, 'variable, U: Utilities, T: TypeMapper>(
     scope.render(mode.get_path("getters", "setters"), &["field"]).unwrap()
 }
 
-fn gen_field_bits<'a, 'fragment, 'variable, U: Utilities, T: TypeMapper>(
+fn gen_field_bin<'variable, U: Utilities>(
     mode: Mode,
     field: &'variable Field,
     fixed: &'variable FixedField,
-    mut scope: Scope<'a, 'fragment, 'variable>,
+    mut scope: Scope<'_, '_, 'variable>,
 ) -> String {
     let fragment_name = U::get_fragment_name(field);
     if field.loc.bit_size % 8 != 0 {
@@ -322,10 +321,10 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     code += &gen_structure_getters::<U, T>(s, &field_template, type_path_map);
     code += &gen_structure_setters::<U, T>(s, &field_template, type_path_map);
     code += &gen_structure::<U, T, _>(s, templates.bits_template, |mode, field, fixed, scope| {
-        gen_field_bits::<U, T>(mode, field, fixed, scope)
+        gen_field_bin::<U>(mode, field, fixed, scope)
     });
     code += &gen_structure::<U, T, _>(s, templates.raw_template, |mode, field, fixed, scope| {
-        gen_field_raw::<U, T>(mode, field, fixed, scope)
+        gen_field_raw(mode, field, fixed, scope)
     });
     code
 }

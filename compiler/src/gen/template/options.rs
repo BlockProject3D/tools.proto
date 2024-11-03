@@ -29,18 +29,10 @@
 use crate::gen::template::functions::FunctionMap;
 use std::collections::HashSet;
 
+#[derive(Default)]
 pub struct Options<'a> {
     function_map: FunctionMap<'a>,
     disabled_fragments: HashSet<&'a str>,
-}
-
-impl<'a> Default for Options<'a> {
-    fn default() -> Self {
-        Self {
-            function_map: FunctionMap::default(),
-            disabled_fragments: HashSet::new(),
-        }
-    }
 }
 
 impl<'a> Options<'a> {

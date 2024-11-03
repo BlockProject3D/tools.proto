@@ -49,6 +49,12 @@ pub struct CodecMap<'fragment, 'variable> {
     map: HashMap<&'fragment str, Codec<'fragment, 'variable>>,
 }
 
+impl<'fragment, 'variable> Default for CodecMap<'fragment, 'variable> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'fragment, 'variable> CodecMap<'fragment, 'variable> {
     pub fn new() -> Self {
         Self { map: HashMap::new() }

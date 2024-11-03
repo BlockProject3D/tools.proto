@@ -38,18 +38,18 @@ use bp3d_util::result::ResultExt;
 use clap::Parser;
 
 fn build_swift(loader: Loader, args: &Args) {
-    let mut builder = Builder::new(loader, args, &SwiftImportSolver, GeneratorSwift);
+    let builder = Builder::new(loader, args, &SwiftImportSolver, GeneratorSwift);
     let mut context = Context::new(&builder.protocols);
     context
-        .generate_all(&mut builder.generator, &builder.params, &builder.protocols)
+        .generate_all(&builder.generator, &builder.params, &builder.protocols)
         .expect_exit("failed to generate protocols", 1);
 }
 
 fn build_rust(loader: Loader, args: &Args) {
-    let mut builder = Builder::new(loader, args, &RustImportSolver, GeneratorRust);
+    let builder = Builder::new(loader, args, &RustImportSolver, GeneratorRust);
     let mut context = Context::new(&builder.protocols);
     context
-        .generate_all(&mut builder.generator, &builder.params, &RustParams::default())
+        .generate_all(&builder.generator, &builder.params, &RustParams::default())
         .expect_exit("failed to generate protocols", 1);
 }
 

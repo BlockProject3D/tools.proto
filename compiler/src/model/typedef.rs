@@ -69,7 +69,7 @@ impl Typedef {
                 value: self.value.clone(),
                 codec: self.codec.clone(),
                 description: self.description.clone(),
-                optional: self.optional.clone(),
+                optional: self.optional,
                 item_type: self.item_type.clone(),
             }),
             Some(v) => {
@@ -79,7 +79,7 @@ impl Typedef {
                         name: self.name.clone(),
                         description: self.description.clone(),
                         codec: self.codec.clone(),
-                        optional: self.optional.clone(),
+                        optional: self.optional,
                         item_type: self.item_type.clone(),
                         value: Some(MessageFieldValue::Unsigned { bits: bit_size }),
                     })

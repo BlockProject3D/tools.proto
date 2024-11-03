@@ -56,7 +56,7 @@ impl<'a> Loader<'a> {
         for a in std::fs::read_dir(path).map_err(Error::Io)? {
             let file = a.map_err(Error::Io)?;
             if file.file_name().as_encoded_bytes().ends_with(b".json5") {
-                self.load_from_file(&file.path(), package)?
+                self.load_from_file(file.path(), package)?
             }
         }
         Ok(())
@@ -105,7 +105,7 @@ impl<'a> Loader<'a> {
             let proto = compiler::Protocol::from_model(model, &protocols, package).map_err(Error::Compiler)?;
             protocols.insert(proto);
         }
-        if iterations == 0 && self.models.len() > 0 {
+        if iterations == 0 && !self.models.is_empty() {
             error!(
                 "Failed to solve protocol import order in {} iterations, {} model(s) could not be solved...",
                 self.max_iterations,

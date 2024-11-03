@@ -84,7 +84,7 @@ impl Protocol {
     }
 
     pub fn iter_codecs(&self) -> impl Iterator<Item = &str> {
-        self.messages.iter().map(|v| v.fields.iter().filter_map(|v| v.codec.as_deref())).flatten()
+        self.messages.iter().flat_map(|v| v.fields.iter().filter_map(|v| v.codec.as_deref()))
     }
 
     pub fn from_model<T: ImportSolver>(
@@ -159,7 +159,7 @@ impl Protocol {
             for v in structs {
                 for field in &mut v.fields {
                     if let Some(info) =
-                        field.item_type.as_ref().map(|v| proto.types.get(v)).flatten().map(|v| v.to_struct()).flatten()
+                        field.item_type.as_ref().and_then(|v| proto.types.get(v)).map(|v| v.to_struct()).flatten()
                     {
                         trace!({typedef=?info}, "Inferred {} as {}", field.name, info.name);
                         let name = std::mem::replace(field, info.clone()).name;
@@ -172,7 +172,7 @@ impl Protocol {
             for v in messages {
                 for field in &mut v.fields {
                     if let Some(info) =
-                        field.item_type.as_ref().map(|v| proto.types.get(v)).flatten().map(|v| v.to_message()).flatten()
+                        field.item_type.as_ref().and_then(|v| proto.types.get(v)).map(|v| v.to_message()).flatten()
                     {
                         trace!({typedef=?info}, "Inferred {} as {}", field.name, info.name);
                         let name = std::mem::replace(field, info.clone()).name;
@@ -206,10 +206,7 @@ impl Protocol {
                 let i = len - i;
                 let has_unions = messages[i].fields.iter().any(|v| match &v.value {
                     None => false,
-                    Some(v) => match v {
-                        MessageFieldValue::Union { .. } => true,
-                        _ => false,
-                    },
+                    Some(v) => matches!(v, MessageFieldValue::Union { .. })
                 });
                 if has_unions {
                     let msg = messages.remove(i);

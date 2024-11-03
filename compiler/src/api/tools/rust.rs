@@ -49,8 +49,8 @@ impl GenTools for Rust {
         GeneratorRust
     }
 
-    fn generate<'a, 'b>(
-        generator: &'b Generator<'a, Self::Generator>,
+    fn generate<'b>(
+        generator: &'b Generator<'_, Self::Generator>,
         context: &mut Context<'b, Self::Solver>,
         config: &Config<Self::Params<'_>>,
     ) -> Result<(), Error> {

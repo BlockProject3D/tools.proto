@@ -44,8 +44,8 @@ pub trait GenTools {
 
     fn new_solver() -> Self::Solver;
     fn new_generator() -> Self::Generator;
-    fn generate<'a, 'b>(
-        generator: &'b Generator<'a, Self::Generator>,
+    fn generate<'b>(
+        generator: &'b Generator<'_, Self::Generator>,
         context: &mut Context<'b, Self::Solver>,
         config: &config::model::Config<Self::Params<'_>>,
     ) -> Result<(), Error>;
@@ -60,13 +60,13 @@ pub trait GenTools {
         let mut generator = Generator::new(out_dir.as_ref(), Self::new_generator());
         let mut loader = TemplateLoader::new();
         loader.add_search_path(Path::new("."));
-        for v in protocols.iter().map(|v| v.iter_codecs()).flatten() {
+        for v in protocols.iter().flat_map(|v| v.iter_codecs()) {
             let base = String::from(v);
             loader.load(base.clone() + "/decl").map_err(Error::TemplateLoader)?;
             loader.load(base.clone() + "/from_bytes").map_err(Error::TemplateLoader)?;
             loader.load(base + "/write").map_err(Error::TemplateLoader)?;
         }
-        for v in protocols.iter().map(|v| v.iter_codecs()).flatten() {
+        for v in protocols.iter().flat_map(|v| v.iter_codecs()) {
             let base = String::from(v);
             let codec = Codec {
                 decl: loader.compile(&(base.clone() + "/decl")).map_err(Error::TemplateLoader)?,
@@ -79,7 +79,7 @@ pub trait GenTools {
             generator.set_file_header(file_header);
         }
         let mut context = Context::new(&protocols);
-        Self::generate(&generator, &mut context, &config)?;
+        Self::generate(&generator, &mut context, config)?;
         post_generation(&context);
         Ok(())
     }

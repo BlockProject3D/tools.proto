@@ -31,7 +31,7 @@ use crate::compiler::Protocol;
 
 pub struct RustImportSolver;
 
-impl<'a> ImportSolver for RustImportSolver {
+impl ImportSolver for RustImportSolver {
     fn get_full_type_path(&self, protocol: &Protocol, type_name: &str) -> Option<String> {
         if protocol.package().is_empty() {
             Some(format!("crate::{}::{}", protocol.full_name, type_name))

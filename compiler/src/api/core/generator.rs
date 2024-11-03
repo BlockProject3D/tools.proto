@@ -148,7 +148,7 @@ pub struct Generator<'a, G> {
 }
 
 impl<'a, G: crate::gen::Generator> Generator<'a, G> {
-    pub fn new<'b>(out_directory: &'a Path, _: G) -> Self {
+    pub fn new(out_directory: &'a Path, _: G) -> Self {
         Self {
             out_directory,
             generator: PhantomData,
@@ -181,8 +181,8 @@ impl<'a, G: crate::gen::Generator> Generator<'a, G> {
             .map(|v| G::generate_file_header(v.lines()));
         let name = protocol.name();
         let files =
-            G::generate(protocol, &self.codec_map, &generator_params).map_err(|e| Error::Generator(e.to_string()))?;
-        let out_path = self.out_directory.join(&name);
+            G::generate(protocol, &self.codec_map, generator_params).map_err(|e| Error::Generator(e.to_string()))?;
+        let out_path = self.out_directory.join(name);
         if !out_path.exists() {
             std::fs::create_dir(&out_path).map_err(Error::Io)?;
         }
@@ -211,7 +211,7 @@ impl<'a, G: crate::gen::Generator> Generator<'a, G> {
             })
             .collect::<std::io::Result<Vec<PathBuf>>>()
             .map_err(Error::Io)?;
-        let umbrella = G::generate_umbrella(name, iter.iter().map(|v| &**v), &generator_params)
+        let umbrella = G::generate_umbrella(name, iter.iter().map(|v| &**v), generator_params)
             .map_err(|e| Error::Generator(e.to_string()))?;
         let proto_path = if umbrella.len() > 1 {
             let umbrella_path = out_path.join("umbrella").ensure_extension(G::get_language_extension()).to_path_buf();

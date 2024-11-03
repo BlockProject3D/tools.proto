@@ -44,6 +44,12 @@ pub struct TemplateLoader<'a> {
     templates: HashMap<String, String>,
 }
 
+impl<'a> Default for TemplateLoader<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'a> TemplateLoader<'a> {
     pub fn new() -> Self {
         Self {

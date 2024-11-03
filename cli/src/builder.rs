@@ -52,7 +52,7 @@ impl<'a, I: ImportSolver, G: bp3d_protoc::gen::Generator> Builder<'a, I, G> {
             Params::default()
         };
         let output = args.output.as_deref().unwrap_or(Path::new("./"));
-        let mut generator = Generator::new(&output, generator);
+        let mut generator = Generator::new(output, generator);
         if let Some(file_header) = &args.file_header {
             generator.set_file_header(file_header);
         }

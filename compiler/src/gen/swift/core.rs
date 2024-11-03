@@ -63,13 +63,13 @@ impl Generator for GeneratorSwift {
         params: &ProtocolStore<SwiftImportSolver>,
     ) -> Result<Vec<File>, Self::Error> {
         let imports = gen_imports(params);
-        let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(&proto, v));
-        let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(&proto, v));
-        let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(&proto, codec_map, v));
+        let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(proto, v));
+        let decl_enums = proto.enums.iter().map(|v| gen_enum_decl(proto, v));
+        let decl_messages_code = proto.messages.iter().map(|v| gen_message_decl(proto, codec_map, v));
         let impl_from_slice_messages_code =
-            proto.messages.iter().map(|v| gen_message_from_slice_impl(&proto, codec_map, v));
-        let impl_write_messages_code = proto.messages.iter().map(|v| gen_message_write_impl(&proto, codec_map, v));
-        let decl_unions = proto.unions.iter().map(|v| gen_union_decl(&proto, v));
+            proto.messages.iter().map(|v| gen_message_from_slice_impl(proto, codec_map, v));
+        let impl_write_messages_code = proto.messages.iter().map(|v| gen_message_write_impl(proto, codec_map, v));
+        let decl_unions = proto.unions.iter().map(|v| gen_union_decl(proto, v));
         Ok(vec![
             File::new(
                 FileType::Structure,
@@ -99,7 +99,7 @@ impl Generator for GeneratorSwift {
             File::new(
                 FileType::Union,
                 format!("{}.unions.swift", proto.name()),
-                &Content::from_iter(decl_unions).header(&imports),
+                Content::from_iter(decl_unions).header(&imports),
             ),
         ])
     }

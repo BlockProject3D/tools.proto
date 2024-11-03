@@ -369,7 +369,7 @@ impl Display for Field {
 impl Field {
     fn from_model(
         proto: &Protocol,
-        fields: &Vec<Field>,
+        fields: &[Field],
         mut last_bit_offset: usize,
         value: crate::model::structure::StructField,
     ) -> Result<(Self, usize), Error> {
@@ -400,7 +400,7 @@ impl Field {
                     bit_size,
                 )
             } else {
-                let bits_type = FixedFieldType::from_model(StructFieldRaw::Unsigned { bits: bit_size }).unwrap();
+                let bits_type = FixedFieldType::from_model(StructFieldRaw::Unsigned { bits: bit_size })?;
                 let raw_type = match (bit_size, ty) {
                     (32, FixedFieldType::Float32) => FixedFieldType::Float32,
                     (64, FixedFieldType::Float64) => FixedFieldType::Float64,
@@ -442,7 +442,7 @@ impl Field {
                     Location::from_model(bit_size, start_bits)
                 }
                 Some(name) => {
-                    let field = fields.iter().find(|v| &v.name == &name).ok_or(Error::UndefinedReference(name))?;
+                    let field = fields.iter().find(|v| v.name == name).ok_or(Error::UndefinedReference(name))?;
                     let start_bits = field.loc.bit_offset + v.bits.unwrap_or(0);
                     let end_bits = start_bits + bit_size;
                     if end_bits > last_bit_offset {

@@ -99,7 +99,7 @@ impl<'a> TemplateHooks<'a> {
     }
 
     pub fn hook(&mut self, name: &'a str, hook: impl Into<Hook<'a>>) -> &mut Self {
-        let entry = self.map.entry(name).or_insert(Vec::new());
+        let entry = self.map.entry(name).or_default();
         entry.push(hook.into());
         self
     }

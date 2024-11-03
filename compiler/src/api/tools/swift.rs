@@ -48,10 +48,10 @@ impl GenTools for Swift {
         GeneratorSwift
     }
 
-    fn generate<'a, 'b>(
-        generator: &'b Generator<'a, Self::Generator>,
+    fn generate<'b>(
+        generator: &'b Generator<'_, Self::Generator>,
         context: &mut Context<'b, Self::Solver>,
-        config: &Config<Self::Params<'a>>,
+        config: &Config<Self::Params<'_>>,
     ) -> Result<(), Error> {
         config::core::generate(generator, context, config, |_| None, context.protocols)?;
         Ok(())
