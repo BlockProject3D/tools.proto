@@ -103,12 +103,7 @@ fn gen_structure_field<U: Utilities, G: FnMut(Mode, &Field, &FixedField, Scope) 
     }
 }
 
-fn gen_structure<
-    'variable,
-    U: Utilities,
-    T: TypeMapper,
-    G: FnMut(Mode, &Field, &FixedField, Scope) -> String,
->(
+fn gen_structure<'variable, U: Utilities, T: TypeMapper, G: FnMut(Mode, &Field, &FixedField, Scope) -> String>(
     s: &'variable Structure,
     mut template: Template<'_, 'variable>,
     mut field_generator: G,

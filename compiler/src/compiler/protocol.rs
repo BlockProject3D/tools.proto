@@ -206,7 +206,7 @@ impl Protocol {
                 let i = len - i;
                 let has_unions = messages[i].fields.iter().any(|v| match &v.value {
                     None => false,
-                    Some(v) => matches!(v, MessageFieldValue::Union { .. })
+                    Some(v) => matches!(v, MessageFieldValue::Union { .. }),
                 });
                 if has_unions {
                     let msg = messages.remove(i);
