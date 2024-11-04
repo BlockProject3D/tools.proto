@@ -1,0 +1,42 @@
+{
+    name: "test_union_bad_discriminant",
+    structs: [
+        {
+            name: "Header",
+            fields: [
+                { name: "v", raw: { type: "unsigned", bits: 8 } }
+            ]
+        },
+        {
+            name: "Header2",
+            fields: [
+                { name: "v", raw: { type: "unsigned", bits: 8 } }
+            ]
+        }
+    ],
+    unions: [
+        {
+            name: "TestU",
+            discriminant: "Header.v",
+            cases: [
+                { name: "Null", case: "0" }
+            ]
+        }
+    ],
+    messages: [
+        {
+            name: "Test",
+            fields: [
+                { name: "v1", item_type: "Header2" },
+                {
+                    name: "v",
+                    value: {
+                        type: "union",
+                        name: "TestU",
+                        on: "v1"
+                    }
+                }
+            ]
+        }
+    ]
+}
