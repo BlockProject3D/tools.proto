@@ -219,8 +219,8 @@ pub enum FieldRaw {
 }
 
 impl FieldRaw {
-    pub fn is_transmute(&self) -> bool {
-        matches!(self, Self::Transmute)
+    pub fn is_none(&self) -> bool {
+        matches!(self, Self::None)
     }
 
     fn from_model(ty: SimpleType, bit_size: usize) -> FieldRaw {

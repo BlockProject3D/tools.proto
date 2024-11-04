@@ -35,6 +35,7 @@ fn write_message<W: Write>(out: W) {
         p1: Some(Test1 {
             s1: "this is a test",
             p1: 42,
+            p3: 42
         }),
         s1: "a test",
         s2: Some("hello world"),
@@ -48,6 +49,7 @@ fn test() {
     write_message(&mut v);
     let msg = Test::from_bytes(&v).unwrap().into_inner();
     assert_eq!(msg.p1.as_ref().unwrap().p1, 42);
+    assert_eq!(msg.p1.as_ref().unwrap().p3, 42);
     assert_eq!(msg.p1.as_ref().unwrap().s1, "this is a test");
     assert_eq!(msg.s1, "a test");
     assert_eq!(msg.s2, Some("hello world"));
@@ -68,9 +70,11 @@ fn test_offsets() {
     assert_eq!(offsets.s2.start, 7);
     assert_eq!(offsets.s2.size(), 13);
     assert_eq!(offsets.p1.start, 20);
-    assert_eq!(offsets.p1.size(), 20);
+    assert_eq!(offsets.p1.size(), 21);
     assert_eq!(offsets.p1_offsets.unwrap().s1.start, 0);
     assert_eq!(offsets.p1_offsets.unwrap().s1.size(), 15);
     assert_eq!(offsets.p1_offsets.unwrap().p1.start, 15);
     assert_eq!(offsets.p1_offsets.unwrap().p1.size(), 4);
+    assert_eq!(offsets.p1_offsets.unwrap().p3.start, 19);
+    assert_eq!(offsets.p1_offsets.unwrap().p3.size(), 1);
 }

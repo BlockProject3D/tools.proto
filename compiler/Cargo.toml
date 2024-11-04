@@ -17,7 +17,7 @@ toml = { version = "0.5.11", optional = true }
 bp3d-util = { version = "1.4.0", features = ["simple-error", "path", "index-map"], optional = true }
 itertools = { version = "0.13.0", optional = true }
 regex = { version = "1.10.5", optional = true }
-bp3d-debug = { version = "1.0.0-rc.5.0.0", optional = true }
+bp3d-debug = { version = "1.0.0-rc.6.1.0", optional = true }
 
 [features]
 model = ["serde"]

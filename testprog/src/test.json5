@@ -1,5 +1,19 @@
 {
     name: "test",
+    structs: [
+        {
+            name: "SingleValue",
+            fields: [
+                {
+                    name: "v",
+                    raw: {
+                        type: "unsigned",
+                        bits: 8
+                    }
+                }
+            ]
+        }
+    ],
     messages: [
         {
             name: "Test1",
@@ -16,7 +30,8 @@
                         type: "unsigned",
                         bits: 32
                     }
-                }
+                },
+                { name: "p3", item_type: "SingleValue" }
             ]
         },
         {
