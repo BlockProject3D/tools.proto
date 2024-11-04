@@ -35,7 +35,7 @@ fn write_message<W: Write>(out: W) {
         p1: Some(Test1 {
             s1: "this is a test",
             p1: 42,
-            p3: 42
+            p3: 42,
         }),
         s1: "a test",
         s2: Some("hello world"),

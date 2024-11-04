@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::api::core::Error;
 use bp3d_protoc::api::core::loader::Loader;
+use bp3d_protoc::api::core::Error;
 use bp3d_protoc::gen::RustImportSolver;
 
 const VALUE_ITEM_TYPE_SOME: &str = "
@@ -133,10 +133,7 @@ fn list_no_len() {
     let mut loader = Loader::new(1);
     loader.load_from_string(LIST_NO_LEN, "").unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
-    assert!(matches!(
-        err,
-        Error::Compiler(bp3d_protoc::compiler::Error::ZeroArray)
-    ));
+    assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::ZeroArray)));
 }
 
 #[test]
@@ -144,10 +141,7 @@ fn string_no_len() {
     let mut loader = Loader::new(1);
     loader.load_from_string(STRING_NO_LEN, "").unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
-    assert!(matches!(
-        err,
-        Error::Compiler(bp3d_protoc::compiler::Error::ZeroArray)
-    ));
+    assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::ZeroArray)));
 }
 
 #[test]
@@ -155,8 +149,5 @@ fn sized_list_no_size() {
     let mut loader = Loader::new(1);
     loader.load_from_string(SIZED_LIST_NO_SIZE, "").unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
-    assert!(matches!(
-        err,
-        Error::Compiler(bp3d_protoc::compiler::Error::ZeroArray)
-    ));
+    assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::ZeroArray)));
 }

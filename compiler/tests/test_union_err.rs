@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::api::core::Error;
 use bp3d_protoc::api::core::loader::Loader;
+use bp3d_protoc::api::core::Error;
 use bp3d_protoc::gen::RustImportSolver;
 
 const TEST_UNION_BAD_DISCRIMINANT: &str = include_str!("test_union_bad_discriminant.json5");
