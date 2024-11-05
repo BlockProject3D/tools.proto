@@ -183,6 +183,6 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
         .join("");
     let mut code = templates.template.scope().var("fields", fields).render("", &["decl"]).unwrap();
     code += "\n";
-    code += &gen_message_array_type_decls::<U, T>(&templates, "typealias", msg, &type_path_map)?;
+    code += &gen_message_array_type_decls::<U, T>(&templates, "typealias", msg, type_path_map)?;
     Ok(code)
 }

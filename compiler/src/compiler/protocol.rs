@@ -159,7 +159,7 @@ impl Protocol {
             for v in structs {
                 for field in &mut v.fields {
                     if let Some(info) =
-                        field.item_type.as_ref().and_then(|v| proto.types.get(v)).map(|v| v.to_struct()).flatten()
+                        field.item_type.as_ref().and_then(|v| proto.types.get(v)).and_then(|v| v.to_struct())
                     {
                         trace!({typedef=?info}, "Inferred {} as {}", field.name, info.name);
                         let name = std::mem::replace(field, info.clone()).name;
@@ -172,7 +172,7 @@ impl Protocol {
             for v in messages {
                 for field in &mut v.fields {
                     if let Some(info) =
-                        field.item_type.as_ref().and_then(|v| proto.types.get(v)).map(|v| v.to_message()).flatten()
+                        field.item_type.as_ref().and_then(|v| proto.types.get(v)).and_then(|v| v.to_message())
                     {
                         trace!({typedef=?info}, "Inferred {} as {}", field.name, info.name);
                         let name = std::mem::replace(field, info.clone()).name;

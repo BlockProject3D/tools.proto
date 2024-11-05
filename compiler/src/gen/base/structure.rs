@@ -103,7 +103,7 @@ fn gen_structure_field<U: Utilities, G: FnMut(Mode, &Field, &FixedField, Scope) 
     }
 }
 
-fn gen_structure<'variable, U: Utilities, T: TypeMapper, G: FnMut(Mode, &Field, &FixedField, Scope) -> String>(
+fn gen_structure<'variable, U: Utilities, G: FnMut(Mode, &Field, &FixedField, Scope) -> String>(
     s: &'variable Structure,
     mut template: Template<'_, 'variable>,
     mut field_generator: G,
@@ -315,10 +315,10 @@ pub fn generate<'variable, U: Utilities, T: TypeMapper>(
     }
     code += &gen_structure_getters::<U, T>(s, &field_template, type_path_map);
     code += &gen_structure_setters::<U, T>(s, &field_template, type_path_map);
-    code += &gen_structure::<U, T, _>(s, templates.bits_template, |mode, field, fixed, scope| {
+    code += &gen_structure::<U, _>(s, templates.bits_template, |mode, field, fixed, scope| {
         gen_field_bin::<U>(mode, field, fixed, scope)
     });
-    code += &gen_structure::<U, T, _>(s, templates.raw_template, |mode, field, fixed, scope| {
+    code += &gen_structure::<U, _>(s, templates.raw_template, |mode, field, fixed, scope| {
         gen_field_raw(mode, field, fixed, scope)
     });
     code

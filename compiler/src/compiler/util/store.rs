@@ -37,6 +37,12 @@ pub struct ObjectStore<T> {
     objects_imports: HashMap<String, Rc<T>>,
 }
 
+impl<T: bp3d_util::index_map::Index<Key = str>> Default for ObjectStore<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T: bp3d_util::index_map::Index<Key = str>> ObjectStore<T> {
     pub fn new() -> Self {
         Self {
