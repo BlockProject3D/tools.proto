@@ -489,7 +489,7 @@ impl Message {
         let mut is_dyn_sized = false;
         let has_unions = value.fields.iter().any(|v| match &v.value {
             None => false,
-            Some(v) => matches!(v, MessageFieldValue::Union { .. })
+            Some(v) => matches!(v, MessageFieldValue::Union { .. }),
         });
         for v in value.fields {
             let field = Field::from_model(proto, &fields, has_unions, v)?;
