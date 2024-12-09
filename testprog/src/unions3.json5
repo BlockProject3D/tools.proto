@@ -34,9 +34,9 @@
                 { name: "h", item_type: "H" },
                 {
                     name: "a",
+                    header: "h",
                     value: {
                         type: "union",
-                        on: "h",
                         name: "Union"
                     }
                 }

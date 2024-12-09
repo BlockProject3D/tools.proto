@@ -34,6 +34,7 @@ use serde::Deserialize;
 #[derive(Clone, Debug, Deserialize)]
 pub struct Typedef {
     pub name: String,
+    pub header: Option<String>,
     pub value: Option<MessageFieldValue>,
     pub optional: Option<bool>,
     pub description: Option<Description>,
@@ -66,6 +67,7 @@ impl Typedef {
         match &self.raw {
             None => Some(MessageField {
                 name: self.name.clone(),
+                header: self.header.clone(),
                 value: self.value.clone(),
                 codec: self.codec.clone(),
                 description: self.description.clone(),
@@ -77,6 +79,7 @@ impl Typedef {
                 if v.get_simple_type() == SimpleType::Unsigned && bit_size % 8 == 0 {
                     Some(MessageField {
                         name: self.name.clone(),
+                        header: self.header.clone(),
                         description: self.description.clone(),
                         codec: self.codec.clone(),
                         optional: self.optional,

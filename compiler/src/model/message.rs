@@ -44,7 +44,6 @@ pub enum MessageFieldValue {
     },
     Payload,
     Union {
-        on: String,
         name: String,
     },
     Unsigned {
@@ -55,6 +54,7 @@ pub enum MessageFieldValue {
 #[derive(Clone, Debug, Deserialize)]
 pub struct MessageField {
     pub name: String,
+    pub header: Option<String>,
     pub value: Option<MessageFieldValue>,
     pub optional: Option<bool>,
     pub description: Option<Description>,
@@ -67,11 +67,14 @@ impl MessageField {
         if self.item_type.as_deref() == Some(name1) {
             return true;
         }
+        if self.header.as_deref() == Some(name1) {
+            return true;
+        }
         match &self.value {
             None => false,
             Some(v) => match v {
                 MessageFieldValue::List { item_type, .. } => name1 == item_type,
-                MessageFieldValue::Union { name, on } => name1 == on || name == name1,
+                MessageFieldValue::Union { name } => name == name1,
                 _ => false,
             },
         }

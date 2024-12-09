@@ -43,13 +43,12 @@ fn gen_field_write_impl<U: Utilities, T: TypeMapper>(
     scope.var("name", &field.name);
     let codec_template = templates.get_write(field.codec())?;
     let msg_type = generate_field_type_inline::<U, T>(field, codec_template, type_path_map)?;
-    let union = field.ty.as_union();
-    if let Some(v) = union {
-        scope.var("on_name", &v.on_name);
+    if let Some(header) = &field.header {
+        scope.var("header_name", &header.name);
     }
     scope.var("type", msg_type);
-    if union.is_some() {
-        Ok(scope.render(function, &["field_union"]).unwrap())
+    if field.header.is_some() {
+        Ok(scope.render(function, &["field_header"]).unwrap())
     } else if field.ty.is_string() {
         Ok(scope.render(function, &["field_string"]).unwrap())
     } else {

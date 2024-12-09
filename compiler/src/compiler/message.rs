@@ -142,9 +142,7 @@ impl Display for FixedField {
 
 #[derive(Clone, Debug)]
 pub struct UnionField {
-    pub r: Rc<Union>,
-    pub on_name: String,
-    pub on_index: usize,
+    pub r: Rc<Union>
 }
 
 impl Display for UnionField {
@@ -212,8 +210,15 @@ pub struct SizeInfo {
 }
 
 #[derive(Clone, Debug)]
+pub struct HeaderField {
+    pub name: String,
+    pub index: usize
+}
+
+#[derive(Clone, Debug)]
 pub struct Field {
     pub name: String,
+    pub header: Option<HeaderField>,
     pub ty: FieldType,
     pub optional: bool,
     pub size: SizeInfo,
@@ -240,13 +245,27 @@ impl Field {
     fn from_model(
         proto: &Protocol,
         unsorted: &[Field],
-        has_unions: bool,
+        has_headers: bool,
         value: crate::model::message::MessageField,
     ) -> Result<Self, Error> {
-        if (value.value.is_none() && value.item_type.is_none()) || (value.value.is_some() && value.item_type.is_some())
-        {
+        if (value.value.is_none() && value.item_type.is_none())
+            || (value.value.is_some() && value.item_type.is_some()) {
             return Err(Error::BadFieldType);
         }
+        let (header, header_field) = match value.header {
+            Some(header) => {
+                let (index, field) = unsorted
+                    .iter()
+                    .enumerate()
+                    .find_map(|(k, v)| if v.name == header { Some((k, v)) } else { None })
+                    .ok_or(Error::UndefinedReference(header))?;
+                (Some(HeaderField {
+                    index,
+                    name: field.name.clone()
+                }), Some(field))
+            },
+            None => (None, None)
+        };
         if let Some(info) = value.value {
             match info {
                 MessageFieldValue::List {
@@ -263,6 +282,7 @@ impl Field {
                     match r {
                         Referenced::Struct(item_type) => Ok(Field {
                             name: value.name,
+                            header,
                             description: value.description,
                             ty: FieldType::Array(ArrayField { item_type, ty }),
                             optional: value.optional.unwrap_or_default(),
@@ -281,6 +301,7 @@ impl Field {
                                 let size_ty = FixedFieldType::from_max_value(max_size)?;
                                 Ok(Field {
                                     name: value.name,
+                                    header,
                                     description: value.description,
                                     ty: FieldType::SizedList(SizedListField { ty, item_type, size_ty }),
                                     optional: value.optional.unwrap_or_default(),
@@ -295,6 +316,7 @@ impl Field {
                                 item_type.embedded.set(true);
                                 Ok(Field {
                                     name: value.name,
+                                    header,
                                     description: value.description,
                                     ty: FieldType::List(ListField {
                                         ty,
@@ -316,6 +338,7 @@ impl Field {
                 MessageFieldValue::String { max_len } => match max_len {
                     None => Ok(Field {
                         name: value.name,
+                        header,
                         description: value.description,
                         ty: FieldType::NullTerminatedString,
                         optional: value.optional.unwrap_or_default(),
@@ -333,6 +356,7 @@ impl Field {
                         let ty = FixedFieldType::from_max_value(max_len)?;
                         Ok(Field {
                             name: value.name,
+                            header,
                             description: value.description,
                             ty: FieldType::SizedString(SizedStringField { ty }),
                             optional: value.optional.unwrap_or_default(),
@@ -345,14 +369,10 @@ impl Field {
                         })
                     }
                 },
-                MessageFieldValue::Union { on, name } => {
-                    let (on_index, on_field) = unsorted
-                        .iter()
-                        .enumerate()
-                        .find_map(|(k, v)| if v.name == on { Some((k, v)) } else { None })
-                        .ok_or(Error::UndefinedReference(on))?;
+                MessageFieldValue::Union { name } => {
                     let r = proto.unions.get(&name).ok_or(Error::UndefinedReference(name))?;
-                    match &on_field.ty {
+                    let header_field = header_field.ok_or(Error::MissingHeaderForUnion)?;
+                    match &header_field.ty {
                         FieldType::Ref(Referenced::Struct(v)) => {
                             if !Rc::ptr_eq(&r.discriminant.root, v) {
                                 error!(
@@ -370,17 +390,15 @@ impl Field {
                             return Err(Error::UnionTypeMismatch);
                         }
                     }
-                    let on_name = on_field.name.clone();
                     if value.optional.unwrap_or_default() {
                         eprintln!("WARNING: ignoring unsupported optional flag on union message field!");
                     }
                     Ok(Field {
                         name: value.name,
                         description: value.description,
+                        header,
                         ty: FieldType::Union(UnionField {
-                            r: r.clone(),
-                            on_name,
-                            on_index,
+                            r: r.clone()
                         }),
                         optional: false,
                         size: r.size,
@@ -391,6 +409,7 @@ impl Field {
                 MessageFieldValue::Payload => Ok(Field {
                     name: value.name,
                     description: value.description,
+                    header,
                     ty: FieldType::Payload,
                     optional: value.optional.unwrap_or_default(),
                     size: SizeInfo {
@@ -405,6 +424,7 @@ impl Field {
                     Ok(Field {
                         name: value.name,
                         description: value.description,
+                        header,
                         ty: FieldType::Fixed(FixedField { ty }),
                         optional: value.optional.unwrap_or_default(),
                         size: SizeInfo {
@@ -425,12 +445,13 @@ impl Field {
                     let is_fixed = r.fields[0].ty.as_fixed().is_some();
                     let is_none = r.fields[0].ty.as_fixed().map(|v| v.raw.is_none()).unwrap_or_default();
                     let is_byte_aligned = r.fields[0].loc.bit_size % 8 == 0;
-                    trace!({has_unions} {is_single} {is_fixed} {is_none} {is_byte_aligned}, "Found struct reference: {}", r.name);
-                    if !has_unions && is_single && is_fixed && is_none && is_byte_aligned {
+                    trace!({has_headers} {is_single} {is_fixed} {is_none} {is_byte_aligned}, "Found struct reference: {}", r.name);
+                    if !has_headers && is_single && is_fixed && is_none && is_byte_aligned {
                         let fixed = unsafe { r.fields[0].ty.as_fixed().unwrap_unchecked() };
                         Ok(Field {
                             name: value.name,
                             description: value.description,
+                            header,
                             ty: FieldType::Fixed(FixedField { ty: fixed.bits_type }),
                             optional: value.optional.unwrap_or_default(),
                             size: SizeInfo {
@@ -444,6 +465,7 @@ impl Field {
                         Ok(Field {
                             name: value.name,
                             description: value.description,
+                            header,
                             ty: FieldType::Ref(Referenced::Struct(r)),
                             optional: value.optional.unwrap_or_default(),
                             size: SizeInfo {
@@ -458,6 +480,7 @@ impl Field {
                 Referenced::Message(r) => Ok(Field {
                     name: value.name,
                     description: value.description,
+                    header,
                     optional: value.optional.unwrap_or_default(),
                     size: r.size,
                     ty: FieldType::Ref(Referenced::Message(r)),
@@ -487,12 +510,9 @@ impl Message {
         let mut fields = Vec::with_capacity(value.fields.len());
         let mut dyn_sized_elem_count = 0;
         let mut is_dyn_sized = false;
-        let has_unions = value.fields.iter().any(|v| match &v.value {
-            None => false,
-            Some(v) => matches!(v, MessageFieldValue::Union { .. })
-        });
+        let has_headers = value.fields.iter().any(|v| v.header.is_some());
         for v in value.fields {
-            let field = Field::from_model(proto, &fields, has_unions, v)?;
+            let field = Field::from_model(proto, &fields, has_headers, v)?;
             if field.size.is_dyn_sized {
                 is_dyn_sized = true;
             }

@@ -23,10 +23,10 @@
             fields: [
                 {
                     name: "v",
+                    header: "undefined",
                     value: {
                         type: "union",
-                        name: "TestU",
-                        on: "undefined"
+                        name: "TestU"
                     }
                 }
             ]

@@ -48,6 +48,7 @@ simple_error! {
         InvalidUnionCase(String) => "invalid union case {}",
         UnionTypeMismatch => "mismatch with union discriminant types",
         MissingNestedList(String) => "the list field {} is not allowed to be nested",
-        BadFieldType => "either one of \"info\" or \"item_type\" key must be present"
+        BadFieldType => "either one of \"info\" or \"item_type\" key must be present",
+        MissingHeaderForUnion => "missing header key for a union field"
     }
 }
