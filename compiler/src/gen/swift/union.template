@@ -51,7 +51,7 @@ extension {proto_name:to_pascal_case}{union_name} {{
 
 #fragment push setter
 extension {proto_name:to_pascal_case}{union_name} {{
-    public func setDiscriminant<B1: BP3DProto.WritableBuffer>(_ discriminant: {discriminant_type}<B1>) where B1: BP3DProto.Buffer {{
+    public func setDiscriminant<B1: BP3DProto.WritableBuffer>(_ header: {discriminant_type}<B1>) where B1: BP3DProto.Buffer {{
         var discriminantValue: {discriminant_raw_type} = 0;
         switch self {{
 {cases}
@@ -66,7 +66,7 @@ extension {proto_name:to_pascal_case}{union_name} {{
                 break;
 #fragment pop
         }};
-        discriminant.{discriminant_path_mut}(discriminantValue);
+        header.{discriminant_path_mut}(discriminantValue);
     }}
 }}
 #fragment pop
@@ -75,8 +75,8 @@ extension {proto_name:to_pascal_case}{union_name} {{
 extension {proto_name:to_pascal_case}{union_name} {{
 {fragment}
 #fragment push content
-    public static func write<B1: WritableBuffer>(input: Self, discriminant: {discriminant_type}<B>, to out: inout B1) throws {{
-        let discriminant = discriminant.{discriminant_path};
+    public static func write<B1: WritableBuffer>(input: Self, header: {discriminant_type}<B>, to out: inout B1) throws {{
+        let discriminant = header.{discriminant_path};
         switch input {{
 {cases}
 #fragment push case
@@ -94,7 +94,7 @@ extension {proto_name:to_pascal_case}{union_name} {{
     }}
 #fragment pop
 #fragment push none
-    public func write<B1: WritableBuffer>(input: Self, discriminant: {discriminant_type}<B>, to _: inout B1) throws {{
+    public func write<B1: WritableBuffer>(input: Self, header: {discriminant_type}<B>, to _: inout B1) throws {{
     }}
 #fragment pop
 }}
@@ -104,8 +104,8 @@ extension {proto_name:to_pascal_case}{union_name} {{
 extension {proto_name:to_pascal_case}{union_name} {{
 {fragment}
 #fragment push content
-    public static func from(bytes: B, discriminant: {discriminant_type}<B>) throws -> BP3DProto.Message<Self> {{
-        let discriminant = discriminant.{discriminant_path};
+    public static func from(bytes: B, header: {discriminant_type}<B>) throws -> BP3DProto.Message<Self> {{
+        let discriminant = header.{discriminant_path};
         switch discriminant {{
 {cases}
 #fragment push case
@@ -119,8 +119,8 @@ extension {proto_name:to_pascal_case}{union_name} {{
     }}
 #fragment pop
 #fragment push none
-    public static func from(bytes: B, discriminant: {discriminant_type}<B>) throws -> BP3DProto.Message<Self> {{
-        let discriminant = discriminant.{discriminant_path};
+    public static func from(bytes: B, header: {discriminant_type}<B>) throws -> BP3DProto.Message<Self> {{
+        let discriminant = header.{discriminant_path};
         switch discriminant {{
 {cases}
 #fragment push case

@@ -124,12 +124,49 @@ impl<'a, T: WriteTo<Input<'a> = T>> WriteSelf for T {
     }
 }
 
+pub trait FromBytesWithHeader<'a, H> {
+    type Output: Sized;
+
+    fn from_bytes_with_header(slice: &'a [u8], header: &H) -> Result<Message<Self::Output>>;
+}
+
+pub trait WriteToWithHeader<H> {
+    type Input<'a>: Sized;
+
+    fn write_to_with_header<W: std::io::Write>(input: &Self::Input<'_>, header: &H, out: W) -> Result<()>;
+}
+
+#[cfg(feature = "tokio")]
+pub trait WriteToWithHeaderAsync<H>: WriteToWithHeader<H> {
+    fn u_write_to_with_header_async<W: tokio::io::AsyncWriteExt + Unpin>(
+        input: &Self::Input<'_>,
+        header: &H,
+        out: W,
+    ) -> impl std::future::Future<Output = Result<()>>;
+}
+
 #[cfg(feature = "tokio")]
 impl<T> WriteSelfAsync for T
 where
-    for<'a> T: WriteToAsync<Input<'a> = T>,
+        for<'a> T: WriteToAsync<Input<'a> = T>,
 {
     async fn write_self_async<W: tokio::io::AsyncWriteExt + Unpin>(&self, out: W) -> Result<()> {
         T::write_to_async(self, out).await
+    }
+}
+
+impl<H, T: WriteSelf> WriteToWithHeader<H> for T {
+    type Input<'b> = T;
+
+    fn write_to_with_header<W: std::io::Write>(input: &Self::Input<'_>, _: &H, out: W) -> Result<()> {
+        input.write_self(out)
+    }
+}
+
+impl<'a, H, T: FromBytes<'a>> FromBytesWithHeader<'a, H> for T {
+    type Output = T::Output;
+
+    fn from_bytes_with_header(slice: &'a [u8], _: &H) -> Result<Message<Self::Output>> {
+        T::from_bytes(slice)
     }
 }

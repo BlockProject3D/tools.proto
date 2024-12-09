@@ -26,8 +26,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::message::{FromBytes, Message, WriteSelf};
-
 pub trait FromValue<T> {
     fn from_value(value: T) -> Self;
 }
@@ -36,45 +34,8 @@ pub trait IntoUnion<U> {
     fn into_union(self) -> U;
 }
 
-pub trait UFromBytes<'a, D> {
-    type Output: Sized;
-
-    fn u_from_bytes(slice: &'a [u8], discriminant: &D) -> crate::message::Result<Message<Self::Output>>;
-}
-
-pub trait UWriteTo<D> {
-    type Input<'a>: Sized;
-
-    fn u_write_to<W: std::io::Write>(input: &Self::Input<'_>, discriminant: &D, out: W) -> crate::message::Result<()>;
-}
-
-#[cfg(feature = "tokio")]
-pub trait UWriteToAsync<D>: UWriteTo<D> {
-    fn u_write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(
-        input: &Self::Input<'_>,
-        discriminant: &D,
-        out: W,
-    ) -> impl std::future::Future<Output = crate::message::Result<()>>;
-}
-
-impl<D, T: WriteSelf> UWriteTo<D> for T {
-    type Input<'b> = T;
-
-    fn u_write_to<W: std::io::Write>(input: &Self::Input<'_>, _: &D, out: W) -> crate::message::Result<()> {
-        input.write_self(out)
-    }
-}
-
 impl<T, U: FromValue<T>> IntoUnion<U> for T {
     fn into_union(self) -> U {
         U::from_value(self)
-    }
-}
-
-impl<'a, D, T: FromBytes<'a>> UFromBytes<'a, D> for T {
-    type Output = T::Output;
-
-    fn u_from_bytes(slice: &'a [u8], _: &D) -> crate::message::Result<Message<Self::Output>> {
-        T::from_bytes(slice)
     }
 }

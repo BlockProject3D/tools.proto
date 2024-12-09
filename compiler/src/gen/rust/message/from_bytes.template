@@ -1,7 +1,7 @@
 #fragment push impl
 impl{generics} bp3d_proto::message::FromBytes<'a> for {msg_name}{generics}
 #fragment push where
-    where T{name}: bp3d_proto::union::UFromBytes<'a, {discriminant_type}<&'a [u8]>, Output=T{name}>,
+    where T{name}: bp3d_proto::message::FromBytesWithHeader<'a, {discriminant_type}<&'a [u8]>, Output=T{name}>,
 #fragment pop
 {where_clauses}
 {{
@@ -20,8 +20,8 @@ impl{generics} bp3d_proto::message::FromBytes<'a> for {msg_name}{generics}
         byte_offset += {name}_msg.size();
         let {name} = {name}_msg.into_inner();
 #fragment pop
-#fragment push field_union
-        let {name}_msg = T{name}::u_from_bytes(&bytes[byte_offset..], &{on_name})?;
+#fragment push field_header
+        let {name}_msg = T{name}::from_bytes_with_header(&bytes[byte_offset..], &{header_name})?;
         byte_offset += {name}_msg.size();
         let {name} = {name}_msg.into_inner();
 #fragment pop

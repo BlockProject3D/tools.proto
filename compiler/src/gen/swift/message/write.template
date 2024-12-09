@@ -10,8 +10,8 @@ extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.WriteTo {{
 #fragment push field_string
         try {type}.write(input: input.{name}, to: &out);
 #fragment pop
-#fragment push field_union
-        try {type}.write(input: input.{name}, discriminant: input.{on_name}, to: &out);
+#fragment push field_header
+        try {type}.write(input: input.{name}, header: input.{header_name}, to: &out);
 #fragment pop
     }}
 }}
