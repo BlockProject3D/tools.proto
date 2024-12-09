@@ -1,0 +1,30 @@
+{
+    name: "test_union_broken_ref",
+    structs: [
+        {
+            name: "Header",
+            fields: [
+                { name: "v", raw: { type: "unsigned", bits: 8 } }
+            ]
+        }
+    ],
+    messages: [
+        {
+            name: "Test",
+            fields: [
+                {
+                    name: "v1",
+                    item_type: "Header"
+                },
+                {
+                    name: "v",
+                    header: "v1",
+                    value: {
+                        type: "union",
+                        name: "Broken"
+                    }
+                }
+            ]
+        }
+    ]
+}

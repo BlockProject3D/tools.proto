@@ -33,6 +33,8 @@ use bp3d_protoc::gen::RustImportSolver;
 const TEST_UNION_BAD_DISCRIMINANT: &str = include_str!("test_union_bad_discriminant.json5");
 const TEST_UNION_BAD_DISCRIMINANT_2: &str = include_str!("test_union_bad_discriminant_2.json5");
 const TEST_UNION_UNDEFINED_DISCRIMINANT: &str = include_str!("test_union_undefined_discriminant.json5");
+const TEST_UNION_NO_HEADER: &str = include_str!("test_union_no_header.json5");
+const TEST_UNION_BROKEN_REF: &str = include_str!("test_union_broken_ref.json5");
 
 #[test]
 fn bad_discriminant() {
@@ -65,6 +67,35 @@ fn undefined_discriminant() {
         Error::Compiler(v) => match v {
             bp3d_protoc::compiler::Error::UndefinedReference(v) => {
                 assert_eq!(v, "undefined");
+                return;
+            }
+            _ => (),
+        },
+        _ => (),
+    }
+    assert!(false);
+}
+
+#[test]
+fn no_header() {
+    let mut loader = Loader::new(1);
+    loader.load_from_string(TEST_UNION_NO_HEADER, "").unwrap();
+    let err = loader.compile(&RustImportSolver).unwrap_err();
+    assert!(matches!(
+        err,
+        Error::Compiler(bp3d_protoc::compiler::Error::MissingHeaderForUnion)
+    ));
+}
+
+#[test]
+fn broken_ref() {
+    let mut loader = Loader::new(1);
+    loader.load_from_string(TEST_UNION_BROKEN_REF, "").unwrap();
+    let err = loader.compile(&RustImportSolver).unwrap_err();
+    match err {
+        Error::Compiler(v) => match v {
+            bp3d_protoc::compiler::Error::UndefinedReference(v) => {
+                assert_eq!(v, "Broken");
                 return;
             }
             _ => (),
