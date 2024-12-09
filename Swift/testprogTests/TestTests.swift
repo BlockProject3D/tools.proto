@@ -44,7 +44,8 @@ final class TestTests: XCTestCase {
             s2: "hello world",
             p1: TestTest1<B>(
                 s1: "this is a test",
-                p1: 42
+                p1: 42,
+                p3: 42
             )
         );
         try TestTest.write(input: msg, to: &out);
@@ -55,6 +56,7 @@ final class TestTests: XCTestCase {
         try writeMessage(out: &buffer);
         let msg = try TestTest.from(bytes: buffer).data;
         XCTAssertEqual(msg.p1!.p1, 42);
+        XCTAssertEqual(msg.p1!.p3, 42);
         XCTAssertEqual(msg.p1!.s1, "this is a test");
         XCTAssertEqual(msg.s1, "a test");
         XCTAssertEqual(msg.s2, "hello world");
