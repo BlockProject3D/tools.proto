@@ -40,7 +40,7 @@ extension UnionsItem: BP3DProto.FromBytes  {
         let nameMsg = try BP3DProto.NullTerminatedString<B>.from(bytes: bytes[byteOffset...]);
         byteOffset += nameMsg.size;
         let name = nameMsg.data;
-        let valueMsg = try UnionsValue.from(bytes: bytes[byteOffset...], discriminant: header);
+        let valueMsg = try UnionsValue.from(bytes: bytes[byteOffset...], header: header);
         byteOffset += valueMsg.size;
         let value = valueMsg.data;
 

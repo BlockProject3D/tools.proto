@@ -40,10 +40,14 @@ extension TestTest1: BP3DProto.FromBytes  {
         let p1Msg = try BP3DProto.ValueLE<B, UInt32>.from(bytes: bytes[byteOffset...]);
         byteOffset += p1Msg.size;
         let p1 = p1Msg.data;
+        let p3Msg = try BP3DProto.ValueLE<B, UInt8>.from(bytes: bytes[byteOffset...]);
+        byteOffset += p3Msg.size;
+        let p3 = p3Msg.data;
 
         let _data = TestTest1(
             s1: s1,
-            p1: p1
+            p1: p1,
+            p3: p3
         );
         return BP3DProto.Message(size: byteOffset, data: _data);
     }

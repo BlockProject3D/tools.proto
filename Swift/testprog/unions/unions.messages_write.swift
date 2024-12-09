@@ -34,7 +34,7 @@ extension UnionsItem: BP3DProto.WriteTo {
     public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {
         try EnumsHeader.write(input: input.header, to: &out);
         try BP3DProto.NullTerminatedString<B>.write(input: input.name, to: &out);
-        try UnionsValue.write(input: input.value, discriminant: input.header, to: &out);
+        try UnionsValue.write(input: input.value, header: input.header, to: &out);
 
     }
 }

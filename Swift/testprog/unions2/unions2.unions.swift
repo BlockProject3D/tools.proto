@@ -35,8 +35,8 @@ public enum Unions2NestedDiscriminant<B: BP3DProto.Buffer> {
 
 }
 extension Unions2NestedDiscriminant {
-    public static func from(bytes: B, discriminant: Unions2Header2<B>) throws -> BP3DProto.Message<Self> {
-        let discriminant = discriminant.inner.raw.test;
+    public static func from(bytes: B, header: Unions2Header2<B>) throws -> BP3DProto.Message<Self> {
+        let discriminant = header.inner.raw.test;
         switch discriminant {
             case 0:
                 return BP3DProto.Message(size: 0, data: Self.v1);
@@ -50,12 +50,12 @@ extension Unions2NestedDiscriminant {
 
 }
 extension Unions2NestedDiscriminant {
-    public func write<B1: WritableBuffer>(input: Self, discriminant: Unions2Header2<B>, to _: inout B1) throws {
+    public func write<B1: WritableBuffer>(input: Self, header: Unions2Header2<B>, to _: inout B1) throws {
     }
 
 }
 extension Unions2NestedDiscriminant {
-    public func setDiscriminant<B1: BP3DProto.WritableBuffer>(_ discriminant: Unions2Header2<B1>) where B1: BP3DProto.Buffer {
+    public func setDiscriminant<B1: BP3DProto.WritableBuffer>(_ header: Unions2Header2<B1>) where B1: BP3DProto.Buffer {
         var discriminantValue: UInt8 = 0;
         switch self {
             case Self.v1:
@@ -66,7 +66,7 @@ extension Unions2NestedDiscriminant {
                 break;
 
         };
-        discriminant.inner.raw.setTest(discriminantValue);
+        header.inner.raw.setTest(discriminantValue);
     }
 }
 extension Unions2NestedDiscriminant {

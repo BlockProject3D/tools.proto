@@ -32,10 +32,12 @@ import BP3DProto;
 public struct TestTest1<B: BP3DProto.Buffer> {
     public let s1: String;
     public let p1: UInt32;
+    public let p3: UInt8;
 
-    public init(s1: String, p1: UInt32) {
+    public init(s1: String, p1: UInt32, p3: UInt8) {
         self.s1 = s1;
         self.p1 = p1;
+        self.p3 = p3;
 
     }
 

@@ -34,6 +34,7 @@ extension TestTest1: BP3DProto.WriteTo {
     public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {
         try BP3DProto.NullTerminatedString<B>.write(input: input.s1, to: &out);
         try BP3DProto.ValueLE<B, UInt32>.write(input: input.p1, to: &out);
+        try BP3DProto.ValueLE<B, UInt8>.write(input: input.p3, to: &out);
 
     }
 }

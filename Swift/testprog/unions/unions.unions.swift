@@ -45,8 +45,8 @@ public enum UnionsValue<B: BP3DProto.Buffer> {
 
 }
 extension UnionsValue {
-    public static func from(bytes: B, discriminant: EnumsHeader<B>) throws -> BP3DProto.Message<Self> {
-        let discriminant = discriminant.raw.type;
+    public static func from(bytes: B, header: EnumsHeader<B>) throws -> BP3DProto.Message<Self> {
+        let discriminant = header.raw.type;
         switch discriminant {
             case 0:
                 return BP3DProto.Message(size: 0, data: Self.null);
@@ -91,8 +91,8 @@ extension UnionsValue {
 
 }
 extension UnionsValue {
-    public static func write<B1: WritableBuffer>(input: Self, discriminant: EnumsHeader<B>, to out: inout B1) throws {
-        let discriminant = discriminant.raw.type;
+    public static func write<B1: WritableBuffer>(input: Self, header: EnumsHeader<B>, to out: inout B1) throws {
+        let discriminant = header.raw.type;
         switch input {
             case Self.string(let v):
                 if discriminant == 1 {
@@ -179,7 +179,7 @@ extension UnionsValue {
 
 }
 extension UnionsValue {
-    public func setDiscriminant<B1: BP3DProto.WritableBuffer>(_ discriminant: EnumsHeader<B1>) where B1: BP3DProto.Buffer {
+    public func setDiscriminant<B1: BP3DProto.WritableBuffer>(_ header: EnumsHeader<B1>) where B1: BP3DProto.Buffer {
         var discriminantValue: UInt8 = 0;
         switch self {
             case Self.null:
@@ -220,7 +220,7 @@ extension UnionsValue {
                 break;
 
         };
-        discriminant.raw.setType(discriminantValue);
+        header.raw.setType(discriminantValue);
     }
 }
 extension UnionsValue {
