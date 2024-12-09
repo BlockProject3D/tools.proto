@@ -142,7 +142,7 @@ impl Display for FixedField {
 
 #[derive(Clone, Debug)]
 pub struct UnionField {
-    pub r: Rc<Union>
+    pub r: Rc<Union>,
 }
 
 impl Display for UnionField {
@@ -212,7 +212,7 @@ pub struct SizeInfo {
 #[derive(Clone, Debug)]
 pub struct HeaderField {
     pub name: String,
-    pub index: usize
+    pub index: usize,
 }
 
 #[derive(Clone, Debug)]
@@ -248,8 +248,8 @@ impl Field {
         has_headers: bool,
         value: crate::model::message::MessageField,
     ) -> Result<Self, Error> {
-        if (value.value.is_none() && value.item_type.is_none())
-            || (value.value.is_some() && value.item_type.is_some()) {
+        if (value.value.is_none() && value.item_type.is_none()) || (value.value.is_some() && value.item_type.is_some())
+        {
             return Err(Error::BadFieldType);
         }
         let (header, header_field) = match value.header {
@@ -259,12 +259,15 @@ impl Field {
                     .enumerate()
                     .find_map(|(k, v)| if v.name == header { Some((k, v)) } else { None })
                     .ok_or(Error::UndefinedReference(header))?;
-                (Some(HeaderField {
-                    index,
-                    name: field.name.clone()
-                }), Some(field))
-            },
-            None => (None, None)
+                (
+                    Some(HeaderField {
+                        index,
+                        name: field.name.clone(),
+                    }),
+                    Some(field),
+                )
+            }
+            None => (None, None),
         };
         if let Some(info) = value.value {
             match info {
@@ -397,9 +400,7 @@ impl Field {
                         name: value.name,
                         description: value.description,
                         header,
-                        ty: FieldType::Union(UnionField {
-                            r: r.clone()
-                        }),
+                        ty: FieldType::Union(UnionField { r: r.clone() }),
                         optional: false,
                         size: r.size,
                         endianness: proto.endianness,

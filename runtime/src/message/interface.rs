@@ -148,7 +148,7 @@ pub trait WriteToWithHeaderAsync<H>: WriteToWithHeader<H> {
 #[cfg(feature = "tokio")]
 impl<T> WriteSelfAsync for T
 where
-        for<'a> T: WriteToAsync<Input<'a> = T>,
+    for<'a> T: WriteToAsync<Input<'a> = T>,
 {
     async fn write_self_async<W: tokio::io::AsyncWriteExt + Unpin>(&self, out: W) -> Result<()> {
         T::write_to_async(self, out).await
