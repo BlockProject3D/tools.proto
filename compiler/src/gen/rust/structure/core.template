@@ -132,7 +132,7 @@ impl<T> bp3d_proto::util::Size for {name}<T> {{
 #fragment pop
 
 #fragment push write_to
-impl<'a> bp3d_proto::message::WriteTo for {name}<&'a [u8]> {{
+impl bp3d_proto::message::WriteTo for {name}<&[u8]> {{
     type Input<'b> = Self;
 
     fn write_to<W: std::io::Write>(input: &Self, mut out: W) -> bp3d_proto::message::Result<()> {{
@@ -143,7 +143,7 @@ impl<'a> bp3d_proto::message::WriteTo for {name}<&'a [u8]> {{
 #fragment pop
 
 #fragment push write_to_async
-impl<'a> bp3d_proto::message::WriteToAsync for {name}<&'a [u8]> {{
+impl bp3d_proto::message::WriteToAsync for {name}<&[u8]> {{
     async fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> bp3d_proto::message::Result<()> {{
         unsafe {{ out.write_all(input.raw.bin.data.get_unchecked(..{byte_size})).await? }};
         Ok(())
