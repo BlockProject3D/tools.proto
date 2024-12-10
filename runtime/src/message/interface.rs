@@ -138,7 +138,7 @@ pub trait WriteToWithHeader<H> {
 
 #[cfg(feature = "tokio")]
 pub trait WriteToWithHeaderAsync<H>: WriteToWithHeader<H> {
-    fn u_write_to_with_header_async<W: tokio::io::AsyncWriteExt + Unpin>(
+    fn write_to_with_header_async<W: tokio::io::AsyncWriteExt + Unpin>(
         input: &Self::Input<'_>,
         header: &H,
         out: W,
