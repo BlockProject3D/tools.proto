@@ -62,7 +62,7 @@ impl{generics} {union_name}{generics} {{
 #fragment pop
 
 #fragment push setter
-impl{generics} {union_name}{generics} {{
+impl {union_name}<'_> {{
     pub fn set_discriminant<T: AsMut<[u8]>>(&self, discriminant: &mut {discriminant_type}<T>) {{
         let discriminant_value = match self {{
 {cases}
