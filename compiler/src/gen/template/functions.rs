@@ -34,7 +34,7 @@ pub struct FunctionMap<'fragment> {
     map: HashMap<&'fragment str, fn(&str) -> Cow<str>>,
 }
 
-impl<'fragment> Default for FunctionMap<'fragment> {
+impl Default for FunctionMap<'_> {
     fn default() -> Self {
         let mut map = Self::new();
         map.add_defaults();

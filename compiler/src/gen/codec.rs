@@ -35,7 +35,7 @@ pub struct Codec<'fragment, 'variable> {
     pub write: Template<'fragment, 'variable>,
 }
 
-impl<'fragment, 'variable> Codec<'fragment, 'variable> {
+impl Codec<'_, '_> {
     pub fn from_static_bytes(decl: &'static [u8], from_bytes: &'static [u8], write: &'static [u8]) -> Self {
         Self {
             decl: Template::compile(decl).unwrap(),
@@ -49,7 +49,7 @@ pub struct CodecMap<'fragment, 'variable> {
     map: HashMap<&'fragment str, Codec<'fragment, 'variable>>,
 }
 
-impl<'fragment, 'variable> Default for CodecMap<'fragment, 'variable> {
+impl Default for CodecMap<'_, '_> {
     fn default() -> Self {
         Self::new()
     }

@@ -38,7 +38,7 @@ pub struct Loader<'a> {
     max_iterations: usize,
 }
 
-impl<'a> Default for Loader<'a> {
+impl Default for Loader<'_> {
     fn default() -> Self {
         Self::new(16)
     }

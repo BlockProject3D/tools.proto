@@ -47,7 +47,7 @@ fn _gen_message_write_impl(msg: &Message, codec_map: &CodecMap, type_path_map: &
     let where_clauses = msg
         .fields
         .iter()
-        .map(|field| gen_where_clause(&templates.template, field, &type_path_map, function))
+        .map(|field| gen_where_clause(&templates.template, field, type_path_map, function))
         .join("");
     templates
         .template
@@ -56,9 +56,9 @@ fn _gen_message_write_impl(msg: &Message, codec_map: &CodecMap, type_path_map: &
         templates.template.var("impl_generics", "")
             .var("generics", "<'_>");
     } else {
-        templates.template.var("generics", &*generics).var("impl_generics", &*generics);
+        templates.template.var("generics", generics).var("impl_generics", generics);
     }
-    generate::<RustUtils, _>(templates, msg, &type_path_map, function)
+    generate::<RustUtils, _>(templates, msg, type_path_map, function)
 }
 
 pub fn gen_message_write_impl(
@@ -69,7 +69,7 @@ pub fn gen_message_write_impl(
 ) -> Result<String, Error> {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let generics = RustUtils::get_generics_for_write(msg, &type_path_map).to_string();
-    let mut code = _gen_message_write_impl(msg, &codec_map, &type_path_map, &generics, "impl")?;
+    let mut code = _gen_message_write_impl(msg, codec_map, &type_path_map, &generics, "impl")?;
     if params.enable_write_async {
         code += &_gen_message_write_impl(msg, codec_map, &type_path_map, &generics, "impl_async")?;
     }

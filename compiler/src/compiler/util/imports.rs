@@ -78,7 +78,7 @@ impl<'a, T: ImportSolver> ProtocolStore<'a, T> {
     }
 }
 
-impl<'a, T> Debug for ProtocolStore<'a, T> {
+impl<T> Debug for ProtocolStore<'_, T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("ProtocolStore { solver: ")?;
         f.write_str(std::any::type_name::<T>())?;

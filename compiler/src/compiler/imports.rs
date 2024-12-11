@@ -44,7 +44,7 @@ pub enum Import<'a> {
     Type(&'a Rc<Typedef>),
 }
 
-impl<'a> Name for Import<'a> {
+impl Name for Import<'_> {
     fn name(&self) -> &str {
         match self {
             Import::Struct(v) => v.name(),
@@ -56,7 +56,7 @@ impl<'a> Name for Import<'a> {
     }
 }
 
-impl<'a> PtrKey for Import<'a> {
+impl PtrKey for Import<'_> {
     fn ptr_key(&self) -> usize {
         match self {
             Import::Struct(v) => v.ptr_key(),
@@ -68,7 +68,7 @@ impl<'a> PtrKey for Import<'a> {
     }
 }
 
-impl<'a> Import<'a> {
+impl Import<'_> {
     pub fn insert(self, type_name: String, proto: &mut Protocol) {
         match self {
             Import::Struct(v) => {

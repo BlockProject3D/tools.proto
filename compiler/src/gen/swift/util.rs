@@ -45,7 +45,7 @@ impl<'a> SwiftTypeMapper<'a> {
     }
 }
 
-impl<'b> TypeMapper for SwiftTypeMapper<'b> {
+impl TypeMapper for SwiftTypeMapper<'_> {
     fn map_local_type<'a>(&self, item_type: &'a str) -> Cow<'a, str> {
         format!("{}{}", self.proto_name, item_type).into()
     }

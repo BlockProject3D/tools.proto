@@ -192,7 +192,7 @@ pub struct Scope<'a, 'fragment, 'variable> {
     variables: HashMap<&'variable str, Cow<'variable, str>>,
 }
 
-impl<'a, 'fragment, 'variable> Scope<'a, 'fragment, 'variable> {
+impl<'variable> Scope<'_, '_, 'variable> {
     pub fn var(&mut self, key: &'variable str, value: impl Into<Cow<'variable, str>>) -> &mut Self {
         self.variables.insert(key, value.into());
         self

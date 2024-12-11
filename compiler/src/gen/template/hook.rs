@@ -37,19 +37,19 @@ pub trait RenderToVar<'a>: Render {
     fn render_frag_to_var(&mut self, fragment: &Fragment, key: &'a str) -> Result<&mut Self, Error>;
 }
 
-impl<'fragment, 'variable> Render for Template<'fragment, 'variable> {
+impl Render for Template<'_, '_> {
     fn render_frag(&self, fragment: &Fragment) -> Result<String, Error> {
         self.render(fragment.path, fragment.fragments)
     }
 }
 
-impl<'a, 'fragment, 'variable> Render for Scope<'a, 'fragment, 'variable> {
+impl Render for Scope<'_, '_, '_> {
     fn render_frag(&self, fragment: &Fragment) -> Result<String, Error> {
         self.render(fragment.path, fragment.fragments)
     }
 }
 
-impl<'a, 'fragment, 'variable> RenderToVar<'variable> for Scope<'a, 'fragment, 'variable> {
+impl<'variable> RenderToVar<'variable> for Scope<'_, '_, 'variable> {
     fn render_frag_to_var(&mut self, fragment: &Fragment, key: &'variable str) -> Result<&mut Self, Error> {
         self.render_to_var(fragment.path, fragment.fragments, key)
     }
@@ -87,7 +87,7 @@ pub struct TemplateHooks<'a> {
     map: HashMap<&'a str, Vec<Hook<'a>>>,
 }
 
-impl<'a> Default for TemplateHooks<'a> {
+impl Default for TemplateHooks<'_> {
     fn default() -> Self {
         Self::new()
     }

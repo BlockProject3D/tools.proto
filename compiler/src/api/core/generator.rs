@@ -96,7 +96,7 @@ pub struct Item<'a> {
     pub path: PathBuf,
 }
 
-impl<'a> bp3d_util::index_map::Index for Item<'a> {
+impl bp3d_util::index_map::Index for Item<'_> {
     type Key = str;
 
     fn index(&self) -> &Self::Key {
