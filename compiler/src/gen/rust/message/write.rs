@@ -39,13 +39,7 @@ use itertools::Itertools;
 
 const TEMPLATE: &[u8] = include_bytes!("write.template");
 
-pub fn gen_message_write_impl(
-    msg: &Message,
-    codec_map: &CodecMap,
-    type_path_map: &TypePathMap,
-    params: &RustParams,
-) -> Result<String, Error> {
-    let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
+fn _gen_message_write_impl(msg: &Message, codec_map: &CodecMap, type_path_map: &TypePathMapper<DefaultTypeMapper>, generics: &str, function: &str) -> Result<String, Error> {
     let mut templates = Templates {
         template: Template::compile(TEMPLATE).unwrap(),
         codec_map,
@@ -53,28 +47,31 @@ pub fn gen_message_write_impl(
     let where_clauses = msg
         .fields
         .iter()
-        .map(|field| gen_where_clause(&templates.template, field, &type_path_map, "impl"))
+        .map(|field| gen_where_clause(&templates.template, field, &type_path_map, function))
         .join("");
     templates
         .template
-        .var("generics", RustUtils::get_generics(msg, &type_path_map).to_string())
         .var("where_clauses", where_clauses);
-    let mut code = generate::<RustUtils, _>(templates, msg, &type_path_map, "impl")?;
+    if generics.is_empty() {
+        templates.template.var("impl_generics", "")
+            .var("generics", "<'_>");
+    } else {
+        templates.template.var("generics", &*generics).var("impl_generics", &*generics);
+    }
+    generate::<RustUtils, _>(templates, msg, &type_path_map, function)
+}
+
+pub fn gen_message_write_impl(
+    msg: &Message,
+    codec_map: &CodecMap,
+    type_path_map: &TypePathMap,
+    params: &RustParams,
+) -> Result<String, Error> {
+    let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
+    let generics = RustUtils::get_generics_for_write(msg, &type_path_map).to_string();
+    let mut code = _gen_message_write_impl(msg, &codec_map, &type_path_map, &generics, "impl")?;
     if params.enable_write_async {
-        let mut templates = Templates {
-            template: Template::compile(TEMPLATE).unwrap(),
-            codec_map,
-        };
-        let where_clauses = msg
-            .fields
-            .iter()
-            .map(|field| gen_where_clause(&templates.template, field, &type_path_map, "impl_async"))
-            .join("");
-        templates
-            .template
-            .var("generics", RustUtils::get_generics(msg, &type_path_map).to_string())
-            .var("where_clauses", where_clauses);
-        code += &generate::<RustUtils, _>(templates, msg, &type_path_map, "impl_async")?;
+        code += &_gen_message_write_impl(msg, codec_map, &type_path_map, &generics, "impl_async")?;
     }
     Ok(code)
 }

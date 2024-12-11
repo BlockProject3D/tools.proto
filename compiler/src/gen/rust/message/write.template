@@ -1,5 +1,5 @@
 #fragment push impl
-impl{generics} bp3d_proto::message::WriteTo for {msg_name}{generics}
+impl{impl_generics} bp3d_proto::message::WriteTo for {msg_name}{generics}
 #fragment push where
     where T{name}: bp3d_proto::message::WriteToWithHeader<{discriminant_type}<&'a [u8]>, Input<'a>=T{name}>,
 #fragment pop
@@ -24,7 +24,7 @@ impl{generics} bp3d_proto::message::WriteTo for {msg_name}{generics}
 #fragment pop
 
 #fragment push impl_async
-impl{generics} bp3d_proto::message::WriteToAsync for {msg_name}{generics}
+impl{impl_generics} bp3d_proto::message::WriteToAsync for {msg_name}{generics}
 #fragment push where
     where T{name}: bp3d_proto::message::WriteToWithHeaderAsync<{discriminant_type}<&'a [u8]>, Input<'a>=T{name}>,
 #fragment pop

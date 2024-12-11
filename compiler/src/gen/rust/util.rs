@@ -65,55 +65,77 @@ pub struct Generics<T> {
 
 impl<T> Generics<T> {
     pub fn new(lifetime: bool, data: T) -> Self {
-        Self { lifetime, data }
+        Self {
+            lifetime,
+            data
+        }
+    }
+}
+
+fn _to_string<'a>(mut generics: impl Iterator<Item=Cow<'a, str>>, lifetime: bool) -> Cow<'a, str>{
+    if let Some(value) = generics.next() {
+        let str = generics.join(", ");
+        match (str.is_empty(), lifetime) {
+            (true, false) => format!("<{}>", value).into(),
+            (false, false) => format!("<{}, {}>", value, str).into(),
+            (true, true) => format!("<'a, {}>", value).into(),
+            (false, true) => format!("<'a, {}, {}>", value, str).into(),
+        }
+    } else if lifetime {
+        Cow::Borrowed("<'a>")
+    } else {
+        Cow::Borrowed("")
     }
 }
 
 impl<'a, T: Iterator<Item = Generic<'a>>> Generics<T> {
     pub fn to_string(self) -> Cow<'a, str> {
-        let mut generics = self.data.map(|v| match &v.default {
+        let generics = self.data.map(|v| match &v.default {
             None => v.name,
             Some(_) => v.name,
         });
-        if let Some(value) = generics.next() {
-            let str = generics.join(", ");
-            match (str.is_empty(), self.lifetime) {
-                (true, false) => format!("<{}>", value).into(),
-                (false, false) => format!("<{}, {}>", value, str).into(),
-                (true, true) => format!("<'a, {}>", value).into(),
-                (false, true) => format!("<'a, {}, {}>", value, str).into(),
-            }
-        } else if self.lifetime {
-            Cow::Borrowed("<'a>")
-        } else {
-            Cow::Borrowed("")
-        }
+        _to_string(generics, self.lifetime)
     }
 
     pub fn to_string_with_defaults(self) -> Cow<'a, str> {
-        let mut generics = self.data.map(|v| match &v.default {
+        let generics = self.data.map(|v| match &v.default {
             None => v.name,
             Some(v1) => format!("{}={}", v.name, v1).into(),
         });
-        if let Some(value) = generics.next() {
-            let str = generics.join(", ");
-            match (str.is_empty(), self.lifetime) {
-                (true, false) => format!("<{}>", value).into(),
-                (false, false) => format!("<{}, {}>", value, str).into(),
-                (true, true) => format!("<'a, {}>", value).into(),
-                (false, true) => format!("<'a, {}, {}>", value, str).into(),
-            }
-        } else if self.lifetime {
-            Cow::Borrowed("<'a>")
-        } else {
-            Cow::Borrowed("")
-        }
+        _to_string(generics, self.lifetime)
     }
 }
 
 pub struct RustUtils;
 
 impl RustUtils {
+    fn _gen_generics<'a, T: TypeMapper>(msg: &'a Message, type_path_map: &'a TypePathMapper<T>, has_lifetime: bool) -> Generics<impl Iterator<Item = Generic<'a>>> {
+        let unions = msg.fields.iter().filter_map(|v| match &v.ty {
+            FieldType::Union(u) => Some(Generic {
+                name: format!("T{}", v.name).into(),
+                default: Some(format!("{}<'a>", type_path_map.get(&u.r)).into()),
+            }),
+            _ => None,
+        });
+        Generics::new(has_lifetime, unions)
+    }
+
+    pub fn get_generics_for_write<'a, T: TypeMapper>(
+        msg: &'a Message,
+        type_path_map: &'a TypePathMapper<T>,
+    ) -> Generics<impl Iterator<Item = Generic<'a>>> {
+        let has_lifetime = msg.fields.iter().any(|v| {
+            matches!(
+                v.ty,
+                FieldType::Ref(_)
+                    | FieldType::Array(_)
+                    | FieldType::Union(_)
+                    | FieldType::List(_)
+            )
+        });
+        Self::_gen_generics(msg, type_path_map, has_lifetime)
+    }
+
     pub fn get_generics<'a, T: TypeMapper>(
         msg: &'a Message,
         type_path_map: &'a TypePathMapper<T>,
@@ -130,14 +152,7 @@ impl RustUtils {
                     | FieldType::Payload
             )
         });
-        let unions = msg.fields.iter().filter_map(|v| match &v.ty {
-            FieldType::Union(u) => Some(Generic {
-                name: format!("T{}", v.name).into(),
-                default: Some(format!("{}<'a>", type_path_map.get(&u.r)).into()),
-            }),
-            _ => None,
-        });
-        Generics::new(has_lifetime, unions)
+        Self::_gen_generics(msg, type_path_map, has_lifetime)
     }
 }
 
