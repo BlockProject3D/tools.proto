@@ -1,0 +1,13 @@
+[package]
+name = ""
+path = "../testprog/src"
+
+[options.unions]
+union-set-discriminant = true
+write-async = true
+
+[options.enums]
+write-async = true
+
+[options.values]
+write-async = true

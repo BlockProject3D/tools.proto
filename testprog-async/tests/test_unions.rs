@@ -1,0 +1,182 @@
+// Copyright (c) 2024, BlockProject 3D
+//
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright notice,
+//       this list of conditions and the following disclaimer in the documentation
+//       and/or other materials provided with the distribution.
+//     * Neither the name of BlockProject 3D nor the names of its contributors
+//       may be used to endorse or promote products derived from this software
+//       without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+use bp3d_proto::message::{FromBytes, WriteSelf, WriteSelfAsync, WriteToAsync};
+use bp3d_proto::union::IntoUnion;
+use bp3d_proto::util::Wrap;
+use tokio::io::AsyncWriteExt;
+use testprog_async::enums::{Header, Type};
+use testprog_async::unions::{Item, Value};
+use testprog_async::values::{
+    ValueDouble, ValueFloat, ValueInt16, ValueInt32, ValueInt64, ValueInt8, ValueString, ValueUInt16, ValueUInt32,
+    ValueUInt64, ValueUInt8,
+};
+
+async fn write_message<'a, W: AsyncWriteExt + Unpin>(value: Value<'a>, out: &mut W) {
+    let mut header = Header::new();
+    value.set_discriminant(&mut header);
+    let item = Item {
+        header: header.to_ref(),
+        name: "test",
+        value,
+    };
+    Item::write_to_async(&item, out).await.unwrap();
+}
+
+async fn write_message_fast<T: WriteSelf + WriteSelfAsync, W: AsyncWriteExt + Unpin>(value: T, ty: Type, out: &mut W) {
+    let mut header = Header::new();
+    header.set_type(ty);
+    let item = Item {
+        header: header.to_ref(),
+        name: "test",
+        value,
+    };
+    Item::write_to_async(&item, out).await.unwrap();
+}
+
+fn read_message(slice: &[u8], ty: Type) -> Value {
+    let msg = Item::from_bytes(slice).unwrap();
+    assert_eq!(slice.len(), msg.size());
+    let item = msg.into_inner();
+    assert_eq!(item.header.get_type().unwrap(), ty);
+    assert_eq!(item.name, "test");
+    item.value
+}
+
+#[tokio::test]
+async fn item_numbers() {
+    let mut buf = Vec::with_capacity(256);
+    let mut value_buffer: [u8; 8] = [0; 8];
+
+    write_message(
+        ValueInt8::wrap(&mut value_buffer).set_data(-42).to_ref().into_union(),
+        &mut buf,
+    ).await;
+    assert_eq!(read_message(&buf, Type::Int8).as_int8().unwrap().get_data(), -42);
+
+    buf.clear();
+    write_message(
+        ValueInt16::wrap(&mut value_buffer).set_data(-4242).to_ref().into_union(),
+        &mut buf,
+    ).await;
+    assert_eq!(read_message(&buf, Type::Int16).as_int16().unwrap().get_data(), -4242);
+
+    buf.clear();
+    write_message_fast(
+        ValueInt32::wrap(&mut value_buffer).set_data(-424242).to_ref(),
+        Type::Int32,
+        &mut buf,
+    ).await;
+    assert_eq!(read_message(&buf, Type::Int32).as_int32().unwrap().get_data(), -424242);
+
+    buf.clear();
+    write_message_fast(
+        ValueInt64::wrap(&mut value_buffer).set_data(-42424242).to_ref(),
+        Type::Int64,
+        &mut buf,
+    ).await;
+    assert_eq!(
+        read_message(&buf, Type::Int64).as_int64().unwrap().get_data(),
+        -42424242
+    );
+
+    buf.clear();
+    write_message(
+        Value::UInt8(ValueUInt8::wrap(&mut value_buffer).set_data(42).to_ref()),
+        &mut buf,
+    ).await;
+    assert_eq!(read_message(&buf, Type::UInt8).as_u_int8().unwrap().get_data(), 42);
+
+    buf.clear();
+    write_message(
+        Value::UInt16(ValueUInt16::wrap(&mut value_buffer).set_data(4242).to_ref()),
+        &mut buf,
+    ).await;
+    assert_eq!(read_message(&buf, Type::UInt16).as_u_int16().unwrap().get_data(), 4242);
+
+    buf.clear();
+    write_message(
+        Value::UInt32(ValueUInt32::wrap(&mut value_buffer).set_data(424242).to_ref()),
+        &mut buf,
+    ).await;
+    assert_eq!(
+        read_message(&buf, Type::UInt32).as_u_int32().unwrap().get_data(),
+        424242
+    );
+
+    buf.clear();
+    write_message(
+        Value::UInt64(ValueUInt64::wrap(&mut value_buffer).set_data(42424242).to_ref()),
+        &mut buf,
+    ).await;
+    assert_eq!(
+        read_message(&buf, Type::UInt64).as_u_int64().unwrap().get_data(),
+        42424242
+    );
+}
+
+#[tokio::test]
+async fn item_null() {
+    let mut buf = Vec::with_capacity(256);
+
+    write_message(Value::Null, &mut buf).await;
+    assert!(read_message(&buf, Type::Null).is_null());
+}
+
+#[tokio::test]
+async fn item_float() {
+    let mut buf = Vec::with_capacity(256);
+    let mut value_buffer: [u8; 8] = [0; 8];
+
+    write_message(
+        Value::Float(ValueFloat::wrap(&mut value_buffer).set_data(42.42).to_ref()),
+        &mut buf,
+    ).await;
+    assert_eq!(read_message(&buf, Type::Float).as_float().unwrap().get_data(), 42.42);
+
+    buf.clear();
+    write_message(
+        Value::Double(ValueDouble::wrap(&mut value_buffer).set_data(42.4242).to_ref()),
+        &mut buf,
+    ).await;
+    assert_eq!(
+        read_message(&buf, Type::Double).as_double().unwrap().get_data(),
+        42.4242
+    );
+}
+
+#[tokio::test]
+async fn item_string() {
+    let mut buf = Vec::with_capacity(256);
+
+    write_message(Value::String(ValueString { data: "this is a test" }), &mut buf).await;
+    assert_eq!(
+        read_message(&buf, Type::String).as_string().unwrap().data,
+        "this is a test"
+    );
+}
