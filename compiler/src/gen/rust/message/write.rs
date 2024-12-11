@@ -39,7 +39,13 @@ use itertools::Itertools;
 
 const TEMPLATE: &[u8] = include_bytes!("write.template");
 
-fn _gen_message_write_impl(msg: &Message, codec_map: &CodecMap, type_path_map: &TypePathMapper<DefaultTypeMapper>, generics: &str, function: &str) -> Result<String, Error> {
+fn _gen_message_write_impl(
+    msg: &Message,
+    codec_map: &CodecMap,
+    type_path_map: &TypePathMapper<DefaultTypeMapper>,
+    generics: &str,
+    function: &str,
+) -> Result<String, Error> {
     let mut templates = Templates {
         template: Template::compile(TEMPLATE).unwrap(),
         codec_map,
@@ -49,12 +55,9 @@ fn _gen_message_write_impl(msg: &Message, codec_map: &CodecMap, type_path_map: &
         .iter()
         .map(|field| gen_where_clause(&templates.template, field, &type_path_map, function))
         .join("");
-    templates
-        .template
-        .var("where_clauses", where_clauses);
+    templates.template.var("where_clauses", where_clauses);
     if generics.is_empty() {
-        templates.template.var("impl_generics", "")
-            .var("generics", "<'_>");
+        templates.template.var("impl_generics", "").var("generics", "<'_>");
     } else {
         templates.template.var("generics", &*generics).var("impl_generics", &*generics);
     }
