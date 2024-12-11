@@ -127,10 +127,10 @@ impl RustUtils {
         let has_lifetime = msg.fields.iter().any(|v| {
             matches!(
                 v.ty,
-                FieldType::Ref(_)
-                    | FieldType::Array(_)
+                FieldType::Array(_)
                     | FieldType::Union(_)
                     | FieldType::List(_)
+                    | FieldType::SizedList(_)
             )
         });
         Self::_gen_generics(msg, type_path_map, has_lifetime)
@@ -149,6 +149,7 @@ impl RustUtils {
                     | FieldType::Array(_)
                     | FieldType::Union(_)
                     | FieldType::List(_)
+                    | FieldType::SizedList(_)
                     | FieldType::Payload
             )
         });
