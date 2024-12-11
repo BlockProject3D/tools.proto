@@ -29,13 +29,13 @@
 use bp3d_proto::message::{FromBytes, WriteSelf, WriteSelfAsync, WriteToAsync};
 use bp3d_proto::union::IntoUnion;
 use bp3d_proto::util::Wrap;
-use tokio::io::AsyncWriteExt;
 use testprog_async::enums::{Header, Type};
 use testprog_async::unions::{Item, Value};
 use testprog_async::values::{
     ValueDouble, ValueFloat, ValueInt16, ValueInt32, ValueInt64, ValueInt8, ValueString, ValueUInt16, ValueUInt32,
     ValueUInt64, ValueUInt8,
 };
+use tokio::io::AsyncWriteExt;
 
 async fn write_message<'a, W: AsyncWriteExt + Unpin>(value: Value<'a>, out: &mut W) {
     let mut header = Header::new();
@@ -76,14 +76,16 @@ async fn item_numbers() {
     write_message(
         ValueInt8::wrap(&mut value_buffer).set_data(-42).to_ref().into_union(),
         &mut buf,
-    ).await;
+    )
+    .await;
     assert_eq!(read_message(&buf, Type::Int8).as_int8().unwrap().get_data(), -42);
 
     buf.clear();
     write_message(
         ValueInt16::wrap(&mut value_buffer).set_data(-4242).to_ref().into_union(),
         &mut buf,
-    ).await;
+    )
+    .await;
     assert_eq!(read_message(&buf, Type::Int16).as_int16().unwrap().get_data(), -4242);
 
     buf.clear();
@@ -91,7 +93,8 @@ async fn item_numbers() {
         ValueInt32::wrap(&mut value_buffer).set_data(-424242).to_ref(),
         Type::Int32,
         &mut buf,
-    ).await;
+    )
+    .await;
     assert_eq!(read_message(&buf, Type::Int32).as_int32().unwrap().get_data(), -424242);
 
     buf.clear();
@@ -99,7 +102,8 @@ async fn item_numbers() {
         ValueInt64::wrap(&mut value_buffer).set_data(-42424242).to_ref(),
         Type::Int64,
         &mut buf,
-    ).await;
+    )
+    .await;
     assert_eq!(
         read_message(&buf, Type::Int64).as_int64().unwrap().get_data(),
         -42424242
@@ -109,21 +113,24 @@ async fn item_numbers() {
     write_message(
         Value::UInt8(ValueUInt8::wrap(&mut value_buffer).set_data(42).to_ref()),
         &mut buf,
-    ).await;
+    )
+    .await;
     assert_eq!(read_message(&buf, Type::UInt8).as_u_int8().unwrap().get_data(), 42);
 
     buf.clear();
     write_message(
         Value::UInt16(ValueUInt16::wrap(&mut value_buffer).set_data(4242).to_ref()),
         &mut buf,
-    ).await;
+    )
+    .await;
     assert_eq!(read_message(&buf, Type::UInt16).as_u_int16().unwrap().get_data(), 4242);
 
     buf.clear();
     write_message(
         Value::UInt32(ValueUInt32::wrap(&mut value_buffer).set_data(424242).to_ref()),
         &mut buf,
-    ).await;
+    )
+    .await;
     assert_eq!(
         read_message(&buf, Type::UInt32).as_u_int32().unwrap().get_data(),
         424242
@@ -133,7 +140,8 @@ async fn item_numbers() {
     write_message(
         Value::UInt64(ValueUInt64::wrap(&mut value_buffer).set_data(42424242).to_ref()),
         &mut buf,
-    ).await;
+    )
+    .await;
     assert_eq!(
         read_message(&buf, Type::UInt64).as_u_int64().unwrap().get_data(),
         42424242
@@ -156,14 +164,16 @@ async fn item_float() {
     write_message(
         Value::Float(ValueFloat::wrap(&mut value_buffer).set_data(42.42).to_ref()),
         &mut buf,
-    ).await;
+    )
+    .await;
     assert_eq!(read_message(&buf, Type::Float).as_float().unwrap().get_data(), 42.42);
 
     buf.clear();
     write_message(
         Value::Double(ValueDouble::wrap(&mut value_buffer).set_data(42.4242).to_ref()),
         &mut buf,
-    ).await;
+    )
+    .await;
     assert_eq!(
         read_message(&buf, Type::Double).as_double().unwrap().get_data(),
         42.4242
