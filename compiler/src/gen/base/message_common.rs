@@ -66,18 +66,18 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
             Referenced::Struct(v) => gen_optional(template, field.optional, type_path_map.get(v)),
             Referenced::Message(v) => gen_optional(template, field.optional, type_path_map.get(v)),
         },
-        FieldType::NullTerminatedString => gen_optional(
+        FieldType::Buffer => gen_optional(
             template,
             field.optional,
-            template.scope().render("", &["string"]).map_err(Error::Codec)?,
+            template.scope().render("", &["buffer"]).map_err(Error::Codec)?,
         ),
-        FieldType::SizedString(v) => gen_optional(
+        FieldType::SizedBuffer(v) => gen_optional(
             template,
             field.optional,
             template
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
-                .render("", &["sized_string"])
+                .render("", &["sized_buffer"])
                 .map_err(Error::Codec)?,
         ),
         FieldType::Array(v) => gen_optional(

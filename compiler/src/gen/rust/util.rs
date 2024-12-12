@@ -144,8 +144,8 @@ impl RustUtils {
             matches!(
                 v.ty,
                 FieldType::Ref(_)
-                    | FieldType::NullTerminatedString
-                    | FieldType::SizedString(_)
+                    | FieldType::Buffer
+                    | FieldType::SizedBuffer(_)
                     | FieldType::Array(_)
                     | FieldType::Union(_)
                     | FieldType::List(_)

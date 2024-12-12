@@ -87,13 +87,13 @@ impl Display for ArrayField {
 }
 
 #[derive(Clone, Debug)]
-pub struct SizedStringField {
+pub struct SizedBufferField {
     pub ty: FixedFieldType,
 }
 
-impl Display for SizedStringField {
+impl Display for SizedBufferField {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Varchar<{}>", self.ty)
+        write!(f, "Varbuf<{}>", self.ty)
     }
 }
 
@@ -155,8 +155,15 @@ impl Display for UnionField {
 pub enum FieldType {
     Fixed(FixedField),
     Ref(Referenced),
-    NullTerminatedString,
-    SizedString(SizedStringField),
+
+    /// A buffer field is a field which has a known size which can be determined at runtime
+    /// (ex: a null-terminated string).
+    Buffer,
+
+    /// A sized buffer field is a field which has a known size field based on a configurable type
+    /// (ex: a Varchar).
+    SizedBuffer(SizedBufferField),
+
     Array(ArrayField),
     Union(UnionField),
     List(ListField),
@@ -169,8 +176,8 @@ impl Display for FieldType {
         match self {
             FieldType::Fixed(v) => v.fmt(f),
             FieldType::Ref(v) => f.write_str(v.name()),
-            FieldType::NullTerminatedString => f.write_str("String"),
-            FieldType::SizedString(v) => v.fmt(f),
+            FieldType::Buffer => f.write_str("Buffer"),
+            FieldType::SizedBuffer(v) => v.fmt(f),
             FieldType::Array(v) => v.fmt(f),
             FieldType::Union(v) => v.fmt(f),
             FieldType::List(v) => v.fmt(f),
@@ -199,7 +206,7 @@ impl FieldType {
     }
 
     pub fn is_string(&self) -> bool {
-        matches!(self, FieldType::SizedString(_) | FieldType::NullTerminatedString)
+        matches!(self, FieldType::SizedBuffer(_) | FieldType::Buffer)
     }
 }
 
@@ -343,7 +350,7 @@ impl Field {
                         name: value.name,
                         header,
                         description: value.description,
-                        ty: FieldType::NullTerminatedString,
+                        ty: FieldType::Buffer,
                         optional: value.optional.unwrap_or_default(),
                         size: SizeInfo {
                             is_element_dyn_sized: false,
@@ -361,7 +368,7 @@ impl Field {
                             name: value.name,
                             header,
                             description: value.description,
-                            ty: FieldType::SizedString(SizedStringField { ty }),
+                            ty: FieldType::SizedBuffer(SizedBufferField { ty }),
                             optional: value.optional.unwrap_or_default(),
                             size: SizeInfo {
                                 is_element_dyn_sized: false,

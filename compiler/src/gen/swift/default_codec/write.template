@@ -1,8 +1,8 @@
-#fragment push string:inline
+#fragment push buffer:inline
 BP3DProto.NullTerminatedString<B>
 #fragment pop
 
-#fragment push sized_string:inline
+#fragment push sized_buffer:inline
 BP3DProto.VarcharString<B, {codec}>
 #fragment pop
 

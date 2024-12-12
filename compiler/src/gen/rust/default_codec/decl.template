@@ -1,8 +1,8 @@
-#fragment push string:inline
+#fragment push buffer:inline
 &'a str
 #fragment pop
 
-#fragment push sized_string:inline
+#fragment push sized_buffer:inline
 &'a str
 #fragment pop
 

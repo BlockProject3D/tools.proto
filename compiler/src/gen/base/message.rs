@@ -75,11 +75,11 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
             Referenced::Struct(v) => U::gen_struct_ref_type(&type_path_map.get(v)),
             Referenced::Message(v) => U::gen_message_ref_type(&type_path_map.get(v)),
         },
-        FieldType::NullTerminatedString => codec_template.render("", &["string"]).map_err(Error::Codec)?,
-        FieldType::SizedString(v) => codec_template
+        FieldType::Buffer => codec_template.render("", &["buffer"]).map_err(Error::Codec)?,
+        FieldType::SizedBuffer(v) => codec_template
             .scope()
             .var("codec", U::get_value_type(field.endianness, v.ty))
-            .render("", &["sized_string"])
+            .render("", &["sized_buffer"])
             .map_err(Error::Codec)?,
         FieldType::Array(_) => scope.render("", &["list"]).unwrap(),
         FieldType::Union(v) => scope.var("type_name", type_path_map.get(&v.r)).render("", &["union"]).unwrap(),
