@@ -28,7 +28,6 @@
 
 use std::future::Future;
 use bp3d_util::simple_error;
-use tokio::io::AsyncWriteExt;
 
 simple_error! {
     pub Error {
@@ -168,7 +167,7 @@ impl<H, T: WriteSelf> WriteToWithHeader<H> for T {
 
 #[cfg(feature = "tokio")]
 impl<H, T: WriteSelf + WriteSelfAsync> WriteToWithHeaderAsync<H> for T {
-    fn write_to_with_header_async<W: AsyncWriteExt + Unpin>(input: &Self::Input<'_>, _: &H, out: W) -> impl Future<Output=Result<()>> {
+    fn write_to_with_header_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, _: &H, out: W) -> impl Future<Output=Result<()>> {
         input.write_self_async(out)
     }
 }
