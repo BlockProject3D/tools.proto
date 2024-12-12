@@ -8,7 +8,7 @@
                     name: "type",
                     raw: {
                         type: "signed",
-                        bits: 4
+                        bits: 32
                     },
                     view: {
                         type: "enum",
