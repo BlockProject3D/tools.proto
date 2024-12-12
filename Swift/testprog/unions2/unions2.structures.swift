@@ -68,7 +68,7 @@ extension Unions2Header: BP3DProto.FromBytes where T: BP3DProto.Buffer {
 extension Unions2Header where T: BP3DProto.Buffer {
     public var test: Unions2Test? {
         let rawValue = self._raw.test;
-        return Unions2Test(rawValue: rawValue);
+        return Unions2Test(rawValue: UInt8(rawValue));
     }
     public var test2: Int8 {
         self._raw.test2
@@ -78,7 +78,7 @@ extension Unions2Header where T: BP3DProto.Buffer {
 extension Unions2Header where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
     @discardableResult
     public func setTest(_ value: Unions2Test) -> Self {
-        self._raw.setTest(value.rawValue);
+        self._raw.setTest(UInt8(value.rawValue));
         return self;
     }
     @discardableResult

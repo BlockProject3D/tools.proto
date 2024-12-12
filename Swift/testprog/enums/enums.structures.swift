@@ -68,14 +68,14 @@ extension EnumsHeader: BP3DProto.FromBytes where T: BP3DProto.Buffer {
 extension EnumsHeader where T: BP3DProto.Buffer {
     public var type: EnumsType? {
         let rawValue = self._raw.type;
-        return EnumsType(rawValue: rawValue);
+        return EnumsType(rawValue: UInt8(rawValue));
     }
 
 }
 extension EnumsHeader where T: BP3DProto.Buffer, T: BP3DProto.WritableBuffer {
     @discardableResult
     public func setType(_ value: EnumsType) -> Self {
-        self._raw.setType(value.rawValue);
+        self._raw.setType(UInt8(value.rawValue));
         return self;
     }
 
