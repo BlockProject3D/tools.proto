@@ -80,7 +80,7 @@ pub fn gen_msg_field_decl<U: Utilities, T: TypeMapper>(
         FieldType::SizedList(_) => scope.render("", &["list"]).unwrap(),
     };
     let msg_type = match field.optional {
-        true => codec_template.scope().var("msg_type", msg_type).render("", &["option"]).map_err(Error::Codec)?,
+        true => codec_template.scope().var("msg_type", msg_type).render("decl", &["option"]).map_err(Error::Codec)?,
         false => msg_type,
     };
     Ok(scope.var("type", msg_type).render("decl", &["field"]).unwrap())

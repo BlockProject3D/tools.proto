@@ -32,6 +32,7 @@ use crate::gen::template::Error;
 use itertools::Itertools;
 use std::borrow::Cow;
 use std::collections::HashMap;
+use crate::gen::codec::CodecMap;
 
 pub struct Template<'fragment, 'variable> {
     fragments: HashMap<String, Fragment<'fragment>>,
@@ -44,6 +45,14 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
     }
 
     pub fn compile_with_options(data: &'fragment [u8], options: &Options) -> Result<Self, Error> {
+        Self::compile_with_options_includes(data, &CodecMap::default(), options)
+    }
+
+    pub fn compile_with_includes(data: &'fragment [u8], codecs: &CodecMap<'fragment, '_>) -> Result<Self, Error> {
+        Self::compile_with_options_includes(data, codecs, &Options::default())
+    }
+
+    pub fn compile_with_options_includes(data: &'fragment [u8], codecs: &CodecMap<'fragment, '_>, options: &Options) -> Result<Self, Error> {
         let mut fragments = HashMap::new();
         let mut frag_stack = Vec::new();
         let lines = data.split(|v| *v == b'\n');
@@ -59,7 +68,11 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
             if line.is_empty() {
                 continue;
             }
-            if line.starts_with(b"#fragment push ") {
+            if line.starts_with(b"#include ") && frag_stack.is_empty() {
+                let name = std::str::from_utf8(&line[9..]).map_err(|_| Error::InvalidUTF8)?;
+                let template = codecs.get(name).ok_or_else(|| Error::IncludeNotFound(name.into()))?;
+                fragments.extend(template.fragments.iter().map(|(k, v)| (k.clone(), v.clone())));
+            } else if line.starts_with(b"#fragment push ") {
                 let fragment = std::str::from_utf8(&line[15..]).map_err(|_| Error::InvalidUTF8)?;
                 if let Some(id) = fragment.find(":") {
                     let name = &fragment[..id];

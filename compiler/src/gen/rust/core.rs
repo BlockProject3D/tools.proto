@@ -41,6 +41,7 @@ use crate::gen::Generator;
 use bp3d_debug::trace;
 use std::path::Path;
 use crate::codec_map_initializer;
+use crate::gen::template::Template;
 
 const TEMPLATE_CODEC_BASE: &[u8] = include_bytes!("./default_codec/base.template");
 const TEMPLATE_CODEC_STRING: &[u8] = include_bytes!("./default_codec/string.template");
@@ -52,10 +53,11 @@ impl Generator for GeneratorRust {
     type Params<'a> = Params<'a>;
 
     fn get_default_codecs<'fragment, 'variable>() -> CodecMap<'fragment, 'variable> {
-        CodecMap::new(codec_map_initializer! {
-            "default" => TEMPLATE_CODEC_BASE,
-            "string" => TEMPLATE_CODEC_STRING
-        })
+        let mut codecs = CodecMap::new(codec_map_initializer! {
+            "base" => TEMPLATE_CODEC_BASE
+        });
+        codecs.insert("string", Template::compile_with_includes(TEMPLATE_CODEC_STRING, &codecs).unwrap());
+        codecs
     }
 
     fn generate(proto: &Protocol, codec_map: &CodecMap, params: &Params) -> Result<Vec<File>, Self::Error> {

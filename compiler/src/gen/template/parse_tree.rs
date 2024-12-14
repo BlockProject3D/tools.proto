@@ -30,11 +30,13 @@ use crate::gen::template::functions::FunctionMap;
 use crate::gen::template::Error;
 use std::borrow::Cow;
 
+#[derive(Clone, Debug)]
 pub struct Variable<'a> {
     pub name: &'a str,
     pub function: Option<fn(&str) -> Cow<str>>,
 }
 
+#[derive(Clone, Debug)]
 pub enum Component<'a> {
     Constant(&'a str),
     Variable(Variable<'a>),
@@ -62,7 +64,7 @@ impl<'a> Component<'a> {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum FragmentMode {
     Inline,
     Default,
@@ -78,6 +80,7 @@ impl FragmentMode {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct Fragment<'a> {
     pub(crate) name: &'a str,
     pub(crate) content: Vec<Component<'a>>,

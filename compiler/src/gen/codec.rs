@@ -81,6 +81,10 @@ impl<'fragment, 'variable> CodecMap<'fragment, 'variable> {
         Self { map }
     }
 
+    pub fn has(&self, name: &str) -> bool {
+        self.map.contains_key(name)
+    }
+
     pub fn insert(&mut self, name: &'fragment str, codec: Template<'fragment, 'variable>) {
         self.map.insert(name, codec);
     }

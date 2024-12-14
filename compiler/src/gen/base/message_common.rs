@@ -34,20 +34,32 @@ use crate::gen::base::Error;
 use crate::gen::template::Template;
 use std::borrow::Cow;
 
-fn gen_optional<'a>(
-    template: &'a Template,
-    optional: bool,
-    type_name: impl Into<Cow<'a, str>>,
-) -> Result<Cow<'a, str>, Error> {
-    if optional {
-        template
-            .scope()
-            .var("msg_type", type_name)
-            .render("", &["option"])
-            .map(|v| v.into())
-            .map_err(Error::Codec)
-    } else {
-        Ok(type_name.into())
+pub struct MaybeOptional<'b, 'a, 'fragment, 'variable> {
+    template: &'a Template<'fragment, 'variable>,
+    function: &'b str,
+    optional: bool
+}
+
+impl<'b, 'a, 'fragment, 'variable> MaybeOptional<'b, 'a, 'fragment, 'variable> {
+    pub fn new(field: &Field, function: &'b str, template: &'a Template<'fragment, 'variable>) -> Self {
+        Self {
+            template,
+            function,
+            optional: field.optional
+        }
+    }
+
+    pub fn gen<'c>(self, type_name: impl Into<Cow<'c, str>>) -> Result<Cow<'c, str>, Error> where 'a: 'c {
+        if self.optional {
+            self.template
+                .scope()
+                .var("msg_type", type_name)
+                .render(self.function, &["option"])
+                .map(|v| v.into())
+                .map_err(Error::Codec)
+        } else {
+            Ok(type_name.into())
+        }
     }
 }
 
@@ -57,78 +69,57 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
     type_path_map: &'a TypePathMapper<T>,
     function: &str
 ) -> Result<Cow<'a, str>, Error> {
+    let optional = MaybeOptional::new(field, function, template);
     let msg_type = match &field.ty {
-        FieldType::Fixed(ty) => gen_optional(
-            template,
-            field.optional,
-            U::get_value_type_inline(field.endianness, ty.ty),
-        ),
+        FieldType::Fixed(ty) => optional.gen(U::get_value_type_inline(field.endianness, ty.ty)),
         FieldType::Ref(v) => match v {
-            Referenced::Struct(v) => gen_optional(template, field.optional, type_path_map.get(v)),
-            Referenced::Message(v) => gen_optional(template, field.optional, type_path_map.get(v)),
+            Referenced::Struct(v) => optional.gen(type_path_map.get(v)),
+            Referenced::Message(v) => optional.gen(type_path_map.get(v)),
         },
-        FieldType::Buffer => gen_optional(
-            template,
-            field.optional,
-            template.scope().render(function, &["buffer"]).map_err(Error::Codec)?,
-        ),
-        FieldType::SizedBuffer(v) => gen_optional(
-            template,
-            field.optional,
+        FieldType::Buffer => optional.gen(template.scope().render(function, &["buffer"]).map_err(Error::Codec)?),
+        FieldType::SizedBuffer(v) => optional.gen(
             template
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
                 .render(function, &["sized_buffer"])
-                .map_err(Error::Codec)?,
+                .map_err(Error::Codec)?
         ),
-        FieldType::Array(v) => gen_optional(
-            template,
-            field.optional,
+        FieldType::Array(v) => optional.gen(
             template
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
                 .var("type_name", type_path_map.get(&v.item_type))
                 .render(function, &["array"])
-                .map_err(Error::Codec)?,
+                .map_err(Error::Codec)?
         ),
-        FieldType::Union(v) => gen_optional(template, field.optional, type_path_map.get(&v.r)),
+        FieldType::Union(v) => optional.gen(type_path_map.get(&v.r)),
         FieldType::List(v) => match v.nested {
-            false => gen_optional(
-                template,
-                field.optional,
+            false => optional.gen(
                 template
                     .scope()
                     .var("codec", U::get_value_type(field.endianness, v.ty))
                     .var("type_name", type_path_map.get(&v.item_type))
                     .render(function, &["unsized_list"])
-                    .map_err(Error::Codec)?,
+                    .map_err(Error::Codec)?
             ),
-            true => gen_optional(
-                template,
-                field.optional,
+            true => optional.gen(
                 template
                     .scope()
                     .var("codec", U::get_value_type(field.endianness, v.ty))
                     .var("type_name", type_path_map.get(&v.item_type))
                     .render(function, &["list"])
-                    .map_err(Error::Codec)?,
+                    .map_err(Error::Codec)?
             ),
         },
-        FieldType::Payload => gen_optional(
-            template,
-            field.optional,
-            template.scope().render(function, &["payload"]).map_err(Error::Codec)?,
-        ),
-        FieldType::SizedList(v) => gen_optional(
-            template,
-            field.optional,
+        FieldType::Payload => optional.gen(template.scope().render(function, &["payload"]).map_err(Error::Codec)?),
+        FieldType::SizedList(v) => optional.gen(
             template
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
                 .var("type_name", type_path_map.get(&v.item_type))
                 .var("size_codec", U::get_value_type(field.endianness, v.size_ty))
                 .render(function, &["sized_list"])
-                .map_err(Error::Codec)?,
+                .map_err(Error::Codec)?
         ),
     };
     msg_type

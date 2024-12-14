@@ -36,7 +36,6 @@ use bp3d_util::index_map::IndexMap;
 use bp3d_util::path::PathExt;
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
-use crate::gen::template::Template;
 
 pub struct Context<'a, I: ImportSolver> {
     items: IndexMap<Item<'a>>,
@@ -149,17 +148,22 @@ pub struct Generator<'a, G> {
 }
 
 impl<'a, G: crate::gen::Generator> Generator<'a, G> {
-    pub fn new(out_directory: &'a Path, _: G) -> Self {
+    pub fn new(out_directory: &'a Path, codecs: CodecMap<'a, 'a>, _: G) -> Self {
         Self {
             out_directory,
             generator: PhantomData,
             file_header: None,
-            codec_map: G::get_default_codecs(),
+            codec_map: codecs,
         }
     }
 
-    pub fn add_codec(&mut self, name: &'a str, codec: Template<'a, 'a>) {
-        self.codec_map.insert(name, codec);
+    pub fn from_out_directory(out_directory: &'a Path, _: G) -> Self {
+        Self {
+            out_directory,
+            generator: PhantomData,
+            file_header: None,
+            codec_map: G::get_default_codecs()
+        }
     }
 
     pub fn set_file_header(&mut self, path: &'a Path) -> &mut Self {

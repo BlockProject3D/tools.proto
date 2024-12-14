@@ -30,6 +30,7 @@ use crate::gen::template::Template;
 use bp3d_util::simple_error;
 use std::collections::HashMap;
 use std::path::Path;
+use crate::gen::codec::CodecMap;
 
 simple_error! {
     pub Error {
@@ -75,8 +76,8 @@ impl<'a> TemplateLoader<'a> {
         Err(Error::NotFound(file_name))
     }
 
-    pub fn compile(&self, name: &str) -> Result<Template, Error> {
+    pub fn compile<'fragment>(&'fragment self, name: &str, codecs: &CodecMap<'fragment, '_>) -> Result<Template<'fragment, '_>, Error> {
         let template_code = self.templates.get(name).ok_or_else(|| Error::NotFound(name.into()))?;
-        Template::compile(template_code.as_bytes()).map_err(Error::Compiler)
+        Template::compile_with_includes(template_code.as_bytes(), codecs).map_err(Error::Compiler)
     }
 }

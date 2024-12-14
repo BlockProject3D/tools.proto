@@ -246,7 +246,7 @@ impl Display for Field {
 
 impl Field {
     pub fn codec(&self) -> &str {
-        self.codec.as_deref().unwrap_or("default")
+        self.codec.as_deref().unwrap_or("base")
     }
 
     fn from_model(
@@ -357,7 +357,7 @@ impl Field {
                             is_dyn_sized: true,
                         },
                         endianness: proto.endianness,
-                        codec: value.codec,
+                        codec: Some("string".into()),
                     }),
                     Some(max_len) => {
                         if max_len == 0 {
@@ -375,7 +375,7 @@ impl Field {
                                 is_dyn_sized: true,
                             },
                             endianness: proto.endianness,
-                            codec: value.codec,
+                            codec: Some("string".into()),
                         })
                     }
                 },

@@ -36,6 +36,7 @@ simple_error! {
         FragmentNotFound(String) => "fragment not found: {}",
         VariableNotFound(String) => "variable not found: {}",
         FunctionNotFound(String) => "function not found: {}",
-        UnknownFragmentMode(String) => "unknown fragment mode: {}"
+        UnknownFragmentMode(String) => "unknown fragment mode: {}",
+        IncludeNotFound(String) => "include not found: {}"
     }
 }
