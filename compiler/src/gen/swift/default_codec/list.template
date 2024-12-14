@@ -1,0 +1,45 @@
+#include base
+
+#fragment push decl.fixed_container:inline
+BP3DProto.Array<B, {codec}, {item_type}<B>>
+#fragment pop
+
+#fragment push decl.container:inline
+BP3DProto.List<B, {codec}, {item_type}<B>>
+#fragment pop
+
+#fragment push decl.sized_container:inline
+BP3DProto.List<B, {codec}, {item_type}<B>>
+#fragment pop
+
+#fragment push from_bytes.fixed_container:inline
+BP3DProto.Array<B, {codec}, {type_name}<B>>
+#fragment pop
+
+#fragment push from_bytes.container:inline
+BP3DProto.List<B, {codec}, {type_name}<B>>
+#fragment pop
+
+#fragment push from_bytes.unsized_container:inline
+BP3DProto.UnsizedList<B, {codec}, {type_name}<B>>
+#fragment pop
+
+#fragment push from_bytes.sized_container:inline
+BP3DProto.SizedList<B, {codec}, {size_codec}, {type_name}<B>>
+#fragment pop
+
+#fragment push write.fixed_container:inline
+BP3DProto.Array<B, {codec}, {type_name}<B>>
+#fragment pop
+
+#fragment push write.container:inline
+BP3DProto.List<B, {codec}, {type_name}<B>>
+#fragment pop
+
+#fragment push write.unsized_container:inline
+BP3DProto.List<B, {codec}, {type_name}<B>>
+#fragment pop
+
+#fragment push write.sized_container:inline
+BP3DProto.SizedList<B, {codec}, {size_codec}, {type_name}<B>>
+#fragment pop

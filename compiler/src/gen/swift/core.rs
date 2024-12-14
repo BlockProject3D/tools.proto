@@ -43,6 +43,7 @@ use crate::gen::template::Template;
 
 const TEMPLATE_CODEC_BASE: &[u8] = include_bytes!("./default_codec/base.template");
 const TEMPLATE_CODEC_STRING: &[u8] = include_bytes!("./default_codec/string.template");
+const TEMPLATE_CODEC_LIST: &[u8] = include_bytes!("./default_codec/list.template");
 
 pub struct GeneratorSwift;
 
@@ -55,6 +56,7 @@ impl Generator for GeneratorSwift {
             "base" => TEMPLATE_CODEC_BASE
         });
         codecs.insert("string", Template::compile_with_includes(TEMPLATE_CODEC_STRING, &codecs).unwrap());
+        codecs.insert("list", Template::compile_with_includes(TEMPLATE_CODEC_LIST, &codecs).unwrap());
         codecs
     }
 

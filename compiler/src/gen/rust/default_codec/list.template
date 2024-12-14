@@ -1,0 +1,45 @@
+#include base
+
+#fragment push decl.fixed_container:inline
+bp3d_proto::message::util::Array<&'a [u8], {codec}, {item_type}<&'a [u8]>>
+#fragment pop
+
+#fragment push decl.container:inline
+bp3d_proto::message::payload::List<&'a [u8], {codec}, {item_type}<'a>>
+#fragment pop
+
+#fragment push decl.sized_container:inline
+bp3d_proto::message::payload::List<&'a [u8], {codec}, {item_type}<'a>>
+#fragment pop
+
+#fragment push write.fixed_container:inline
+bp3d_proto::message::util::Array::<&'a [u8], {codec}, {type_name}<&'a [u8]>>
+#fragment pop
+
+#fragment push write.container:inline
+bp3d_proto::message::payload::List::<&'a [u8], {codec}, {type_name}>
+#fragment pop
+
+#fragment push write.unsized_container:inline
+bp3d_proto::message::payload::List::<&'a [u8], {codec}, {type_name}>
+#fragment pop
+
+#fragment push write.sized_container:inline
+bp3d_proto::message::payload::list::Sized::<&'a [u8], {codec}, {size_codec}, {type_name}>
+#fragment pop
+
+#fragment push from_bytes.fixed_container:inline
+bp3d_proto::message::util::Array::<&'a [u8], {codec}, {type_name}<&'a [u8]>>
+#fragment pop
+
+#fragment push from_bytes.container:inline
+bp3d_proto::message::payload::List::<&'a [u8], {codec}, {type_name}>
+#fragment pop
+
+#fragment push from_bytes.unsized_container:inline
+bp3d_proto::message::payload::list::Unsized::<{codec}, {type_name}>
+#fragment pop
+
+#fragment push from_bytes.sized_container:inline
+bp3d_proto::message::payload::list::Sized::<&'a [u8], {codec}, {size_codec}, {type_name}>
+#fragment pop

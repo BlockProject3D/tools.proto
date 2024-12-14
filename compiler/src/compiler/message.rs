@@ -35,7 +35,7 @@ use crate::compiler::Protocol;
 use crate::model::message::MessageFieldValue;
 use crate::model::protocol::{Description, Endianness};
 use crate::model::structure::StructFieldRaw;
-use bp3d_debug::{error, trace};
+use bp3d_debug::{error, trace, warning};
 use std::cell::Cell;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
@@ -75,14 +75,14 @@ impl Referenced {
 }
 
 #[derive(Clone, Debug)]
-pub struct ArrayField {
+pub struct FixedContainerField {
     pub ty: FixedFieldType,
     pub item_type: Rc<Structure>,
 }
 
-impl Display for ArrayField {
+impl Display for FixedContainerField {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Array<{}, Len = {}>", self.item_type.name, self.ty)
+        write!(f, "FixedContainer<{}, Len = {}>", self.item_type.name, self.ty)
     }
 }
 
@@ -98,30 +98,30 @@ impl Display for SizedBufferField {
 }
 
 #[derive(Clone, Debug)]
-pub struct ListField {
+pub struct ContainerField {
     pub ty: FixedFieldType,
     pub item_type: Rc<Message>,
     pub nested: bool,
 }
 
-impl Display for ListField {
+impl Display for ContainerField {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "List<{}, Len = {}>", self.item_type.name(), self.ty)
+        write!(f, "Container<{}, Len = {}>", self.item_type.name(), self.ty)
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct SizedListField {
+pub struct SizedContainerField {
     pub ty: FixedFieldType,
     pub item_type: Rc<Message>,
     pub size_ty: FixedFieldType,
 }
 
-impl Display for SizedListField {
+impl Display for SizedContainerField {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "SizedList<{}, Len = {}, Size = {}>",
+            "SizedContainer<{}, Len = {}, Size = {}>",
             self.item_type.name(),
             self.ty,
             self.size_ty
@@ -164,10 +164,18 @@ pub enum FieldType {
     /// (ex: a Varchar).
     SizedBuffer(SizedBufferField),
 
-    Array(ArrayField),
+    /// A fixed container is a container which can store only fixed size elements (structures).
+    FixedContainer(FixedContainerField),
+
     Union(UnionField),
-    List(ListField),
-    SizedList(SizedListField),
+
+    /// A container can store dynamically sized elements.
+    Container(ContainerField),
+
+    /// A container which has an additional configurable size field to detect the size in bytes of
+    /// the container.
+    SizedContainer(SizedContainerField),
+
     Payload,
 }
 
@@ -178,10 +186,10 @@ impl Display for FieldType {
             FieldType::Ref(v) => f.write_str(v.name()),
             FieldType::Buffer => f.write_str("Buffer"),
             FieldType::SizedBuffer(v) => v.fmt(f),
-            FieldType::Array(v) => v.fmt(f),
+            FieldType::FixedContainer(v) => v.fmt(f),
             FieldType::Union(v) => v.fmt(f),
-            FieldType::List(v) => v.fmt(f),
-            FieldType::SizedList(v) => v.fmt(f),
+            FieldType::Container(v) => v.fmt(f),
+            FieldType::SizedContainer(v) => v.fmt(f),
             FieldType::Payload => f.write_str("Bytes"),
         }
     }
@@ -236,10 +244,11 @@ pub struct Field {
 
 impl Display for Field {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        if self.optional {
-            write!(f, "{}: {}?, {} endian", self.name, self.ty, self.endianness)
-        } else {
-            write!(f, "{}: {}, {} endian", self.name, self.ty, self.endianness)
+        match (self.optional, &self.codec) {
+            (true, None) => write!(f, "{}: {}?, {} endian", self.name, self.ty, self.endianness),
+            (false, None) => write!(f, "{}: {}, {} endian", self.name, self.ty, self.endianness),
+            (true, Some(v)) => write!(f, "{}: {} ({})?, {} endian", self.name, v, self.ty, self.endianness),
+            (false, Some(v)) => write!(f, "{}: {} ({}), {} endian", self.name, v, self.ty, self.endianness)
         }
     }
 }
@@ -287,6 +296,10 @@ impl Field {
                     if max_len == 0 {
                         return Err(Error::ZeroArray);
                     }
+                    if value.codec.is_some() {
+                        warning!("Ignoring codec specified for list item type when compiling field '{}'...", value.name);
+                        warning!("To use custom codecs, specify 'container' as field type.");
+                    }
                     let r = Referenced::lookup(proto, &item_type).ok_or(Error::UndefinedReference(item_type))?;
                     let ty = FixedFieldType::from_max_value(max_len)?;
                     match r {
@@ -294,14 +307,14 @@ impl Field {
                             name: value.name,
                             header,
                             description: value.description,
-                            ty: FieldType::Array(ArrayField { item_type, ty }),
+                            ty: FieldType::FixedContainer(FixedContainerField { item_type, ty }),
                             optional: value.optional.unwrap_or_default(),
                             size: SizeInfo {
                                 is_element_dyn_sized: false,
                                 is_dyn_sized: true,
                             },
                             endianness: proto.endianness,
-                            codec: value.codec,
+                            codec: Some("list".into()),
                         }),
                         Referenced::Message(item_type) => {
                             if let Some(max_size) = max_size {
@@ -313,14 +326,14 @@ impl Field {
                                     name: value.name,
                                     header,
                                     description: value.description,
-                                    ty: FieldType::SizedList(SizedListField { ty, item_type, size_ty }),
+                                    ty: FieldType::SizedContainer(SizedContainerField { ty, item_type, size_ty }),
                                     optional: value.optional.unwrap_or_default(),
                                     size: SizeInfo {
                                         is_element_dyn_sized: true,
                                         is_dyn_sized: false,
                                     },
                                     endianness: proto.endianness,
-                                    codec: value.codec,
+                                    codec: Some("list".into()),
                                 })
                             } else {
                                 item_type.embedded.set(true);
@@ -328,7 +341,7 @@ impl Field {
                                     name: value.name,
                                     header,
                                     description: value.description,
-                                    ty: FieldType::List(ListField {
+                                    ty: FieldType::Container(ContainerField {
                                         ty,
                                         item_type,
                                         nested: nested.unwrap_or_default(),
@@ -339,36 +352,23 @@ impl Field {
                                         is_dyn_sized: true,
                                     },
                                     endianness: proto.endianness,
-                                    codec: value.codec,
+                                    codec: Some("list".into()),
                                 })
                             }
                         }
                     }
                 }
-                MessageFieldValue::String { max_len } => match max_len {
-                    None => Ok(Field {
-                        name: value.name,
-                        header,
-                        description: value.description,
-                        ty: FieldType::Buffer,
-                        optional: value.optional.unwrap_or_default(),
-                        size: SizeInfo {
-                            is_element_dyn_sized: false,
-                            is_dyn_sized: true,
-                        },
-                        endianness: proto.endianness,
-                        codec: Some("string".into()),
-                    }),
-                    Some(max_len) => {
-                        if max_len == 0 {
-                            return Err(Error::ZeroArray);
-                        }
-                        let ty = FixedFieldType::from_max_value(max_len)?;
-                        Ok(Field {
+                MessageFieldValue::String { max_len } => {
+                    if value.codec.is_some() {
+                        warning!("Ignoring codec specified for list item type when compiling field '{}'...", value.name);
+                        warning!("To use custom codecs, specify 'buffer' as field type.");
+                    }
+                    match max_len {
+                        None => Ok(Field {
                             name: value.name,
                             header,
                             description: value.description,
-                            ty: FieldType::SizedBuffer(SizedBufferField { ty }),
+                            ty: FieldType::Buffer,
                             optional: value.optional.unwrap_or_default(),
                             size: SizeInfo {
                                 is_element_dyn_sized: false,
@@ -376,7 +376,26 @@ impl Field {
                             },
                             endianness: proto.endianness,
                             codec: Some("string".into()),
-                        })
+                        }),
+                        Some(max_len) => {
+                            if max_len == 0 {
+                                return Err(Error::ZeroArray);
+                            }
+                            let ty = FixedFieldType::from_max_value(max_len)?;
+                            Ok(Field {
+                                name: value.name,
+                                header,
+                                description: value.description,
+                                ty: FieldType::SizedBuffer(SizedBufferField { ty }),
+                                optional: value.optional.unwrap_or_default(),
+                                size: SizeInfo {
+                                    is_element_dyn_sized: false,
+                                    is_dyn_sized: true,
+                                },
+                                endianness: proto.endianness,
+                                codec: Some("string".into()),
+                            })
+                        }
                     }
                 },
                 MessageFieldValue::Union { name } => {

@@ -250,7 +250,7 @@ impl Protocol {
             if msg.is_embedded() {
                 for field in &msg.fields {
                     let flag = match &field.ty {
-                        FieldType::List(v) => v.nested,
+                        FieldType::Container(v) => v.nested,
                         _ => true,
                     };
                     if !flag {

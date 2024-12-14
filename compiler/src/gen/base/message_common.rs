@@ -84,22 +84,22 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                 .render(function, &["sized_buffer"])
                 .map_err(Error::Codec)?
         ),
-        FieldType::Array(v) => optional.gen(
+        FieldType::FixedContainer(v) => optional.gen(
             template
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
                 .var("type_name", type_path_map.get(&v.item_type))
-                .render(function, &["array"])
+                .render(function, &["fixed_container"])
                 .map_err(Error::Codec)?
         ),
         FieldType::Union(v) => optional.gen(type_path_map.get(&v.r)),
-        FieldType::List(v) => match v.nested {
+        FieldType::Container(v) => match v.nested {
             false => optional.gen(
                 template
                     .scope()
                     .var("codec", U::get_value_type(field.endianness, v.ty))
                     .var("type_name", type_path_map.get(&v.item_type))
-                    .render(function, &["unsized_list"])
+                    .render(function, &["unsized_container"])
                     .map_err(Error::Codec)?
             ),
             true => optional.gen(
@@ -107,18 +107,18 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                     .scope()
                     .var("codec", U::get_value_type(field.endianness, v.ty))
                     .var("type_name", type_path_map.get(&v.item_type))
-                    .render(function, &["list"])
+                    .render(function, &["container"])
                     .map_err(Error::Codec)?
             ),
         },
         FieldType::Payload => optional.gen(template.scope().render(function, &["payload"]).map_err(Error::Codec)?),
-        FieldType::SizedList(v) => optional.gen(
+        FieldType::SizedContainer(v) => optional.gen(
             template
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
                 .var("type_name", type_path_map.get(&v.item_type))
                 .var("size_codec", U::get_value_type(field.endianness, v.size_ty))
-                .render(function, &["sized_list"])
+                .render(function, &["sized_container"])
                 .map_err(Error::Codec)?
         ),
     };
