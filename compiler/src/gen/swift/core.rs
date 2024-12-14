@@ -26,10 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::codec_map_initializer;
 use crate::compiler::util::imports::ProtocolStore;
 use crate::compiler::Protocol;
 use crate::gen::base::Error;
-use crate::gen::codec::{Codec, CodecMap};
+use crate::gen::codec::CodecMap;
 use crate::gen::file::{Content, File, FileType};
 use crate::gen::swift::imports::gen_imports;
 use crate::gen::swift::message::{gen_message_decl, gen_message_from_slice_impl, gen_message_write_impl};
@@ -39,9 +40,8 @@ use crate::gen::swift::structure::gen_structure_decl;
 use crate::gen::swift::union::gen_union_decl;
 use crate::gen::Generator;
 
-const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("./default_codec/decl.template");
-const TEMPLATE_CODEC_FROM_BYTES: &[u8] = include_bytes!("./default_codec/from_bytes.template");
-const TEMPLATE_CODEC_WRITE: &[u8] = include_bytes!("./default_codec/write.template");
+const TEMPLATE_CODEC_BASE: &[u8] = include_bytes!("./default_codec/base.template");
+const TEMPLATE_CODEC_STRING: &[u8] = include_bytes!("./default_codec/string.template");
 
 pub struct GeneratorSwift;
 
@@ -50,11 +50,10 @@ impl Generator for GeneratorSwift {
     type Params<'a> = ProtocolStore<'a, SwiftImportSolver>;
 
     fn get_default_codecs<'fragment, 'variable>() -> CodecMap<'fragment, 'variable> {
-        CodecMap::with_default(Codec::from_static_bytes(
-            TEMPLATE_CODEC_DECL,
-            TEMPLATE_CODEC_FROM_BYTES,
-            TEMPLATE_CODEC_WRITE,
-        ))
+        CodecMap::new(codec_map_initializer! {
+            "default" => TEMPLATE_CODEC_BASE,
+            "string" => TEMPLATE_CODEC_STRING
+        })
     }
 
     fn generate(

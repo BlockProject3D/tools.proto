@@ -42,8 +42,8 @@ fn gen_field_from_bytes_impl<U: Utilities, T: TypeMapper>(
 ) -> Result<String, Error> {
     let mut scope = templates.template.scope();
     scope.var("name", &field.name);
-    let codec_template = templates.get_from_bytes(field.codec())?;
-    let msg_type = generate_field_type_inline::<U, T>(field, codec_template, type_path_map)?;
+    let codec_template = templates.get(field.codec())?;
+    let msg_type = generate_field_type_inline::<U, T>(field, codec_template, type_path_map, "from_bytes")?;
     if let Some(header) = &field.header {
         scope.var("header_name", &header.name);
     }

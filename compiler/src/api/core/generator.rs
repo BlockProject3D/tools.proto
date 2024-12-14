@@ -29,13 +29,14 @@
 use crate::api::core::Error;
 use crate::compiler;
 use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
-use crate::gen::codec::{Codec, CodecMap};
+use crate::gen::codec::CodecMap;
 use crate::gen::file::FileType;
 use bp3d_debug::trace;
 use bp3d_util::index_map::IndexMap;
 use bp3d_util::path::PathExt;
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
+use crate::gen::template::Template;
 
 pub struct Context<'a, I: ImportSolver> {
     items: IndexMap<Item<'a>>,
@@ -157,7 +158,7 @@ impl<'a, G: crate::gen::Generator> Generator<'a, G> {
         }
     }
 
-    pub fn add_codec(&mut self, name: &'a str, codec: Codec<'a, 'a>) {
+    pub fn add_codec(&mut self, name: &'a str, codec: Template<'a, 'a>) {
         self.codec_map.insert(name, codec);
     }
 

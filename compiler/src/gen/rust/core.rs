@@ -28,7 +28,7 @@
 
 use crate::compiler::Protocol;
 use crate::gen::base::Error;
-use crate::gen::codec::{Codec, CodecMap};
+use crate::gen::codec::CodecMap;
 use crate::gen::file::{Content, File, FileType};
 use crate::gen::rust::message::{
     gen_message_decl, gen_message_from_slice_impl, gen_message_offsets_decl, gen_message_write_impl,
@@ -40,10 +40,10 @@ use crate::gen::rust::union::gen_union_decl;
 use crate::gen::Generator;
 use bp3d_debug::trace;
 use std::path::Path;
+use crate::codec_map_initializer;
 
-const TEMPLATE_CODEC_DECL: &[u8] = include_bytes!("./default_codec/decl.template");
-const TEMPLATE_CODEC_FROM_BYTES: &[u8] = include_bytes!("./default_codec/from_bytes.template");
-const TEMPLATE_CODEC_WRITE: &[u8] = include_bytes!("./default_codec/write.template");
+const TEMPLATE_CODEC_BASE: &[u8] = include_bytes!("./default_codec/base.template");
+const TEMPLATE_CODEC_STRING: &[u8] = include_bytes!("./default_codec/string.template");
 
 pub struct GeneratorRust;
 
@@ -52,11 +52,10 @@ impl Generator for GeneratorRust {
     type Params<'a> = Params<'a>;
 
     fn get_default_codecs<'fragment, 'variable>() -> CodecMap<'fragment, 'variable> {
-        CodecMap::with_default(Codec::from_static_bytes(
-            TEMPLATE_CODEC_DECL,
-            TEMPLATE_CODEC_FROM_BYTES,
-            TEMPLATE_CODEC_WRITE,
-        ))
+        CodecMap::new(codec_map_initializer! {
+            "default" => TEMPLATE_CODEC_BASE,
+            "string" => TEMPLATE_CODEC_STRING
+        })
     }
 
     fn generate(proto: &Protocol, codec_map: &CodecMap, params: &Params) -> Result<Vec<File>, Self::Error> {

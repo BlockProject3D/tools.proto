@@ -29,6 +29,8 @@
 use crate::gen::template::Template;
 use std::collections::HashMap;
 
+//TODO: Allow using a single file per codec instead of 3 files.
+
 pub struct Codec<'fragment, 'variable> {
     pub decl: Template<'fragment, 'variable>,
     pub from_bytes: Template<'fragment, 'variable>,
@@ -45,32 +47,45 @@ impl Codec<'_, '_> {
     }
 }
 
+macro_rules! count {
+    () => (0usize);
+    ( $x:tt $($xs:tt)* ) => (1usize + count!($($xs)*));
+}
+
+pub(crate) use count;
+
+#[macro_export]
+macro_rules! codec_map_initializer {
+    ($($name: literal => $template: expr),*) => {
+        {
+            use $crate::gen::codec::count;
+            let mut map = std::collections::HashMap::with_capacity($crate::gen::codec::count!($($name)*));
+            $(map.insert($name, $crate::gen::template::Template::compile($template).unwrap());)*
+            map
+        }
+    };
+}
+
 pub struct CodecMap<'fragment, 'variable> {
-    map: HashMap<&'fragment str, Codec<'fragment, 'variable>>,
+    map: HashMap<&'fragment str, Template<'fragment, 'variable>>,
 }
 
 impl Default for CodecMap<'_, '_> {
     fn default() -> Self {
-        Self::new()
+        Self::new(HashMap::new())
     }
 }
 
 impl<'fragment, 'variable> CodecMap<'fragment, 'variable> {
-    pub fn new() -> Self {
-        Self { map: HashMap::new() }
+    pub fn new(map: HashMap<&'fragment str, Template<'fragment, 'variable>>) -> Self {
+        Self { map }
     }
 
-    pub fn with_default(codec: Codec<'fragment, 'variable>) -> Self {
-        let mut map = Self::new();
-        map.insert("default", codec);
-        map
-    }
-
-    pub fn insert(&mut self, name: &'fragment str, codec: Codec<'fragment, 'variable>) {
+    pub fn insert(&mut self, name: &'fragment str, codec: Template<'fragment, 'variable>) {
         self.map.insert(name, codec);
     }
 
-    pub fn get(&self, name: &str) -> Option<&Codec<'fragment, 'variable>> {
+    pub fn get(&self, name: &str) -> Option<&Template<'fragment, 'variable>> {
         self.map.get(name)
     }
 }

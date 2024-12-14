@@ -31,7 +31,6 @@ mod error;
 use crate::api::config;
 use crate::api::core::generator::{Context, Generator};
 use crate::compiler::util::imports::ImportSolver;
-use crate::gen::codec::Codec;
 use crate::gen::template::loader::TemplateLoader;
 pub use error::Error;
 use serde::Deserialize;
@@ -59,21 +58,22 @@ pub trait GenTools {
         let protocols = config::core::compile(config, &motherfuckingrust)?;
         let mut generator = Generator::new(out_dir.as_ref(), Self::new_generator());
         let mut loader = TemplateLoader::new();
-        loader.add_search_path(Path::new("."));
+        loader.add_search_path(Path::new("./codec/"));
         for v in protocols.iter().flat_map(|v| v.iter_codecs()) {
-            let base = String::from(v);
+            loader.load(String::from(v)).map_err(Error::TemplateLoader)?;
+            /*let base = String::from(v);
             loader.load(base.clone() + "/decl").map_err(Error::TemplateLoader)?;
             loader.load(base.clone() + "/from_bytes").map_err(Error::TemplateLoader)?;
-            loader.load(base + "/write").map_err(Error::TemplateLoader)?;
+            loader.load(base + "/write").map_err(Error::TemplateLoader)?;*/
         }
         for v in protocols.iter().flat_map(|v| v.iter_codecs()) {
-            let base = String::from(v);
+            /*let base = String::from(v);
             let codec = Codec {
                 decl: loader.compile(&(base.clone() + "/decl")).map_err(Error::TemplateLoader)?,
                 from_bytes: loader.compile(&(base.clone() + "/from_bytes")).map_err(Error::TemplateLoader)?,
                 write: loader.compile(&(base.clone() + "/write")).map_err(Error::TemplateLoader)?,
-            };
-            generator.add_codec(v, codec);
+            };*/
+            generator.add_codec(v, loader.compile(v).map_err(Error::TemplateLoader)?);
         }
         if let Some(file_header) = config.package.file_header {
             generator.set_file_header(file_header);

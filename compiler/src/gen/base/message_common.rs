@@ -55,6 +55,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
     field: &'a Field,
     template: &'a Template,
     type_path_map: &'a TypePathMapper<T>,
+    function: &str
 ) -> Result<Cow<'a, str>, Error> {
     let msg_type = match &field.ty {
         FieldType::Fixed(ty) => gen_optional(
@@ -69,7 +70,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
         FieldType::Buffer => gen_optional(
             template,
             field.optional,
-            template.scope().render("", &["buffer"]).map_err(Error::Codec)?,
+            template.scope().render(function, &["buffer"]).map_err(Error::Codec)?,
         ),
         FieldType::SizedBuffer(v) => gen_optional(
             template,
@@ -77,7 +78,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
             template
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
-                .render("", &["sized_buffer"])
+                .render(function, &["sized_buffer"])
                 .map_err(Error::Codec)?,
         ),
         FieldType::Array(v) => gen_optional(
@@ -87,7 +88,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
                 .var("type_name", type_path_map.get(&v.item_type))
-                .render("", &["array"])
+                .render(function, &["array"])
                 .map_err(Error::Codec)?,
         ),
         FieldType::Union(v) => gen_optional(template, field.optional, type_path_map.get(&v.r)),
@@ -99,7 +100,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                     .scope()
                     .var("codec", U::get_value_type(field.endianness, v.ty))
                     .var("type_name", type_path_map.get(&v.item_type))
-                    .render("", &["unsized_list"])
+                    .render(function, &["unsized_list"])
                     .map_err(Error::Codec)?,
             ),
             true => gen_optional(
@@ -109,14 +110,14 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                     .scope()
                     .var("codec", U::get_value_type(field.endianness, v.ty))
                     .var("type_name", type_path_map.get(&v.item_type))
-                    .render("", &["list"])
+                    .render(function, &["list"])
                     .map_err(Error::Codec)?,
             ),
         },
         FieldType::Payload => gen_optional(
             template,
             field.optional,
-            template.scope().render("", &["payload"]).map_err(Error::Codec)?,
+            template.scope().render(function, &["payload"]).map_err(Error::Codec)?,
         ),
         FieldType::SizedList(v) => gen_optional(
             template,
@@ -126,7 +127,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                 .var("codec", U::get_value_type(field.endianness, v.ty))
                 .var("type_name", type_path_map.get(&v.item_type))
                 .var("size_codec", U::get_value_type(field.endianness, v.size_ty))
-                .render("", &["sized_list"])
+                .render(function, &["sized_list"])
                 .map_err(Error::Codec)?,
         ),
     };

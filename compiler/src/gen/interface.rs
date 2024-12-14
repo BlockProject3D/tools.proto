@@ -37,7 +37,7 @@ pub trait Generator {
     type Params<'a>;
 
     fn get_default_codecs<'fragment, 'variable>() -> CodecMap<'fragment, 'variable> {
-        CodecMap::new()
+        CodecMap::default()
     }
 
     fn generate(proto: &Protocol, codec_map: &CodecMap, params: &Self::Params<'_>) -> Result<Vec<File>, Self::Error>;

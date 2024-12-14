@@ -1,0 +1,23 @@
+#fragment push decl.buffer:inline
+String
+#fragment pop
+
+#fragment push decl.sized_buffer:inline
+String
+#fragment pop
+
+#fragment push from_bytes.buffer:inline
+BP3DProto.NullTerminatedString<B>
+#fragment pop
+
+#fragment push from_bytes.sized_buffer:inline
+BP3DProto.VarcharString<B, {codec}>
+#fragment pop
+
+#fragment push write.buffer:inline
+BP3DProto.NullTerminatedString<B>
+#fragment pop
+
+#fragment push write.sized_buffer:inline
+BP3DProto.VarcharString<B, {codec}>
+#fragment pop

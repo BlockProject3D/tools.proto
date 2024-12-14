@@ -1,0 +1,23 @@
+#fragment push decl.buffer:inline
+&'a str
+#fragment pop
+
+#fragment push decl.sized_buffer:inline
+&'a str
+#fragment pop
+
+#fragment push from_bytes.buffer:inline
+bp3d_proto::message::util::NullTerminatedString
+#fragment pop
+
+#fragment push from_bytes.sized_buffer:inline
+bp3d_proto::message::util::VarcharString::<{codec}>
+#fragment pop
+
+#fragment push write.buffer:inline
+bp3d_proto::message::util::NullTerminatedString
+#fragment pop
+
+#fragment push write.sized_buffer:inline
+bp3d_proto::message::util::VarcharString::<{codec}>
+#fragment pop
