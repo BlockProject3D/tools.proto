@@ -39,9 +39,18 @@ pub enum MessageFieldValue {
         max_size: Option<usize>,
         nested: Option<bool>,
     },
+    /*Container {
+        max_len: usize,
+        item_type: String,
+        max_size: Option<usize>,
+        nested: Option<bool>,
+    },*/
     String {
         max_len: Option<usize>,
     },
+    /*Buffer {
+        max_len: Option<usize>,
+    },*/
     Payload,
     Union {
         name: String,

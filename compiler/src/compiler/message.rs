@@ -39,6 +39,7 @@ use bp3d_debug::{error, trace, warning};
 use std::cell::Cell;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
+use crate::compiler::builder::FieldBuilder;
 
 #[derive(Clone, Debug)]
 pub enum Referenced {
@@ -230,6 +231,26 @@ pub struct HeaderField {
     pub index: usize,
 }
 
+impl HeaderField {
+    fn from_model(header: Option<String>, fields: &[Field]) -> Result<(Option<Self>, Option<&Field>), Error> {
+        match header {
+            Some(header) => {
+                let (index, field) = fields
+                    .iter()
+                    .enumerate()
+                    .find_map(|(k, v)| if v.name == header { Some((k, v)) } else { None })
+                    .ok_or(Error::UndefinedReference(header))?;
+                let header = HeaderField {
+                    index,
+                    name: field.name.clone()
+                };
+                Ok((Some(header), Some(field)))
+            }
+            None => Ok((None, None)),
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Field {
     pub name: String,
@@ -268,23 +289,9 @@ impl Field {
         {
             return Err(Error::BadFieldType);
         }
-        let (header, header_field) = match value.header {
-            Some(header) => {
-                let (index, field) = unsorted
-                    .iter()
-                    .enumerate()
-                    .find_map(|(k, v)| if v.name == header { Some((k, v)) } else { None })
-                    .ok_or(Error::UndefinedReference(header))?;
-                (
-                    Some(HeaderField {
-                        index,
-                        name: field.name.clone(),
-                    }),
-                    Some(field),
-                )
-            }
-            None => (None, None),
-        };
+        let (header, header_field) = HeaderField::from_model(value.header, unsorted)?;
+        let builder = FieldBuilder::new(value.name, value.optional.unwrap_or_default(), proto.endianness)
+            .description(value.description).header(header).codec(value.codec);
         if let Some(info) = value.value {
             match info {
                 MessageFieldValue::List {
@@ -296,105 +303,58 @@ impl Field {
                     if max_len == 0 {
                         return Err(Error::ZeroArray);
                     }
-                    if value.codec.is_some() {
-                        warning!("Ignoring codec specified for list item type when compiling field '{}'...", value.name);
+                    if builder.has_codec() {
+                        warning!("Ignoring codec specified for list item type when compiling field '{}'...", builder.name());
                         warning!("To use custom codecs, specify 'container' as field type.");
                     }
                     let r = Referenced::lookup(proto, &item_type).ok_or(Error::UndefinedReference(item_type))?;
                     let ty = FixedFieldType::from_max_value(max_len)?;
                     match r {
-                        Referenced::Struct(item_type) => Ok(Field {
-                            name: value.name,
-                            header,
-                            description: value.description,
-                            ty: FieldType::FixedContainer(FixedContainerField { item_type, ty }),
-                            optional: value.optional.unwrap_or_default(),
-                            size: SizeInfo {
-                                is_element_dyn_sized: false,
-                                is_dyn_sized: true,
-                            },
-                            endianness: proto.endianness,
-                            codec: Some("list".into()),
-                        }),
+                        Referenced::Struct(item_type) => Ok(builder.codec(Some("list".into())).build(FieldType::FixedContainer(FixedContainerField { item_type, ty }))),
                         Referenced::Message(item_type) => {
                             if let Some(max_size) = max_size {
                                 if max_size == 0 {
                                     return Err(Error::ZeroArray);
                                 }
                                 let size_ty = FixedFieldType::from_max_value(max_size)?;
-                                Ok(Field {
-                                    name: value.name,
-                                    header,
-                                    description: value.description,
-                                    ty: FieldType::SizedContainer(SizedContainerField { ty, item_type, size_ty }),
-                                    optional: value.optional.unwrap_or_default(),
-                                    size: SizeInfo {
-                                        is_element_dyn_sized: true,
-                                        is_dyn_sized: false,
-                                    },
-                                    endianness: proto.endianness,
-                                    codec: Some("list".into()),
-                                })
+                                Ok(
+                                    builder
+                                        .codec(Some("list".into()))
+                                        .size_info(SizeInfo {
+                                            is_element_dyn_sized: true,
+                                            is_dyn_sized: false
+                                        })
+                                        .build(FieldType::SizedContainer(SizedContainerField { ty, item_type, size_ty }))
+                                )
                             } else {
                                 item_type.embedded.set(true);
-                                Ok(Field {
-                                    name: value.name,
-                                    header,
-                                    description: value.description,
-                                    ty: FieldType::Container(ContainerField {
-                                        ty,
-                                        item_type,
-                                        nested: nested.unwrap_or_default(),
-                                    }),
-                                    optional: value.optional.unwrap_or_default(),
-                                    size: SizeInfo {
-                                        is_element_dyn_sized: true,
-                                        is_dyn_sized: true,
-                                    },
-                                    endianness: proto.endianness,
-                                    codec: Some("list".into()),
-                                })
+                                Ok(
+                                    builder
+                                        .codec(Some("list".into()))
+                                        .dynamic_size()
+                                        .build(FieldType::Container(ContainerField {
+                                            ty,
+                                            item_type,
+                                            nested: nested.unwrap_or_default(),
+                                        }))
+                                )
                             }
                         }
                     }
                 }
                 MessageFieldValue::String { max_len } => {
-                    if value.codec.is_some() {
-                        warning!("Ignoring codec specified for list item type when compiling field '{}'...", value.name);
+                    if builder.has_codec() {
+                        warning!("Ignoring codec specified for list item type when compiling field '{}'...", builder.name());
                         warning!("To use custom codecs, specify 'buffer' as field type.");
                     }
                     match max_len {
-                        None => Ok(Field {
-                            name: value.name,
-                            header,
-                            description: value.description,
-                            ty: FieldType::Buffer,
-                            optional: value.optional.unwrap_or_default(),
-                            size: SizeInfo {
-                                is_element_dyn_sized: false,
-                                is_dyn_sized: true,
-                            },
-                            endianness: proto.endianness,
-                            codec: Some("string".into()),
-                        }),
+                        None => Ok(builder.codec(Some("string".into())).build(FieldType::Buffer)),
                         Some(max_len) => {
                             if max_len == 0 {
                                 return Err(Error::ZeroArray);
                             }
                             let ty = FixedFieldType::from_max_value(max_len)?;
-                            Ok(Field {
-                                name: value.name,
-                                header,
-                                description: value.description,
-                                ty: FieldType::SizedBuffer(SizedBufferField { ty }),
-                                optional: value.optional.unwrap_or_default(),
-                                size: SizeInfo {
-                                    is_element_dyn_sized: false,
-                                    is_dyn_sized: true,
-                                },
-                                endianness: proto.endianness,
-                                codec: Some("string".into()),
-                            })
+                            Ok(builder.codec(Some("string".into())).build(FieldType::SizedBuffer(SizedBufferField { ty })))
                         }
                     }
                 },
@@ -422,45 +382,12 @@ impl Field {
                     if value.optional.unwrap_or_default() {
                         eprintln!("WARNING: ignoring unsupported optional flag on union message field!");
                     }
-                    Ok(Field {
-                        name: value.name,
-                        description: value.description,
-                        header,
-                        ty: FieldType::Union(UnionField { r: r.clone() }),
-                        optional: false,
-                        size: r.size,
-                        endianness: proto.endianness,
-                        codec: value.codec,
-                    })
+                    Ok(builder.size_info(r.size).build(FieldType::Union(UnionField { r: r.clone() })))
                 }
-                MessageFieldValue::Payload => Ok(Field {
-                    name: value.name,
-                    description: value.description,
-                    header,
-                    ty: FieldType::Payload,
-                    optional: value.optional.unwrap_or_default(),
-                    size: SizeInfo {
-                        is_dyn_sized: true,
-                        is_element_dyn_sized: true,
-                    },
-                    endianness: proto.endianness,
-                    codec: value.codec,
-                }),
+                MessageFieldValue::Payload => Ok(builder.dynamic_size().build(FieldType::Payload)),
                 MessageFieldValue::Unsigned { bits } => {
                     let ty = FixedFieldType::from_model(StructFieldRaw::Unsigned { bits })?;
-                    Ok(Field {
-                        name: value.name,
-                        description: value.description,
-                        header,
-                        ty: FieldType::Fixed(FixedField { ty }),
-                        optional: value.optional.unwrap_or_default(),
-                        size: SizeInfo {
-                            is_dyn_sized: false,
-                            is_element_dyn_sized: false,
-                        },
-                        endianness: proto.endianness,
-                        codec: value.codec,
-                    })
+                    Ok(builder.fixed_size().build(FieldType::Fixed(FixedField { ty })))
                 }
             }
         } else {
@@ -475,45 +402,12 @@ impl Field {
                     trace!({has_headers} {is_single} {is_fixed} {is_none} {is_byte_aligned}, "Found struct reference: {}", r.name);
                     if !has_headers && is_single && is_fixed && is_none && is_byte_aligned {
                         let fixed = unsafe { r.fields[0].ty.as_fixed().unwrap_unchecked() };
-                        Ok(Field {
-                            name: value.name,
-                            description: value.description,
-                            header,
-                            ty: FieldType::Fixed(FixedField { ty: fixed.bits_type }),
-                            optional: value.optional.unwrap_or_default(),
-                            size: SizeInfo {
-                                is_dyn_sized: false,
-                                is_element_dyn_sized: false,
-                            },
-                            endianness: proto.endianness,
-                            codec: value.codec,
-                        })
+                        Ok(builder.fixed_size().build(FieldType::Fixed(FixedField { ty: fixed.bits_type })))
                     } else {
-                        Ok(Field {
-                            name: value.name,
-                            description: value.description,
-                            header,
-                            ty: FieldType::Ref(Referenced::Struct(r)),
-                            optional: value.optional.unwrap_or_default(),
-                            size: SizeInfo {
-                                is_dyn_sized: false,
-                                is_element_dyn_sized: false,
-                            },
-                            endianness: proto.endianness,
-                            codec: value.codec,
-                        })
+                        Ok(builder.fixed_size().build(FieldType::Ref(Referenced::Struct(r))))
                     }
                 }
-                Referenced::Message(r) => Ok(Field {
-                    name: value.name,
-                    description: value.description,
-                    header,
-                    optional: value.optional.unwrap_or_default(),
-                    size: r.size,
-                    ty: FieldType::Ref(Referenced::Message(r)),
-                    endianness: proto.endianness,
-                    codec: value.codec,
-                }),
+                Referenced::Message(r) => Ok(builder.size_info(r.size).build(FieldType::Ref(Referenced::Message(r))))
             }
         }
     }

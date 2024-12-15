@@ -37,6 +37,7 @@ mod protocol;
 pub mod structure;
 pub mod union;
 pub mod util;
+pub mod builder;
 
 pub use error::Error;
 pub use protocol::Protocol;
