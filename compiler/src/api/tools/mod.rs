@@ -65,22 +65,11 @@ pub trait GenTools {
             if !codecs.has(v) {
                 loader.load(String::from(v)).map_err(Error::TemplateLoader)?;
             }
-            /*let base = String::from(v);
-            loader.load(base.clone() + "/decl").map_err(Error::TemplateLoader)?;
-            loader.load(base.clone() + "/from_bytes").map_err(Error::TemplateLoader)?;
-            loader.load(base + "/write").map_err(Error::TemplateLoader)?;*/
         }
         for v in protocols.iter().flat_map(|v| v.iter_codecs()) {
-            /*let base = String::from(v);
-            let codec = Codec {
-                decl: loader.compile(&(base.clone() + "/decl")).map_err(Error::TemplateLoader)?,
-                from_bytes: loader.compile(&(base.clone() + "/from_bytes")).map_err(Error::TemplateLoader)?,
-                write: loader.compile(&(base.clone() + "/write")).map_err(Error::TemplateLoader)?,
-            };*/
             if !codecs.has(v) {
                 let template = loader.compile(v, &codecs).map_err(Error::TemplateLoader)?;
                 codecs.insert(v, template);
-                //generator.add_codec(v, template);
             }
         }
         let mut generator = Generator::new(out_dir.as_ref(), codecs, Self::new_generator());
