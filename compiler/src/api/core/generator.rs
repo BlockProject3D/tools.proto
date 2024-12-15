@@ -157,7 +157,7 @@ impl<'a, G: crate::gen::Generator> Generator<'a, G> {
         }
     }
 
-    pub fn from_out_directory(out_directory: &'a Path, _: G) -> Self {
+    pub fn with_default_codecs(out_directory: &'a Path, _: G) -> Self {
         Self {
             out_directory,
             generator: PhantomData,
