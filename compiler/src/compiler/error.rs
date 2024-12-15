@@ -49,6 +49,7 @@ simple_error! {
         UnionTypeMismatch => "mismatch with union discriminant types",
         MissingNestedList(String) => "the list field {} is not allowed to be nested",
         BadFieldType => "either one of \"info\" or \"item_type\" key must be present",
-        MissingHeaderForUnion => "missing header key for a union field"
+        MissingHeaderForUnion => "missing header key for a union field",
+        ForbiddenCodec(String) => "attempt to use an explicit codec on field {} which has an implicit codec"
     }
 }

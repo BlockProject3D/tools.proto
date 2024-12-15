@@ -35,7 +35,7 @@ use crate::compiler::Protocol;
 use crate::model::message::MessageFieldValue;
 use crate::model::protocol::{Description, Endianness};
 use crate::model::structure::StructFieldRaw;
-use bp3d_debug::{error, trace, warning};
+use bp3d_debug::{error, trace};
 use std::cell::Cell;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
@@ -304,8 +304,7 @@ impl Field {
                         return Err(Error::ZeroArray);
                     }
                     if builder.has_codec() {
-                        warning!("Ignoring codec specified for list item type when compiling field '{}'...", builder.name());
-                        warning!("To use custom codecs, specify 'container' as field type.");
+                        return Err(Error::ForbiddenCodec(builder.name().into()));
                     }
                     let r = Referenced::lookup(proto, &item_type).ok_or(Error::UndefinedReference(item_type))?;
                     let ty = FixedFieldType::from_max_value(max_len)?;
@@ -341,11 +340,52 @@ impl Field {
                             }
                         }
                     }
-                }
+                },
+                MessageFieldValue::Container {
+                    max_len,
+                    item_type,
+                    max_size,
+                    nested,
+                } => {
+                    if max_len == 0 {
+                        return Err(Error::ZeroArray);
+                    }
+                    let r = Referenced::lookup(proto, &item_type).ok_or(Error::UndefinedReference(item_type))?;
+                    let ty = FixedFieldType::from_max_value(max_len)?;
+                    match r {
+                        Referenced::Struct(item_type) => Ok(builder.build(FieldType::FixedContainer(FixedContainerField { item_type, ty }))),
+                        Referenced::Message(item_type) => {
+                            if let Some(max_size) = max_size {
+                                if max_size == 0 {
+                                    return Err(Error::ZeroArray);
+                                }
+                                let size_ty = FixedFieldType::from_max_value(max_size)?;
+                                Ok(
+                                    builder
+                                        .size_info(SizeInfo {
+                                            is_element_dyn_sized: true,
+                                            is_dyn_sized: false
+                                        })
+                                        .build(FieldType::SizedContainer(SizedContainerField { ty, item_type, size_ty }))
+                                )
+                            } else {
+                                item_type.embedded.set(true);
+                                Ok(
+                                    builder
+                                        .dynamic_size()
+                                        .build(FieldType::Container(ContainerField {
+                                            ty,
+                                            item_type,
+                                            nested: nested.unwrap_or_default(),
+                                        }))
+                                )
+                            }
+                        }
+                    }
+                },
                 MessageFieldValue::String { max_len } => {
                     if builder.has_codec() {
-                        warning!("Ignoring codec specified for list item type when compiling field '{}'...", builder.name());
-                        warning!("To use custom codecs, specify 'buffer' as field type.");
+                        return Err(Error::ForbiddenCodec(builder.name().into()));
                     }
                     match max_len {
                         None => Ok(builder.codec(Some("string".into())).build(FieldType::Buffer)),
@@ -355,6 +395,18 @@ impl Field {
                             }
                             let ty = FixedFieldType::from_max_value(max_len)?;
                             Ok(builder.codec(Some("string".into())).build(FieldType::SizedBuffer(SizedBufferField { ty })))
+                        }
+                    }
+                },
+                MessageFieldValue::Buffer { max_len } => {
+                    match max_len {
+                        None => Ok(builder.build(FieldType::Buffer)),
+                        Some(max_len) => {
+                            if max_len == 0 {
+                                return Err(Error::ZeroArray);
+                            }
+                            let ty = FixedFieldType::from_max_value(max_len)?;
+                            Ok(builder.build(FieldType::SizedBuffer(SizedBufferField { ty })))
                         }
                     }
                 },
