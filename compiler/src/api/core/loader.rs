@@ -77,6 +77,10 @@ impl<'a> Loader<'a> {
         Ok(())
     }
 
+    pub fn exclude(&mut self, name: &str) {
+        self.models.retain(|(_, model)| model.name != name);
+    }
+
     pub fn compile<T: ImportSolver>(mut self, solver: &T) -> Result<ProtocolStore<T>, Error> {
         let mut protocols = ProtocolStore::new(solver);
         let mut iterations = self.max_iterations;

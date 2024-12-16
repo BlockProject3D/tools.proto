@@ -63,6 +63,7 @@ pub struct Package<'a> {
     pub name: &'a str,
     pub path: &'a Path,
     pub file_header: Option<&'a Path>,
+    pub exclude: Option<Vec<&'a str>>,
 }
 
 #[derive(Deserialize)]

@@ -47,6 +47,12 @@ pub fn compile<'a, T, I: ImportSolver>(config: &Config<T>, solver: &'a I) -> Res
             loader.load_from_file(dep.path, dep.package)?;
         }
     }
+    trace!("Excluded protocols: {:?}", config.package.exclude);
+    if let Some(excludes) = &config.package.exclude {
+        for exclude in excludes {
+            loader.exclude(exclude);
+        }
+    }
     loader.compile(solver)
 }
 
