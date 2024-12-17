@@ -43,8 +43,18 @@ impl{generics} bp3d_proto::message::FromBytesWithOffsets<'a> for {msg_name}{gene
         let ({name}, {name}_offsets) = {name}_msg.into_inner();
         offsets.{name}_offsets = {name}_offsets;
 #fragment pop
-#fragment push field_header
+#fragment push field_union
         let {name}_msg = T{name}::from_bytes_with_header(&bytes[byte_offset..], &{header_name})?;
+        offsets.{name}.start = byte_offset;
+        byte_offset += {name}_msg.size();
+        offsets.{name}.end = byte_offset;
+        let {name} = {name}_msg.into_inner();
+#fragment pop
+#fragment push field_header
+        let {name}_msg = {{
+            use bp3d_proto::message::FromBytesWithHeader;
+            {type}::from_bytes_with_header(&bytes[byte_offset..], &{header_name})
+        }}?;
         offsets.{name}.start = byte_offset;
         byte_offset += {name}_msg.size();
         offsets.{name}.end = byte_offset;

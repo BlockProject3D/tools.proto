@@ -15,8 +15,14 @@ impl{impl_generics} bp3d_proto::message::WriteTo for {msg_name}{generics}
 #fragment push field_string
         {type}::write_to(&input.{name}, &mut out)?;
 #fragment pop
-#fragment push field_header
+#fragment push field_union
         T{name}::write_to_with_header(&input.{name}, &input.{header_name}, &mut out)?;
+#fragment pop
+#fragment push field_header
+        {{
+            use bp3d_proto::message::WriteToWithHeader;
+            {type}::write_to_with_header(&input.{name}, &input.{header_name}, &mut out)?;
+        }}
 #fragment pop
         Ok(())
     }}
@@ -38,8 +44,14 @@ impl{impl_generics} bp3d_proto::message::WriteToAsync for {msg_name}{generics}
 #fragment push field_string
         {type}::write_to_async(&input.{name}, &mut out).await?;
 #fragment pop
-#fragment push field_header
+#fragment push field_union
         T{name}::write_to_with_header_async(&input.{name}, &input.{header_name}, &mut out).await?;
+#fragment pop
+#fragment push field_header
+        {{
+            use bp3d_proto::message::WriteToWithHeaderAsync;
+            {type}::write_to_with_header_async(&input.{name}, &input.{header_name}, &mut out).await?;
+        }}
 #fragment pop
         Ok(())
     }}
@@ -60,12 +72,14 @@ impl{impl_generics} bp3d_proto::message::ShapeAndWrite for {msg_name}{generics}
 #fragment pop
 #fragment push field_string
 #fragment pop
-#fragment push field_header
+#fragment push field_union
         let mut header = self.{header_name}.dupe();
         self.{name}.shape_header(&mut header.to_mut())?;
         // SAFETY: This is safe because the message is moved into this function.
         // Rust is just unable to see it and believes self is still borrowed even if it's moved...
         self.{header_name} = unsafe {{ std::mem::transmute(header.to_ref()) }};
+#fragment pop
+#fragment push field_header
 #fragment pop
         use bp3d_proto::message::WriteTo;
         {msg_name}::write_to(&self, out)

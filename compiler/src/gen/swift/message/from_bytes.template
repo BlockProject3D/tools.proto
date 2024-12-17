@@ -16,6 +16,11 @@ extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.FromBytes  {{
         byteOffset += {name}Msg.size;
         let {name} = {name}Msg.data;
 #fragment pop
+#fragment push field_union
+        let {name}Msg = try {type}.from(bytes: bytes[byteOffset...], header: {header_name});
+        byteOffset += {name}Msg.size;
+        let {name} = {name}Msg.data;
+#fragment pop
 #fragment push field_header
         let {name}Msg = try {type}.from(bytes: bytes[byteOffset...], header: {header_name});
         byteOffset += {name}Msg.size;

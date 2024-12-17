@@ -48,7 +48,9 @@ fn gen_field_from_bytes_impl<U: Utilities, T: TypeMapper>(
         scope.var("header_name", &header.name);
     }
     scope.var("type", msg_type);
-    if field.header.is_some() {
+    if field.header.is_some() && field.ty.is_union() {
+        Ok(scope.render(function, &["field_union"]).unwrap())
+    } else if field.header.is_some() {
         Ok(scope.render(function, &["field_header"]).unwrap())
     } else if field.ty.is_message_reference() {
         Ok(scope.render(function, &["field_msg"]).unwrap())

@@ -207,11 +207,8 @@ impl FieldType {
         }
     }
 
-    pub fn as_union(&self) -> Option<&UnionField> {
-        match self {
-            FieldType::Union(v) => Some(v),
-            _ => None,
-        }
+    pub fn is_union(&self) -> bool {
+        matches!(self, FieldType::Union(_))
     }
 
     pub fn is_string(&self) -> bool {
@@ -329,8 +326,8 @@ impl Field {
                                     builder
                                         .codec(Some("list".into()))
                                         .size_info(SizeInfo {
-                                            is_element_dyn_sized: true,
-                                            is_dyn_sized: false
+                                            is_element_dyn_sized: false,
+                                            is_dyn_sized: true
                                         })
                                         .build(FieldType::SizedContainer(SizedContainerField { ty, item_type, size_ty }))
                                 )
@@ -372,8 +369,8 @@ impl Field {
                                 Ok(
                                     builder
                                         .size_info(SizeInfo {
-                                            is_element_dyn_sized: true,
-                                            is_dyn_sized: false
+                                            is_element_dyn_sized: false,
+                                            is_dyn_sized: true
                                         })
                                         .build(FieldType::SizedContainer(SizedContainerField { ty, item_type, size_ty }))
                                 )
