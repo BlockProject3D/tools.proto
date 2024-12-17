@@ -43,7 +43,7 @@ fn bad_discriminant() {
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(
         err,
-        Error::Compiler(bp3d_protoc::compiler::Error::UnionTypeMismatch)
+        Error::Compiler(bp3d_protoc::compiler::Error::InvalidHeaderType)
     ));
 }
 

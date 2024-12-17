@@ -76,6 +76,13 @@ impl {union_name}<'_> {{
         discriminant.{discriminant_path_mut}(discriminant_value);
     }}
 }}
+
+impl<T: AsMut<[u8]>> bp3d_proto::message::ShapeHeader<{discriminant_type}<T>> for {union_name}<'_> {{
+    fn shape_header(&self, header: &mut {discriminant_type}<T>) -> bp3d_proto::message::Result<()> {{
+        self.set_discriminant(header);
+        Ok(())
+    }}
+}}
 #fragment pop
 
 #fragment push write_to
@@ -83,17 +90,12 @@ impl<'a> bp3d_proto::message::WriteToWithHeader<{discriminant_type}<&'a [u8]>> f
     type Input<'b> = Self;
 {fragment}
 #fragment push content
-    fn write_to_with_header<W: std::io::Write>(input: &Self, header: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
+    fn write_to_with_header<W: std::io::Write>(input: &Self, _: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
         use bp3d_proto::message::WriteTo;
-        let discriminant = header.{discriminant_path};
         match input {{
 {cases}
 #fragment push case
-            Self::{name}(v) => if discriminant == {case} {{
-                {type_name}::write_to(v, &mut out)?
-            }} else {{
-                return Err(bp3d_proto::message::Error::InvalidUnionDiscriminant(discriminant as _))
-            }},
+            Self::{name}(v) => {type_name}::write_to(v, &mut out)?,
 #fragment pop
             _ => ()
         }};
@@ -112,17 +114,12 @@ impl<'a> bp3d_proto::message::WriteToWithHeader<{discriminant_type}<&'a [u8]>> f
 impl<'a> bp3d_proto::message::WriteToWithHeaderAsync<{discriminant_type}<&'a [u8]>> for {union_name}{generics} {{
 {fragment}
 #fragment push content
-    async fn write_to_with_header_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, header: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
+    async fn write_to_with_header_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, _: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
         use bp3d_proto::message::WriteToAsync;
-        let discriminant = header.{discriminant_path};
         match input {{
 {cases}
 #fragment push case
-            Self::{name}(v) => if discriminant == {case} {{
-                {type_name}::write_to_async(v, &mut out).await?
-            }} else {{
-                return Err(bp3d_proto::message::Error::InvalidUnionDiscriminant(discriminant as _))
-            }},
+            Self::{name}(v) => {type_name}::write_to_async(v, &mut out).await?,
 #fragment pop
             _ => ()
         }};

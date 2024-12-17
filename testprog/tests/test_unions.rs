@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto::message::{FromBytes, WriteSelf, WriteTo};
+use bp3d_proto::message::{FromBytes, WriteSelf, WriteTo, ShapeAndWrite};
 use bp3d_proto::union::IntoUnion;
 use bp3d_proto::util::Wrap;
 use std::io::Write;
@@ -46,6 +46,16 @@ fn write_message(value: Value, out: &mut impl Write) {
         value,
     };
     Item::write_to(&item, out).unwrap();
+}
+
+fn shape_write_message(value: Value, out: &mut impl Write) {
+    let header = Header::new();
+    let item = Item {
+        header: header.to_ref(),
+        name: "test",
+        value,
+    };
+    item.shape_and_write(out).unwrap();
 }
 
 fn write_message_fast<T: WriteSelf>(value: T, ty: Type, out: &mut impl Write) {
@@ -149,6 +159,14 @@ fn item_null() {
 }
 
 #[test]
+fn item_null_shape() {
+    let mut buf = Vec::with_capacity(256);
+
+    shape_write_message(Value::Null, &mut buf);
+    assert!(read_message(&buf, Type::Null).is_null());
+}
+
+#[test]
 fn item_float() {
     let mut buf = Vec::with_capacity(256);
     let mut value_buffer: [u8; 8] = [0; 8];
@@ -171,10 +189,43 @@ fn item_float() {
 }
 
 #[test]
+fn item_float_shape() {
+    let mut buf = Vec::with_capacity(256);
+    let mut value_buffer: [u8; 8] = [0; 8];
+
+    shape_write_message(
+        Value::Float(ValueFloat::wrap(&mut value_buffer).set_data(42.42).to_ref()),
+        &mut buf,
+    );
+    assert_eq!(read_message(&buf, Type::Float).as_float().unwrap().get_data(), 42.42);
+
+    buf.clear();
+    shape_write_message(
+        Value::Double(ValueDouble::wrap(&mut value_buffer).set_data(42.4242).to_ref()),
+        &mut buf,
+    );
+    assert_eq!(
+        read_message(&buf, Type::Double).as_double().unwrap().get_data(),
+        42.4242
+    );
+}
+
+#[test]
 fn item_string() {
     let mut buf = Vec::with_capacity(256);
 
     write_message(Value::String(ValueString { data: "this is a test" }), &mut buf);
+    assert_eq!(
+        read_message(&buf, Type::String).as_string().unwrap().data,
+        "this is a test"
+    );
+}
+
+#[test]
+fn item_string_shape() {
+    let mut buf = Vec::with_capacity(256);
+
+    shape_write_message(Value::String(ValueString { data: "this is a test" }), &mut buf);
     assert_eq!(
         read_message(&buf, Type::String).as_string().unwrap().data,
         "this is a test"

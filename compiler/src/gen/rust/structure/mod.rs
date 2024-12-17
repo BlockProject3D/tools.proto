@@ -58,10 +58,10 @@ pub fn gen_structure_decl(s: &Structure, type_path_map: &TypePathMap, params: &R
     if params.enable_write_async {
         hooks.hook("ext", Fragment::new("", &["write_to_async"]));
     }
-    if params.enable_struct_to_mut {
+    if s.is_used_in_header() || params.enable_struct_to_mut {
         hooks.hook("ext", Fragment::new("", &["to_mut"]));
     }
-    if params.enable_struct_dupe.contains(s.name()) {
+    if s.is_used_in_header() || params.enable_struct_dupe.contains(s.name()) {
         hooks.hook("ext", Fragment::new("", &["dupe"]));
     }
     generate::<RustUtils, _>(

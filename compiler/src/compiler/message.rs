@@ -290,6 +290,15 @@ impl Field {
             return Err(Error::BadFieldType);
         }
         let (header, header_field) = HeaderField::from_model(value.header, unsorted)?;
+        if let Some(field) = header_field {
+            match &field.ty {
+                FieldType::Ref(Referenced::Struct(v)) => v.set_used_in_header(),
+                v => {
+                    error!("Invalid header field type, expected struct reference, got field type {:?}", v);
+                    return Err(Error::InvalidHeaderType);
+                }
+            }
+        }
         let builder = FieldBuilder::new(value.name, value.optional.unwrap_or_default(), proto.endianness)
             .description(value.description).header(header).codec(value.codec);
         if let Some(info) = value.value {
@@ -422,14 +431,8 @@ impl Field {
                                 );
                                 return Err(Error::UnionTypeMismatch);
                             }
-                        }
-                        v => {
-                            error!(
-                                "Union discriminant type mismatch expected {}, got field {:?}",
-                                r.discriminant.root.name, v
-                            );
-                            return Err(Error::UnionTypeMismatch);
-                        }
+                        },
+                        _ => unreachable!()
                     }
                     if value.optional.unwrap_or_default() {
                         eprintln!("WARNING: ignoring unsupported optional flag on union message field!");

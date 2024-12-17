@@ -76,16 +76,11 @@ extension {proto_name:to_pascal_case}{union_name} {{
 {fragment}
 #fragment push content
     public static func write<B1: WritableBuffer>(input: Self, header: {discriminant_type}<B>, to out: inout B1) throws {{
-        let discriminant = header.{discriminant_path};
         switch input {{
 {cases}
 #fragment push case
             case Self.{name:to_camel_case}(let v):
-                if discriminant == {case} {{
-                    try {type_name}.write(input: v, to: &out);
-                }} else {{
-                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
-                }}
+                try {type_name}.write(input: v, to: &out);
                 break;
 #fragment pop
             default:

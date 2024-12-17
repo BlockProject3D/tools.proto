@@ -26,7 +26,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::future::Future;
 use bp3d_util::simple_error;
 
 simple_error! {
@@ -94,6 +93,10 @@ pub trait WriteTo {
     fn write_to<W: std::io::Write>(input: &Self::Input<'_>, out: W) -> Result<()>;
 }
 
+pub trait ShapeAndWrite {
+    fn shape_and_write<W: std::io::Write>(self, out: W) -> Result<()>;
+}
+
 #[cfg(feature = "tokio")]
 pub trait WriteToAsync: WriteTo {
     fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(
@@ -125,6 +128,16 @@ pub trait WriteToWithHeader<H> {
     type Input<'a>: Sized;
 
     fn write_to_with_header<W: std::io::Write>(input: &Self::Input<'_>, header: &H, out: W) -> Result<()>;
+}
+
+pub trait ShapeHeader<H> {
+    fn shape_header(&self, header: &mut H) -> Result<()>;
+}
+
+impl<H, T: WriteSelf> ShapeHeader<H> for T {
+    fn shape_header(&self, _: &mut H) -> Result<()> {
+        Ok(())
+    }
 }
 
 #[cfg(feature = "tokio")]
@@ -167,7 +180,7 @@ impl<H, T: WriteSelf> WriteToWithHeader<H> for T {
 
 #[cfg(feature = "tokio")]
 impl<H, T: WriteSelf + WriteSelfAsync> WriteToWithHeaderAsync<H> for T {
-    fn write_to_with_header_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, _: &H, out: W) -> impl Future<Output=Result<()>> {
+    fn write_to_with_header_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, _: &H, out: W) -> impl std::future::Future<Output=Result<()>> {
         input.write_self_async(out)
     }
 }

@@ -92,84 +92,39 @@ extension UnionsValue {
 }
 extension UnionsValue {
     public static func write<B1: WritableBuffer>(input: Self, header: EnumsHeader<B>, to out: inout B1) throws {
-        let discriminant = header.raw.type;
         switch input {
             case Self.string(let v):
-                if discriminant == 1 {
-                    try ValuesValueString.write(input: v, to: &out);
-                } else {
-                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
-                }
+                try ValuesValueString.write(input: v, to: &out);
                 break;
             case Self.int8(let v):
-                if discriminant == 2 {
-                    try ValuesValueInt8.write(input: v, to: &out);
-                } else {
-                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
-                }
+                try ValuesValueInt8.write(input: v, to: &out);
                 break;
             case Self.int16(let v):
-                if discriminant == 3 {
-                    try ValuesValueInt16.write(input: v, to: &out);
-                } else {
-                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
-                }
+                try ValuesValueInt16.write(input: v, to: &out);
                 break;
             case Self.int32(let v):
-                if discriminant == 4 {
-                    try ValuesValueInt32.write(input: v, to: &out);
-                } else {
-                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
-                }
+                try ValuesValueInt32.write(input: v, to: &out);
                 break;
             case Self.int64(let v):
-                if discriminant == 5 {
-                    try ValuesValueInt64.write(input: v, to: &out);
-                } else {
-                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
-                }
+                try ValuesValueInt64.write(input: v, to: &out);
                 break;
             case Self.uInt8(let v):
-                if discriminant == 6 {
-                    try ValuesValueUInt8.write(input: v, to: &out);
-                } else {
-                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
-                }
+                try ValuesValueUInt8.write(input: v, to: &out);
                 break;
             case Self.uInt16(let v):
-                if discriminant == 7 {
-                    try ValuesValueUInt16.write(input: v, to: &out);
-                } else {
-                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
-                }
+                try ValuesValueUInt16.write(input: v, to: &out);
                 break;
             case Self.uInt32(let v):
-                if discriminant == 8 {
-                    try ValuesValueUInt32.write(input: v, to: &out);
-                } else {
-                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
-                }
+                try ValuesValueUInt32.write(input: v, to: &out);
                 break;
             case Self.uInt64(let v):
-                if discriminant == 9 {
-                    try ValuesValueUInt64.write(input: v, to: &out);
-                } else {
-                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
-                }
+                try ValuesValueUInt64.write(input: v, to: &out);
                 break;
             case Self.float(let v):
-                if discriminant == 10 {
-                    try ValuesValueFloat.write(input: v, to: &out);
-                } else {
-                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
-                }
+                try ValuesValueFloat.write(input: v, to: &out);
                 break;
             case Self.double(let v):
-                if discriminant == 11 {
-                    try ValuesValueDouble.write(input: v, to: &out);
-                } else {
-                    throw BP3DProto.Error.invalidUnionDiscriminant(UInt(discriminant));
-                }
+                try ValuesValueDouble.write(input: v, to: &out);
                 break;
 
             default:

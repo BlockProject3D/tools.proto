@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::cell::Cell;
 use crate::compiler::error::Error;
 use crate::compiler::r#enum::Enum;
 use crate::compiler::util::store::name_index;
@@ -471,9 +472,18 @@ pub struct Structure {
     pub fields: Vec<Field>,
     pub byte_size: usize,
     pub bit_size: usize,
+    used_in_header: Cell<bool>
 }
 
 impl Structure {
+    pub fn set_used_in_header(&self) {
+        self.used_in_header.set(true);
+    }
+
+    pub fn is_used_in_header(&self) -> bool {
+        self.used_in_header.get()
+    }
+
     pub fn from_model(proto: &Protocol, value: crate::model::structure::Structure) -> Result<Structure, Error> {
         let mut fields = Vec::with_capacity(value.fields.len());
         let mut last_bit_offset = 0;
@@ -492,6 +502,7 @@ impl Structure {
             } else {
                 last_bit_offset / 8
             },
+            used_in_header: Cell::new(false)
         };
         if s.bit_size == 0 {
             return Err(Error::ZeroStruct);
