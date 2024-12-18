@@ -26,22 +26,35 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod codec;
+use std::io::Write;
+use bp3d_proto::message::{FromBytesWithHeader, Message, WriteToWithHeader};
+use crate::custom_codec::Header;
 
-include!(env!("BP3D_PROTOC_TEST"));
-include!(env!("BP3D_PROTOC_STRUCTS"));
-include!(env!("BP3D_PROTOC_BITS"));
-include!(env!("BP3D_PROTOC_VIEWS"));
-include!(env!("BP3D_PROTOC_STRUCT_ARRAYS"));
-include!(env!("BP3D_PROTOC_ENUMS"));
-include!(env!("BP3D_PROTOC_SIGNED_ENUMS"));
-include!(env!("BP3D_PROTOC_VALUES"));
-include!(env!("BP3D_PROTOC_UNIONS"));
-include!(env!("BP3D_PROTOC_UNIONS2"));
-include!(env!("BP3D_PROTOC_ARRAYS"));
-include!(env!("BP3D_PROTOC_LISTS"));
-include!(env!("BP3D_PROTOC_BITS2"));
-include!(env!("BP3D_PROTOC_LISTS2"));
-include!(env!("BP3D_PROTOC_IMPORT_AMBIGUOUS"));
-include!(env!("BP3D_PROTOC_TEST_IMPORTS"));
-include!(env!("BP3D_PROTOC_CUSTOM_CODEC"));
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct ContainerHeader<'a> {
+    buffer: &'a [u8]
+}
+
+impl<'a> ContainerHeader<'a> {
+    pub fn new(buffer: &'a [u8]) -> Self {
+        ContainerHeader { buffer }
+    }
+}
+
+impl<'a> FromBytesWithHeader<'a, Header<&'a [u8]>> for ContainerHeader<'a> {
+    type Output = ContainerHeader<'a>;
+
+    fn from_bytes_with_header(slice: &'a [u8], header: &Header<&'a [u8]>) -> bp3d_proto::message::Result<Message<Self::Output>> {
+        let msg = ContainerHeader { buffer: &slice[..header.get_size() as _] };
+        Ok(Message::new(msg.buffer.len(), msg))
+    }
+}
+
+impl<'a> WriteToWithHeader<Header<&'a [u8]>> for ContainerHeader<'a> {
+    type Input<'b> = ContainerHeader<'b>;
+
+    fn write_to_with_header<W: Write>(input: &Self::Input<'_>, header: &Header<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {
+        out.write(&input.buffer[..header.get_size() as _])?;
+        Ok(())
+    }
+}

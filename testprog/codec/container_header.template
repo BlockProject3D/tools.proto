@@ -1,0 +1,33 @@
+#include base
+
+#fragment push decl.container:inline
+crate::codec::ContainerHeader<'a>
+#fragment pop
+
+#fragment push from_bytes.container:inline
+crate::codec::ContainerHeader
+#fragment pop
+
+#fragment push write.container:inline
+crate::codec::ContainerHeader
+#fragment pop
+
+#fragment push from_bytes.unsized_container:inline
+crate::codec::ContainerHeader
+#fragment pop
+
+#fragment push write.unsized_container:inline
+crate::codec::ContainerHeader
+#fragment pop
+
+#fragment push decl.sized_container:inline
+crate::codec::ContainerHeader<'a>
+#fragment pop
+
+#fragment push from_bytes.sized_container:inline
+crate::codec::ContainerHeader
+#fragment pop
+
+#fragment push write.sized_container:inline
+crate::codec::ContainerHeader
+#fragment pop

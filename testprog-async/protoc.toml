@@ -2,6 +2,8 @@
 name = ""
 path = "../testprog/src"
 
+exclude = ["custom_codec"]
+
 [options.unions]
 union-set-discriminant = true
 write-async = true
