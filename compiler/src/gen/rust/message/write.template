@@ -80,7 +80,10 @@ impl{impl_generics} bp3d_proto::message::ShapeAndWrite for {msg_name}{generics}
 #fragment pop
 #fragment push field_header
         let mut header = msg.{header_name}.dupe();
-        msg.{name}.shape_header(&mut header.to_mut())?;
+        {{
+            use bp3d_proto::message::ShapeHeader;
+            msg.{name}.shape_header(&mut header.to_mut())?;
+        }}
         msg.{header_name} = header.to_ref();
 #fragment pop
         use bp3d_proto::message::WriteTo;

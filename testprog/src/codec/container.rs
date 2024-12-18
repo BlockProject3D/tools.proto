@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::io::Write;
-use bp3d_proto::message::{FromBytesWithHeader, Message, WriteToWithHeader};
+use bp3d_proto::message::{FromBytesWithHeader, Message, ShapeHeader, WriteToWithHeader};
 use crate::custom_codec::Header;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -55,6 +55,13 @@ impl<'a> WriteToWithHeader<Header<&'a [u8]>> for ContainerHeader<'a> {
 
     fn write_to_with_header<W: Write>(input: &Self::Input<'_>, header: &Header<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {
         out.write(&input.buffer[..header.get_size() as _])?;
+        Ok(())
+    }
+}
+
+impl<T: AsMut<[u8]>> ShapeHeader<Header<T>> for ContainerHeader<'_> {
+    fn shape_header(&self, header: &mut Header<T>) -> bp3d_proto::message::Result<()> {
+        header.set_size(self.buffer.len() as _);
         Ok(())
     }
 }

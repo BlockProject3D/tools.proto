@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use bp3d_proto::message::ShapeAndWrite;
 use bp3d_proto::message::{FromBytes, WriteSelf};
 use testprog::codec::ContainerHeader;
 use testprog::custom_codec::{Header, Test, Test2};
@@ -112,4 +113,22 @@ fn test_headers2() {
     }
 }
 
-//TODO: Implement support for shape_and_write
+#[test]
+fn test_headers_shape_write() {
+    let mut buf = Vec::with_capacity(1024);
+    {
+        Test2 {
+            hdr: Header::new().to_ref(),
+            data: ContainerHeader::new(b"test"),
+            data2: ContainerHeader::new(b"test"),
+        }.shape_and_write(&mut buf).unwrap();
+    }
+    {
+        let msg = Test2::from_bytes(&buf).unwrap();
+        assert_eq!(msg.size(), 9);
+        let msg = msg.into_inner();
+        assert_eq!(msg.hdr.get_size(), 4);
+        assert_eq!(msg.data, ContainerHeader::new(b"test"));
+        assert_eq!(msg.data2, ContainerHeader::new(b"test"));
+    }
+}

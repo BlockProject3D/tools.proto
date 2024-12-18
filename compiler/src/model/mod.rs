@@ -29,6 +29,7 @@
 //! Low-level model based on serde.
 
 //TODO: Support for static sized unions in structures
+//TODO: Support for merge operation in typedefs.
 
 pub mod message;
 pub mod protocol;

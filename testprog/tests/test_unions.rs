@@ -49,13 +49,11 @@ fn write_message(value: Value, out: &mut impl Write) {
 }
 
 fn shape_write_message(value: Value, out: &mut impl Write) {
-    let header = Header::new();
-    let item = Item {
-        header: header.to_ref(),
+    Item {
+        header: Header::new().to_ref(),
         name: "test",
         value,
-    };
-    item.shape_and_write(out).unwrap();
+    }.shape_and_write(out).unwrap();
 }
 
 fn write_message_fast<T: WriteSelf>(value: T, ty: Type, out: &mut impl Write) {
