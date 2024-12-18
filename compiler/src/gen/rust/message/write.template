@@ -61,28 +61,30 @@ impl{impl_generics} bp3d_proto::message::WriteToAsync for {msg_name}{generics}
 #fragment push impl_shape_write
 impl{impl_generics} bp3d_proto::message::ShapeAndWrite for {msg_name}{generics}
 #fragment push where
-    where T{name}: bp3d_proto::message::WriteToWithHeader<{discriminant_type}<&'a [u8]>, Input<'a>=T{name}>
-    + for<'b> bp3d_proto::message::ShapeHeader<{discriminant_type}<&'b mut [u8]>>,
+    where for<'b> T{name}: bp3d_proto::message::WriteToWithHeader<{discriminant_type}<&'b [u8]>, Input<'b>=T{name}>
+    + bp3d_proto::message::ShapeHeader<{discriminant_type}<&'b mut [u8]>>,
 #fragment pop
 {where_clauses}
 {{
-    fn shape_and_write<W: std::io::Write>(mut self, out: W) -> bp3d_proto::message::Result<()> {{
+    fn shape_and_write<W: std::io::Write>(self, out: W) -> bp3d_proto::message::Result<()> {{
+        let mut msg = self;
 {fields}
 #fragment push field
 #fragment pop
 #fragment push field_string
 #fragment pop
 #fragment push field_union
-        let mut header = self.{header_name}.dupe();
-        self.{name}.shape_header(&mut header.to_mut())?;
-        // SAFETY: This is safe because the message is moved into this function.
-        // Rust is just unable to see it and believes self is still borrowed even if it's moved...
-        self.{header_name} = unsafe {{ std::mem::transmute(header.to_ref()) }};
+        let mut header = msg.{header_name}.dupe();
+        msg.{name}.shape_header(&mut header.to_mut())?;
+        msg.{header_name} = header.to_ref();
 #fragment pop
 #fragment push field_header
+        let mut header = msg.{header_name}.dupe();
+        msg.{name}.shape_header(&mut header.to_mut())?;
+        msg.{header_name} = header.to_ref();
 #fragment pop
         use bp3d_proto::message::WriteTo;
-        {msg_name}::write_to(&self, out)
+        {msg_name}::write_to(&msg, out)
     }}
 }}
 #fragment pop

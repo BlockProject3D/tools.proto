@@ -86,11 +86,11 @@ impl<T: AsMut<[u8]>> bp3d_proto::message::ShapeHeader<{discriminant_type}<T>> fo
 #fragment pop
 
 #fragment push write_to
-impl<'a> bp3d_proto::message::WriteToWithHeader<{discriminant_type}<&'a [u8]>> for {union_name}{generics} {{
+impl<'a> bp3d_proto::message::WriteToWithHeader<{discriminant_type}<&[u8]>> for {union_name}{generics} {{
     type Input<'b> = Self;
 {fragment}
 #fragment push content
-    fn write_to_with_header<W: std::io::Write>(input: &Self, _: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
+    fn write_to_with_header<W: std::io::Write>(input: &Self, _: &{discriminant_type}<&[u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
         use bp3d_proto::message::WriteTo;
         match input {{
 {cases}
@@ -103,7 +103,7 @@ impl<'a> bp3d_proto::message::WriteToWithHeader<{discriminant_type}<&'a [u8]>> f
     }}
 #fragment pop
 #fragment push none
-    fn write_to_with_header<W: std::io::Write>(_: &Self, _: &{discriminant_type}<&'a [u8]>, _: W) -> bp3d_proto::message::Result<()> {{
+    fn write_to_with_header<W: std::io::Write>(_: &Self, _: &{discriminant_type}<&[u8]>, _: W) -> bp3d_proto::message::Result<()> {{
         Ok(())
     }}
 #fragment pop
@@ -111,10 +111,10 @@ impl<'a> bp3d_proto::message::WriteToWithHeader<{discriminant_type}<&'a [u8]>> f
 #fragment pop
 
 #fragment push write_to_async
-impl<'a> bp3d_proto::message::WriteToWithHeaderAsync<{discriminant_type}<&'a [u8]>> for {union_name}{generics} {{
+impl<'a, 'c> bp3d_proto::message::WriteToWithHeaderAsync<{discriminant_type}<&'c [u8]>> for {union_name}{generics} {{
 {fragment}
 #fragment push content
-    async fn write_to_with_header_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, _: &{discriminant_type}<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
+    async fn write_to_with_header_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, _: &{discriminant_type}<&'c [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {{
         use bp3d_proto::message::WriteToAsync;
         match input {{
 {cases}
