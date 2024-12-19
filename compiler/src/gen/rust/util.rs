@@ -125,13 +125,7 @@ impl RustUtils {
         type_path_map: &'a TypePathMapper<T>,
     ) -> Generics<impl Iterator<Item = Generic<'a>>> {
         let has_lifetime = msg.fields.iter().any(|v| {
-            matches!(
-                v.ty,
-                FieldType::FixedContainer(_)
-                    | FieldType::Union(_)
-                    | FieldType::Container(_)
-                    | FieldType::SizedContainer(_)
-            )
+            matches!(v.ty, FieldType::Union(_))
         });
         Self::_gen_generics(msg, type_path_map, has_lifetime)
     }
