@@ -13,3 +13,7 @@ write-async = true
 
 [options.values]
 write-async = true
+
+[options.lists]
+write-async = true
+list-wrappers = true
