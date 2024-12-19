@@ -1,0 +1,68 @@
+{
+    name: "custom_codec_broken",
+    types: [
+        {
+            name: "VarBytes",
+            value: {
+                type: "string", // this is now forbidden
+                max_len: 255
+            },
+            codec: "var_bytes"
+        },
+        {
+            name: "VarBytesOptional",
+            value: {
+                type: "string", // this is now forbidden
+                max_len: 255
+            },
+            optional: true,
+            codec: "var_bytes"
+        },
+        {
+            name: "SizedContainerHeader",
+            value: {
+                type: "list", // this is now forbidden
+                max_len: 1,
+                max_size: 1,
+                item_type: "Test"
+            },
+            header: "hdr",
+            codec: "container_header"
+        },
+        {
+            name: "ContainerHeader",
+            value: {
+                type: "list", // this is now forbidden
+                max_len: 1,
+                item_type: "Test"
+            },
+            header: "hdr",
+            codec: "container_header"
+        }
+    ],
+    structs: [
+        {
+            name: "Header",
+            fields: [
+                { name: "size", raw: { type: "unsigned", bits: 8 } }
+            ]
+        }
+    ],
+    messages: [
+        {
+            name: "Test",
+            fields: [
+                { name: "non_optional", item_type: "VarBytes" },
+                { name: "optional", item_type: "VarBytesOptional" }
+            ]
+        },
+        {
+            name: "Test2",
+            fields: [
+                { name: "hdr", item_type: "Header" },
+                { name: "data", item_type: "SizedContainerHeader" },
+                { name: "data2", item_type: "ContainerHeader" }
+            ]
+        }
+    ]
+}

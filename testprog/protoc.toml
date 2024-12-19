@@ -3,6 +3,8 @@ name = ""
 path = "src"
 #file-header = "path/to/file/header"
 
+exclude = ["custom_codec_broken"]
+
 [options.test]
 message-offsets = true
 

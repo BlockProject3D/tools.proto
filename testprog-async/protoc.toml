@@ -2,7 +2,7 @@
 name = ""
 path = "../testprog/src"
 
-#exclude = ["custom_codec"]
+exclude = ["custom_codec_broken"]
 
 [options.unions]
 union-set-discriminant = true
