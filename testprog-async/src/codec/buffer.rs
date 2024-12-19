@@ -26,10 +26,41 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod codec;
+use bp3d_proto::message::{Result, WriteToAsync};
+use bp3d_proto::message::{FromBytes, Message, WriteTo};
+use bp3d_proto::util::ToUsize;
+use std::io::Write;
+use std::marker::PhantomData;
+use tokio::io::AsyncWriteExt;
 
-include!(env!("BP3D_PROTOC_ENUMS"));
-include!(env!("BP3D_PROTOC_VALUES"));
-include!(env!("BP3D_PROTOC_UNIONS"));
-include!(env!("BP3D_PROTOC_LISTS"));
-include!(env!("BP3D_PROTOC_CUSTOM_CODEC"));
+pub struct VarBytes<T>(PhantomData<T>);
+
+impl<'a, T: FromBytes<'a, Output: ToUsize>> FromBytes<'a> for VarBytes<T> {
+    type Output = &'a [u8];
+
+    fn from_bytes(slice: &'a [u8]) -> Result<Message<Self::Output>> {
+        let msg = T::from_bytes(slice)?;
+        let size = msg.size();
+        let len = msg.into_inner().to_usize();
+        Ok(Message::new(size + len, &slice[size..len + size]))
+    }
+}
+
+impl<'a, T: WriteTo<Input<'a>: ToUsize>> WriteTo for VarBytes<T> {
+    type Input<'b> = &'b [u8];
+
+    fn write_to<W: Write>(input: &Self::Input<'_>, mut out: W) -> Result<()> {
+        let len = input.len();
+        T::write_to(&T::Input::from_usize(len), &mut out)?;
+        out.write_all(input)?;
+        Ok(())
+    }
+}
+
+impl<T: WriteToAsync<Input<'static>: ToUsize>> WriteToAsync for VarBytes<T> {
+    async fn write_to_async<W: AsyncWriteExt + Unpin>(input: &Self::Input<'_>, mut out: W) -> Result<()> {
+        T::write_to_async(&T::Input::from_usize(input.len()), &mut out).await?;
+        out.write_all(input).await?;
+        Ok(())
+    }
+}

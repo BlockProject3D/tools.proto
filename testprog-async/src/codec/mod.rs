@@ -26,10 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod codec;
+mod buffer;
+mod container;
 
-include!(env!("BP3D_PROTOC_ENUMS"));
-include!(env!("BP3D_PROTOC_VALUES"));
-include!(env!("BP3D_PROTOC_UNIONS"));
-include!(env!("BP3D_PROTOC_LISTS"));
-include!(env!("BP3D_PROTOC_CUSTOM_CODEC"));
+pub use self::buffer::VarBytes;
+pub use self::container::ContainerHeader;

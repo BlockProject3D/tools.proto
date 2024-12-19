@@ -2,7 +2,7 @@
 name = ""
 path = "../testprog/src"
 
-exclude = ["custom_codec"]
+#exclude = ["custom_codec"]
 
 [options.unions]
 union-set-discriminant = true
@@ -17,3 +17,6 @@ write-async = true
 [options.lists]
 write-async = true
 list-wrappers = true
+
+[options.custom_codec]
+write-async = true

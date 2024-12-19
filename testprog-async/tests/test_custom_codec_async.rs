@@ -26,20 +26,20 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto::message::ShapeAndWrite;
-use bp3d_proto::message::{FromBytes, WriteSelf};
-use testprog::codec::ContainerHeader;
-use testprog::custom_codec::{Header, Test, Test2};
+use bp3d_proto::message::{ShapeAndWriteAsync, WriteSelf};
+use bp3d_proto::message::{FromBytes, WriteSelfAsync};
+use testprog_async::codec::ContainerHeader;
+use testprog_async::custom_codec::{Header, Test, Test2};
 
-#[test]
-fn test_basic() {
+#[tokio::test]
+async fn test_basic() {
     let mut buf = Vec::with_capacity(1024);
     {
         let msg = Test {
             non_optional: b"this is a test",
             optional: None,
         };
-        msg.write_self(&mut buf).unwrap();
+        msg.write_self_async(&mut buf).await.unwrap();
     }
     {
         let msg = Test::from_bytes(&buf).unwrap().into_inner();
@@ -48,15 +48,15 @@ fn test_basic() {
     }
 }
 
-#[test]
-fn test_basic2() {
+#[tokio::test]
+async fn test_basic2() {
     let mut buf = Vec::with_capacity(1024);
     {
         let msg = Test {
             non_optional: b"this is a test",
             optional: Some(b"this is a test"),
         };
-        msg.write_self(&mut buf).unwrap();
+        msg.write_self_async(&mut buf).await.unwrap();
     }
     {
         let msg = Test::from_bytes(&buf).unwrap().into_inner();
@@ -65,8 +65,8 @@ fn test_basic2() {
     }
 }
 
-#[test]
-fn test_headers() {
+#[tokio::test]
+async fn test_headers() {
     let mut buf = Vec::with_capacity(1024);
     {
         let mut hdr = Header::new();
@@ -77,7 +77,7 @@ fn test_headers() {
             data2: ContainerHeader::new(b"this is a test"),
         };
         assert_eq!(msg.size().unwrap(), 29);
-        msg.write_self(&mut buf).unwrap();
+        msg.write_self_async(&mut buf).await.unwrap();
     }
     {
         let msg = Test2::from_bytes(&buf).unwrap();
@@ -89,8 +89,8 @@ fn test_headers() {
     }
 }
 
-#[test]
-fn test_headers2() {
+#[tokio::test]
+async fn test_headers2() {
     let mut buf = Vec::with_capacity(1024);
     {
         let mut hdr = Header::new();
@@ -101,7 +101,7 @@ fn test_headers2() {
             data2: ContainerHeader::new(b"this is a test"),
         };
         assert_eq!(msg.size().unwrap(), 27);
-        msg.write_self(&mut buf).unwrap();
+        msg.write_self_async(&mut buf).await.unwrap();
     }
     {
         let msg = Test2::from_bytes(&buf).unwrap();
@@ -113,17 +113,15 @@ fn test_headers2() {
     }
 }
 
-#[test]
-fn test_headers_shape_write() {
+#[tokio::test]
+async fn test_headers_shape_write() {
     let mut buf = Vec::with_capacity(1024);
     {
         Test2 {
             hdr: Header::new().to_ref(),
             data: ContainerHeader::new(b"test"),
             data2: ContainerHeader::new(b"test"),
-        }
-        .shape_and_write(&mut buf)
-        .unwrap();
+        }.shape_and_write_async(&mut buf).await.unwrap();
     }
     {
         let msg = Test2::from_bytes(&buf).unwrap();
