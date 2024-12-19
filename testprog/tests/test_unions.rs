@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto::message::{FromBytes, WriteSelf, WriteTo, ShapeAndWrite};
+use bp3d_proto::message::{FromBytes, ShapeAndWrite, WriteSelf, WriteTo};
 use bp3d_proto::union::IntoUnion;
 use bp3d_proto::util::Wrap;
 use std::io::Write;
@@ -53,7 +53,9 @@ fn shape_write_message(value: Value, out: &mut impl Write) {
         header: Header::new().to_ref(),
         name: "test",
         value,
-    }.shape_and_write(out).unwrap();
+    }
+    .shape_and_write(out)
+    .unwrap();
 }
 
 fn write_message_fast<T: WriteSelf>(value: T, ty: Type, out: &mut impl Write) {

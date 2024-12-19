@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::codec_map_initializer;
 use crate::compiler::Protocol;
 use crate::gen::base::Error;
 use crate::gen::codec::CodecMap;
@@ -37,11 +38,10 @@ use crate::gen::rust::params::Params;
 use crate::gen::rust::r#enum::gen_enum_decl;
 use crate::gen::rust::structure::gen_structure_decl;
 use crate::gen::rust::union::gen_union_decl;
+use crate::gen::template::Template;
 use crate::gen::Generator;
 use bp3d_debug::trace;
 use std::path::Path;
-use crate::codec_map_initializer;
-use crate::gen::template::Template;
 
 const TEMPLATE_CODEC_BASE: &[u8] = include_bytes!("./default_codec/base.template");
 const TEMPLATE_CODEC_STRING: &[u8] = include_bytes!("./default_codec/string.template");
@@ -57,8 +57,14 @@ impl Generator for GeneratorRust {
         let mut codecs = CodecMap::new(codec_map_initializer! {
             "base" => TEMPLATE_CODEC_BASE
         });
-        codecs.insert("string", Template::compile_with_includes(TEMPLATE_CODEC_STRING, &codecs).unwrap());
-        codecs.insert("list", Template::compile_with_includes(TEMPLATE_CODEC_LIST, &codecs).unwrap());
+        codecs.insert(
+            "string",
+            Template::compile_with_includes(TEMPLATE_CODEC_STRING, &codecs).unwrap(),
+        );
+        codecs.insert(
+            "list",
+            Template::compile_with_includes(TEMPLATE_CODEC_LIST, &codecs).unwrap(),
+        );
         codecs
     }
 

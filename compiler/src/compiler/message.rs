@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::compiler::builder::FieldBuilder;
 use crate::compiler::error::Error;
 use crate::compiler::structure::{FixedFieldType, Structure};
 use crate::compiler::union::Union;
@@ -39,7 +40,6 @@ use bp3d_debug::{error, trace};
 use std::cell::Cell;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
-use crate::compiler::builder::FieldBuilder;
 
 #[derive(Clone, Debug)]
 pub enum Referenced {
@@ -239,7 +239,7 @@ impl HeaderField {
                     .ok_or(Error::UndefinedReference(header))?;
                 let header = HeaderField {
                     index,
-                    name: field.name.clone()
+                    name: field.name.clone(),
                 };
                 Ok((Some(header), Some(field)))
             }
@@ -266,7 +266,7 @@ impl Display for Field {
             (true, None) => write!(f, "{}: {}?, {} endian", self.name, self.ty, self.endianness),
             (false, None) => write!(f, "{}: {}, {} endian", self.name, self.ty, self.endianness),
             (true, Some(v)) => write!(f, "{}: {} ({})?, {} endian", self.name, v, self.ty, self.endianness),
-            (false, Some(v)) => write!(f, "{}: {} ({}), {} endian", self.name, v, self.ty, self.endianness)
+            (false, Some(v)) => write!(f, "{}: {} ({}), {} endian", self.name, v, self.ty, self.endianness),
         }
     }
 }
@@ -291,13 +291,18 @@ impl Field {
             match &field.ty {
                 FieldType::Ref(Referenced::Struct(v)) => v.set_used_in_header(),
                 v => {
-                    error!("Invalid header field type, expected struct reference, got field type {:?}", v);
+                    error!(
+                        "Invalid header field type, expected struct reference, got field type {:?}",
+                        v
+                    );
                     return Err(Error::InvalidHeaderType);
                 }
             }
         }
         let builder = FieldBuilder::new(value.name, value.optional.unwrap_or_default(), proto.endianness)
-            .description(value.description).header(header).codec(value.codec);
+            .description(value.description)
+            .header(header)
+            .codec(value.codec);
         if let Some(info) = value.value {
             match info {
                 MessageFieldValue::List {
@@ -315,38 +320,41 @@ impl Field {
                     let r = Referenced::lookup(proto, &item_type).ok_or(Error::UndefinedReference(item_type))?;
                     let ty = FixedFieldType::from_max_value(max_len)?;
                     match r {
-                        Referenced::Struct(item_type) => Ok(builder.codec(Some("list".into())).build(FieldType::FixedContainer(FixedContainerField { item_type, ty }))),
+                        Referenced::Struct(item_type) => Ok(builder
+                            .codec(Some("list".into()))
+                            .build(FieldType::FixedContainer(FixedContainerField { item_type, ty }))),
                         Referenced::Message(item_type) => {
                             if let Some(max_size) = max_size {
                                 if max_size == 0 {
                                     return Err(Error::ZeroArray);
                                 }
                                 let size_ty = FixedFieldType::from_max_value(max_size)?;
-                                Ok(
-                                    builder
-                                        .codec(Some("list".into()))
-                                        .size_info(SizeInfo {
-                                            is_element_dyn_sized: false,
-                                            is_dyn_sized: true
-                                        })
-                                        .build(FieldType::SizedContainer(SizedContainerField { ty, item_type, size_ty }))
-                                )
+                                Ok(builder
+                                    .codec(Some("list".into()))
+                                    .size_info(SizeInfo {
+                                        is_element_dyn_sized: false,
+                                        is_dyn_sized: true,
+                                    })
+                                    .build(FieldType::SizedContainer(SizedContainerField {
+                                        ty,
+                                        item_type,
+                                        size_ty,
+                                    })))
                             } else {
                                 item_type.embedded.set(true);
                                 Ok(
-                                    builder
-                                        .codec(Some("list".into()))
-                                        .dynamic_size()
-                                        .build(FieldType::Container(ContainerField {
+                                    builder.codec(Some("list".into())).dynamic_size().build(FieldType::Container(
+                                        ContainerField {
                                             ty,
                                             item_type,
                                             nested: nested.unwrap_or_default(),
-                                        }))
+                                        },
+                                    )),
                                 )
                             }
                         }
                     }
-                },
+                }
                 MessageFieldValue::Container {
                     max_len,
                     item_type,
@@ -359,36 +367,36 @@ impl Field {
                     let r = Referenced::lookup(proto, &item_type).ok_or(Error::UndefinedReference(item_type))?;
                     let ty = FixedFieldType::from_max_value(max_len)?;
                     match r {
-                        Referenced::Struct(item_type) => Ok(builder.build(FieldType::FixedContainer(FixedContainerField { item_type, ty }))),
+                        Referenced::Struct(item_type) => {
+                            Ok(builder.build(FieldType::FixedContainer(FixedContainerField { item_type, ty })))
+                        }
                         Referenced::Message(item_type) => {
                             if let Some(max_size) = max_size {
                                 if max_size == 0 {
                                     return Err(Error::ZeroArray);
                                 }
                                 let size_ty = FixedFieldType::from_max_value(max_size)?;
-                                Ok(
-                                    builder
-                                        .size_info(SizeInfo {
-                                            is_element_dyn_sized: false,
-                                            is_dyn_sized: true
-                                        })
-                                        .build(FieldType::SizedContainer(SizedContainerField { ty, item_type, size_ty }))
-                                )
+                                Ok(builder
+                                    .size_info(SizeInfo {
+                                        is_element_dyn_sized: false,
+                                        is_dyn_sized: true,
+                                    })
+                                    .build(FieldType::SizedContainer(SizedContainerField {
+                                        ty,
+                                        item_type,
+                                        size_ty,
+                                    })))
                             } else {
                                 item_type.embedded.set(true);
-                                Ok(
-                                    builder
-                                        .dynamic_size()
-                                        .build(FieldType::Container(ContainerField {
-                                            ty,
-                                            item_type,
-                                            nested: nested.unwrap_or_default(),
-                                        }))
-                                )
+                                Ok(builder.dynamic_size().build(FieldType::Container(ContainerField {
+                                    ty,
+                                    item_type,
+                                    nested: nested.unwrap_or_default(),
+                                })))
                             }
                         }
                     }
-                },
+                }
                 MessageFieldValue::String { max_len } => {
                     if builder.has_codec() {
                         return Err(Error::ForbiddenCodec(builder.name().into()));
@@ -400,20 +408,20 @@ impl Field {
                                 return Err(Error::ZeroArray);
                             }
                             let ty = FixedFieldType::from_max_value(max_len)?;
-                            Ok(builder.codec(Some("string".into())).build(FieldType::SizedBuffer(SizedBufferField { ty })))
+                            Ok(builder
+                                .codec(Some("string".into()))
+                                .build(FieldType::SizedBuffer(SizedBufferField { ty })))
                         }
                     }
-                },
-                MessageFieldValue::Buffer { max_len } => {
-                    match max_len {
-                        None => Ok(builder.build(FieldType::Buffer)),
-                        Some(max_len) => {
-                            if max_len == 0 {
-                                return Err(Error::ZeroArray);
-                            }
-                            let ty = FixedFieldType::from_max_value(max_len)?;
-                            Ok(builder.build(FieldType::SizedBuffer(SizedBufferField { ty })))
+                }
+                MessageFieldValue::Buffer { max_len } => match max_len {
+                    None => Ok(builder.build(FieldType::Buffer)),
+                    Some(max_len) => {
+                        if max_len == 0 {
+                            return Err(Error::ZeroArray);
                         }
+                        let ty = FixedFieldType::from_max_value(max_len)?;
+                        Ok(builder.build(FieldType::SizedBuffer(SizedBufferField { ty })))
                     }
                 },
                 MessageFieldValue::Union { name } => {
@@ -428,8 +436,8 @@ impl Field {
                                 );
                                 return Err(Error::UnionTypeMismatch);
                             }
-                        },
-                        _ => unreachable!()
+                        }
+                        _ => unreachable!(),
                     }
                     if value.optional.unwrap_or_default() {
                         eprintln!("WARNING: ignoring unsupported optional flag on union message field!");
@@ -459,7 +467,7 @@ impl Field {
                         Ok(builder.fixed_size().build(FieldType::Ref(Referenced::Struct(r))))
                     }
                 }
-                Referenced::Message(r) => Ok(builder.size_info(r.size).build(FieldType::Ref(Referenced::Message(r))))
+                Referenced::Message(r) => Ok(builder.size_info(r.size).build(FieldType::Ref(Referenced::Message(r)))),
             }
         }
     }

@@ -37,7 +37,7 @@ use std::borrow::Cow;
 pub struct MaybeOptional<'b, 'a, 'fragment, 'variable> {
     template: &'a Template<'fragment, 'variable>,
     function: &'b str,
-    optional: bool
+    optional: bool,
 }
 
 impl<'b, 'a, 'fragment, 'variable> MaybeOptional<'b, 'a, 'fragment, 'variable> {
@@ -45,11 +45,14 @@ impl<'b, 'a, 'fragment, 'variable> MaybeOptional<'b, 'a, 'fragment, 'variable> {
         Self {
             template,
             function,
-            optional: field.optional
+            optional: field.optional,
         }
     }
 
-    pub fn gen<'c>(self, type_name: impl Into<Cow<'c, str>>) -> Result<Cow<'c, str>, Error> where 'a: 'c {
+    pub fn gen<'c>(self, type_name: impl Into<Cow<'c, str>>) -> Result<Cow<'c, str>, Error>
+    where
+        'a: 'c,
+    {
         if self.optional {
             self.template
                 .scope()
@@ -67,7 +70,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
     field: &'a Field,
     template: &'a Template,
     type_path_map: &'a TypePathMapper<T>,
-    function: &str
+    function: &str,
 ) -> Result<Cow<'a, str>, Error> {
     let optional = MaybeOptional::new(field, function, template);
     let msg_type = match &field.ty {
@@ -82,7 +85,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                 .scope()
                 .var("codec", U::get_value_type(field.endianness, v.ty))
                 .render(function, &["sized_buffer"])
-                .map_err(Error::Codec)?
+                .map_err(Error::Codec)?,
         ),
         FieldType::FixedContainer(v) => optional.gen(
             template
@@ -90,7 +93,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                 .var("codec", U::get_value_type(field.endianness, v.ty))
                 .var("type_name", type_path_map.get(&v.item_type))
                 .render(function, &["fixed_container"])
-                .map_err(Error::Codec)?
+                .map_err(Error::Codec)?,
         ),
         FieldType::Union(v) => optional.gen(type_path_map.get(&v.r)),
         FieldType::Container(v) => match v.nested {
@@ -100,7 +103,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                     .var("codec", U::get_value_type(field.endianness, v.ty))
                     .var("type_name", type_path_map.get(&v.item_type))
                     .render(function, &["unsized_container"])
-                    .map_err(Error::Codec)?
+                    .map_err(Error::Codec)?,
             ),
             true => optional.gen(
                 template
@@ -108,7 +111,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                     .var("codec", U::get_value_type(field.endianness, v.ty))
                     .var("type_name", type_path_map.get(&v.item_type))
                     .render(function, &["container"])
-                    .map_err(Error::Codec)?
+                    .map_err(Error::Codec)?,
             ),
         },
         FieldType::Payload => optional.gen(template.scope().render(function, &["payload"]).map_err(Error::Codec)?),
@@ -119,7 +122,7 @@ pub fn generate_field_type_inline<'a, U: Utilities, T: TypeMapper>(
                 .var("type_name", type_path_map.get(&v.item_type))
                 .var("size_codec", U::get_value_type(field.endianness, v.size_ty))
                 .render(function, &["sized_container"])
-                .map_err(Error::Codec)?
+                .map_err(Error::Codec)?,
         ),
     };
     msg_type

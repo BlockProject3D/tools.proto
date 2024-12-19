@@ -38,8 +38,8 @@ use crate::gen::swift::r#enum::gen_enum_decl;
 use crate::gen::swift::solver::SwiftImportSolver;
 use crate::gen::swift::structure::gen_structure_decl;
 use crate::gen::swift::union::gen_union_decl;
-use crate::gen::Generator;
 use crate::gen::template::Template;
+use crate::gen::Generator;
 
 const TEMPLATE_CODEC_BASE: &[u8] = include_bytes!("./default_codec/base.template");
 const TEMPLATE_CODEC_STRING: &[u8] = include_bytes!("./default_codec/string.template");
@@ -55,8 +55,14 @@ impl Generator for GeneratorSwift {
         let mut codecs = CodecMap::new(codec_map_initializer! {
             "base" => TEMPLATE_CODEC_BASE
         });
-        codecs.insert("string", Template::compile_with_includes(TEMPLATE_CODEC_STRING, &codecs).unwrap());
-        codecs.insert("list", Template::compile_with_includes(TEMPLATE_CODEC_LIST, &codecs).unwrap());
+        codecs.insert(
+            "string",
+            Template::compile_with_includes(TEMPLATE_CODEC_STRING, &codecs).unwrap(),
+        );
+        codecs.insert(
+            "list",
+            Template::compile_with_includes(TEMPLATE_CODEC_LIST, &codecs).unwrap(),
+        );
         codecs
     }
 

@@ -26,7 +26,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::cell::Cell;
 use crate::compiler::error::Error;
 use crate::compiler::r#enum::Enum;
 use crate::compiler::util::store::name_index;
@@ -36,6 +35,7 @@ use crate::compiler::Protocol;
 use crate::model::protocol::{Description, Endianness};
 use crate::model::structure::{SimpleType, StructFieldRaw, StructFieldView};
 use bp3d_debug::trace;
+use std::cell::Cell;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
 
@@ -472,7 +472,7 @@ pub struct Structure {
     pub fields: Vec<Field>,
     pub byte_size: usize,
     pub bit_size: usize,
-    used_in_header: Cell<bool>
+    used_in_header: Cell<bool>,
 }
 
 impl Structure {
@@ -502,7 +502,7 @@ impl Structure {
             } else {
                 last_bit_offset / 8
             },
-            used_in_header: Cell::new(false)
+            used_in_header: Cell::new(false),
         };
         if s.bit_size == 0 {
             return Err(Error::ZeroStruct);

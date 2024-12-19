@@ -149,7 +149,6 @@ pub trait WriteToWithHeaderAsync<H>: WriteToWithHeader<H> {
     ) -> impl std::future::Future<Output = Result<()>>;
 }
 
-
 impl<'a, T: WriteTo<Input<'a> = T>> WriteSelf for T {
     fn write_self<W: std::io::Write>(&self, out: W) -> Result<()> {
         T::write_to(self, out)
@@ -180,7 +179,11 @@ impl<H, T: WriteSelf> WriteToWithHeader<H> for T {
 
 #[cfg(feature = "tokio")]
 impl<H, T: WriteSelf + WriteSelfAsync> WriteToWithHeaderAsync<H> for T {
-    fn write_to_with_header_async<W: tokio::io::AsyncWriteExt + Unpin>(input: &Self::Input<'_>, _: &H, out: W) -> impl std::future::Future<Output=Result<()>> {
+    fn write_to_with_header_async<W: tokio::io::AsyncWriteExt + Unpin>(
+        input: &Self::Input<'_>,
+        _: &H,
+        out: W,
+    ) -> impl std::future::Future<Output = Result<()>> {
         input.write_self_async(out)
     }
 }

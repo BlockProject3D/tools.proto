@@ -32,11 +32,11 @@ use crate::api::config;
 use crate::api::core::generator::{Context, Generator};
 use crate::compiler::util::imports::ImportSolver;
 use crate::gen::template::loader::TemplateLoader;
+use crate::gen::Generator as Gen;
+use bp3d_debug::debug;
 pub use error::Error;
 use serde::Deserialize;
 use std::path::Path;
-use bp3d_debug::debug;
-use crate::gen::Generator as Gen;
 
 pub trait GenTools {
     type Params<'a>: Deserialize<'a>;
@@ -60,8 +60,14 @@ pub trait GenTools {
         let protocols = config::core::compile(config, &motherfuckingrust)?;
         let mut loader = TemplateLoader::new();
         let path = Path::new("./codec/");
-        debug!("Adding codec path {}...", path.canonicalize().unwrap_or_default().display());
-        debug!("Current folder: {}", Path::new(".").canonicalize().unwrap_or_default().display());
+        debug!(
+            "Adding codec path {}...",
+            path.canonicalize().unwrap_or_default().display()
+        );
+        debug!(
+            "Current folder: {}",
+            Path::new(".").canonicalize().unwrap_or_default().display()
+        );
         loader.add_search_path(path);
         let mut codecs = Self::Generator::get_default_codecs();
         for v in protocols.iter().flat_map(|v| v.iter_codecs()) {
