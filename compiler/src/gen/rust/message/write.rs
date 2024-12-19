@@ -32,7 +32,7 @@ use crate::gen::base::map::{DefaultTypeMapper, TypePathMapper};
 use crate::gen::base::message::Templates;
 use crate::gen::base::message_write::generate;
 use crate::gen::base::Error;
-use crate::gen::rust::util::{gen_where_clause, RustUtils};
+use crate::gen::rust::util::{gen_where_clause, Lifetime, RustUtils};
 use crate::gen::template::Template;
 use crate::gen::{codec::CodecMap, RustParams};
 use itertools::Itertools;
@@ -44,6 +44,7 @@ fn _gen_message_write_impl(
     codec_map: &CodecMap,
     type_path_map: &TypePathMapper<DefaultTypeMapper>,
     generics: &str,
+    impl_generics: &str,
     function: &str,
 ) -> Result<String, Error> {
     let mut templates = Templates {
@@ -59,7 +60,7 @@ fn _gen_message_write_impl(
     if generics.is_empty() {
         templates.template.var("impl_generics", "").var("generics", "<'_>");
     } else {
-        templates.template.var("generics", generics).var("impl_generics", generics);
+        templates.template.var("generics", generics).var("impl_generics", impl_generics);
     }
     generate::<RustUtils, _>(templates, msg, type_path_map, function)
 }
@@ -71,15 +72,17 @@ pub fn gen_message_write_impl(
     params: &RustParams,
 ) -> Result<String, Error> {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
-    let generics = RustUtils::get_generics_for_write(msg, &type_path_map).to_string();
-    let mut code = _gen_message_write_impl(msg, codec_map, &type_path_map, &generics, "impl")?;
+    let generics = RustUtils::get_generics_for_write(msg, &type_path_map, Lifetime::Named).to_string();
+    let mut code = _gen_message_write_impl(msg, codec_map, &type_path_map, &generics, &generics, "impl")?;
     if msg.fields.iter().any(|v| v.header.is_some()) {
-        code += &_gen_message_write_impl(msg, codec_map, &type_path_map, &generics, "impl_shape_write")?;
+        let shape_generics = RustUtils::get_generics_for_write(msg, &type_path_map, Lifetime::Anonymous).to_string();
+        let impl_shape_generics = RustUtils::get_generics_for_write(msg, &type_path_map, Lifetime::None).to_string();
+        code += &_gen_message_write_impl(msg, codec_map, &type_path_map, &shape_generics, &impl_shape_generics, "impl_shape_write")?;
     }
     if params.enable_write_async {
-        code += &_gen_message_write_impl(msg, codec_map, &type_path_map, &generics, "impl_async")?;
+        code += &_gen_message_write_impl(msg, codec_map, &type_path_map, &generics, &generics, "impl_async")?;
         if msg.fields.iter().any(|v| v.header.is_some()) {
-            code += &_gen_message_write_impl(msg, codec_map, &type_path_map, &generics, "impl_shape_write_async")?;
+            code += &_gen_message_write_impl(msg, codec_map, &type_path_map, &generics, &generics, "impl_shape_write_async")?;
         }
     }
     Ok(code)

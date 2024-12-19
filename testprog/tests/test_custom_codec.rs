@@ -31,6 +31,8 @@ use bp3d_proto::message::{FromBytes, WriteSelf};
 use testprog::codec::ContainerHeader;
 use testprog::custom_codec::{Header, Test, Test2};
 
+//TODO: Implement in async
+
 #[test]
 fn test_basic() {
     let mut buf = Vec::with_capacity(1024);

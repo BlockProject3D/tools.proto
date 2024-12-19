@@ -58,13 +58,20 @@ pub struct Generic<'a> {
     pub default: Option<Cow<'a, str>>,
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum Lifetime {
+    None,
+    Anonymous,
+    Named
+}
+
 pub struct Generics<T> {
-    lifetime: bool,
+    lifetime: Lifetime,
     data: T,
 }
 
 impl<T> Generics<T> {
-    pub fn new(lifetime: bool, data: T) -> Self {
+    pub fn new(lifetime: Lifetime, data: T) -> Self {
         Self {
             lifetime,
             data
@@ -72,17 +79,21 @@ impl<T> Generics<T> {
     }
 }
 
-fn _to_string<'a>(mut generics: impl Iterator<Item=Cow<'a, str>>, lifetime: bool) -> Cow<'a, str>{
+fn _to_string<'a>(mut generics: impl Iterator<Item=Cow<'a, str>>, lifetime: Lifetime) -> Cow<'a, str>{
     if let Some(value) = generics.next() {
         let str = generics.join(", ");
         match (str.is_empty(), lifetime) {
-            (true, false) => format!("<{}>", value).into(),
-            (false, false) => format!("<{}, {}>", value, str).into(),
-            (true, true) => format!("<'a, {}>", value).into(),
-            (false, true) => format!("<'a, {}, {}>", value, str).into(),
+            (true, Lifetime::None) => format!("<{}>", value).into(),
+            (false, Lifetime::None) => format!("<{}, {}>", value, str).into(),
+            (true, Lifetime::Named) => format!("<'a, {}>", value).into(),
+            (false, Lifetime::Named) => format!("<'a, {}, {}>", value, str).into(),
+            (true, Lifetime::Anonymous) => format!("<'_, {}>", value).into(),
+            (false, Lifetime::Anonymous) => format!("<'_, {}, {}>", value, str).into(),
         }
-    } else if lifetime {
+    } else if lifetime == Lifetime::Named {
         Cow::Borrowed("<'a>")
+    } else if lifetime == Lifetime::Anonymous {
+        Cow::Borrowed("<'_>")
     } else {
         Cow::Borrowed("")
     }
@@ -109,7 +120,7 @@ impl<'a, T: Iterator<Item = Generic<'a>>> Generics<T> {
 pub struct RustUtils;
 
 impl RustUtils {
-    fn _gen_generics<'a, T: TypeMapper>(msg: &'a Message, type_path_map: &'a TypePathMapper<T>, has_lifetime: bool) -> Generics<impl Iterator<Item = Generic<'a>>> {
+    fn _gen_generics<'a, T: TypeMapper>(msg: &'a Message, type_path_map: &'a TypePathMapper<T>, lifetime: Lifetime) -> Generics<impl Iterator<Item = Generic<'a>>> {
         let unions = msg.fields.iter().filter_map(|v| match &v.ty {
             FieldType::Union(u) => Some(Generic {
                 name: format!("T{}", v.name).into(),
@@ -117,17 +128,18 @@ impl RustUtils {
             }),
             _ => None,
         });
-        Generics::new(has_lifetime, unions)
+        Generics::new(lifetime, unions)
     }
 
     pub fn get_generics_for_write<'a, T: TypeMapper>(
         msg: &'a Message,
         type_path_map: &'a TypePathMapper<T>,
+        lifetime: Lifetime,
     ) -> Generics<impl Iterator<Item = Generic<'a>>> {
         let has_lifetime = msg.fields.iter().any(|v| {
             matches!(v.ty, FieldType::Union(_))
         });
-        Self::_gen_generics(msg, type_path_map, has_lifetime)
+        Self::_gen_generics(msg, type_path_map, if has_lifetime { lifetime } else { Lifetime::None })
     }
 
     pub fn get_generics<'a, T: TypeMapper>(
@@ -147,7 +159,7 @@ impl RustUtils {
                     | FieldType::Payload
             )
         });
-        Self::_gen_generics(msg, type_path_map, has_lifetime)
+        Self::_gen_generics(msg, type_path_map, if has_lifetime { Lifetime::Named } else { Lifetime::None })
     }
 }
 
