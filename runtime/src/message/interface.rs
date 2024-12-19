@@ -98,6 +98,11 @@ pub trait ShapeAndWrite {
 }
 
 #[cfg(feature = "tokio")]
+pub trait ShapeAndWriteAsync {
+    fn shape_and_write_async<W: tokio::io::AsyncWriteExt + Unpin>(self, out: W) -> impl std::future::Future<Output = Result<()>>;
+}
+
+#[cfg(feature = "tokio")]
 pub trait WriteToAsync: WriteTo {
     fn write_to_async<W: tokio::io::AsyncWriteExt + Unpin>(
         input: &Self::Input<'_>,

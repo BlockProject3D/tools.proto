@@ -78,6 +78,9 @@ pub fn gen_message_write_impl(
     }
     if params.enable_write_async {
         code += &_gen_message_write_impl(msg, codec_map, &type_path_map, &generics, "impl_async")?;
+        if msg.fields.iter().any(|v| v.header.is_some()) {
+            code += &_gen_message_write_impl(msg, codec_map, &type_path_map, &generics, "impl_shape_write_async")?;
+        }
     }
     Ok(code)
 }

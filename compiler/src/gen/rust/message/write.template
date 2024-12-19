@@ -91,3 +91,37 @@ impl{impl_generics} bp3d_proto::message::ShapeAndWrite for {msg_name}{generics}
     }}
 }}
 #fragment pop
+
+#fragment push impl_shape_write_async
+impl{impl_generics} bp3d_proto::message::ShapeAndWriteAsync for {msg_name}{generics}
+#fragment push where
+    where for<'b> T{name}: bp3d_proto::message::WriteToWithHeaderAsync<{discriminant_type}<&'b [u8]>, Input<'b>=T{name}>
+    + bp3d_proto::message::ShapeHeader<{discriminant_type}<&'b mut [u8]>>,
+#fragment pop
+{where_clauses}
+{{
+    async fn shape_and_write_async<W: tokio::io::AsyncWriteExt + Unpin>(self, out: W) -> bp3d_proto::message::Result<()> {{
+        let mut msg = self;
+{fields}
+#fragment push field
+#fragment pop
+#fragment push field_string
+#fragment pop
+#fragment push field_union
+        let mut header = msg.{header_name}.dupe();
+        msg.{name}.shape_header(&mut header.to_mut())?;
+        msg.{header_name} = header.to_ref();
+#fragment pop
+#fragment push field_header
+        let mut header = msg.{header_name}.dupe();
+        {{
+            use bp3d_proto::message::ShapeHeader;
+            msg.{name}.shape_header(&mut header.to_mut())?;
+        }}
+        msg.{header_name} = header.to_ref();
+#fragment pop
+        use bp3d_proto::message::WriteToAsync;
+        {msg_name}::write_to_async(&msg, out).await
+    }}
+}}
+#fragment pop

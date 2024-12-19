@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto::message::{FromBytes, WriteSelf, WriteSelfAsync, WriteToAsync};
+use bp3d_proto::message::{FromBytes, ShapeAndWriteAsync, WriteSelf, WriteSelfAsync, WriteToAsync};
 use bp3d_proto::union::IntoUnion;
 use bp3d_proto::util::Wrap;
 use testprog_async::enums::{Header, Type};
@@ -57,6 +57,14 @@ async fn write_message_fast<T: WriteSelf + WriteSelfAsync, W: AsyncWriteExt + Un
         value,
     };
     Item::write_to_async(&item, out).await.unwrap();
+}
+
+async fn shape_write_message<'a, W: AsyncWriteExt + Unpin>(value: Value<'a>, out: &mut W) {
+    Item {
+        header: Header::new().to_ref(),
+        name: "test",
+        value,
+    }.shape_and_write_async(out).await.unwrap();
 }
 
 fn read_message(slice: &[u8], ty: Type) -> Value {
@@ -157,6 +165,14 @@ async fn item_null() {
 }
 
 #[tokio::test]
+async fn item_null_shape() {
+    let mut buf = Vec::with_capacity(256);
+
+    shape_write_message(Value::Null, &mut buf).await;
+    assert!(read_message(&buf, Type::Null).is_null());
+}
+
+#[tokio::test]
 async fn item_float() {
     let mut buf = Vec::with_capacity(256);
     let mut value_buffer: [u8; 8] = [0; 8];
@@ -181,10 +197,43 @@ async fn item_float() {
 }
 
 #[tokio::test]
+async fn item_float_shape() {
+    let mut buf = Vec::with_capacity(256);
+    let mut value_buffer: [u8; 8] = [0; 8];
+
+    shape_write_message(
+        Value::Float(ValueFloat::wrap(&mut value_buffer).set_data(42.42).to_ref()),
+        &mut buf,
+    ).await;
+    assert_eq!(read_message(&buf, Type::Float).as_float().unwrap().get_data(), 42.42);
+
+    buf.clear();
+    shape_write_message(
+        Value::Double(ValueDouble::wrap(&mut value_buffer).set_data(42.4242).to_ref()),
+        &mut buf,
+    ).await;
+    assert_eq!(
+        read_message(&buf, Type::Double).as_double().unwrap().get_data(),
+        42.4242
+    );
+}
+
+#[tokio::test]
 async fn item_string() {
     let mut buf = Vec::with_capacity(256);
 
     write_message(Value::String(ValueString { data: "this is a test" }), &mut buf).await;
+    assert_eq!(
+        read_message(&buf, Type::String).as_string().unwrap().data,
+        "this is a test"
+    );
+}
+
+#[tokio::test]
+async fn item_string_shape() {
+    let mut buf = Vec::with_capacity(256);
+
+    shape_write_message(Value::String(ValueString { data: "this is a test" }), &mut buf).await;
     assert_eq!(
         read_message(&buf, Type::String).as_string().unwrap().data,
         "this is a test"
