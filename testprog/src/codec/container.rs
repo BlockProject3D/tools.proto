@@ -26,13 +26,13 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::io::Write;
-use bp3d_proto::message::{FromBytesWithHeader, Message, ShapeHeader, WriteToWithHeader};
 use crate::custom_codec::Header;
+use bp3d_proto::message::{FromBytesWithHeader, Message, ShapeHeader, WriteToWithHeader};
+use std::io::Write;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ContainerHeader<'a> {
-    buffer: &'a [u8]
+    buffer: &'a [u8],
 }
 
 impl<'a> ContainerHeader<'a> {
@@ -44,8 +44,13 @@ impl<'a> ContainerHeader<'a> {
 impl<'a> FromBytesWithHeader<'a, Header<&'a [u8]>> for ContainerHeader<'a> {
     type Output = ContainerHeader<'a>;
 
-    fn from_bytes_with_header(slice: &'a [u8], header: &Header<&'a [u8]>) -> bp3d_proto::message::Result<Message<Self::Output>> {
-        let msg = ContainerHeader { buffer: &slice[..header.get_size() as _] };
+    fn from_bytes_with_header(
+        slice: &'a [u8],
+        header: &Header<&'a [u8]>,
+    ) -> bp3d_proto::message::Result<Message<Self::Output>> {
+        let msg = ContainerHeader {
+            buffer: &slice[..header.get_size() as _],
+        };
         Ok(Message::new(msg.buffer.len(), msg))
     }
 }
@@ -53,7 +58,11 @@ impl<'a> FromBytesWithHeader<'a, Header<&'a [u8]>> for ContainerHeader<'a> {
 impl<'a> WriteToWithHeader<Header<&'a [u8]>> for ContainerHeader<'a> {
     type Input<'b> = ContainerHeader<'b>;
 
-    fn write_to_with_header<W: Write>(input: &Self::Input<'_>, header: &Header<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {
+    fn write_to_with_header<W: Write>(
+        input: &Self::Input<'_>,
+        header: &Header<&'a [u8]>,
+        mut out: W,
+    ) -> bp3d_proto::message::Result<()> {
         out.write_all(&input.buffer[..header.get_size() as _])?;
         Ok(())
     }

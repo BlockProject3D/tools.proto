@@ -162,7 +162,7 @@ impl<'a, G: crate::gen::Generator> Generator<'a, G> {
             out_directory,
             generator: PhantomData,
             file_header: None,
-            codec_map: G::get_default_codecs()
+            codec_map: G::get_default_codecs(),
         }
     }
 

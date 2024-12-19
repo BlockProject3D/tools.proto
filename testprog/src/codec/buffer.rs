@@ -26,11 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::io::Write;
-use std::marker::PhantomData;
+use bp3d_proto::message::Result;
 use bp3d_proto::message::{FromBytes, Message, WriteTo};
 use bp3d_proto::util::ToUsize;
-use bp3d_proto::message::Result;
+use std::io::Write;
+use std::marker::PhantomData;
 
 pub struct VarBytes<T>(PhantomData<T>);
 

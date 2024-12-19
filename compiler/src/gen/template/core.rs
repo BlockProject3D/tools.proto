@@ -26,13 +26,13 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::gen::codec::CodecMap;
 use crate::gen::template::options::Options;
 use crate::gen::template::parse_tree::{Component, Fragment, FragmentMode, Token};
 use crate::gen::template::Error;
 use itertools::Itertools;
 use std::borrow::Cow;
 use std::collections::HashMap;
-use crate::gen::codec::CodecMap;
 
 pub struct Template<'fragment, 'variable> {
     fragments: HashMap<String, Fragment<'fragment>>,
@@ -52,7 +52,11 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
         Self::compile_with_options_includes(data, codecs, &Options::default())
     }
 
-    pub fn compile_with_options_includes(data: &'fragment [u8], codecs: &CodecMap<'fragment, '_>, options: &Options) -> Result<Self, Error> {
+    pub fn compile_with_options_includes(
+        data: &'fragment [u8],
+        codecs: &CodecMap<'fragment, '_>,
+        options: &Options,
+    ) -> Result<Self, Error> {
         let mut fragments = HashMap::new();
         let mut frag_stack = Vec::new();
         let lines = data.split(|v| *v == b'\n');

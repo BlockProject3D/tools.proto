@@ -29,6 +29,7 @@
 //! Low-level protocol compiler. This module is responsible to provide the tools needed to
 //! pre-calculate structure offsets, sizes and check for invalid model combinations.
 
+pub mod builder;
 pub mod r#enum;
 mod error;
 mod imports;
@@ -37,7 +38,6 @@ mod protocol;
 pub mod structure;
 pub mod union;
 pub mod util;
-pub mod builder;
 
 pub use error::Error;
 pub use protocol::Protocol;

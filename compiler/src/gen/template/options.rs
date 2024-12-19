@@ -31,7 +31,7 @@ use std::collections::HashSet;
 
 pub struct Options<'a> {
     function_map: FunctionMap<'a>,
-    disabled_fragments: HashSet<&'a str>
+    disabled_fragments: HashSet<&'a str>,
 }
 
 impl Default for Options<'_> {
@@ -44,7 +44,7 @@ impl<'a> Options<'a> {
     pub fn new(function_map: FunctionMap<'a>) -> Self {
         Self {
             function_map,
-            disabled_fragments: HashSet::new()
+            disabled_fragments: HashSet::new(),
         }
     }
 

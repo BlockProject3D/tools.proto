@@ -123,7 +123,9 @@ fn test_headers_shape_write() {
             hdr: Header::new().to_ref(),
             data: ContainerHeader::new(b"test"),
             data2: ContainerHeader::new(b"test"),
-        }.shape_and_write(&mut buf).unwrap();
+        }
+        .shape_and_write(&mut buf)
+        .unwrap();
     }
     {
         let msg = Test2::from_bytes(&buf).unwrap();

@@ -36,7 +36,7 @@ pub struct FieldBuilder {
     header: Option<HeaderField>,
     codec: Option<String>,
     size_info: SizeInfo,
-    description: Option<Description>
+    description: Option<Description>,
 }
 
 impl FieldBuilder {
@@ -50,8 +50,8 @@ impl FieldBuilder {
             codec: None,
             size_info: SizeInfo {
                 is_element_dyn_sized: false,
-                is_dyn_sized: true
-            }
+                is_dyn_sized: true,
+            },
         }
     }
 
@@ -86,7 +86,7 @@ impl FieldBuilder {
     pub fn fixed_size(mut self) -> Self {
         self.size_info = SizeInfo {
             is_dyn_sized: false,
-            is_element_dyn_sized: false
+            is_element_dyn_sized: false,
         };
         self
     }
@@ -94,7 +94,7 @@ impl FieldBuilder {
     pub fn dynamic_size(mut self) -> Self {
         self.size_info = SizeInfo {
             is_dyn_sized: true,
-            is_element_dyn_sized: true
+            is_element_dyn_sized: true,
         };
         self
     }
