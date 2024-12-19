@@ -76,7 +76,7 @@ pub fn gen_message_offsets_decl(
     templates
         .template
         .var("msg_name", &msg.name)
-        .var("generics", RustUtils::get_generics(msg, &type_path_map).to_string())
+        .var("generics", RustUtils::get_generics(msg, &type_path_map).into_string())
         .var("where_clauses", where_clauses);
     let fields = msg
         .fields

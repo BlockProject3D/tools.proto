@@ -35,15 +35,17 @@ pub struct Content<'a> {
     footer: Option<&'a str>,
 }
 
-impl<'a> Content<'a> {
-    pub fn from_iter<D: Display>(mut iter: impl Iterator<Item = D>) -> Self {
+impl<D: Display> FromIterator<D> for Content<'_> {
+    fn from_iter<T: IntoIterator<Item = D>>(iter: T) -> Self {
         Self {
             header: None,
-            body: iter.join("\n"),
+            body: iter.into_iter().join("\n"),
             footer: None,
         }
     }
+}
 
+impl<'a> Content<'a> {
     pub fn try_from_iter<D: Display, E>(iter: impl Iterator<Item = Result<D, E>>) -> Result<Self, E> {
         let data = iter.collect::<Result<Vec<D>, E>>()?;
         Ok(Self {

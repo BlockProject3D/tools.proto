@@ -72,11 +72,11 @@ pub fn gen_message_write_impl(
     params: &RustParams,
 ) -> Result<String, Error> {
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
-    let generics = RustUtils::get_generics_for_write(msg, &type_path_map, Lifetime::Named).to_string();
+    let generics = RustUtils::get_generics_for_write(msg, &type_path_map, Lifetime::Named).into_string();
     let mut code = _gen_message_write_impl(msg, codec_map, &type_path_map, &generics, &generics, "impl")?;
     if msg.fields.iter().any(|v| v.header.is_some()) {
-        let shape_generics = RustUtils::get_generics_for_write(msg, &type_path_map, Lifetime::Anonymous).to_string();
-        let impl_shape_generics = RustUtils::get_generics_for_write(msg, &type_path_map, Lifetime::None).to_string();
+        let shape_generics = RustUtils::get_generics_for_write(msg, &type_path_map, Lifetime::Anonymous).into_string();
+        let impl_shape_generics = RustUtils::get_generics_for_write(msg, &type_path_map, Lifetime::None).into_string();
         code += &_gen_message_write_impl(msg, codec_map, &type_path_map, &shape_generics, &impl_shape_generics, "impl_shape_write")?;
     }
     if params.enable_write_async {

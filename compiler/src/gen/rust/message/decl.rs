@@ -58,7 +58,7 @@ pub fn gen_message_decl(
     templates.template = Template::compile(TEMPLATE).unwrap();
     templates.template.var(
         "generics",
-        RustUtils::get_generics(msg, &type_path_map).to_string_with_defaults(),
+        RustUtils::get_generics(msg, &type_path_map).into_string_with_defaults(),
     );
     code += &generate::<RustUtils, _>(templates, msg, &type_path_map)?;
     Ok(code)

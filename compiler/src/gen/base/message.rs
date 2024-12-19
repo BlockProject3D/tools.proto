@@ -49,7 +49,7 @@ pub struct Templates<'fragment, 'variable> {
 
 impl<'fragment, 'variable> Templates<'fragment, 'variable> {
     pub fn get(&self, codec: &str) -> Result<&Template<'fragment, 'variable>, Error> {
-        Ok(self.codec_map.get(codec).ok_or_else(|| Error::CodecNotFound(codec.into()))?)
+        self.codec_map.get(codec).ok_or_else(|| Error::CodecNotFound(codec.into()))
     }
 }
 

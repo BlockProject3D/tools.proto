@@ -34,7 +34,7 @@ pub struct Options<'a> {
     disabled_fragments: HashSet<&'a str>
 }
 
-impl<'a> Default for Options<'a> {
+impl Default for Options<'_> {
     fn default() -> Self {
         Self::new(FunctionMap::default())
     }

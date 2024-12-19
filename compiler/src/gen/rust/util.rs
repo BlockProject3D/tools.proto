@@ -100,7 +100,7 @@ fn _to_string<'a>(mut generics: impl Iterator<Item=Cow<'a, str>>, lifetime: Life
 }
 
 impl<'a, T: Iterator<Item = Generic<'a>>> Generics<T> {
-    pub fn to_string(self) -> Cow<'a, str> {
+    pub fn into_string(self) -> Cow<'a, str> {
         let generics = self.data.map(|v| match &v.default {
             None => v.name,
             Some(_) => v.name,
@@ -108,7 +108,7 @@ impl<'a, T: Iterator<Item = Generic<'a>>> Generics<T> {
         _to_string(generics, self.lifetime)
     }
 
-    pub fn to_string_with_defaults(self) -> Cow<'a, str> {
+    pub fn into_string_with_defaults(self) -> Cow<'a, str> {
         let generics = self.data.map(|v| match &v.default {
             None => v.name,
             Some(v1) => format!("{}={}", v.name, v1).into(),
