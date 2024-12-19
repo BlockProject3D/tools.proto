@@ -66,11 +66,11 @@ impl Utilities for RustUtils {
     }
 }
 
-fn get_generics(u: &Union) -> &str {
+fn get_generics(u: &Union) -> (&str, &str) {
     if u.cases.iter().any(|v| v.item_type.is_some()) {
-        "<'a>"
+        ("<'a>", "<'_>")
     } else {
-        ""
+        ("", "")
     }
 }
 
@@ -96,7 +96,8 @@ pub fn gen_union_decl(u: &Union, type_path_map: &TypePathMap, params: &RustParam
         hooks.hook("decl_unique", "from_value");
     }
     let mut template = Template::compile_with_options(TEMPLATE, &options).unwrap();
-    template.var("generics", get_generics(u));
+    let (simple, elided) = get_generics(u);
+    template.var("generics", simple).var("elided_generics", elided);
     generate::<RustUtils, _>(
         template,
         u,

@@ -86,7 +86,7 @@ impl<T: AsMut<[u8]>> bp3d_proto::message::ShapeHeader<{discriminant_type}<T>> fo
 #fragment pop
 
 #fragment push write_to
-impl<'a> bp3d_proto::message::WriteToWithHeader<{discriminant_type}<&[u8]>> for {union_name}{generics} {{
+impl bp3d_proto::message::WriteToWithHeader<{discriminant_type}<&[u8]>> for {union_name}{elided_generics} {{
     type Input<'b> = Self;
 {fragment}
 #fragment push content

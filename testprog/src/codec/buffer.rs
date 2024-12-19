@@ -51,7 +51,7 @@ impl<'a, T: WriteTo<Input<'a>: ToUsize>> WriteTo for VarBytes<T> {
     fn write_to<W: Write>(input: &Self::Input<'_>, mut out: W) -> Result<()> {
         let len = input.len();
         T::write_to(&T::Input::from_usize(len), &mut out)?;
-        out.write(&input)?;
+        out.write_all(&input)?;
         Ok(())
     }
 }
