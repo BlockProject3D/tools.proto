@@ -27,8 +27,6 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::Protocol;
-use bp3d_util::index_map::IndexMap;
-use std::fmt::{Debug, Formatter};
 
 pub trait ImportSolver {
     fn get_full_type_path(&self, protocol: &Protocol, type_name: &str) -> Option<String>;
@@ -37,53 +35,5 @@ pub trait ImportSolver {
 impl ImportSolver for () {
     fn get_full_type_path(&self, _: &Protocol, _: &str) -> Option<String> {
         None
-    }
-}
-
-pub struct ProtocolStore<'a, T> {
-    map: IndexMap<Protocol>,
-    solver: &'a T,
-}
-
-impl<'a, T: ImportSolver> ProtocolStore<'a, T> {
-    pub fn new(solver: &'a T) -> Self {
-        Self {
-            map: IndexMap::new(),
-            solver,
-        }
-    }
-
-    pub fn len(&self) -> usize {
-        self.map.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.map.is_empty()
-    }
-
-    pub fn insert(&mut self, protocol: Protocol) {
-        self.map.insert(protocol)
-    }
-
-    pub fn get(&self, full_name: &str) -> Option<&Protocol> {
-        self.map.get(full_name)
-    }
-
-    pub fn get_full_type_path(&self, protocol: &Protocol, type_name: &str) -> Option<String> {
-        self.solver.get_full_type_path(protocol, type_name)
-    }
-
-    pub fn iter(&self) -> impl Iterator<Item = &Protocol> {
-        self.map.iter()
-    }
-}
-
-impl<T> Debug for ProtocolStore<'_, T> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ProtocolStore { solver: ")?;
-        f.write_str(std::any::type_name::<T>())?;
-        f.write_str(", map: ")?;
-        self.map.fmt(f)?;
-        f.write_str(" }")
     }
 }

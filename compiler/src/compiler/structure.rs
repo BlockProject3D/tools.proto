@@ -28,7 +28,7 @@
 
 use crate::compiler::error::Error;
 use crate::compiler::r#enum::Enum;
-use crate::compiler::util::store::name_index;
+use crate::compiler::util::objects::name_index;
 use crate::compiler::util::try2;
 use crate::compiler::util::types::Name;
 use crate::compiler::Protocol;

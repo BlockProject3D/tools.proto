@@ -26,9 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::api::core::loader::Options;
 use crate::codec_map_initializer;
-use crate::compiler::util::imports::ProtocolStore;
 use crate::compiler::Protocol;
+use crate::compiler::util::protocols::ProtocolStore;
 use crate::gen::base::Error;
 use crate::gen::codec::CodecMap;
 use crate::gen::file::{Content, File, FileType};
@@ -49,7 +50,7 @@ pub struct GeneratorSwift;
 
 impl Generator for GeneratorSwift {
     type Error = Error;
-    type Params<'a> = ProtocolStore<'a, SwiftImportSolver>;
+    type Params<'a> = ProtocolStore<'a, SwiftImportSolver, Options<'a>>;
 
     fn get_default_codecs<'fragment, 'variable>() -> CodecMap<'fragment, 'variable> {
         let mut codecs = CodecMap::new(codec_map_initializer! {
@@ -69,7 +70,7 @@ impl Generator for GeneratorSwift {
     fn generate(
         proto: &Protocol,
         codec_map: &CodecMap,
-        params: &ProtocolStore<SwiftImportSolver>,
+        params: &ProtocolStore<SwiftImportSolver, Options>,
     ) -> Result<Vec<File>, Self::Error> {
         let imports = gen_imports(params);
         let decl_structures = proto.structs.iter().map(|v| gen_structure_decl(proto, v));

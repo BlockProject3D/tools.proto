@@ -28,23 +28,24 @@
 
 use crate::api::config::model::Config;
 use crate::api::core::generator::{Context, Generator, Params};
-use crate::api::core::loader::Loader;
+use crate::api::core::loader::{Loader, Options};
 use crate::api::core::Error;
-use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
+use crate::compiler::util::imports::ImportSolver;
 use bp3d_debug::trace;
 use serde::Deserialize;
 use std::borrow::Cow;
+use crate::compiler::util::protocols::ProtocolStore;
 
 pub fn parse<'a, T: Deserialize<'a>>(data: &'a str) -> Result<Config<'a, T>, toml::de::Error> {
     toml::from_str(data)
 }
 
-pub fn compile<'a, T, I: ImportSolver>(config: &Config<T>, solver: &'a I) -> Result<ProtocolStore<'a, I>, Error> {
+pub fn compile<'a, 'b, T, I: ImportSolver>(config: &'b Config<T>, solver: &'a I) -> Result<ProtocolStore<'a, I, Options<'b>>, Error> {
     let mut loader = Loader::default();
-    loader.load_from_folder(config.package.path, config.package.name)?;
+    loader.load_from_folder(config.package.path, &Options::from_package(config.package.name))?;
     if let Some(deps) = &config.dependency {
         for dep in deps {
-            loader.load_from_file(dep.path, dep.package)?;
+            loader.load_from_file(dep.path, Options::from_package(dep.package).exclude_from_generation())?;
         }
     }
     trace!("Excluded protocols: {:?}", config.package.exclude);

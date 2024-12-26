@@ -32,7 +32,7 @@ mod builder;
 use crate::args::{Args, Generator};
 use crate::builder::Builder;
 use bp3d_protoc::api::core::generator::Context;
-use bp3d_protoc::api::core::loader::Loader;
+use bp3d_protoc::api::core::loader::{Loader, Options};
 use bp3d_protoc::gen::{GeneratorRust, GeneratorSwift, RustImportSolver, RustParams, SwiftImportSolver};
 use bp3d_util::result::ResultExt;
 use clap::Parser;
@@ -57,10 +57,10 @@ fn main() {
     let args = Args::parse();
     let mut loader = Loader::default();
     for (import_file, import_path) in args.iter_imports() {
-        loader.load_from_file(import_file, import_path).expect_exit("failed to import protocol", 1);
+        loader.load_from_file(import_file, &Options::from_package(import_path)).expect_exit("failed to import protocol", 1);
     }
     for input in &args.inputs {
-        loader.load_from_file(input, "").expect_exit("failed to load protocol", 1);
+        loader.load_from_file(input, &Options::default()).expect_exit("failed to load protocol", 1);
     }
     match args.generator {
         Generator::Rust => build_rust(loader, &args),

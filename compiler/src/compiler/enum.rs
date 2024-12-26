@@ -27,7 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::compiler::structure::FixedFieldType;
-use crate::compiler::util::store::name_index;
+use crate::compiler::util::objects::name_index;
 use crate::compiler::Error;
 use crate::model::protocol::Description;
 use std::collections::HashMap;

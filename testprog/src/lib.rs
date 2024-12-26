@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 pub mod codec;
+pub mod external;
 
 include!(env!("BP3D_PROTOC_TEST"));
 include!(env!("BP3D_PROTOC_STRUCTS"));

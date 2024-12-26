@@ -26,14 +26,15 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::compiler::util::imports::ProtocolStore;
+use crate::compiler::util::protocols::ProtocolStore;
 use crate::gen::template::Template;
 use crate::gen::SwiftImportSolver;
 use itertools::Itertools;
+use crate::api::core::loader::Options;
 
 const TEMPLATE: &[u8] = include_bytes!("./imports.template");
 
-pub fn gen_imports(solver: &ProtocolStore<SwiftImportSolver>) -> String {
+pub fn gen_imports(solver: &ProtocolStore<SwiftImportSolver, Options>) -> String {
     let mut template = Template::compile(TEMPLATE).unwrap();
     let import_list = solver
         .iter()

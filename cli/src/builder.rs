@@ -28,19 +28,20 @@
 
 use crate::Args;
 use bp3d_protoc::api::core::generator::{Generator, Params};
-use bp3d_protoc::api::core::loader::Loader;
-use bp3d_protoc::compiler::util::imports::{ImportSolver, ProtocolStore};
+use bp3d_protoc::api::core::loader::{Loader, Options};
+use bp3d_protoc::compiler::util::imports::ImportSolver;
 use bp3d_util::result::ResultExt;
 use std::path::Path;
+use bp3d_protoc::compiler::util::protocols::ProtocolStore;
 
 pub struct Builder<'a, I, G> {
-    pub protocols: ProtocolStore<'a, I>,
+    pub protocols: ProtocolStore<'a, I, Options<'a>>,
     pub generator: Generator<'a, G>,
     pub params: Params,
 }
 
 impl<'a, I: ImportSolver, G: bp3d_protoc::gen::Generator> Builder<'a, I, G> {
-    pub fn new(loader: Loader, args: &'a Args, solver: &'a I, generator: G) -> Self {
+    pub fn new(loader: Loader<'a>, args: &'a Args, solver: &'a I, generator: G) -> Self {
         let protocols = loader.compile(solver).expect_exit("failed to compile protocols", 1);
         let params = if let Some(features) = &args.features {
             let mut params = Params::new();

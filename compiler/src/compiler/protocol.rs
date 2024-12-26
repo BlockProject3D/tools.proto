@@ -32,8 +32,8 @@ use crate::compiler::message::{FieldType, Message};
 use crate::compiler::r#enum::Enum;
 use crate::compiler::structure::Structure;
 use crate::compiler::union::Union;
-use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
-use crate::compiler::util::store::{name_index, ObjectStore};
+use crate::compiler::util::imports::ImportSolver;
+use crate::compiler::util::objects::{name_index, ObjectStore};
 use crate::compiler::util::types::{Name, TypePathMap};
 use crate::model::message::MessageFieldValue;
 use crate::model::protocol::{Description, Endianness};
@@ -42,6 +42,7 @@ use bp3d_debug::{info, trace};
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::rc::Rc;
+use crate::compiler::util::protocols::ProtocolStore;
 
 name_index!(Typedef => name);
 
@@ -87,9 +88,9 @@ impl Protocol {
         self.messages.iter().flat_map(|v| v.fields.iter().filter_map(|v| v.codec.as_deref()))
     }
 
-    pub fn from_model<T: ImportSolver>(
+    pub fn from_model<T: ImportSolver, U>(
         mut value: crate::model::Protocol,
-        protocols: &ProtocolStore<T>,
+        protocols: &ProtocolStore<T, U>,
         package: &str,
     ) -> Result<Self, Error> {
         let full_name = if package.is_empty() {
@@ -97,6 +98,7 @@ impl Protocol {
         } else {
             format!("{}::{}", package, value.name)
         };
+        trace!("Compiling protocol {}", full_name);
         let mut proto = Protocol {
             full_name,
             description: value.description,
@@ -112,7 +114,7 @@ impl Protocol {
         if let Some(mut imports) = value.imports {
             let mut solved_imports = Vec::new();
             while let Some(v) = imports.pop() {
-                let protocol_path = if package.is_empty() {
+                let protocol_path = if package.is_empty() || v.protocol.contains("::") {
                     Cow::Borrowed(&v.protocol)
                 } else {
                     Cow::Owned(format!("{}::{}", package, v.protocol))

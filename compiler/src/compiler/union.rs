@@ -28,7 +28,7 @@
 
 use crate::compiler::message::{Referenced, SizeInfo};
 use crate::compiler::structure::{Field, FieldType, FieldView, FixedField, Structure};
-use crate::compiler::util::store::name_index;
+use crate::compiler::util::objects::name_index;
 use crate::compiler::{Error, Protocol};
 use crate::model::protocol::Description;
 use std::rc::Rc;

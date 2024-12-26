@@ -76,11 +76,11 @@ impl<'a> TemplateLoader<'a> {
         Err(Error::NotFound(file_name))
     }
 
-    pub fn compile<'fragment>(
+    pub fn compile<'fragment, 'variable>(
         &'fragment self,
         name: &str,
-        codecs: &CodecMap<'fragment, '_>,
-    ) -> Result<Template<'fragment, '_>, Error> {
+        codecs: &CodecMap<'fragment, 'variable>,
+    ) -> Result<Template<'fragment, 'variable>, Error> {
         let template_code = self.templates.get(name).ok_or_else(|| Error::NotFound(name.into()))?;
         Template::compile_with_includes(template_code.as_bytes(), codecs).map_err(Error::Compiler)
     }

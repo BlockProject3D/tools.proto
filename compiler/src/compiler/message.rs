@@ -30,7 +30,7 @@ use crate::compiler::builder::FieldBuilder;
 use crate::compiler::error::Error;
 use crate::compiler::structure::{FixedFieldType, Structure};
 use crate::compiler::union::Union;
-use crate::compiler::util::store::name_index;
+use crate::compiler::util::objects::name_index;
 use crate::compiler::util::types::{Name, PtrKey};
 use crate::compiler::Protocol;
 use crate::model::message::MessageFieldValue;

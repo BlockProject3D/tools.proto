@@ -28,7 +28,7 @@
 
 use crate::api::core::Error;
 use crate::compiler;
-use crate::compiler::util::imports::{ImportSolver, ProtocolStore};
+use crate::compiler::util::imports::ImportSolver;
 use crate::gen::codec::CodecMap;
 use crate::gen::file::FileType;
 use bp3d_debug::trace;
@@ -36,14 +36,16 @@ use bp3d_util::index_map::IndexMap;
 use bp3d_util::path::PathExt;
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
+use crate::api::core::loader::Options;
+use crate::compiler::util::protocols::ProtocolStore;
 
 pub struct Context<'a, I: ImportSolver> {
     items: IndexMap<Item<'a>>,
-    pub protocols: &'a ProtocolStore<'a, I>,
+    pub protocols: &'a ProtocolStore<'a, I, Options<'a>>,
 }
 
 impl<'a, I: ImportSolver> Context<'a, I> {
-    pub fn new(protocols: &'a ProtocolStore<'a, I>) -> Self {
+    pub fn new(protocols: &'a ProtocolStore<'a, I, Options<'a>>) -> Self {
         Self {
             items: IndexMap::with_capacity(protocols.len()),
             protocols,
@@ -58,11 +60,13 @@ impl<'a, I: ImportSolver> Context<'a, I> {
         generator_params: &G::Params<'_>,
     ) -> Result<(), Error> {
         if self.get(full_name.as_ref()).is_none() {
-            let protocol = self
+            let entry = self
                 .protocols
-                .get(full_name.as_ref())
+                .entry(full_name.as_ref())
                 .ok_or_else(|| Error::ProtocolNotFound(full_name.as_ref().into()))?;
-            self.items.insert(generator.generate(protocol, params, generator_params)?);
+            if !entry.userdata.is_excluded_from_generation() {
+                self.items.insert(generator.generate(&entry.model, params, generator_params)?);
+            }
         }
         Ok(())
     }
@@ -73,9 +77,9 @@ impl<'a, I: ImportSolver> Context<'a, I> {
         params: &Params,
         generator_params: &G::Params<'_>,
     ) -> Result<(), Error> {
-        for protocol in self.protocols.iter() {
-            if self.get(&protocol.full_name).is_none() {
-                self.items.insert(generator.generate(protocol, params, generator_params)?);
+        for entry in self.protocols.entries() {
+            if self.get(&entry.model.full_name).is_none() && !entry.userdata.is_excluded_from_generation() {
+                self.items.insert(generator.generate(&entry.model, params, generator_params)?);
             }
         }
         Ok(())

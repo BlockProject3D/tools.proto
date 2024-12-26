@@ -27,8 +27,9 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 pub mod imports;
-pub mod store;
+pub mod objects;
 pub mod types;
+pub mod protocols;
 
 macro_rules! try2 {
     ($value: expr => $err: expr) => {
