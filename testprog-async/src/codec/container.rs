@@ -70,7 +70,11 @@ impl<'a> WriteToWithHeader<Header<&'a [u8]>> for ContainerHeader<'a> {
 }
 
 impl<'a> WriteToWithHeaderAsync<Header<&'a [u8]>> for ContainerHeader<'a> {
-    async fn write_to_with_header_async<W: AsyncWriteExt + Unpin>(input: &Self::Input<'_>, header: &Header<&'a [u8]>, mut out: W) -> bp3d_proto::message::Result<()> {
+    async fn write_to_with_header_async<W: AsyncWriteExt + Unpin>(
+        input: &Self::Input<'_>,
+        header: &Header<&'a [u8]>,
+        mut out: W,
+    ) -> bp3d_proto::message::Result<()> {
         out.write_all(&input.buffer[..header.get_size() as _]).await?;
         Ok(())
     }

@@ -26,15 +26,15 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::fmt::{Debug, Formatter};
-use bp3d_util::index_map::{Index, IndexMap};
-use crate::compiler::Protocol;
 use crate::compiler::util::imports::ImportSolver;
+use crate::compiler::Protocol;
+use bp3d_util::index_map::{Index, IndexMap};
+use std::fmt::{Debug, Formatter};
 
 #[derive(Debug)]
-pub struct Entry<M, U=()> {
+pub struct Entry<M, U = ()> {
     pub model: M,
-    pub userdata: U
+    pub userdata: U,
 }
 
 impl<U> Index for Entry<Protocol, U> {

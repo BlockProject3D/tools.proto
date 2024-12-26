@@ -28,24 +28,24 @@
 
 use crate::api::core::Error;
 use crate::compiler::util::imports::ImportSolver;
+use crate::compiler::util::protocols::{Entry, ProtocolStore};
+use crate::model::protocol::Import;
 use crate::{compiler, model};
 use bp3d_debug::{error, trace};
 use std::borrow::Cow;
 use std::path::Path;
-use crate::compiler::util::protocols::{Entry, ProtocolStore};
-use crate::model::protocol::Import;
 
 #[derive(Debug, Clone)]
 pub struct Options<'a> {
     package: &'a str,
-    exclude_from_generation: bool
+    exclude_from_generation: bool,
 }
 
 impl Default for Options<'_> {
     fn default() -> Self {
         Self {
             package: "",
-            exclude_from_generation: false
+            exclude_from_generation: false,
         }
     }
 }
@@ -54,7 +54,7 @@ impl<'a> Options<'a> {
     pub fn from_package(package: &'a str) -> Self {
         Self {
             package,
-            exclude_from_generation: false
+            exclude_from_generation: false,
         }
     }
 
@@ -108,9 +108,18 @@ impl<'a> Loader<'a> {
         trace!({content=content.as_ref()} {?options}, "Loading string");
         let model: model::Protocol = json5::from_str(content.as_ref()).map_err(Error::Model)?;
         if model.imports.as_ref().map(|v| v.len()).unwrap_or_default() > 0 {
-            self.models.insert(0, Entry { userdata: options.clone(), model });
+            self.models.insert(
+                0,
+                Entry {
+                    userdata: options.clone(),
+                    model,
+                },
+            );
         } else {
-            self.models.push(Entry { userdata: options.clone(), model });
+            self.models.push(Entry {
+                userdata: options.clone(),
+                model,
+            });
         }
         Ok(())
     }
@@ -134,7 +143,8 @@ impl<'a> Loader<'a> {
                 trace!("Searching for: {}", full_name);
                 protocols.get(&full_name).is_none()
             };
-            if entry.model
+            if entry
+                .model
                 .imports
                 .as_ref()
                 .map(|v| v.iter().any(|v| check_not_exists(entry.userdata.package, v)))
@@ -144,10 +154,11 @@ impl<'a> Loader<'a> {
                 iterations -= 1;
                 continue;
             }
-            let proto = compiler::Protocol::from_model(entry.model, &protocols, entry.userdata.package).map_err(Error::Compiler)?;
+            let proto = compiler::Protocol::from_model(entry.model, &protocols, entry.userdata.package)
+                .map_err(Error::Compiler)?;
             protocols.insert(Entry {
                 model: proto,
-                userdata: entry.userdata
+                userdata: entry.userdata,
             });
         }
         if iterations == 0 && !self.models.is_empty() {

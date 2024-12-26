@@ -28,8 +28,8 @@
 
 pub mod imports;
 pub mod objects;
-pub mod types;
 pub mod protocols;
+pub mod types;
 
 macro_rules! try2 {
     ($value: expr => $err: expr) => {

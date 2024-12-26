@@ -26,13 +26,13 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use tokio::io::AsyncWriteExt;
 use bp3d_proto::message::{FromBytes, WriteSelfAsync, WriteToAsync};
 use bp3d_proto::util::Wrap;
 use testprog_async::enums::{Header, Type};
 use testprog_async::lists::{Dataset, DatasetRuns, SpanRun, SpanRunVars, Times, SIZE_TIMES};
 use testprog_async::unions::{Item, Value};
 use testprog_async::values::{ValueInt16, ValueString, SIZE_VALUE_U_INT64};
+use tokio::io::AsyncWriteExt;
 
 fn write_span_run<F: FnOnce(SpanRun) -> bp3d_proto::message::Result<()>>(f: F) {
     let data: Vec<u8> = Vec::new();
@@ -46,13 +46,13 @@ fn write_span_run<F: FnOnce(SpanRun) -> bp3d_proto::message::Result<()>>(f: F) {
         name: "test",
         value: Value::String(ValueString { data: "this is a test" }),
     })
-        .unwrap();
+    .unwrap();
     list.write_item(&Item {
         header: header.set_type(Type::Int16).to_ref(),
         name: "test1",
         value: Value::Int16(ValueInt16::wrap(&mut value).set_data(-4242).to_ref()),
     })
-        .unwrap();
+    .unwrap();
     let msg = SpanRun {
         times: times.to_ref(),
         vars: list.to_ref(),
@@ -72,13 +72,13 @@ async fn write_span_run_async(out: impl AsyncWriteExt + Unpin) {
         name: "test",
         value: Value::String(ValueString { data: "this is a test" }),
     })
-        .unwrap();
+    .unwrap();
     list.write_item(&Item {
         header: header.set_type(Type::Int16).to_ref(),
         name: "test1",
         value: Value::Int16(ValueInt16::wrap(&mut value).set_data(-4242).to_ref()),
     })
-        .unwrap();
+    .unwrap();
     let msg = SpanRun {
         times: times.to_ref(),
         vars: list.to_ref(),

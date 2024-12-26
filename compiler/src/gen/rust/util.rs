@@ -62,7 +62,7 @@ pub struct Generic<'a> {
 pub enum Lifetime {
     None,
     Anonymous,
-    Named
+    Named,
 }
 
 pub struct Generics<T> {
@@ -72,14 +72,11 @@ pub struct Generics<T> {
 
 impl<T> Generics<T> {
     pub fn new(lifetime: Lifetime, data: T) -> Self {
-        Self {
-            lifetime,
-            data
-        }
+        Self { lifetime, data }
     }
 }
 
-fn _to_string<'a>(mut generics: impl Iterator<Item=Cow<'a, str>>, lifetime: Lifetime) -> Cow<'a, str>{
+fn _to_string<'a>(mut generics: impl Iterator<Item = Cow<'a, str>>, lifetime: Lifetime) -> Cow<'a, str> {
     if let Some(value) = generics.next() {
         let str = generics.join(", ");
         match (str.is_empty(), lifetime) {
@@ -120,7 +117,11 @@ impl<'a, T: Iterator<Item = Generic<'a>>> Generics<T> {
 pub struct RustUtils;
 
 impl RustUtils {
-    fn _gen_generics<'a, T: TypeMapper>(msg: &'a Message, type_path_map: &'a TypePathMapper<T>, lifetime: Lifetime) -> Generics<impl Iterator<Item = Generic<'a>>> {
+    fn _gen_generics<'a, T: TypeMapper>(
+        msg: &'a Message,
+        type_path_map: &'a TypePathMapper<T>,
+        lifetime: Lifetime,
+    ) -> Generics<impl Iterator<Item = Generic<'a>>> {
         let unions = msg.fields.iter().filter_map(|v| match &v.ty {
             FieldType::Union(u) => Some(Generic {
                 name: format!("T{}", v.name).into(),
@@ -136,9 +137,7 @@ impl RustUtils {
         type_path_map: &'a TypePathMapper<T>,
         lifetime: Lifetime,
     ) -> Generics<impl Iterator<Item = Generic<'a>>> {
-        let has_lifetime = msg.fields.iter().any(|v| {
-            matches!(v.ty, FieldType::Union(_))
-        });
+        let has_lifetime = msg.fields.iter().any(|v| matches!(v.ty, FieldType::Union(_)));
         Self::_gen_generics(msg, type_path_map, if has_lifetime { lifetime } else { Lifetime::None })
     }
 
@@ -159,7 +158,11 @@ impl RustUtils {
                     | FieldType::Payload
             )
         });
-        Self::_gen_generics(msg, type_path_map, if has_lifetime { Lifetime::Named } else { Lifetime::None })
+        Self::_gen_generics(
+            msg,
+            type_path_map,
+            if has_lifetime { Lifetime::Named } else { Lifetime::None },
+        )
     }
 }
 

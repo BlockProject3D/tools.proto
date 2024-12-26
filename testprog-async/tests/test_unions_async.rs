@@ -64,7 +64,10 @@ async fn shape_write_message<'a, W: AsyncWriteExt + Unpin>(value: Value<'a>, out
         header: Header::new().to_ref(),
         name: "test",
         value,
-    }.shape_and_write_async(out).await.unwrap();
+    }
+    .shape_and_write_async(out)
+    .await
+    .unwrap();
 }
 
 fn read_message(slice: &[u8], ty: Type) -> Value {
@@ -204,14 +207,16 @@ async fn item_float_shape() {
     shape_write_message(
         Value::Float(ValueFloat::wrap(&mut value_buffer).set_data(42.42).to_ref()),
         &mut buf,
-    ).await;
+    )
+    .await;
     assert_eq!(read_message(&buf, Type::Float).as_float().unwrap().get_data(), 42.42);
 
     buf.clear();
     shape_write_message(
         Value::Double(ValueDouble::wrap(&mut value_buffer).set_data(42.4242).to_ref()),
         &mut buf,
-    ).await;
+    )
+    .await;
     assert_eq!(
         read_message(&buf, Type::Double).as_double().unwrap().get_data(),
         42.4242

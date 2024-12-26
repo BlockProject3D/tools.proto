@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto::message::{ShapeAndWriteAsync, WriteSelf};
 use bp3d_proto::message::{FromBytes, WriteSelfAsync};
+use bp3d_proto::message::{ShapeAndWriteAsync, WriteSelf};
 use testprog_async::codec::ContainerHeader;
 use testprog_async::custom_codec::{Header, Test, Test2};
 
@@ -121,7 +121,10 @@ async fn test_headers_shape_write() {
             hdr: Header::new().to_ref(),
             data: ContainerHeader::new(b"test"),
             data2: ContainerHeader::new(b"test"),
-        }.shape_and_write_async(&mut buf).await.unwrap();
+        }
+        .shape_and_write_async(&mut buf)
+        .await
+        .unwrap();
     }
     {
         let msg = Test2::from_bytes(&buf).unwrap();

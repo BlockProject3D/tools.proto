@@ -28,8 +28,8 @@
 
 use crate::api::core::loader::Options;
 use crate::codec_map_initializer;
-use crate::compiler::Protocol;
 use crate::compiler::util::protocols::ProtocolStore;
+use crate::compiler::Protocol;
 use crate::gen::base::Error;
 use crate::gen::codec::CodecMap;
 use crate::gen::file::{Content, File, FileType};

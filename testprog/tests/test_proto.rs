@@ -36,8 +36,10 @@ fn basic() {
     Test {
         s1: "test",
         s2: Some("test2"),
-        p1: None
-    }.write_self(&mut v).unwrap();
+        p1: None,
+    }
+    .write_self(&mut v)
+    .unwrap();
     let msg = Test::from_bytes(v.as_slice()).unwrap().into_inner();
     assert_eq!(msg.s1, "test");
     assert_eq!(msg.s2.unwrap(), "test2");
@@ -53,9 +55,11 @@ fn basic2() {
         p1: Some(Test1 {
             s1: "test3",
             p1: 4242,
-            p3: 42
-        })
-    }.write_self(&mut v).unwrap();
+            p3: 42,
+        }),
+    }
+    .write_self(&mut v)
+    .unwrap();
     let msg = Test::from_bytes(v.as_slice()).unwrap().into_inner();
     assert_eq!(msg.s1, "test");
     assert_eq!(msg.s2.unwrap(), "test2");

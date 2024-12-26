@@ -34,6 +34,7 @@ use crate::compiler::structure::Structure;
 use crate::compiler::union::Union;
 use crate::compiler::util::imports::ImportSolver;
 use crate::compiler::util::objects::{name_index, ObjectStore};
+use crate::compiler::util::protocols::ProtocolStore;
 use crate::compiler::util::types::{Name, TypePathMap};
 use crate::model::message::MessageFieldValue;
 use crate::model::protocol::{Description, Endianness};
@@ -42,7 +43,6 @@ use bp3d_debug::{info, trace};
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::rc::Rc;
-use crate::compiler::util::protocols::ProtocolStore;
 
 name_index!(Typedef => name);
 

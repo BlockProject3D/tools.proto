@@ -57,7 +57,9 @@ fn main() {
     let args = Args::parse();
     let mut loader = Loader::default();
     for (import_file, import_path) in args.iter_imports() {
-        loader.load_from_file(import_file, &Options::from_package(import_path)).expect_exit("failed to import protocol", 1);
+        loader
+            .load_from_file(import_file, &Options::from_package(import_path))
+            .expect_exit("failed to import protocol", 1);
     }
     for input in &args.inputs {
         loader.load_from_file(input, &Options::default()).expect_exit("failed to load protocol", 1);

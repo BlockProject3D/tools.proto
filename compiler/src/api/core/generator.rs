@@ -26,9 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::api::core::loader::Options;
 use crate::api::core::Error;
 use crate::compiler;
 use crate::compiler::util::imports::ImportSolver;
+use crate::compiler::util::protocols::ProtocolStore;
 use crate::gen::codec::CodecMap;
 use crate::gen::file::FileType;
 use bp3d_debug::trace;
@@ -36,8 +38,6 @@ use bp3d_util::index_map::IndexMap;
 use bp3d_util::path::PathExt;
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
-use crate::api::core::loader::Options;
-use crate::compiler::util::protocols::ProtocolStore;
 
 pub struct Context<'a, I: ImportSolver> {
     items: IndexMap<Item<'a>>,
