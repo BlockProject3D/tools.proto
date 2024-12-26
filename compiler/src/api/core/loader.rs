@@ -35,19 +35,10 @@ use bp3d_debug::{error, trace};
 use std::borrow::Cow;
 use std::path::Path;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Options<'a> {
     package: &'a str,
     exclude_from_generation: bool,
-}
-
-impl Default for Options<'_> {
-    fn default() -> Self {
-        Self {
-            package: "",
-            exclude_from_generation: false,
-        }
-    }
 }
 
 impl<'a> Options<'a> {
