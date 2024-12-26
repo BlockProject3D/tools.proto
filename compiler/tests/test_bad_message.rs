@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::api::core::loader::Loader;
+use bp3d_protoc::api::core::loader::{Loader, Options};
 use bp3d_protoc::api::core::Error;
 use bp3d_protoc::gen::RustImportSolver;
 
@@ -109,7 +109,7 @@ const SIZED_LIST_NO_SIZE: &str = "
 #[test]
 fn value_item_type_some() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(VALUE_ITEM_TYPE_SOME, "").unwrap();
+    loader.load_from_string(VALUE_ITEM_TYPE_SOME, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(
         err,
@@ -120,7 +120,7 @@ fn value_item_type_some() {
 #[test]
 fn value_item_type_none() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(VALUE_ITEM_TYPE_NONE, "").unwrap();
+    loader.load_from_string(VALUE_ITEM_TYPE_NONE, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(
         err,
@@ -131,7 +131,7 @@ fn value_item_type_none() {
 #[test]
 fn list_no_len() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(LIST_NO_LEN, "").unwrap();
+    loader.load_from_string(LIST_NO_LEN, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::ZeroArray)));
 }
@@ -139,7 +139,7 @@ fn list_no_len() {
 #[test]
 fn string_no_len() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(STRING_NO_LEN, "").unwrap();
+    loader.load_from_string(STRING_NO_LEN, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::ZeroArray)));
 }
@@ -147,7 +147,7 @@ fn string_no_len() {
 #[test]
 fn sized_list_no_size() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(SIZED_LIST_NO_SIZE, "").unwrap();
+    loader.load_from_string(SIZED_LIST_NO_SIZE, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(err, Error::Compiler(bp3d_protoc::compiler::Error::ZeroArray)));
 }

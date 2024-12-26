@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::api::core::loader::Loader;
+use bp3d_protoc::api::core::loader::{Loader, Options};
 use bp3d_protoc::api::core::Error;
 use bp3d_protoc::gen::RustImportSolver;
 
@@ -39,7 +39,7 @@ const TEST_UNION_BROKEN_REF: &str = include_str!("test_union_broken_ref.json5");
 #[test]
 fn bad_discriminant() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(TEST_UNION_BAD_DISCRIMINANT, "").unwrap();
+    loader.load_from_string(TEST_UNION_BAD_DISCRIMINANT, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(
         err,
@@ -50,7 +50,7 @@ fn bad_discriminant() {
 #[test]
 fn bad_discriminant_2() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(TEST_UNION_BAD_DISCRIMINANT_2, "").unwrap();
+    loader.load_from_string(TEST_UNION_BAD_DISCRIMINANT_2, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(
         err,
@@ -61,7 +61,7 @@ fn bad_discriminant_2() {
 #[test]
 fn undefined_discriminant() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(TEST_UNION_UNDEFINED_DISCRIMINANT, "").unwrap();
+    loader.load_from_string(TEST_UNION_UNDEFINED_DISCRIMINANT, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     match err {
         Error::Compiler(v) => match v {
@@ -79,7 +79,7 @@ fn undefined_discriminant() {
 #[test]
 fn no_header() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(TEST_UNION_NO_HEADER, "").unwrap();
+    loader.load_from_string(TEST_UNION_NO_HEADER, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(
         err,
@@ -90,7 +90,7 @@ fn no_header() {
 #[test]
 fn broken_ref() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(TEST_UNION_BROKEN_REF, "").unwrap();
+    loader.load_from_string(TEST_UNION_BROKEN_REF, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     match err {
         Error::Compiler(v) => match v {

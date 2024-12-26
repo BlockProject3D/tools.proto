@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::api::core::loader::Loader;
+use bp3d_protoc::api::core::loader::{Loader, Options};
 use bp3d_protoc::api::core::Error;
 use bp3d_protoc::gen::RustImportSolver;
 
@@ -47,7 +47,7 @@ const UNDEFINED_REFERENCE: &str = "
 #[test]
 fn undefined_reference() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(UNDEFINED_REFERENCE, "").unwrap();
+    loader.load_from_string(UNDEFINED_REFERENCE, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     match err {
         Error::Compiler(v) => match v {

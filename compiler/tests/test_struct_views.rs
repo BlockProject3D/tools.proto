@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::api::core::loader::Loader;
+use bp3d_protoc::api::core::loader::{Loader, Options};
 use bp3d_protoc::api::core::Error;
 use bp3d_protoc::gen::RustImportSolver;
 use bp3d_protoc::model::structure::SimpleType;
@@ -90,7 +90,7 @@ const UNSUPPORTED_VIEW_TYPE_FLOAT_NONE: &str = "
 #[test]
 fn unsupported_view_type_float_int_1() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_INT_1, "").unwrap();
+    loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_INT_1, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(
         err,
@@ -101,7 +101,7 @@ fn unsupported_view_type_float_int_1() {
 #[test]
 fn unsupported_view_type_float_int_2() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_INT_2, "").unwrap();
+    loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_INT_2, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(
         err,
@@ -112,7 +112,7 @@ fn unsupported_view_type_float_int_2() {
 #[test]
 fn unsupported_view_type_float_none() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_NONE, "").unwrap();
+    loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_NONE, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(
         err,
@@ -123,7 +123,7 @@ fn unsupported_view_type_float_none() {
 #[test]
 fn unsupported_view_type_float_enum() {
     let mut loader = Loader::new(1);
-    loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_ENUM, "").unwrap();
+    loader.load_from_string(UNSUPPORTED_VIEW_TYPE_FLOAT_ENUM, &Options::default()).unwrap();
     let err = loader.compile(&RustImportSolver).unwrap_err();
     assert!(matches!(
         err,
