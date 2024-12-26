@@ -26,9 +26,4 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::api::generate_rust;
-
-fn main() {
-    generate_rust("./protoc.toml").unwrap();
-    generate_rust("./protoc_external.toml").unwrap();
-}
+include!(env!("BP3D_PROTOC_TEST_PROTO"));

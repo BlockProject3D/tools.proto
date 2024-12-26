@@ -1,0 +1,8 @@
+[package]
+name = "crate::external"
+path = "src/external"
+#file-header = "path/to/file/header"
+
+[[dependency]]
+path = "src/test.json5"
+package = "crate"

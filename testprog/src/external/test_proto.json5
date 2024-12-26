@@ -1,0 +1,32 @@
+{
+    name: "test_proto",
+    imports: [
+        { protocol: "crate::test", type: "Test1" }
+    ],
+    messages: [
+        {
+            name: "Test",
+            fields: [
+                {
+                    name: "s1",
+                    value: {
+                        type: "string"
+                    }
+                },
+                {
+                    name: "s2",
+                    value: {
+                        type: "string",
+                        max_len: 32
+                    },
+                    optional: true
+                },
+                {
+                    name: "p1",
+                    item_type: "Test1",
+                    optional: true
+                }
+            ]
+        }
+    ]
+}
