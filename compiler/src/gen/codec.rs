@@ -29,24 +29,6 @@
 use crate::gen::template::Template;
 use std::collections::HashMap;
 
-//TODO: Allow using a single file per codec instead of 3 files.
-
-pub struct Codec<'fragment, 'variable> {
-    pub decl: Template<'fragment, 'variable>,
-    pub from_bytes: Template<'fragment, 'variable>,
-    pub write: Template<'fragment, 'variable>,
-}
-
-impl Codec<'_, '_> {
-    pub fn from_static_bytes(decl: &'static [u8], from_bytes: &'static [u8], write: &'static [u8]) -> Self {
-        Self {
-            decl: Template::compile(decl).unwrap(),
-            from_bytes: Template::compile(from_bytes).unwrap(),
-            write: Template::compile(write).unwrap(),
-        }
-    }
-}
-
 macro_rules! count {
     () => (0usize);
     ( $x:tt $($xs:tt)* ) => (1usize + count!($($xs)*));

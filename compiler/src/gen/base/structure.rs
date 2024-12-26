@@ -38,7 +38,6 @@ use std::borrow::Cow;
 pub trait Utilities {
     fn get_field_type(field_type: FixedFieldType) -> &'static str;
     fn get_fragment_name(field: &Field) -> &'static str;
-    fn get_fragment_name_mut(field: &Field) -> &'static str;
     fn get_bit_codec_inline(endianness: Endianness) -> &'static str;
     fn get_byte_codec_inline(endianness: Endianness) -> &'static str;
     fn get_byte_codec(endianness: Endianness) -> &'static str;

@@ -81,17 +81,6 @@ impl crate::gen::base::structure::Utilities for SwiftUtils {
     }
 
     fn get_fragment_name(field: &Field) -> &'static str {
-        //TODO: Check if unwrap is safe
-        let raw_field_type = field.ty.as_fixed().unwrap().bits_type;
-        let raw_field_byte_size = raw_field_type.get_byte_size();
-        match raw_field_byte_size != field.loc.byte_size {
-            true => "unaligned",
-            false => "aligned",
-        }
-    }
-
-    fn get_fragment_name_mut(field: &Field) -> &'static str {
-        //TODO: Check if unwrap is safe
         let raw_field_type = field.ty.as_fixed().unwrap().bits_type;
         let raw_field_byte_size = raw_field_type.get_byte_size();
         match raw_field_byte_size != field.loc.byte_size {
