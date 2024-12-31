@@ -82,6 +82,7 @@ impl MessageField {
         match &self.value {
             None => false,
             Some(v) => match v {
+                MessageFieldValue::Container { item_type, .. } => name1 == item_type,
                 MessageFieldValue::List { item_type, .. } => name1 == item_type,
                 MessageFieldValue::Union { name } => name == name1,
                 _ => false,
