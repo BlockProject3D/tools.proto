@@ -1,4 +1,4 @@
-// Copyright (c) 2024, BlockProject 3D
+// Copyright (c) 2025, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -71,6 +71,9 @@ pub fn gen_message_write_impl(
     type_path_map: &TypePathMap,
     params: &RustParams,
 ) -> Result<String, Error> {
+    if msg.ty.is_some() {
+        return Ok(String::new());
+    }
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let generics = RustUtils::get_generics_for_write(msg, &type_path_map, Lifetime::Named).into_string();
     let mut code = _gen_message_write_impl(msg, codec_map, &type_path_map, &generics, &generics, "impl")?;

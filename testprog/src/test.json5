@@ -16,6 +16,11 @@
     ],
     messages: [
         {
+            name: "Zst",
+            type: "whatever",
+            fields: []
+        },
+        {
             name: "Test1",
             fields: [
                 {

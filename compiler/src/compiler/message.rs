@@ -1,4 +1,4 @@
-// Copyright (c) 2024, BlockProject 3D
+// Copyright (c) 2025, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -476,6 +476,7 @@ impl Field {
 #[derive(Clone, Debug)]
 pub struct Message {
     pub name: String,
+    pub ty: Option<String>,
     pub description: Option<Description>,
     pub fields: Vec<Field>,
     pub size: SizeInfo,
@@ -510,6 +511,7 @@ impl Message {
         }
         Ok(Message {
             name: value.name,
+            ty: value.ty,
             description: value.description,
             fields,
             size: SizeInfo {

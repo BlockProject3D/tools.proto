@@ -1,4 +1,4 @@
-// Copyright (c) 2024, BlockProject 3D
+// Copyright (c) 2025, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -44,6 +44,9 @@ pub fn gen_message_from_slice_impl(
     codec_map: &CodecMap,
     type_path_map: &TypePathMap,
 ) -> Result<String, Error> {
+    if msg.ty.is_some() {
+        return Ok(String::new());
+    }
     let type_path_map = TypePathMapper::new(type_path_map, DefaultTypeMapper);
     let mut templates = Templates {
         template: Template::compile(TEMPLATE).unwrap(),

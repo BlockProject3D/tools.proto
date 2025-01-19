@@ -1,4 +1,4 @@
-// Copyright (c) 2024, BlockProject 3D
+// Copyright (c) 2025, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -48,5 +48,11 @@ pub fn gen_message_from_slice_impl(proto: &Protocol, codec_map: &CodecMap, msg: 
     };
     templates.template.var("proto_name", proto.name());
     let type_path_map = TypePathMapper::new(&proto.type_path_map, SwiftTypeMapper::from_protocol(proto));
-    generate::<SwiftUtils, _>(templates, msg, &type_path_map, "impl")
+    match &msg.ty {
+        Some(ty) => {
+            templates.template.var("custom_type", ty);
+            generate::<SwiftUtils, _>(templates, msg, &type_path_map, "impl_custom")
+        },
+        None => generate::<SwiftUtils, _>(templates, msg, &type_path_map, "impl")
+    }
 }

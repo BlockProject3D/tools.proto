@@ -1,4 +1,4 @@
-// Copyright (c) 2024, BlockProject 3D
+// Copyright (c) 2025, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -94,6 +94,8 @@ impl MessageField {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Message {
     pub name: String,
+    #[serde(rename = "type")]
+    pub ty: Option<String>,
     pub description: Option<Description>,
     pub fields: Vec<MessageField>,
 }

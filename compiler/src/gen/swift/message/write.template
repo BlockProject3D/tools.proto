@@ -19,3 +19,13 @@ extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.WriteTo {{
     }}
 }}
 #fragment pop
+
+#fragment push impl_custom
+extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.WriteTo {{
+    public typealias Input = Self;
+
+    public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {{
+        try {custom_type}.write(input: input, to: out);
+    }}
+}}
+#fragment pop
