@@ -1,4 +1,4 @@
-// Copyright (c) 2024, BlockProject 3D
+// Copyright (c) 2025, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -64,6 +64,9 @@ impl<T> Message<T> {
     pub fn into_inner(self) -> T {
         self.data
     }
+
+    /// Access the underlying parts of this message.
+    pub fn into_parts(self) -> (T, usize) { (self.data, self.size) }
 
     pub fn size(&self) -> usize {
         self.size
