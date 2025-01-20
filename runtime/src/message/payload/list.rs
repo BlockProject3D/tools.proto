@@ -1,4 +1,4 @@
-// Copyright (c) 2024, BlockProject 3D
+// Copyright (c) 2025, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -115,6 +115,7 @@ impl<'a, T: FromBytes<'a, Output: ToUsize>, Item: FromBytes<'a, Output = Item>> 
 }
 
 impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
+    /// Returns an iterator over the elements contained in this list.
     pub fn iter(&self) -> Iter<Item> {
         Iter {
             data: self.data.as_ref(),
@@ -123,7 +124,30 @@ impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
         }
     }
 
+    /// Returns an iterator over the elements, with their offsets, contained in this list.
     pub fn iter_offsets(&self) -> IterOffsets<Item> {
+        IterOffsets {
+            data: self.data.as_ref(),
+            len: self.len,
+            useless: PhantomData,
+        }
+    }
+}
+
+impl<'a, T, Item> List<&'a [u8], T, Item> {
+    /// This function is a duplicate of iter specially for cases where lifetime propagation is
+    /// required.
+    pub fn iter_ref(&self) -> Iter<'a, Item> {
+        Iter {
+            data: self.data.as_ref(),
+            len: self.len,
+            useless: PhantomData,
+        }
+    }
+
+    /// This function is a duplicate of iter_offsets specially for cases where lifetime propagation is
+    /// required.
+    pub fn iter_offsets_ref(&self) -> IterOffsets<'a, Item> {
         IterOffsets {
             data: self.data.as_ref(),
             len: self.len,
