@@ -1,2 +1,2 @@
 [workspace]
-members = [ "auto-cli", "cli","compiler", "runtime", "testprog", "testprog-async" ]
+members = [ "auto-cli", "cli","compiler", "dynamic", "runtime", "testprog", "testprog-async" ]
