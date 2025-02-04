@@ -83,7 +83,7 @@ impl<'a> Buffer<'a> {
             Buffer::Owned(v) => v.copy(slice),
             Buffer::Borrowed(_) => {
                 *self = Buffer::from_copy(slice);
-                true
+                false
             }
         }
     }

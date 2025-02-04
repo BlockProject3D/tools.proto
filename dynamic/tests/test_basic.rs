@@ -26,8 +26,20 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod component;
-mod proto;
-pub mod buffer;
+use bp3d_proto_dynamic::Proto;
+use bp3d_protoc::api::core::loader::{Loader, Options};
 
-pub use proto::Proto;
+#[test]
+fn test_basic() {
+    let mut loader = Loader::new(16);
+    loader.load_from_folder("../testprog/src", &Options::from_package("testprog")).unwrap();
+    loader.exclude("custom_codec_broken");
+    let proto = Proto::build(loader).unwrap();
+    let mut view = proto.new_structure("bits.Numbers").unwrap();
+    view.read_copy(b"abcd").unwrap();
+    view.copy_from(b"1234");
+    println!("{:?}", view["a"].as_bytes());
+    println!("{:?}", view["b"].as_bytes());
+    println!("{:?}", view["c"].as_bytes());
+    println!("{:?}", view["d"].as_bytes());
+}

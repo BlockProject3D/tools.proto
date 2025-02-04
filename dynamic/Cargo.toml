@@ -5,5 +5,5 @@ edition = "2021"
 publish = false
 
 [dependencies]
-bp3d-protoc = { version = "1.0.0-rc.5.0.0", path = "../compiler" }
+bp3d-protoc = { version = "1.0.0-rc.5.0.0", path = "../compiler", features = ["compiler", "api"] }
 bp3d-proto = { version = "1.0.0-rc.5.0.0", path = "../runtime" }
