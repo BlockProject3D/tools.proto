@@ -258,5 +258,3 @@ impl Drop for BufferView<'_> {
         unsafe { self.buffer.delete() };
     }
 }
-
-//TODO: Implement shape/flatten
