@@ -70,10 +70,6 @@ pub enum Buffer<'a> {
 }
 
 impl<'a> Buffer<'a> {
-    pub fn from_slice(slice: &'a [u8]) -> Buffer<'a> {
-        Buffer::Borrowed(slice)
-    }
-
     pub fn from_copy(slice: &[u8]) -> Buffer<'a> {
         Buffer::Owned(Bytes::from_slice(slice))
     }
@@ -84,16 +80,6 @@ impl<'a> Buffer<'a> {
             Buffer::Borrowed(_) => {
                 *self = Buffer::from_copy(slice);
                 false
-            }
-        }
-    }
-
-    pub fn write(&mut self, data: &[u8]) {
-        match self {
-            Buffer::Owned(v) => v.write(data),
-            Buffer::Borrowed(_) => {
-                let bytes = Bytes::from_slice(data);
-                *self = Buffer::Owned(bytes);
             }
         }
     }
@@ -117,13 +103,6 @@ impl<'a> Buffer<'a> {
 
     pub fn index<I: Index>(&self, index: I) -> I::Output<'a> {
         index.index(self)
-    }
-
-    pub fn read(&self, data: &mut [u8]) {
-        match self {
-            Buffer::Owned(v) => v.read(data),
-            Buffer::Borrowed(bytes) => data.copy_from_slice(bytes),
-        }
     }
 
     pub fn len(&self) -> usize {

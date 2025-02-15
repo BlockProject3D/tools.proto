@@ -30,7 +30,7 @@ use std::alloc::{alloc, dealloc, realloc, Layout};
 use std::cell::Cell;
 use std::ptr::copy_nonoverlapping;
 use std::ops::{Range, RangeFrom, RangeTo};
-use std::ptr::{write_bytes, NonNull};
+use std::ptr::NonNull;
 use std::slice;
 
 pub trait Index {
@@ -103,16 +103,6 @@ impl Bytes {
         }
     }
 
-    pub fn with_capacity(capacity: usize) -> Bytes {
-        let ptr = unsafe { alloc(Layout::array::<u8>(capacity).unwrap()) };
-        unsafe { write_bytes(ptr, 0, capacity) }
-        Bytes {
-            bytes: unsafe { Cell::new(NonNull::new_unchecked(ptr)) },
-            len: Cell::new(capacity),
-            owned: true
-        }
-    }
-
     pub unsafe fn copy(&mut self, slice: &[u8]) -> bool {
         let added_bytes = self.resize(slice.len());
         copy_nonoverlapping(slice.as_ptr(), self.bytes.get().as_ptr(), slice.len());
@@ -157,22 +147,8 @@ impl Bytes {
         index.index(self)
     }
 
-    pub fn read(&self, data: &mut [u8]) {
-        let ptr = self.bytes.get();
-        let len = self.len.get();
-        let slice = unsafe { std::slice::from_raw_parts(ptr.as_ptr(), len) };
-        data.copy_from_slice(slice);
-    }
-
     pub fn len(&self) -> usize {
         self.len.get()
-    }
-
-    pub fn write(&mut self, data: &[u8]) {
-        let ptr = self.bytes.get();
-        let len = self.len.get();
-        let slice = unsafe { std::slice::from_raw_parts_mut(ptr.as_ptr(), len) };
-        slice.copy_from_slice(data);
     }
 
     pub unsafe fn delete(&mut self) {
