@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod component;
-pub mod proto;
-pub mod buffer;
-mod codec;
-pub mod field;
+mod core;
+mod struct_ext;
+
+pub use core::Proto;
+pub use struct_ext::StructureExt;

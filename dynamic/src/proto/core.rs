@@ -32,11 +32,9 @@ use bp3d_protoc::api::core::loader::Loader;
 use bp3d_protoc::compiler::message::Message;
 use bp3d_protoc::compiler::Protocol;
 use bp3d_protoc::compiler::r#enum::Enum;
-use bp3d_protoc::compiler::structure::{FieldType, Structure};
+use bp3d_protoc::compiler::structure::Structure;
 use bp3d_protoc::compiler::union::Union;
 use bp3d_protoc::compiler::util::imports::ImportSolver;
-use bp3d_protoc::compiler::util::types::Name;
-use crate::buffer::{BufferView, Builder};
 
 struct Solver;
 
@@ -88,24 +86,7 @@ impl Proto {
         Ok(proto)
     }
 
-    fn new_structure_internal<'a>(&self, value: &Structure) -> Builder<'a> {
-        let mut builder = Builder::new(value.name()).fixed(0, value.byte_size);
-        for field in &value.fields {
-            let mut field_builder = Builder::new(&field.name)
-                .fixed(field.loc.byte_offset, field.loc.byte_size);
-            match &field.ty {
-                FieldType::Struct(v) => {
-                    field_builder = field_builder.add_child(self.new_structure_internal(v));
-                }
-                _ => ()
-            }
-            builder = builder.add_child(field_builder);
-        }
-        builder
-    }
-
-    pub fn new_structure<'a>(&self, name: &str) -> Option<BufferView<'a>> {
-        let value = self.structures.get(name)?;
-        Some(self.new_structure_internal(&*value).build())
+    pub fn get_structure(&self, name: &str) -> Option<&Rc<Structure>> {
+        self.structures.get(name)
     }
 }

@@ -26,8 +26,15 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod component;
-pub mod proto;
-pub mod buffer;
-mod codec;
-pub mod field;
+use std::ops::Deref;
+
+mod bits;
+mod bytes;
+
+pub trait Codec {
+    fn read(&self, buffer: &[u8]) -> u64;
+    fn write(&self, buffer: &mut [u8], value: u64);
+}
+
+pub use bits::*;
+pub use bytes::*;

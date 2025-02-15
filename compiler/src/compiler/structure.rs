@@ -1,4 +1,4 @@
-// Copyright (c) 2024, BlockProject 3D
+// Copyright (c) 2025, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -52,6 +52,56 @@ pub enum FixedFieldType {
     Float32,
     Float64,
     Bool,
+}
+
+impl FixedFieldType {
+    pub fn get_aligned_bit_size(&self) -> usize {
+        match self {
+            FixedFieldType::Int8 => 8,
+            FixedFieldType::Int16 => 16,
+            FixedFieldType::Int32 => 32,
+            FixedFieldType::Int64 => 64,
+            FixedFieldType::UInt8 => 8,
+            FixedFieldType::UInt16 => 16,
+            FixedFieldType::UInt32 => 32,
+            FixedFieldType::UInt64 => 64,
+            FixedFieldType::Float32 => 32,
+            FixedFieldType::Float64 => 64,
+            FixedFieldType::Bool => 8
+        }
+    }
+
+    pub fn is_unsigned(&self) -> bool {
+        match self {
+            FixedFieldType::Int8 => false,
+            FixedFieldType::Int16 => false,
+            FixedFieldType::Int32 => false,
+            FixedFieldType::Int64 => false,
+            FixedFieldType::UInt8 => true,
+            FixedFieldType::UInt16 => true,
+            FixedFieldType::UInt32 => true,
+            FixedFieldType::UInt64 => true,
+            FixedFieldType::Float32 => false,
+            FixedFieldType::Float64 => false,
+            FixedFieldType::Bool => false
+        }
+    }
+
+    pub fn is_signed(&self) -> bool {
+        match self {
+            FixedFieldType::Int8 => true,
+            FixedFieldType::Int16 => true,
+            FixedFieldType::Int32 => true,
+            FixedFieldType::Int64 => true,
+            FixedFieldType::UInt8 => false,
+            FixedFieldType::UInt16 => false,
+            FixedFieldType::UInt32 => false,
+            FixedFieldType::UInt64 => false,
+            FixedFieldType::Float32 => false,
+            FixedFieldType::Float64 => false,
+            FixedFieldType::Bool => false,
+        }
+    }
 }
 
 impl Display for FixedFieldType {

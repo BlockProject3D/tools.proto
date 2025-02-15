@@ -105,6 +105,16 @@ impl<'a> Buffer<'a> {
         }
     }
 
+    pub fn as_bytes_mut(&mut self) -> &mut [u8] {
+        match self {
+            Buffer::Owned(v) => v.as_bytes_mut(),
+            Buffer::Borrowed(v) => {
+                *self = Buffer::from_copy(v);
+                self.as_bytes_mut()
+            }
+        }
+    }
+
     pub fn index<I: Index>(&self, index: I) -> I::Output<'a> {
         index.index(self)
     }

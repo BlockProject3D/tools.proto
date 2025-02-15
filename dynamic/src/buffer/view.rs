@@ -80,6 +80,10 @@ impl<'a> BufferView<'a> {
         self.buffer.as_bytes()
     }
 
+    pub fn as_bytes_mut(&mut self) -> &mut [u8] {
+        self.buffer.as_bytes_mut()
+    }
+
     pub fn get(&self, path: &str) -> Option<&BufferView<'a>> {
         let split = path.split(".");
         let mut view = self;

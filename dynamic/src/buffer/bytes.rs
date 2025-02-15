@@ -147,6 +147,12 @@ impl Bytes {
         unsafe { slice::from_raw_parts(ptr.as_ptr(), len) }
     }
 
+    pub fn as_bytes_mut(&mut self) -> &mut [u8] {
+        let ptr = self.bytes.get();
+        let len = self.len.get();
+        unsafe { slice::from_raw_parts_mut(ptr.as_ptr(), len) }
+    }
+
     pub fn index<I: Index>(&self, index: I) -> I::Output {
         index.index(self)
     }
