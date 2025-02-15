@@ -39,10 +39,7 @@ fn test_basic() {
     let mut view = proto.get_structure("bits.Numbers").unwrap().new_instance();
     view.read_copy(b"abcd").unwrap();
     view.copy_from(b"1234");
-    println!("{:?}", view["a"].as_bytes());
-    println!("{:?}", view["b"].as_bytes());
-    println!("{:?}", view["c"].as_bytes());
-    println!("{:?}", view["d"].as_bytes());
+
     let value_a = bp3d_proto_dynamic::field::primitive::from_field(proto.get_structure("bits.Numbers").unwrap().get_field("a").unwrap()).unwrap();
     let value_b = bp3d_proto_dynamic::field::primitive::from_field(proto.get_structure("bits.Numbers").unwrap().get_field("b").unwrap()).unwrap();
     let value_c = bp3d_proto_dynamic::field::primitive::from_field(proto.get_structure("bits.Numbers").unwrap().get_field("c").unwrap()).unwrap();
