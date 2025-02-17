@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use bp3d_proto_dynamic::field::primitive::Value;
+use bp3d_proto_dynamic::field::reader::PrimitiveReader;
 use bp3d_proto_dynamic::proto::{Proto, StructureExt};
 use bp3d_protoc::api::core::loader::{Loader, Options};
 
@@ -40,36 +41,33 @@ fn test_basic() {
     view.read_copy(b"abcd").unwrap();
     view.copy_from(b"1234");
 
-    let value_a = bp3d_proto_dynamic::field::primitive::from_field(proto.get_structure("bits.Numbers").unwrap().get_field("a").unwrap()).unwrap();
-    let value_b = bp3d_proto_dynamic::field::primitive::from_field(proto.get_structure("bits.Numbers").unwrap().get_field("b").unwrap()).unwrap();
-    let value_c = bp3d_proto_dynamic::field::primitive::from_field(proto.get_structure("bits.Numbers").unwrap().get_field("c").unwrap()).unwrap();
-    let value_d = bp3d_proto_dynamic::field::primitive::from_field(proto.get_structure("bits.Numbers").unwrap().get_field("d").unwrap()).unwrap();
+    let reader = PrimitiveReader::from_struct(proto.get_structure("bits.Numbers").unwrap());
 
-    value_a.set(&mut view["a"], Value::Signed(-8));
-    value_b.set(&mut view["b"], Value::Unsigned(15));
-    value_c.set(&mut view["c"], Value::Signed(-65536));
-    value_d.set(&mut view["d"], Value::Unsigned(127));
+    reader.set(&mut view["a"], Value::Signed(-8)).unwrap();
+    reader.set(&mut view["b"], Value::Unsigned(15)).unwrap();
+    reader.set(&mut view["c"], Value::Signed(-65536)).unwrap();
+    reader.set(&mut view["d"], Value::Unsigned(127)).unwrap();
 
-    assert_eq!(value_a.get(&view["a"]).to_signed(), -8);
-    assert_eq!(value_b.get(&view["b"]).to_unsigned(), 15);
-    assert_eq!(value_c.get(&view["c"]).to_signed(), -65536);
-    assert_eq!(value_d.get(&view["d"]).to_unsigned(), 127);
+    assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), -8);
+    assert_eq!(reader.get(&view["b"]).unwrap().to_unsigned(), 15);
+    assert_eq!(reader.get(&view["c"]).unwrap().to_signed(), -65536);
+    assert_eq!(reader.get(&view["d"]).unwrap().to_unsigned(), 127);
 
-    value_c.set(&mut view["c"], Value::Signed(65535));
-    assert_eq!(value_c.get(&view["c"]).to_signed(), 65535);
-    value_a.set(&mut view["a"], Value::Signed(-7));
-    assert_eq!(value_a.get(&view["a"]).to_signed(), -7);
-    assert_eq!(value_a.get_bits(&view["a"]), 9);
-    value_a.set(&mut view["a"], Value::Signed(-6));
-    assert_eq!(value_a.get(&view["a"]).to_signed(), -6);
-    assert_eq!(value_a.get_bits(&view["a"]), 10);
-    value_a.set(&mut view["a"], Value::Signed(-5));
-    assert_eq!(value_a.get(&view["a"]).to_signed(), -5);
-    assert_eq!(value_a.get_bits(&view["a"]), 11);
-    value_a.set(&mut view["a"], Value::Signed(1));
-    assert_eq!(value_a.get(&view["a"]).to_signed(), 1);
-    assert_eq!(value_a.get_bits(&view["a"]), 1);
-    value_a.set(&mut view["a"], Value::Signed(4));
-    assert_eq!(value_a.get(&view["a"]).to_signed(), 4);
-    assert_eq!(value_a.get_bits(&view["a"]), 4);
+    reader.set(&mut view["c"], Value::Signed(65535)).unwrap();
+    assert_eq!(reader.get(&view["c"]).unwrap().to_signed(), 65535);
+    reader.set(&mut view["a"], Value::Signed(-7)).unwrap();
+    assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), -7);
+    assert_eq!(reader.get_bin(&view["a"]).unwrap(), 9);
+    reader.set(&mut view["a"], Value::Signed(-6)).unwrap();
+    assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), -6);
+    assert_eq!(reader.get_bin(&view["a"]).unwrap(), 10);
+    reader.set(&mut view["a"], Value::Signed(-5)).unwrap();
+    assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), -5);
+    assert_eq!(reader.get_bin(&view["a"]).unwrap(), 11);
+    reader.set(&mut view["a"], Value::Signed(1)).unwrap();
+    assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), 1);
+    assert_eq!(reader.get_bin(&view["a"]).unwrap(), 1);
+    reader.set(&mut view["a"], Value::Signed(4)).unwrap();
+    assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), 4);
+    assert_eq!(reader.get_bin(&view["a"]).unwrap(), 4);
 }
