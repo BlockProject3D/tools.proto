@@ -27,9 +27,10 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 mod view;
-mod buffer;
+mod unsafe_buffer;
 mod bytes;
 mod builder;
+mod buffer;
 
 pub use view::BufferView;
 pub use builder::Builder;
@@ -47,19 +48,19 @@ mod tests {
                     .add_child(Builder::new("inner1").fixed(0, 4))
                     .add_child(Builder::new("inner2").fixed(4, 4))
             ).build();
-        view["hdr.inner1"].set_bytes(b"abcd");
-        view["hdr.inner2"].set_bytes(b"efgh");
+        view["hdr.inner1"].buffer_mut().set_bytes(b"abcd");
+        view["hdr.inner2"].buffer_mut().set_bytes(b"efgh");
         view.shape().unwrap();
-        view.copy_from(b"12345678");
-        assert_eq!(view["hdr.inner1"].as_bytes(), b"1234");
-        assert_eq!(view["hdr.inner2"].as_bytes(), b"5678");
+        view.buffer_mut().copy_from(b"12345678");
+        assert_eq!(view["hdr.inner1"].buffer().as_bytes(), b"1234");
+        assert_eq!(view["hdr.inner2"].buffer().as_bytes(), b"5678");
         println!("{:?}", view);
         println!("{:?}", view["hdr.inner1"]);
         assert!(view.get("hdr.inner1[0]").is_none());
-        view.copy_from(b"abcdefgh");
+        view.buffer_mut().copy_from(b"abcdefgh");
         assert_eq!(view["hdr.inner2"].get_path(), "test.hdr.inner2");
         assert_eq!(view["hdr.inner1"].get_path(), "test.hdr.inner1");
-        assert_eq!(view["hdr.inner1"].as_bytes(), b"abcd");
-        assert_eq!(view["hdr.inner2"].as_bytes(), b"efgh");
+        assert_eq!(view["hdr.inner1"].buffer().as_bytes(), b"abcd");
+        assert_eq!(view["hdr.inner2"].buffer().as_bytes(), b"efgh");
     }
 }

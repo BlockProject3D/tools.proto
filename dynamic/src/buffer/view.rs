@@ -54,8 +54,7 @@ pub struct BufferView<'a> {
     pub(super) children: Vec<BufferView<'a>>,
     pub(super) location: Location,
     pub(super) component: Option<&'static dyn Component>,
-    pub(super) items: Option<Vec<BufferView<'a>>>,
-    pub(super) flat: Rc<Cell<bool>>
+    pub(super) items: Option<Vec<BufferView<'a>>>
 }
 
 impl<'a> BufferView<'a> {
@@ -67,21 +66,12 @@ impl<'a> BufferView<'a> {
         &self.location
     }
 
-    pub fn set_bytes(&mut self, bytes: &'a [u8]) {
-        self.buffer = Buffer::Borrowed(bytes);
-        self.flat.set(false);
+    pub fn buffer(&self) -> &Buffer<'a> {
+        &self.buffer
     }
 
-    pub fn copy_from(&mut self, bytes: &[u8]) {
-        self.flat.set(unsafe { self.buffer.copy(bytes) });
-    }
-
-    pub fn as_bytes(&self) -> &[u8] {
-        self.buffer.as_bytes()
-    }
-
-    pub fn as_bytes_mut(&mut self) -> &mut [u8] {
-        self.buffer.as_bytes_mut()
+    pub fn buffer_mut(&mut self) -> &mut Buffer<'a> {
+        &mut self.buffer
     }
 
     pub fn get(&self, path: &str) -> Option<&BufferView<'a>> {
@@ -124,12 +114,12 @@ impl<'a> BufferView<'a> {
     }
 
     pub fn read_copy(&mut self, bytes: &[u8]) -> bp3d_proto::message::Result<usize> {
-        self.copy_from(bytes);
+        self.buffer.copy_from(bytes);
         self.read()
     }
 
     pub fn read_view(&mut self, bytes: &'a [u8]) -> bp3d_proto::message::Result<usize> {
-        self.set_bytes(bytes);
+        self.buffer.set_bytes(bytes);
         self.read()
     }
 
@@ -138,9 +128,9 @@ impl<'a> BufferView<'a> {
             if self.buffer.len() < self.location.size {
                 return Err(bp3d_proto::message::Error::Truncated)
             }
-            if !self.flat.get() {
+            if !self.buffer.flat.get() {
                 for child in &mut self.children {
-                    child.buffer = self.buffer.index(child.location.offset as usize..child.location.offset as usize + child.location.size);
+                    child.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index(child.location.offset as usize..child.location.offset as usize + child.location.size);
                     child.read()?;
                 }
             }
@@ -163,13 +153,13 @@ impl<'a> BufferView<'a> {
             if offset as usize >= self.buffer.len() {
                 return Err(bp3d_proto::message::Error::Truncated);
             }
-            unsafe { child.buffer.delete() };
-            child.buffer = self.buffer.index((offset as usize)..);
+            unsafe { child.buffer.unsafe_buffer.delete() };
+            child.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((offset as usize)..);
             let size = child.read()?;
             if (offset as usize) + size > self.buffer.len() {
                 return Err(bp3d_proto::message::Error::Truncated);
             }
-            child.buffer = self.buffer.index((offset as usize)..(offset as usize) + size);
+            child.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((offset as usize)..(offset as usize) + size);
             child.location.size = size;
             offset += size as isize;
         }
@@ -198,20 +188,20 @@ impl<'a> BufferView<'a> {
             let mut v = Vec::with_capacity(self.buffer.len());
             for child in &mut self.children {
                 child.flatten_internal();
-                let _ = v.write(child.as_bytes());
+                let _ = v.write(child.buffer.as_bytes());
             }
-            unsafe { self.buffer.copy(v.as_slice()) };
+            unsafe { self.buffer.unsafe_buffer.copy(v.as_slice()) };
         }
     }
 
     fn flatten(&mut self) -> bp3d_proto::message::Result<()> {
-        if self.flat.get() {
+        if self.buffer.flat.get() {
             // Nothing to do view is already flat!
             return Ok(())
         }
         self.flatten_internal();
         self.read()?;
-        self.flat.set(true);
+        self.buffer.flat.set(true);
         Ok(())
     }
 
@@ -259,6 +249,6 @@ impl<'a, 'b> IndexMut<&'a str> for BufferView<'b> {
 
 impl Drop for BufferView<'_> {
     fn drop(&mut self) {
-        unsafe { self.buffer.delete() };
+        unsafe { self.buffer.unsafe_buffer.delete() };
     }
 }

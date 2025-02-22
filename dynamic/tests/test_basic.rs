@@ -26,7 +26,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto_dynamic::field::primitive::Value;
 use bp3d_proto_dynamic::field::reader::PrimitiveReader;
 use bp3d_proto_dynamic::proto::{Proto, StructureExt};
 use bp3d_protoc::api::core::loader::{Loader, Options};
@@ -39,7 +38,7 @@ fn test_basic() {
     let proto = Proto::build(loader).unwrap();
     let mut view = proto.get_structure("bits.Numbers").unwrap().new_instance();
     view.read_copy(b"abcd").unwrap();
-    view.copy_from(b"1234");
+    view.buffer_mut().copy_from(b"1234");
 
     let reader = PrimitiveReader::from_struct(proto.get_structure("bits.Numbers").unwrap());
 

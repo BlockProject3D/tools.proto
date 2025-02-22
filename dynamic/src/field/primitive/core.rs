@@ -51,11 +51,11 @@ impl<C: Codec, TRaw: RawTransform, TView: ViewTransform> Primitive<C, TRaw, TVie
 
 impl<C: Codec, TRaw: RawTransform, TView: ViewTransform> PrimitiveType for Primitive<C, TRaw, TView> {
     fn get_bits(&self, view: &BufferView) -> u64 {
-        self.codec.read(view.as_bytes())
+        self.codec.read(view.buffer().as_bytes())
     }
 
     fn set_bits(&self, view: &mut BufferView, bits: u64) {
-        self.codec.write(view.as_bytes_mut(), bits);
+        self.codec.write(view.buffer_mut().as_bytes_mut(), bits);
     }
 
     fn get_raw(&self, view: &BufferView) -> Value {

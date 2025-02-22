@@ -29,6 +29,7 @@
 use std::cell::Cell;
 use std::rc::Rc;
 use crate::buffer::buffer::Buffer;
+use crate::buffer::unsafe_buffer::UnsafeBuffer;
 use crate::buffer::BufferView;
 use crate::buffer::view::{Location, PathComponent};
 use crate::component::Component;
@@ -81,12 +82,14 @@ impl<'a> Builder<'a> {
                 index: Cell::new(-1),
                 parent: None,
             }),
-            buffer: Buffer::Borrowed(b""),
+            buffer: Buffer {
+                unsafe_buffer: UnsafeBuffer::Borrowed(b""),
+                flat: self.flat,
+            },
             children: self.children,
             location: self.location,
             component: self.component,
-            items: None,
-            flat: self.flat
+            items: None
         }
     }
 

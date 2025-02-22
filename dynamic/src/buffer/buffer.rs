@@ -26,96 +26,39 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::ops::{Range, RangeFrom, RangeTo};
-use crate::buffer::bytes::Bytes;
-
-pub trait Index {
-    type Output<'a>;
-    fn index<'a>(self, buffer: &Buffer<'a>) -> Self::Output<'a>;
-}
-
-impl Index for usize {
-    type Output<'a> = u8;
-    fn index<'a>(self, buffer: &Buffer<'a>) -> Self::Output<'a> {
-        match buffer {
-            Buffer::Owned(v) => v.index(self),
-            Buffer::Borrowed(v) => v[self]
-        }
-    }
-}
-
-macro_rules! impl_index {
-    ($ty: ident) => {
-        impl Index for $ty<usize> {
-            type Output<'a> = Buffer<'a>;
-
-            fn index<'a>(self, buffer: &Buffer<'a>) -> Self::Output<'a> {
-                match buffer {
-                    Buffer::Owned(v) => Buffer::Owned(v.index(self)),
-                    Buffer::Borrowed(v) => Buffer::Borrowed(&v[self])
-                }
-            }
-        }
-    };
-}
-
-impl_index!(Range);
-impl_index!(RangeFrom);
-impl_index!(RangeTo);
+use std::cell::Cell;
+use std::rc::Rc;
+use crate::buffer::unsafe_buffer::UnsafeBuffer;
 
 #[derive(Debug)]
-pub enum Buffer<'a> {
-    Owned(Bytes),
-    Borrowed(&'a [u8])
+pub struct Buffer<'a> {
+    pub(super) unsafe_buffer: UnsafeBuffer<'a>,
+    pub(super) flat: Rc<Cell<bool>>
 }
 
 impl<'a> Buffer<'a> {
-    pub fn from_copy(slice: &[u8]) -> Buffer<'a> {
-        Buffer::Owned(Bytes::from_slice(slice))
+    pub fn set_bytes(&mut self, bytes: &'a [u8]) {
+        self.unsafe_buffer = UnsafeBuffer::Borrowed(bytes);
+        self.flat.set(false);
     }
 
-    pub unsafe fn copy(&mut self, slice: &[u8]) -> bool {
-        match self {
-            Buffer::Owned(v) => v.copy(slice),
-            Buffer::Borrowed(_) => {
-                *self = Buffer::from_copy(slice);
-                false
-            }
-        }
+    pub fn copy_from(&mut self, bytes: &[u8]) {
+        self.flat.set(unsafe { self.unsafe_buffer.copy(bytes) });
     }
 
     pub fn as_bytes(&self) -> &[u8] {
-        match self {
-            Buffer::Owned(v) => v.as_bytes(),
-            Buffer::Borrowed(v) => v
-        }
+        self.unsafe_buffer.as_bytes()
     }
 
     pub fn as_bytes_mut(&mut self) -> &mut [u8] {
-        match self {
-            Buffer::Owned(v) => v.as_bytes_mut(),
-            Buffer::Borrowed(v) => {
-                *self = Buffer::from_copy(v);
-                self.as_bytes_mut()
-            }
-        }
-    }
-
-    pub fn index<I: Index>(&self, index: I) -> I::Output<'a> {
-        index.index(self)
+        self.unsafe_buffer.as_bytes_mut()
     }
 
     pub fn len(&self) -> usize {
-        match self {
-            Buffer::Owned(v) => v.len(),
-            Buffer::Borrowed(v) => v.len()
-        }
+        self.unsafe_buffer.len()
     }
 
-    pub unsafe fn delete(&mut self) {
-        match self {
-            Buffer::Owned(v) => v.delete(),
-            _ => ()
-        }
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 }
