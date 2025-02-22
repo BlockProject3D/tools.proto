@@ -26,61 +26,68 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::codec::Codec;
+use crate::field::primitive::{PrimitiveType, Value};
 
-pub struct ByteCodecLE;
-pub struct ByteCodecBE;
+pub struct PrimitiveValue<'a> {
+    bytes: &'a [u8],
+    ty: &'a dyn PrimitiveType
+}
 
-impl Codec for ByteCodecLE {
-    fn read(&self, buffer: &[u8]) -> u64 {
-        let mut block: [u8; 8] = [0; 8];
-        unsafe {
-            std::ptr::copy_nonoverlapping(buffer.as_ptr(), block.as_mut_ptr(), buffer.len());
+pub struct PrimitiveValueMut<'a> {
+    bytes: &'a mut [u8],
+    ty: &'a dyn PrimitiveType
+}
+
+impl<'a> PrimitiveValue<'a> {
+    pub fn new(bytes: &'a [u8], ty: &'a dyn PrimitiveType) -> Self {
+        Self {
+            bytes,
+            ty
         }
-        u64::from_le_bytes(block)
     }
 
-    fn write(&self, buffer: &mut [u8], value: u64) {
-        let block = value.to_le_bytes();
-        unsafe {
-            std::ptr::copy_nonoverlapping(block.as_ptr(), buffer.as_mut_ptr(), buffer.len());
-        }
+    pub fn get_bin(&self) -> u64 {
+        self.ty.get_bin(self.bytes)
+    }
+
+    pub fn get_raw(&self) -> Value {
+        self.ty.get_raw(self.bytes)
+    }
+
+    pub fn get(&self) -> Value {
+        self.ty.get(self.bytes)
     }
 }
 
-impl Codec for ByteCodecBE {
-    fn read(&self, buffer: &[u8]) -> u64 {
-        let mut block: [u8; 8] = [0; 8];
-        let offset = 8 - buffer.len();
-        block[offset..buffer.len() + offset].copy_from_slice(buffer);
-        u64::from_be_bytes(block)
+impl<'a> PrimitiveValueMut<'a> {
+    pub fn new(bytes: &'a mut [u8], ty: &'a dyn PrimitiveType) -> Self {
+        Self {
+            bytes,
+            ty
+        }
     }
 
-    fn write(&self, buffer: &mut [u8], value: u64) {
-        let offset = 8 - buffer.len();
-        let block = value.to_be_bytes();
-        let motherfuckingrust = buffer.len();
-        buffer.copy_from_slice(&block[offset..motherfuckingrust + offset]);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::codec::bytes::ByteCodecLE;
-    use crate::codec::Codec;
-
-    #[test]
-    fn basic() {
-        let buffer = [0xFF, 0xFF, 0xFF, 0xFF];
-        assert_eq!(ByteCodecLE.read(&buffer[0..4]), 0xFFFFFFFF);
+    pub fn get_bin(&self) -> u64 {
+        self.ty.get_bin(self.bytes)
     }
 
-    #[test]
-    fn other() {
-        let mut buffer = [0, 0, 0, 0];
-        ByteCodecLE.write(&mut buffer[0..1], 128);
-        assert_eq!(ByteCodecLE.read(&buffer[0..1]), 128);
-        ByteCodecLE.write(&mut buffer[1..3], 4242);
-        assert_eq!(ByteCodecLE.read(&buffer[1..3]), 4242);
+    pub fn get_raw(&self) -> Value {
+        self.ty.get_raw(self.bytes)
+    }
+
+    pub fn get(&self) -> Value {
+        self.ty.get(self.bytes)
+    }
+
+    pub fn set_bin(&mut self, val: u64) {
+        self.ty.set_bin(self.bytes, val);
+    }
+
+    pub fn set_raw(&mut self, val: impl Into<Value>) {
+        self.ty.set_raw(self.bytes, val.into());
+    }
+
+    pub fn set(&mut self, val: impl Into<Value>) {
+        self.ty.set(self.bytes, val.into())
     }
 }

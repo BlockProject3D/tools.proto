@@ -27,11 +27,13 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::cell::Cell;
+use std::fmt::{Debug, Display};
 use std::io::Write;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 use crate::buffer::buffer::Buffer;
 use crate::component::Component;
+use crate::field::primitive::{PrimitiveType, PrimitiveValue, PrimitiveValueMut};
 
 #[derive(Debug)]
 pub struct Location {
@@ -47,17 +49,92 @@ pub(super) struct PathComponent {
     pub(super) parent: Option<Rc<PathComponent>>
 }
 
-#[derive(Debug)]
 pub struct BufferView<'a> {
     pub(super) path_component: Rc<PathComponent>,
     pub(super) buffer: Buffer<'a>,
     pub(super) children: Vec<BufferView<'a>>,
     pub(super) location: Location,
     pub(super) component: Option<&'static dyn Component>,
-    pub(super) items: Option<Vec<BufferView<'a>>>
+    pub(super) items: Option<Vec<BufferView<'a>>>,
+    pub(super) primitive: Option<Box<dyn PrimitiveType>>
+}
+
+impl Debug for BufferView<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.primitive.is_none() {
+            write!(f, "BufferView {{ name: {}, location: {:?}, children: {:?} }}", self.path_component.name, self.location, self.children)
+        } else {
+            write!(f, "BufferView {{ name: {}, location: {:?}, children: {:?}, primitive }}", self.path_component.name, self.location, self.children)
+        }
+    }
+}
+
+impl Display for BufferView<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let path_max_width = self.get_path_max_width();
+        let hex_max_width = self.get_hex_max_width();
+        writeln!(f, "|-{:-^path_max_width$}-|-{:-^6}-|-{:-^6}-|-{:-^hex_max_width$}-|-{:-^10}-|", "", "", "", "", "")?;
+        writeln!(f, "| {: ^path_max_width$} | {: ^6} | {: ^6} | {: ^hex_max_width$} | {: ^10} |", "Path", "Offset", "Size", "Hex", "Value")?;
+        writeln!(f, "|-{:-^path_max_width$}-|-{:-^6}-|-{:-^6}-|-{:-^hex_max_width$}-|-{:-^10}-|", "", "", "", "", "")?;
+        self.dump_children(f, path_max_width, hex_max_width)?;
+        Ok(())
+    }
 }
 
 impl<'a> BufferView<'a> {
+    fn get_path_max_width(&self) -> usize {
+        let mut path_max_width = 0;
+        for child in &self.children {
+            let len = child.get_path().len();
+            if len > path_max_width {
+                path_max_width = len;
+            }
+            let other_len = child.get_path_max_width();
+            if other_len > path_max_width {
+                path_max_width = other_len;
+            }
+        }
+        path_max_width
+    }
+
+    fn get_hex_max_width(&self) -> usize {
+        let mut hex_max_width = 0;
+        for child in &self.children {
+            let len = (child.buffer.len() + (child.location.offset as usize)) * 3;
+            if len > hex_max_width {
+                hex_max_width = len;
+            }
+            let other_len = child.get_hex_max_width();
+            if other_len > hex_max_width {
+                hex_max_width = other_len;
+            }
+        }
+        hex_max_width
+    }
+
+    fn dump_children(&self, f: &mut std::fmt::Formatter<'_>, path_max_width: usize, hex_max_width: usize) -> std::fmt::Result {
+        for child in &self.children {
+            let value = child.get_primitive().map(|v| v.get().to_string()).unwrap_or("####".into());
+            let bytes = format!("{:X?}", child.buffer.as_bytes()).replace(",", "");
+            let bytes = &bytes[1..bytes.len() - 1];
+            let mut padding = String::from("");
+            for _ in 0..child.location.offset {
+                padding += ".. ";
+            }
+            writeln!(f, "| {: <path_max_width$} | {: ^6} | {: ^6} | {: <hex_max_width$} | {: ^10} |", child.get_path(), child.location.offset, child.location.size, padding + bytes, value)?;
+            child.dump_children(f, path_max_width, hex_max_width)?;
+        }
+        Ok(())
+    }
+
+    pub fn get_primitive(&self) -> Option<PrimitiveValue> {
+        self.primitive.as_ref().map(|v| PrimitiveValue::new(self.buffer.as_bytes(), &**v))
+    }
+
+    pub fn get_primitive_mut(&mut self) -> Option<PrimitiveValueMut> {
+        self.primitive.as_ref().map(|v| PrimitiveValueMut::new(self.buffer.as_bytes_mut(), &**v))
+    }
+
     pub fn location_mut(&mut self) -> &mut Location {
         &mut self.location
     }

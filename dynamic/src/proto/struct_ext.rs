@@ -43,6 +43,9 @@ fn new_structure_internal<'a>(value: &Structure) -> Builder<'a> {
     for field in &value.fields {
         let mut field_builder = Builder::new(&field.name)
             .fixed(field.loc.byte_offset, field.loc.byte_size);
+        if let Some(primitive) = crate::field::primitive::from_field(field) {
+            field_builder = field_builder.primitive(primitive);
+        }
         match &field.ty {
             FieldType::Struct(v) => {
                 field_builder = field_builder.add_child(new_structure_internal(v));

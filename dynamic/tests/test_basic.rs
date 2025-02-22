@@ -26,7 +26,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto_dynamic::field::reader::PrimitiveReader;
 use bp3d_proto_dynamic::proto::{Proto, StructureExt};
 use bp3d_protoc::api::core::loader::{Loader, Options};
 
@@ -40,33 +39,34 @@ fn test_basic() {
     view.read_copy(b"abcd").unwrap();
     view.buffer_mut().copy_from(b"1234");
 
-    let reader = PrimitiveReader::from_struct(proto.get_structure("bits.Numbers").unwrap());
+    view["a"].get_primitive_mut().unwrap().set(-8);
+    view["b"].get_primitive_mut().unwrap().set(15);
+    view["c"].get_primitive_mut().unwrap().set(-65536);
+    view["d"].get_primitive_mut().unwrap().set(127);
 
-    reader.set(&mut view["a"], -8).unwrap();
-    reader.set(&mut view["b"], 15).unwrap();
-    reader.set(&mut view["c"], -65536).unwrap();
-    reader.set(&mut view["d"], 127).unwrap();
+    assert_eq!(view["a"].get_primitive().unwrap().get().to_signed(), -8);
+    assert_eq!(view["b"].get_primitive().unwrap().get().to_unsigned(), 15);
+    assert_eq!(view["c"].get_primitive().unwrap().get().to_signed(), -65536);
+    assert_eq!(view["d"].get_primitive().unwrap().get().to_unsigned(), 127);
 
-    assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), -8);
-    assert_eq!(reader.get(&view["b"]).unwrap().to_unsigned(), 15);
-    assert_eq!(reader.get(&view["c"]).unwrap().to_signed(), -65536);
-    assert_eq!(reader.get(&view["d"]).unwrap().to_unsigned(), 127);
+    view["c"].get_primitive_mut().unwrap().set(65535);
+    assert_eq!(view["c"].get_primitive().unwrap().get().to_signed(), 65535);
 
-    reader.set(&mut view["c"], 65535).unwrap();
-    assert_eq!(reader.get(&view["c"]).unwrap().to_signed(), 65535);
-    reader.set(&mut view["a"], -7).unwrap();
-    assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), -7);
-    assert_eq!(reader.get_bin(&view["a"]).unwrap(), 9);
-    reader.set(&mut view["a"], -6).unwrap();
-    assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), -6);
-    assert_eq!(reader.get_bin(&view["a"]).unwrap(), 10);
-    reader.set(&mut view["a"], -5).unwrap();
-    assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), -5);
-    assert_eq!(reader.get_bin(&view["a"]).unwrap(), 11);
-    reader.set(&mut view["a"], 1).unwrap();
-    assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), 1);
-    assert_eq!(reader.get_bin(&view["a"]).unwrap(), 1);
-    reader.set(&mut view["a"], 4).unwrap();
-    assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), 4);
-    assert_eq!(reader.get_bin(&view["a"]).unwrap(), 4);
+    let mut value_a = view["a"].get_primitive_mut().unwrap();
+    value_a.set(-7);
+    assert_eq!(value_a.get().to_signed(), -7);
+    assert_eq!(value_a.get_bin(), 9);
+    value_a.set(-6);
+    assert_eq!(value_a.get().to_signed(), -6);
+    assert_eq!(value_a.get_bin(), 10);
+    value_a.set(-5);
+    assert_eq!(value_a.get().to_signed(), -5);
+    assert_eq!(value_a.get_bin(), 11);
+    value_a.set(1);
+    assert_eq!(value_a.get().to_signed(), 1);
+    assert_eq!(value_a.get_bin(), 1);
+    value_a.set(4);
+    assert_eq!(value_a.get().to_signed(), 4);
+    assert_eq!(value_a.get_bin(), 4);
+    println!("{}", view);
 }

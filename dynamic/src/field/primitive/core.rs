@@ -29,7 +29,7 @@
 use bp3d_protoc::compiler::structure::{Field, FieldRaw, FieldView, FixedFieldType};
 use bp3d_protoc::model::protocol::Endianness;
 use crate::buffer::BufferView;
-use crate::codec::{BitCodecBE, BitCodecLE, ByteCodecBE, ByteCodecLE, Codec};
+use crate::field::codec::{BitCodecBE, BitCodecLE, ByteCodecBE, ByteCodecLE, Codec};
 use crate::field::primitive::{PrimitiveType, Value};
 use crate::field::primitive::transform::{Float32Transform, Float64Transform, FloatTransform, NoneTransform, RawTransform, SignedTransform, ViewTransform};
 
@@ -50,28 +50,28 @@ impl<C: Codec, TRaw: RawTransform, TView: ViewTransform> Primitive<C, TRaw, TVie
 }
 
 impl<C: Codec, TRaw: RawTransform, TView: ViewTransform> PrimitiveType for Primitive<C, TRaw, TView> {
-    fn get_bits(&self, view: &BufferView) -> u64 {
-        self.codec.read(view.buffer().as_bytes())
+    fn get_bin(&self, bytes: &[u8]) -> u64 {
+        self.codec.read(bytes)
     }
 
-    fn set_bits(&self, view: &mut BufferView, bits: u64) {
-        self.codec.write(view.buffer_mut().as_bytes_mut(), bits);
+    fn set_bin(&self, bytes: &mut [u8], bits: u64) {
+        self.codec.write(bytes, bits);
     }
 
-    fn get_raw(&self, view: &BufferView) -> Value {
-        self.raw.bits_to_raw(self.get_bits(view))
+    fn get_raw(&self, bytes: &[u8]) -> Value {
+        self.raw.bits_to_raw(self.get_bin(bytes))
     }
 
-    fn set_raw(&self, view: &mut BufferView, raw: Value) {
-        self.set_bits(view, self.raw.raw_to_bits(raw));
+    fn set_raw(&self, bytes: &mut [u8], raw: Value) {
+        self.set_bin(bytes, self.raw.raw_to_bits(raw));
     }
 
-    fn get(&self, view: &BufferView) -> Value {
-        self.view.raw_to_view(self.get_raw(view))
+    fn get(&self, bytes: &[u8]) -> Value {
+        self.view.raw_to_view(self.get_raw(bytes))
     }
 
-    fn set(&self, view: &mut BufferView, value: Value) {
-        self.set_raw(view, self.view.view_to_raw(value));
+    fn set(&self, bytes: &mut [u8], value: Value) {
+        self.set_raw(bytes, self.view.view_to_raw(value));
     }
 }
 

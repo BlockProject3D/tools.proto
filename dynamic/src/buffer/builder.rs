@@ -33,13 +33,15 @@ use crate::buffer::unsafe_buffer::UnsafeBuffer;
 use crate::buffer::BufferView;
 use crate::buffer::view::{Location, PathComponent};
 use crate::component::Component;
+use crate::field::primitive::PrimitiveType;
 
 pub struct Builder<'a> {
     name: String,
     children: Vec<BufferView<'a>>,
     location: Location,
     component: Option<&'static dyn Component>,
-    flat: Rc<Cell<bool>>
+    flat: Rc<Cell<bool>>,
+    primitive: Option<Box<dyn PrimitiveType>>
 }
 
 impl<'a> Builder<'a> {
@@ -53,8 +55,14 @@ impl<'a> Builder<'a> {
                 size: 0,
             },
             component: None,
-            flat: Rc::new(Cell::new(false))
+            flat: Rc::new(Cell::new(false)),
+            primitive: None
         }
+    }
+
+    pub fn primitive(mut self, primitive: Box<dyn PrimitiveType>) -> Self {
+        self.primitive = Some(primitive);
+        self
     }
 
     pub fn fixed(mut self, offset: usize, size: usize) -> Builder<'a> {
@@ -89,6 +97,7 @@ impl<'a> Builder<'a> {
             children: self.children,
             location: self.location,
             component: self.component,
+            primitive: self.primitive,
             items: None
         }
     }

@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::fmt::{Display, Formatter};
 use crate::buffer::BufferView;
 
 #[derive(Copy, Clone, Debug)]
@@ -34,6 +35,17 @@ pub enum Value {
     Signed(i64),
     Float(f64),
     Bool(bool)
+}
+
+impl Display for Value {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Value::Unsigned(v) => write!(f, "{}u", v),
+            Value::Signed(v) => write!(f, "{}i", v),
+            Value::Float(v) => write!(f, "{}f", v),
+            Value::Bool(v) => write!(f, "{}b", v)
+        }
+    }
 }
 
 impl From<i32> for Value {
@@ -105,10 +117,10 @@ impl Value {
 }
 
 pub trait PrimitiveType {
-    fn get_bits(&self, view: &BufferView) -> u64;
-    fn set_bits(&self, view: &mut BufferView, bits: u64);
-    fn get_raw(&self, view: &BufferView) -> Value;
-    fn set_raw(&self, view: &mut BufferView, raw: Value);
-    fn get(&self, view: &BufferView) -> Value;
-    fn set(&self, view: &mut BufferView, value: Value);
+    fn get_bin(&self, bytes: &[u8]) -> u64;
+    fn set_bin(&self, bytes: &mut [u8], bin: u64);
+    fn get_raw(&self, bytes: &[u8]) -> Value;
+    fn set_raw(&self, bytes: &mut [u8], raw: Value);
+    fn get(&self, bytes: &[u8]) -> Value;
+    fn set(&self, bytes: &mut [u8], value: Value);
 }

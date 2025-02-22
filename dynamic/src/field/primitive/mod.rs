@@ -29,6 +29,8 @@
 mod interface;
 mod core;
 mod transform;
+mod value;
 
 pub use interface::*;
 pub use core::from_field;
+pub use value::*;

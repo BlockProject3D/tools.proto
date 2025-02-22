@@ -29,5 +29,4 @@
 pub mod component;
 pub mod proto;
 pub mod buffer;
-mod codec;
 pub mod field;

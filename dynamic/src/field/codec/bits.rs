@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::codec::{ByteCodecBE, ByteCodecLE, Codec};
+use crate::field::codec::{ByteCodecBE, ByteCodecLE, Codec};
 
 pub struct BitCodecLE {
     bit_size: usize,
@@ -94,8 +94,8 @@ impl Codec for BitCodecBE {
 
 #[cfg(test)]
 mod tests {
-    use crate::codec::bits::{BitCodecBE, BitCodecLE};
-    use crate::codec::Codec;
+    use crate::field::codec::bits::{BitCodecBE, BitCodecLE};
+    use crate::field::codec::Codec;
 
     #[test]
     fn little_endian() {

@@ -26,42 +26,61 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod view;
-mod unsafe_buffer;
-mod bytes;
-mod builder;
-mod buffer;
+use crate::field::codec::Codec;
 
-pub use view::BufferView;
-pub use builder::Builder;
+pub struct ByteCodecLE;
+pub struct ByteCodecBE;
+
+impl Codec for ByteCodecLE {
+    fn read(&self, buffer: &[u8]) -> u64 {
+        let mut block: [u8; 8] = [0; 8];
+        unsafe {
+            std::ptr::copy_nonoverlapping(buffer.as_ptr(), block.as_mut_ptr(), buffer.len());
+        }
+        u64::from_le_bytes(block)
+    }
+
+    fn write(&self, buffer: &mut [u8], value: u64) {
+        let block = value.to_le_bytes();
+        unsafe {
+            std::ptr::copy_nonoverlapping(block.as_ptr(), buffer.as_mut_ptr(), buffer.len());
+        }
+    }
+}
+
+impl Codec for ByteCodecBE {
+    fn read(&self, buffer: &[u8]) -> u64 {
+        let mut block: [u8; 8] = [0; 8];
+        let offset = 8 - buffer.len();
+        block[offset..buffer.len() + offset].copy_from_slice(buffer);
+        u64::from_be_bytes(block)
+    }
+
+    fn write(&self, buffer: &mut [u8], value: u64) {
+        let offset = 8 - buffer.len();
+        let block = value.to_be_bytes();
+        let motherfuckingrust = buffer.len();
+        buffer.copy_from_slice(&block[offset..motherfuckingrust + offset]);
+    }
+}
 
 #[cfg(test)]
 mod tests {
-    use crate::buffer::builder::Builder;
+    use crate::field::codec::bytes::ByteCodecLE;
+    use crate::field::codec::Codec;
 
     #[test]
     fn basic() {
-        let mut view = Builder::new("test")
-            .add_child(
-                Builder::new("hdr")
-                    .fixed(0, 8)
-                    .add_child(Builder::new("inner1").fixed(0, 4))
-                    .add_child(Builder::new("inner2").fixed(4, 4))
-            ).build();
-        view["hdr.inner1"].buffer_mut().set_bytes(b"abcd");
-        view["hdr.inner2"].buffer_mut().set_bytes(b"efgh");
-        view.shape().unwrap();
-        view.buffer_mut().copy_from(b"12345678");
-        assert_eq!(view["hdr.inner1"].buffer().as_bytes(), b"1234");
-        assert_eq!(view["hdr.inner2"].buffer().as_bytes(), b"5678");
-        println!("{:?}", view);
-        println!("{:?}", view["hdr.inner1"]);
-        assert!(view.get("hdr.inner1[0]").is_none());
-        view.buffer_mut().copy_from(b"abcdefgh");
-        assert_eq!(view["hdr.inner2"].get_path(), "test.hdr.inner2");
-        assert_eq!(view["hdr.inner1"].get_path(), "test.hdr.inner1");
-        assert_eq!(view["hdr.inner1"].buffer().as_bytes(), b"abcd");
-        assert_eq!(view["hdr.inner2"].buffer().as_bytes(), b"efgh");
-        println!("{}", view);
+        let buffer = [0xFF, 0xFF, 0xFF, 0xFF];
+        assert_eq!(ByteCodecLE.read(&buffer[0..4]), 0xFFFFFFFF);
+    }
+
+    #[test]
+    fn other() {
+        let mut buffer = [0, 0, 0, 0];
+        ByteCodecLE.write(&mut buffer[0..1], 128);
+        assert_eq!(ByteCodecLE.read(&buffer[0..1]), 128);
+        ByteCodecLE.write(&mut buffer[1..3], 4242);
+        assert_eq!(ByteCodecLE.read(&buffer[1..3]), 4242);
     }
 }
