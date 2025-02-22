@@ -103,6 +103,16 @@ impl Bytes {
         }
     }
 
+    pub fn with_capacity(capacity: usize) -> Bytes {
+        let ptr = unsafe { alloc(Layout::array::<u8>(capacity).unwrap()) };
+        unsafe { ptr.write_bytes(0, capacity); }
+        Bytes {
+            bytes: unsafe { Cell::new(NonNull::new_unchecked(ptr)) },
+            len: Cell::new(capacity),
+            owned: true,
+        }
+    }
+
     pub unsafe fn copy(&mut self, slice: &[u8]) -> bool {
         let added_bytes = self.resize(slice.len());
         copy_nonoverlapping(slice.as_ptr(), self.bytes.get().as_ptr(), slice.len());

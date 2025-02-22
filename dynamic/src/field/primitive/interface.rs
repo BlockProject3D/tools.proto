@@ -40,9 +40,9 @@ pub enum Value {
 impl Display for Value {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Value::Unsigned(v) => write!(f, "{}u", v),
-            Value::Signed(v) => write!(f, "{}i", v),
-            Value::Float(v) => write!(f, "{}f", v),
+            Value::Unsigned(v) => write!(f, "{:.4}u", v),
+            Value::Signed(v) => write!(f, "{:.4}i", v),
+            Value::Float(v) => write!(f, "{:.4}f", v),
             Value::Bool(v) => write!(f, "{}b", v)
         }
     }

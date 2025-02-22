@@ -74,6 +74,10 @@ impl<'a> UnsafeBuffer<'a> {
         UnsafeBuffer::Owned(Bytes::from_slice(slice))
     }
 
+    pub fn with_capacity(capacity: usize) -> UnsafeBuffer<'a> {
+        UnsafeBuffer::Owned(Bytes::with_capacity(capacity))
+    }
+
     pub unsafe fn copy(&mut self, slice: &[u8]) -> bool {
         match self {
             UnsafeBuffer::Owned(v) => v.copy(slice),
