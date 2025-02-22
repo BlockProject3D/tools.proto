@@ -28,11 +28,18 @@
 
 use crate::buffer::BufferView;
 
+#[derive(Copy, Clone, Debug)]
 pub enum Value {
     Unsigned(u64),
     Signed(i64),
     Float(f64),
     Bool(bool)
+}
+
+impl From<i32> for Value {
+    fn from(value: i32) -> Self {
+        Self::Signed(value as i64)
+    }
 }
 
 impl From<u64> for Value {
@@ -65,7 +72,7 @@ impl Value {
             Value::Unsigned(v) => *v as i64,
             Value::Signed(v) => *v,
             Value::Float(v) => *v as i64,
-            Value::Bool(v) => if *v { 1 } else { 0 },
+            Value::Bool(v) => if *v { 1 } else { 0 }
         }
     }
 
@@ -74,7 +81,7 @@ impl Value {
             Value::Unsigned(v) => *v,
             Value::Signed(v) => *v as u64,
             Value::Float(v) => *v as u64,
-            Value::Bool(v) => if *v { 1 } else { 0 },
+            Value::Bool(v) => if *v { 1 } else { 0 }
         }
     }
 
@@ -83,7 +90,7 @@ impl Value {
             Value::Unsigned(v) => *v as f64,
             Value::Signed(v) => *v as f64,
             Value::Float(v) => *v,
-            Value::Bool(v) => if *v { 1.0 } else { 0.0 },
+            Value::Bool(v) => if *v { 1.0 } else { 0.0 }
         }
     }
 
@@ -103,5 +110,5 @@ pub trait PrimitiveType {
     fn get_raw(&self, view: &BufferView) -> Value;
     fn set_raw(&self, view: &mut BufferView, raw: Value);
     fn get(&self, view: &BufferView) -> Value;
-    fn set(&self, view: &mut BufferView, view: Value);
+    fn set(&self, view: &mut BufferView, value: Value);
 }

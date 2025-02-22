@@ -43,31 +43,31 @@ fn test_basic() {
 
     let reader = PrimitiveReader::from_struct(proto.get_structure("bits.Numbers").unwrap());
 
-    reader.set(&mut view["a"], Value::Signed(-8)).unwrap();
-    reader.set(&mut view["b"], Value::Unsigned(15)).unwrap();
-    reader.set(&mut view["c"], Value::Signed(-65536)).unwrap();
-    reader.set(&mut view["d"], Value::Unsigned(127)).unwrap();
+    reader.set(&mut view["a"], -8).unwrap();
+    reader.set(&mut view["b"], 15).unwrap();
+    reader.set(&mut view["c"], -65536).unwrap();
+    reader.set(&mut view["d"], 127).unwrap();
 
     assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), -8);
     assert_eq!(reader.get(&view["b"]).unwrap().to_unsigned(), 15);
     assert_eq!(reader.get(&view["c"]).unwrap().to_signed(), -65536);
     assert_eq!(reader.get(&view["d"]).unwrap().to_unsigned(), 127);
 
-    reader.set(&mut view["c"], Value::Signed(65535)).unwrap();
+    reader.set(&mut view["c"], 65535).unwrap();
     assert_eq!(reader.get(&view["c"]).unwrap().to_signed(), 65535);
-    reader.set(&mut view["a"], Value::Signed(-7)).unwrap();
+    reader.set(&mut view["a"], -7).unwrap();
     assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), -7);
     assert_eq!(reader.get_bin(&view["a"]).unwrap(), 9);
-    reader.set(&mut view["a"], Value::Signed(-6)).unwrap();
+    reader.set(&mut view["a"], -6).unwrap();
     assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), -6);
     assert_eq!(reader.get_bin(&view["a"]).unwrap(), 10);
-    reader.set(&mut view["a"], Value::Signed(-5)).unwrap();
+    reader.set(&mut view["a"], -5).unwrap();
     assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), -5);
     assert_eq!(reader.get_bin(&view["a"]).unwrap(), 11);
-    reader.set(&mut view["a"], Value::Signed(1)).unwrap();
+    reader.set(&mut view["a"], 1).unwrap();
     assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), 1);
     assert_eq!(reader.get_bin(&view["a"]).unwrap(), 1);
-    reader.set(&mut view["a"], Value::Signed(4)).unwrap();
+    reader.set(&mut view["a"], 4).unwrap();
     assert_eq!(reader.get(&view["a"]).unwrap().to_signed(), 4);
     assert_eq!(reader.get_bin(&view["a"]).unwrap(), 4);
 }

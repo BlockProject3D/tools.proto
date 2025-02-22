@@ -58,9 +58,9 @@ impl PrimitiveReader {
         Ok(field.get(view))
     }
 
-    pub fn set(&self, view: &mut BufferView, value: Value) -> Result<()> {
+    pub fn set(&self, view: &mut BufferView, value: impl Into<Value>) -> Result<()> {
         let field = self.0.get(view.name()).ok_or_else(|| Error::FieldNotFound(view.name().into()))?;
-        field.set(view, value);
+        field.set(view, value.into());
         Ok(())
     }
 
@@ -69,9 +69,9 @@ impl PrimitiveReader {
         Ok(field.get_raw(view))
     }
 
-    pub fn set_raw(&self, view: &mut BufferView, value: Value) -> Result<()> {
+    pub fn set_raw(&self, view: &mut BufferView, value: impl Into<Value>) -> Result<()> {
         let field = self.0.get(view.name()).ok_or_else(|| Error::FieldNotFound(view.name().into()))?;
-        field.set_raw(view, value);
+        field.set_raw(view, value.into());
         Ok(())
     }
 
