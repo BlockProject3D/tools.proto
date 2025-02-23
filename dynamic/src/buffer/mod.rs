@@ -47,7 +47,7 @@ mod tests {
                     .fixed(0, 8)
                     .add_child(Builder::new("inner1").fixed(0, 4))
                     .add_child(Builder::new("inner2").fixed(4, 4))
-            ).build();
+            ).build(false);
         view["hdr.inner1"].buffer_mut().set_bytes(b"abcd");
         view["hdr.inner2"].buffer_mut().set_bytes(b"efgh");
         view.shape().unwrap();

@@ -26,7 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_proto_dynamic::proto::{Proto, StructureExt};
+use bp3d_proto_dynamic::component::ComponentType;
+use bp3d_proto_dynamic::proto::Proto;
 use bp3d_protoc::api::core::loader::{Loader, Options};
 
 macro_rules! assert_feq {
@@ -46,7 +47,7 @@ fn floats() {
     loader.load_from_folder("../testprog/src", &Options::from_package("testprog")).unwrap();
     loader.exclude("custom_codec_broken");
     let proto = Proto::build(loader).unwrap();
-    let mut view = proto.get_structure("views.Floats").unwrap().new_instance();
+    let mut view = proto.get_structure("views.Floats").unwrap().new_instance(true);
 
     view.shape().unwrap();
     println!("{}", view);

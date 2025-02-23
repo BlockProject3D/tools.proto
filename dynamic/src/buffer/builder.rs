@@ -103,11 +103,11 @@ impl<'a> Builder<'a> {
         }
     }
 
-    pub fn build(self) -> BufferView<'a> {
+    pub fn build(self, init_mem: bool) -> BufferView<'a> {
         let motherfuckingrust = self.location.size;
         let mut view = self.get();
         setup_parents(&mut view);
-        if motherfuckingrust > 0 {
+        if motherfuckingrust > 0 && init_mem {
             view.buffer.unsafe_buffer = UnsafeBuffer::with_capacity(motherfuckingrust);
         }
         view

@@ -30,7 +30,14 @@ use std::fmt::Debug;
 use crate::buffer::{BufferView, Location};
 
 pub trait ComponentType {
-    fn new_instance(&self) -> BufferView<'static>;
+    /// Creates a new BufferView representing this [ComponentType].
+    ///
+    /// # Arguments
+    ///
+    /// * `init_mem`: true to pre-initialize the memory of this view with zeros, false otherwise.
+    ///
+    /// returns: BufferView
+    fn new_instance(&self, init_mem: bool) -> BufferView<'static>;
 }
 
 pub struct DiscoverTool<'b, 'a> {
@@ -61,13 +68,13 @@ impl<'b, 'a> DiscoverTool<'b, 'a> {
     }
 
     pub fn discover_item(&mut self, loc: Location) {
-        let mut view = self.freed_items.get_or_insert_default().pop().unwrap_or(self.ty.unwrap().new_instance());
+        let mut view = self.freed_items.get_or_insert_default().pop().unwrap_or(self.ty.unwrap().new_instance(false));
         *view.location_mut() = loc;
         self.add_item(view);
     }
 
     pub fn discover_child(&mut self, loc: Location) {
-        let mut view = self.freed_children.pop().unwrap_or(self.ty.unwrap().new_instance());
+        let mut view = self.freed_children.pop().unwrap_or(self.ty.unwrap().new_instance(false));
         *view.location_mut() = loc;
         self.add_child(view);
     }

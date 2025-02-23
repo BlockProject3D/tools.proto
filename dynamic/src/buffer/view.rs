@@ -57,7 +57,7 @@ pub struct BufferView<'a> {
     pub(super) component: Option<&'static dyn Component>,
     pub(super) items: Option<Vec<BufferView<'a>>>,
     pub(super) primitive: Option<Box<dyn PrimitiveType>>,
-    pub(super) component_ty: Option<Box<dyn ComponentType>>
+    pub(super) component_ty: Option<Rc<dyn ComponentType>>
 }
 
 impl Debug for BufferView<'_> {

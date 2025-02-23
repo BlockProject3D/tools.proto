@@ -30,10 +30,10 @@ use bp3d_util::extension;
 use bp3d_protoc::compiler::structure::{Field, FieldType, Structure};
 use bp3d_protoc::compiler::util::types::Name;
 use crate::buffer::{BufferView, Builder};
+use crate::component::ComponentType;
 
 extension! {
     pub extension StructureExt: Structure {
-        fn new_instance<'a>(&self) -> BufferView<'a>;
         fn get_field(&self, path: &str) -> Option<&Field>;
     }
 }
@@ -57,11 +57,13 @@ fn new_structure_internal<'a>(value: &Structure) -> Builder<'a> {
     builder
 }
 
-impl StructureExt for Structure {
-    fn new_instance<'a>(&self) -> BufferView<'a> {
-        new_structure_internal(self).build()
+impl ComponentType for Structure {
+    fn new_instance(&self, init_mem: bool) -> BufferView<'static> {
+        new_structure_internal(self).build(init_mem)
     }
+}
 
+impl StructureExt for Structure {
     fn get_field(&self, path: &str) -> Option<&Field> {
         let mut segments = path.split('.');
         let mut structure = self;
