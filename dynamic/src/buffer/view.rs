@@ -32,7 +32,7 @@ use std::io::Write;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 use crate::buffer::buffer::Buffer;
-use crate::component::Component;
+use crate::component::{Component, ComponentType, DiscoverTool};
 use crate::field::primitive::{PrimitiveType, PrimitiveValue, PrimitiveValueMut};
 
 #[derive(Debug)]
@@ -56,7 +56,8 @@ pub struct BufferView<'a> {
     pub(super) location: Location,
     pub(super) component: Option<&'static dyn Component>,
     pub(super) items: Option<Vec<BufferView<'a>>>,
-    pub(super) primitive: Option<Box<dyn PrimitiveType>>
+    pub(super) primitive: Option<Box<dyn PrimitiveType>>,
+    pub(super) component_ty: Option<Box<dyn ComponentType>>
 }
 
 impl Debug for BufferView<'_> {
@@ -215,12 +216,33 @@ impl<'a> BufferView<'a> {
         }
         let mut offset = 0;
         if let Some(component) = self.component {
-            let mut items = self.items.take().unwrap_or_else(Vec::new);
-            let size = component.read(self, &mut items)?;
-            for (index, item) in items.iter_mut().enumerate() {
-                item.path_component.index.set(index as _);
+            let ty = self.component_ty.take();
+            let mut tool = DiscoverTool::new(ty.as_deref(), self.items.take(), std::mem::replace(&mut self.children, Vec::new()));
+            let size = component.read(self, &mut tool)?;
+            let (mut items, children) = tool.into_inner();
+            if let Some(items) = &mut items {
+                let mut item_offset = 0;
+                for (index, item) in items.iter_mut().enumerate() {
+                    item.path_component.index.set(index as _);
+                    if item.location.offset != -1 {
+                        item_offset = item.location.offset;
+                    }
+                    if item_offset as usize >= self.buffer.len() {
+                        return Err(bp3d_proto::message::Error::Truncated);
+                    }
+                    unsafe { item.buffer.unsafe_buffer.delete() };
+                    item.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((item_offset as usize)..);
+                    let size = item.read()?;
+                    if (item_offset as usize) + size > self.buffer.len() {
+                        return Err(bp3d_proto::message::Error::Truncated);
+                    }
+                    item.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((item_offset as usize)..(item_offset as usize) + size);
+                    item.location.size = size;
+                    item_offset += size as isize;
+                }
             }
-            self.items = Some(items);
+            self.children = children;
+            self.items = items;
             offset = size as isize;
         }
         for child in &mut self.children {

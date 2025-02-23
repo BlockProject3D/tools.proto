@@ -43,7 +43,10 @@ impl<'a> Buffer<'a> {
     }
 
     pub fn copy_from(&mut self, bytes: &[u8]) {
-        self.flat.set(unsafe { self.unsafe_buffer.copy(bytes) });
+        let new_flat = unsafe { self.unsafe_buffer.copy(bytes) };
+        if self.flat.get() == true {
+            self.flat.set(new_flat);
+        }
     }
 
     pub fn as_bytes(&self) -> &[u8] {

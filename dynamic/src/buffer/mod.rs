@@ -32,7 +32,7 @@ mod bytes;
 mod builder;
 mod buffer;
 
-pub use view::BufferView;
+pub use view::{ BufferView, Location };
 pub use builder::Builder;
 
 #[cfg(test)]

@@ -28,7 +28,6 @@
 
 use bp3d_protoc::compiler::structure::{Field, FieldRaw, FieldView, FixedFieldType};
 use bp3d_protoc::model::protocol::Endianness;
-use crate::buffer::BufferView;
 use crate::field::codec::{BitCodecBE, BitCodecLE, ByteCodecBE, ByteCodecLE, Codec};
 use crate::field::primitive::{PrimitiveType, Value};
 use crate::field::primitive::transform::{Float32Transform, Float64Transform, FloatTransform, NoneTransform, RawTransform, SignedTransform, ViewTransform};

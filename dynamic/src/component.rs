@@ -27,7 +27,55 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::fmt::Debug;
-use crate::buffer::BufferView;
+use crate::buffer::{BufferView, Location};
+
+pub trait ComponentType {
+    fn new_instance(&self) -> BufferView<'static>;
+}
+
+pub struct DiscoverTool<'b, 'a> {
+    items: Option<Vec<BufferView<'a>>>,
+    children: Option<Vec<BufferView<'a>>>,
+    ty: Option<&'b dyn ComponentType>,
+    freed_items: Option<Vec<BufferView<'a>>>,
+    freed_children: Vec<BufferView<'a>>,
+}
+
+impl<'b, 'a> DiscoverTool<'b, 'a> {
+    pub fn new(ty: Option<&'b dyn ComponentType>, items: Option<Vec<BufferView<'a>>>, children: Vec<BufferView<'a>>) -> Self {
+        Self {
+            items: None,
+            children: None,
+            ty,
+            freed_children: children,
+            freed_items: items
+        }
+    }
+
+    pub fn add_item(&mut self, view: BufferView<'a>) {
+        self.items.get_or_insert_default().push(view);
+    }
+
+    pub fn add_child(&mut self, child: BufferView<'a>) {
+        self.children.get_or_insert_default().push(child);
+    }
+
+    pub fn discover_item(&mut self, loc: Location) {
+        let mut view = self.freed_items.get_or_insert_default().pop().unwrap_or(self.ty.unwrap().new_instance());
+        *view.location_mut() = loc;
+        self.add_item(view);
+    }
+
+    pub fn discover_child(&mut self, loc: Location) {
+        let mut view = self.freed_children.pop().unwrap_or(self.ty.unwrap().new_instance());
+        *view.location_mut() = loc;
+        self.add_child(view);
+    }
+
+    pub fn into_inner(self) -> (Option<Vec<BufferView<'a>>>, Vec<BufferView<'a>>) {
+        (self.items, self.children.unwrap_or(self.freed_children))
+    }
+}
 
 pub trait Component: Debug {
     /// Reads the data given in the BufferView.
@@ -38,7 +86,7 @@ pub trait Component: Debug {
     /// * `items`: list of items to fill, clear it if no list is to be attached with the [BufferView].
     ///
     /// returns: Result<(), Error>
-    fn read(&self, view: &mut BufferView, items: &mut Vec<BufferView>) -> bp3d_proto::message::Result<usize>;
+    fn read(&self, view: &mut BufferView, items: &mut DiscoverTool) -> bp3d_proto::message::Result<usize>;
 
     /// Shapes the given BufferView.
     ///
