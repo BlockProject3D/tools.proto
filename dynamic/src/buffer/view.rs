@@ -32,7 +32,7 @@ use std::io::Write;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 use crate::buffer::buffer::Buffer;
-use crate::component::{Component, ComponentType, DiscoverTool};
+use crate::component::{Component, DiscoverTool};
 use crate::field::primitive::{PrimitiveType, PrimitiveValue, PrimitiveValueMut};
 
 #[derive(Debug)]
@@ -57,7 +57,6 @@ pub struct BufferView<'a> {
     pub(super) component: Option<&'static dyn Component>,
     pub(super) items: Option<Vec<BufferView<'a>>>,
     pub(super) primitive: Option<Box<dyn PrimitiveType>>,
-    pub(super) component_ty: Option<Rc<dyn ComponentType>>
 }
 
 impl Debug for BufferView<'_> {
@@ -216,8 +215,7 @@ impl<'a> BufferView<'a> {
         }
         let mut offset = 0;
         if let Some(component) = self.component {
-            let ty = self.component_ty.take();
-            let mut tool = DiscoverTool::new(ty.as_deref(), self.items.take(), std::mem::replace(&mut self.children, Vec::new()));
+            let mut tool = DiscoverTool::new(self.items.take(), std::mem::replace(&mut self.children, Vec::new()));
             let size = component.read(self, &mut tool)?;
             let (mut items, children) = tool.into_inner();
             if let Some(items) = &mut items {

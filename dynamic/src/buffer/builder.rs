@@ -98,8 +98,7 @@ impl<'a> Builder<'a> {
             location: self.location,
             component: self.component,
             primitive: self.primitive,
-            items: None,
-            component_ty: None
+            items: None
         }
     }
 

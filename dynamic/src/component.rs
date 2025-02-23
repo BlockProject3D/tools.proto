@@ -40,20 +40,18 @@ pub trait ComponentType {
     fn new_instance(&self, init_mem: bool) -> BufferView<'static>;
 }
 
-pub struct DiscoverTool<'b, 'a> {
+pub struct DiscoverTool<'a> {
     items: Option<Vec<BufferView<'a>>>,
     children: Option<Vec<BufferView<'a>>>,
-    ty: Option<&'b dyn ComponentType>,
     freed_items: Option<Vec<BufferView<'a>>>,
     freed_children: Vec<BufferView<'a>>,
 }
 
-impl<'b, 'a> DiscoverTool<'b, 'a> {
-    pub fn new(ty: Option<&'b dyn ComponentType>, items: Option<Vec<BufferView<'a>>>, children: Vec<BufferView<'a>>) -> Self {
+impl<'a> DiscoverTool<'a> {
+    pub fn new(items: Option<Vec<BufferView<'a>>>, children: Vec<BufferView<'a>>) -> Self {
         Self {
             items: None,
             children: None,
-            ty,
             freed_children: children,
             freed_items: items
         }
@@ -67,14 +65,14 @@ impl<'b, 'a> DiscoverTool<'b, 'a> {
         self.children.get_or_insert_default().push(child);
     }
 
-    pub fn discover_item(&mut self, loc: Location) {
-        let mut view = self.freed_items.get_or_insert_default().pop().unwrap_or(self.ty.unwrap().new_instance(false));
+    pub fn discover_item(&mut self, ty: &impl ComponentType, loc: Location) {
+        let mut view = self.freed_items.get_or_insert_default().pop().unwrap_or(ty.new_instance(false));
         *view.location_mut() = loc;
         self.add_item(view);
     }
 
-    pub fn discover_child(&mut self, loc: Location) {
-        let mut view = self.freed_children.pop().unwrap_or(self.ty.unwrap().new_instance(false));
+    pub fn discover_child(&mut self, ty: &impl ComponentType, loc: Location) {
+        let mut view = self.freed_children.pop().unwrap_or(ty.new_instance(false));
         *view.location_mut() = loc;
         self.add_child(view);
     }
