@@ -26,6 +26,30 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod primitive;
-pub mod codec;
-mod option;
+use std::fmt::Debug;
+use crate::buffer::{BufferView, Location};
+use crate::component::{Component, ComponentType, DiscoverTool};
+
+#[derive(Debug)]
+pub struct Option<T: ComponentType>(T);
+
+impl<T: ComponentType + Debug> Component for Option<T> {
+    fn read(&self, view: &mut BufferView, items: &mut DiscoverTool) -> bp3d_proto::message::Result<usize> {
+        let v = view.buffer().as_bytes()[0];
+        if v != 0 {
+            items.discover_child(&self.0, Location {
+                offset: 1,
+                size: 0,
+                fixed: false
+            });
+        }
+        Ok(1)
+    }
+
+    fn shape(&self, view: &mut BufferView, _: &Vec<BufferView>) -> bp3d_proto::message::Result<()> {
+        if !view.is_empty() {
+            view.buffer_mut().as_bytes_mut()[0] = 1;
+        }
+        Ok(())
+    }
+}

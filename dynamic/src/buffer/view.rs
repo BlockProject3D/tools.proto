@@ -186,6 +186,14 @@ impl<'a> BufferView<'a> {
         Some(view)
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.children.is_empty()
+    }
+
+    pub fn len(&self) -> usize {
+        self.children.len()
+    }
+
     pub fn iter(&self) -> impl Iterator<Item=&BufferView<'a>> {
         self.children.iter()
     }
