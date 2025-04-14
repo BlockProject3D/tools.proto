@@ -1,4 +1,4 @@
-// Copyright (c) 2024, BlockProject 3D
+// Copyright (c) 2025, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -29,6 +29,7 @@
 use itertools::Itertools;
 use regex::Regex;
 use std::borrow::Cow;
+use bp3d_util::string::BufTools;
 
 #[allow(clippy::enum_variant_names)]
 enum Convention {
@@ -53,24 +54,16 @@ fn guess_case_convention(s: &str) -> Convention {
 }
 
 fn capitalize(value: &str) -> Cow<str> {
-    if value.is_empty() {
-        return value.into();
-    }
-    if value.as_bytes()[0] >= b'A' && value.as_bytes()[0] <= b'Z' {
-        value.into()
-    } else {
-        (value[..1].to_ascii_uppercase() + &value[1..]).into()
+    match value.as_bytes().capitalise_ascii() {
+        Cow::Borrowed(v) => String::from_utf8_lossy(v),
+        Cow::Owned(v) => String::from(&*String::from_utf8_lossy(&*v)).into()
     }
 }
 
 fn decapitalize(value: &str) -> Cow<str> {
-    if value.is_empty() {
-        return value.into();
-    }
-    if value.as_bytes()[0] >= b'A' && value.as_bytes()[0] <= b'Z' {
-        (value[..1].to_ascii_lowercase() + &value[1..]).into()
-    } else {
-        value.into()
+    match value.as_bytes().decapitalise_ascii() {
+        Cow::Borrowed(v) => String::from_utf8_lossy(v),
+        Cow::Owned(v) => String::from(&*String::from_utf8_lossy(&*v)).into()
     }
 }
 
