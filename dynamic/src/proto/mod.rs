@@ -28,6 +28,7 @@
 
 mod core;
 mod struct_ext;
+mod message_ext;
 
 pub use core::Proto;
 pub use struct_ext::StructureExt;

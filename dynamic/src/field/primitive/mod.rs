@@ -33,4 +33,5 @@ mod value;
 
 pub use interface::*;
 pub use core::from_field;
+pub use core::from_fixed_field_type;
 pub use value::*;

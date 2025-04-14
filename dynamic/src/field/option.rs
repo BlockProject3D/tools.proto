@@ -26,14 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::fmt::Debug;
 use crate::buffer::{BufferView, Location};
 use crate::component::{Component, ComponentType, DiscoverTool};
 
-#[derive(Debug)]
-pub struct Option<T: ComponentType>(T);
+pub struct Optional<T: ComponentType>(pub T);
 
-impl<T: ComponentType + Debug> Component for Option<T> {
+impl<T: ComponentType> Component for Optional<T> {
     fn read(&self, view: &mut BufferView, items: &mut DiscoverTool) -> bp3d_proto::message::Result<usize> {
         let v = view.buffer().as_bytes()[0];
         if v != 0 {

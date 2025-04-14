@@ -39,7 +39,7 @@ pub struct Builder<'a> {
     name: String,
     children: Vec<BufferView<'a>>,
     location: Location,
-    component: Option<&'static dyn Component>,
+    component: Option<Box<dyn Component>>,
     flat: Rc<Cell<bool>>,
     primitive: Option<Box<dyn PrimitiveType>>
 }
@@ -72,8 +72,8 @@ impl<'a> Builder<'a> {
         self
     }
 
-    pub fn component(mut self, component: &'static dyn Component) -> Builder<'a> {
-        self.component = Some(component);
+    pub fn component(mut self, component: impl Component + 'static) -> Builder<'a> {
+        self.component = Some(Box::new(component));
         self
     }
 

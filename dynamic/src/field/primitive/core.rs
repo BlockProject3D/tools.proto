@@ -168,3 +168,30 @@ pub fn from_field(field: &Field) -> Option<Box<dyn PrimitiveType>> {
     };
     Some(get_field(codec, raw, view))
 }
+
+/// Creates a [PrimitiveType] directly from a [FixedFieldType] and a field [Endianness].
+/// This function does not support loading from bit fields.
+///
+/// # Arguments
+///
+/// * `ty`: the type of the field.
+/// * `endianness`: the endianness of the field.
+///
+/// returns: Box<dyn PrimitiveType, Global>
+pub fn from_fixed_field_type(ty: FixedFieldType, endianness: Endianness) -> Box<dyn PrimitiveType> {
+    let codec = match endianness {
+        Endianness::Little => Codec1::ByteLE(ByteCodecLE),
+        Endianness::Big => Codec1::ByteBE(ByteCodecBE),
+    };
+    let raw = if ty.is_signed() {
+        Raw::Signed(SignedTransform { max_positive: 2u64.pow(ty.get_aligned_bit_size() as u32 - 1) - 1 })
+    } else if ty == FixedFieldType::Float32 {
+        Raw::Float32(Float32Transform)
+    } else if ty == FixedFieldType::Float64 {
+        Raw::Float64(Float64Transform)
+    } else {
+        Raw::None(NoneTransform)
+    };
+    let view = View::None(NoneTransform);
+    get_field(codec, raw, view)
+}

@@ -282,8 +282,8 @@ impl Field {
         has_headers: bool,
         value: crate::model::message::MessageField,
     ) -> Result<Self, Error> {
-        if (value.value.is_none() && value.item_type.is_none()) || (value.value.is_some() && value.item_type.is_some())
-        {
+        if (value.value.is_none() && value.item_type.is_none())
+            || (value.value.is_some() && value.item_type.is_some()) {
             return Err(Error::BadFieldType);
         }
         let (header, header_field) = HeaderField::from_model(value.header, unsorted)?;

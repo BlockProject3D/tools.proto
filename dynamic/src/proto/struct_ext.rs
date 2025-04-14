@@ -28,8 +28,7 @@
 
 use bp3d_util::extension;
 use bp3d_protoc::compiler::structure::{Field, FieldType, Structure};
-use bp3d_protoc::compiler::util::types::Name;
-use crate::buffer::{BufferView, Builder};
+use crate::buffer::Builder;
 use crate::component::ComponentType;
 
 extension! {
@@ -38,8 +37,8 @@ extension! {
     }
 }
 
-fn new_structure_internal<'a>(value: &Structure) -> Builder<'a> {
-    let mut builder = Builder::new(value.name()).fixed(0, value.byte_size);
+pub(super) fn new_structure_internal<'a>(builder: Builder<'a>, value: &Structure) -> Builder<'a> {
+    let mut builder = builder.fixed(0, value.byte_size);
     for field in &value.fields {
         let mut field_builder = Builder::new(&field.name)
             .fixed(field.loc.byte_offset, field.loc.byte_size);
@@ -48,7 +47,7 @@ fn new_structure_internal<'a>(value: &Structure) -> Builder<'a> {
         }
         match &field.ty {
             FieldType::Struct(v) => {
-                field_builder = field_builder.add_child(new_structure_internal(v));
+                field_builder = field_builder.add_child(new_structure_internal(Builder::new(&field.name), v));
             }
             _ => ()
         }
@@ -58,8 +57,12 @@ fn new_structure_internal<'a>(value: &Structure) -> Builder<'a> {
 }
 
 impl ComponentType for Structure {
-    fn new_instance(&self, init_mem: bool) -> BufferView<'static> {
-        new_structure_internal(self).build(init_mem)
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn build(&self, builder: Builder<'static>) -> Builder<'static> {
+        new_structure_internal(builder, self)
     }
 }
 

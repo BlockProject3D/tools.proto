@@ -89,4 +89,8 @@ impl Proto {
     pub fn get_structure(&self, name: &str) -> Option<&Rc<Structure>> {
         self.structures.get(name)
     }
+
+    pub fn get_message(&self, name: &str) -> Option<&Rc<Message>> {
+        self.messages.get(name)
+    }
 }

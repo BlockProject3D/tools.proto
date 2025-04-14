@@ -54,7 +54,7 @@ pub struct BufferView<'a> {
     pub(super) buffer: Buffer<'a>,
     pub(super) children: Vec<BufferView<'a>>,
     pub(super) location: Location,
-    pub(super) component: Option<&'static dyn Component>,
+    pub(super) component: Option<Box<dyn Component>>,
     pub(super) items: Option<Vec<BufferView<'a>>>,
     pub(super) primitive: Option<Box<dyn PrimitiveType>>,
 }
@@ -222,9 +222,16 @@ impl<'a> BufferView<'a> {
             return Ok(self.location.size);
         }
         let mut offset = 0;
-        if let Some(component) = self.component {
+        if let Some(component) = self.component.take() {
             let mut tool = DiscoverTool::new(self.items.take(), std::mem::replace(&mut self.children, Vec::new()));
-            let size = component.read(self, &mut tool)?;
+            let size = match component.read(self, &mut tool) {
+                Ok(size) => size,
+                Err(e) => {
+                    self.component = Some(component);
+                    return Err(e);
+                }
+            };
+            self.component = Some(component);
             let (mut items, children) = tool.into_inner();
             if let Some(items) = &mut items {
                 let mut item_offset = 0;
@@ -272,9 +279,16 @@ impl<'a> BufferView<'a> {
     }
 
     pub fn shape(&mut self) -> bp3d_proto::message::Result<()> {
-        if let Some(component) = self.component {
+        if let Some(component) = self.component.take() {
             let items = self.items.take().unwrap_or_else(Vec::new);
-            component.shape(self, &items)?;
+            match component.shape(self, &items) {
+                Err(e) => {
+                    self.component = Some(component);
+                    return Err(e);
+                }
+                _ => ()
+            }
+            self.component = Some(component);
             self.items = Some(items);
         }
         if !self.location.fixed {

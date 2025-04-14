@@ -26,7 +26,26 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pub mod primitive;
-pub mod codec;
-pub mod option;
-mod string;
+use crate::buffer::BufferView;
+use crate::component::{Component, DiscoverTool};
+use crate::field::codec::Codec;
+
+pub struct NullTerminatedString;
+
+pub struct VarcharString<T>(T);
+
+impl<T: Codec> Component for VarcharString<T> {
+    fn read(&self, view: &mut BufferView, _: &mut DiscoverTool) -> bp3d_proto::message::Result<usize> {
+        let len = self.0.read(view.buffer().as_bytes());
+        let data = &mut view["data"];
+        data.location_mut().size = len as _;
+        //TODO: Figure out the size in bytes of the codec.
+        Ok(len as usize + 1)
+    }
+
+    fn shape(&self, view: &mut BufferView, _: &Vec<BufferView>) -> bp3d_proto::message::Result<()> {
+        let len = view["data"].buffer().len();
+        self.0.write(view["len"].buffer_mut().as_bytes_mut(), len as _);
+        Ok(())
+    }
+}

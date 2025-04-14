@@ -26,18 +26,32 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::fmt::Debug;
-use crate::buffer::{BufferView, Location};
+use crate::buffer::{BufferView, Builder, Location};
 
 pub trait ComponentType {
-    /// Creates a new BufferView representing this [ComponentType].
+    /// Returns the type name of this component.
+    fn name(&self) -> &str;
+
+    /// Adds the necessary information to the given [Builder] to construct a [BufferView]
+    /// representing this [ComponentType].
+    ///
+    /// # Arguments
+    ///
+    /// * `builder`: the builder to complete.
+    ///
+    /// returns: Builder
+    fn build(&self, builder: Builder<'static>) -> Builder<'static>;
+
+    /// Creates a new [BufferView] representing this [ComponentType].
     ///
     /// # Arguments
     ///
     /// * `init_mem`: true to pre-initialize the memory of this view with zeros, false otherwise.
     ///
     /// returns: BufferView
-    fn new_instance(&self, init_mem: bool) -> BufferView<'static>;
+    fn new_instance(&self, init_mem: bool) -> BufferView<'static> {
+        self.build(Builder::new(self.name())).build(init_mem)
+    }
 }
 
 pub struct DiscoverTool<'a> {
@@ -66,12 +80,14 @@ impl<'a> DiscoverTool<'a> {
     }
 
     pub fn discover_item(&mut self, ty: &impl ComponentType, loc: Location) {
+        //FIXME: This does not work if ty does not build the same type of views than the views already in items.
         let mut view = self.freed_items.get_or_insert_default().pop().unwrap_or(ty.new_instance(false));
         *view.location_mut() = loc;
         self.add_item(view);
     }
 
     pub fn discover_child(&mut self, ty: &impl ComponentType, loc: Location) {
+        //FIXME: This does not work if ty does not build the same type of views than the views already in children.
         let mut view = self.freed_children.pop().unwrap_or(ty.new_instance(false));
         *view.location_mut() = loc;
         self.add_child(view);
@@ -82,7 +98,7 @@ impl<'a> DiscoverTool<'a> {
     }
 }
 
-pub trait Component: Debug {
+pub trait Component {
     /// Reads the data given in the BufferView.
     ///
     /// # Arguments
