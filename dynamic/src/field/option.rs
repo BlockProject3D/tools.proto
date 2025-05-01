@@ -41,7 +41,8 @@ impl<T: ComponentType> Component for Optional<T> {
                 fixed: false
             });
         }
-        Ok(1)
+        Ok(0) // Option has no idea how many bytes the child will consume, leave BufferView do the
+        // hard work.
     }
 
     fn shape(&self, view: &mut BufferView, _: &Vec<BufferView>) -> bp3d_proto::message::Result<()> {

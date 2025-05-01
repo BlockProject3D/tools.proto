@@ -214,6 +214,7 @@ impl<'a> BufferView<'a> {
                 return Err(bp3d_proto::message::Error::Truncated)
             }
             if !self.buffer.flat.get() {
+                self.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index(..self.location.size);
                 for child in &mut self.children {
                     child.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index(child.location.offset as usize..child.location.offset as usize + child.location.size);
                     child.read()?;
@@ -221,10 +222,9 @@ impl<'a> BufferView<'a> {
             }
             return Ok(self.location.size);
         }
-        let mut size = 0;
         if let Some(component) = self.component.take() {
             let mut tool = DiscoverTool::new(self.items.take(), std::mem::replace(&mut self.children, Vec::new()));
-            size = match component.read(self, &mut tool) {
+            match component.read(self, &mut tool) {
                 Ok(size) => size,
                 Err(e) => {
                     self.component = Some(component);
@@ -275,7 +275,9 @@ impl<'a> BufferView<'a> {
             child.location.size = size;
             offset += size as isize;
         }
-        Ok(size)
+        self.location.size = offset as _;
+        self.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index(..offset as _);
+        Ok(offset as _)
     }
 
     pub fn shape(&mut self) -> bp3d_proto::message::Result<()> {
