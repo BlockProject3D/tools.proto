@@ -26,33 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::buffer::{BufferView, Builder, Location};
-
-pub trait ComponentType {
-    /// Returns the type name of this component.
-    fn name(&self) -> &str;
-
-    /// Adds the necessary information to the given [Builder] to construct a [BufferView]
-    /// representing this [ComponentType].
-    ///
-    /// # Arguments
-    ///
-    /// * `builder`: the builder to complete.
-    ///
-    /// returns: Builder
-    fn build(&self, builder: Builder<'static>) -> Builder<'static>;
-
-    /// Creates a new [BufferView] representing this [ComponentType].
-    ///
-    /// # Arguments
-    ///
-    /// * `init_mem`: true to pre-initialize the memory of this view with zeros, false otherwise.
-    ///
-    /// returns: BufferView
-    fn new_instance(&self, init_mem: bool) -> BufferView<'static> {
-        self.build(Builder::new(self.name())).build(init_mem)
-    }
-}
+use crate::buffer::{BufferView, Location};
+use crate::component::ComponentType;
 
 pub struct DiscoverTool<'a> {
     items: Option<Vec<BufferView<'a>>>,
@@ -96,27 +71,4 @@ impl<'a> DiscoverTool<'a> {
     pub fn into_inner(self) -> (Option<Vec<BufferView<'a>>>, Vec<BufferView<'a>>) {
         (self.items, self.children.unwrap_or(self.freed_children))
     }
-}
-
-pub trait Component {
-    /// Reads the data given in the BufferView.
-    ///
-    /// # Arguments
-    ///
-    /// * `view`: the view to read from.
-    /// * `items`: list of items to fill, clear it if no list is to be attached with the [BufferView].
-    ///
-    /// returns: Result<(), Error>
-    fn read(&self, view: &mut BufferView, items: &mut DiscoverTool) -> bp3d_proto::message::Result<usize>;
-
-    /// Shapes the given BufferView.
-    ///
-    /// # Arguments
-    ///
-    /// * `view`: the view to shape.
-    /// * `items`: list of items attached with the [BufferView], this should be written to the
-    ///            underlying BufferView.
-    ///
-    /// returns: Result<(), Error>
-    fn shape(&self, view: &mut BufferView, items: &Vec<BufferView>) -> bp3d_proto::message::Result<()>;
 }

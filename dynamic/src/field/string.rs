@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::buffer::BufferView;
-use crate::component::{Component, DiscoverTool};
+use crate::buffer::{BufferView, Builder};
+use crate::component::{Component, ComponentType, util::DiscoverTool};
 use crate::field::codec::Codec;
 
 pub struct NullTerminatedString;
@@ -35,17 +35,48 @@ pub struct NullTerminatedString;
 pub struct VarcharString<T>(T);
 
 impl<T: Codec> Component for VarcharString<T> {
-    fn read(&self, view: &mut BufferView, _: &mut DiscoverTool) -> bp3d_proto::message::Result<usize> {
+    fn read(&self, view: &mut BufferView, _: &mut DiscoverTool) -> bp3d_proto::message::Result<()> {
         let len = self.0.read(view.buffer().as_bytes());
         let data = &mut view["data"];
         data.location_mut().size = len as _;
-        //TODO: Figure out the size in bytes of the codec.
-        Ok(len as usize + 1)
+        Ok(())
     }
 
     fn shape(&self, view: &mut BufferView, _: &Vec<BufferView>) -> bp3d_proto::message::Result<()> {
         let len = view["data"].buffer().len();
         self.0.write(view["len"].buffer_mut().as_bytes_mut(), len as _);
         Ok(())
+    }
+}
+
+impl Component for NullTerminatedString {
+    fn read(&self, view: &mut BufferView, _: &mut DiscoverTool) -> bp3d_proto::message::Result<()> {
+        let mut motherfuckingrust = 0;
+        while view.buffer().as_bytes()[motherfuckingrust] != 0x0 {
+            motherfuckingrust += 1;
+        }
+        view.location_mut().size = motherfuckingrust;
+        Ok(())
+    }
+
+    fn shape(&self, view: &mut BufferView, _: &Vec<BufferView>) -> bp3d_proto::message::Result<()> {
+        let motherfuckingrust = view.buffer().len() - 1;
+        if view.buffer().as_bytes()[motherfuckingrust] != 0x0 {
+            view.buffer_mut().as_bytes_mut()[motherfuckingrust] = 0x0;
+        }
+        Ok(())
+    }
+}
+
+impl<T: Codec> ComponentType for VarcharString<T> {
+    fn build(&self, builder: Builder<'static>) -> Builder<'static> {
+        builder.add_child(Builder::new("len").fixed(0, size_of::<T>()))
+            .add_child(Builder::new("data"))
+    }
+}
+
+impl ComponentType for NullTerminatedString {
+    fn build(&self, builder: Builder<'static>) -> Builder<'static> {
+        builder
     }
 }

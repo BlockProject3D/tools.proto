@@ -26,30 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::buffer::{BufferView, Location};
-use crate::component::{Component, ComponentType, util::DiscoverTool};
+mod interface;
+pub mod util;
 
-pub struct Optional<T: ComponentType>(pub T);
-
-impl<T: ComponentType> Component for Optional<T> {
-    fn read(&self, view: &mut BufferView, items: &mut DiscoverTool) -> bp3d_proto::message::Result<()> {
-        let v = view.buffer().as_bytes()[0];
-        if v != 0 {
-            items.discover_child(&self.0, Location {
-                offset: 1,
-                size: 0,
-                fixed: false
-            });
-        }
-        Ok(())
-    }
-
-    fn shape(&self, view: &mut BufferView, _: &Vec<BufferView>) -> bp3d_proto::message::Result<()> {
-        if !view.is_empty() {
-            view.buffer_mut().as_bytes_mut()[0] = 1;
-        } else {
-            view.buffer_mut().as_bytes_mut()[0] = 0;
-        }
-        Ok(())
-    }
-}
+pub use interface::*;

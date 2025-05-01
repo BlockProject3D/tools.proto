@@ -32,7 +32,7 @@ use std::io::Write;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 use crate::buffer::buffer::Buffer;
-use crate::component::{Component, DiscoverTool};
+use crate::component::{Component, util::DiscoverTool};
 use crate::field::primitive::{PrimitiveType, PrimitiveValue, PrimitiveValueMut};
 
 #[derive(Debug)]
@@ -171,6 +171,8 @@ impl<'a> BufferView<'a> {
         items.push(view);
         self.items = Some(items);
     }
+
+    //TODO: Support remove_item.
 
     pub fn get_mut(&mut self, path: &str) -> Option<&mut BufferView<'a>> {
         let split = path.split(".");
