@@ -221,10 +221,10 @@ impl<'a> BufferView<'a> {
             }
             return Ok(self.location.size);
         }
-        let mut offset = 0;
+        let mut size = 0;
         if let Some(component) = self.component.take() {
             let mut tool = DiscoverTool::new(self.items.take(), std::mem::replace(&mut self.children, Vec::new()));
-            let size = match component.read(self, &mut tool) {
+            size = match component.read(self, &mut tool) {
                 Ok(size) => size,
                 Err(e) => {
                     self.component = Some(component);
@@ -256,8 +256,8 @@ impl<'a> BufferView<'a> {
             }
             self.children = children;
             self.items = items;
-            offset = size as isize;
         }
+        let mut offset = 0;
         for child in &mut self.children {
             if child.location.offset != -1 {
                 offset = child.location.offset;
@@ -275,7 +275,7 @@ impl<'a> BufferView<'a> {
             child.location.size = size;
             offset += size as isize;
         }
-        Ok(offset as _)
+        Ok(size)
     }
 
     pub fn shape(&mut self) -> bp3d_proto::message::Result<()> {
