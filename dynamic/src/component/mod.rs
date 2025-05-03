@@ -28,5 +28,6 @@
 
 mod interface;
 pub mod util;
+pub mod factory;
 
 pub use interface::*;

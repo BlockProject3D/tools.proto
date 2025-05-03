@@ -7,4 +7,4 @@ publish = false
 [dependencies]
 bp3d-protoc = { version = "1.0.0-rc.5.0.0", path = "../compiler", features = ["compiler", "api"] }
 bp3d-proto = { version = "1.0.0-rc.5.0.0", path = "../runtime" }
-bp3d-util = { version = "1.4.0", features = ["extension"] }
+bp3d-util = { version = "2.1.1", features = ["extension", "result"] }
