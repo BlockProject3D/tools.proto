@@ -35,6 +35,12 @@ pub trait ComponentType {
         std::any::type_name::<Self>()
     }
 
+    /// Returns the key to use when comparing component types.
+    /// If this returns 0 the key is assumed to be the pointer stored in the wrapping [Rc](std::rc::Rc).
+    fn key(&self) -> usize {
+        0
+    }
+
     /// Adds the necessary information to the given [Builder] to construct a [BufferView]
     /// representing this [ComponentType].
     ///

@@ -32,6 +32,7 @@ use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 use crate::component::ComponentType;
 use bp3d_util::{simple_error, try_opt};
+use bp3d_protoc::compiler::structure::FixedFieldType;
 
 simple_error! {
     pub Error {
@@ -51,6 +52,20 @@ pub enum SizeType {
     U64
 }
 
+impl From<FixedFieldType> for SizeType {
+    fn from(value: FixedFieldType) -> Self {
+        match value {
+            FixedFieldType::Int8 | FixedFieldType::UInt8 => SizeType::U8,
+            FixedFieldType::Int16 | FixedFieldType::UInt16 => SizeType::U16,
+            FixedFieldType::Int32 | FixedFieldType::UInt32 => SizeType::U32,
+            FixedFieldType::Int64 | FixedFieldType::UInt64 => SizeType::U64,
+            FixedFieldType::Float32 => SizeType::U32,
+            FixedFieldType::Float64 => SizeType::U64,
+            FixedFieldType::Bool => SizeType::U8
+        }
+    }
+}
+
 pub struct ContainerOptions {
     pub inner_ty: Rc<dyn ComponentType>,
     pub count_ty: SizeType,
@@ -60,7 +75,12 @@ pub struct ContainerOptions {
 impl ContainerOptions {
     #[inline(always)]
     fn inner_ty_ptr(&self) -> usize {
-        Rc::as_ptr(&self.inner_ty) as *const () as _
+        let key = self.inner_ty.key();
+        if key != 0 {
+            key
+        } else {
+            Rc::as_ptr(&self.inner_ty) as *const () as _
+        }
     }
 }
 

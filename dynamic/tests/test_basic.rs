@@ -26,8 +26,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::cell::RefCell;
-use bp3d_proto_dynamic::buffer::BufferView;
 use bp3d_proto_dynamic::component::ComponentType;
 use bp3d_proto_dynamic::proto::Proto;
 use bp3d_protoc::api::core::loader::{Loader, Options};

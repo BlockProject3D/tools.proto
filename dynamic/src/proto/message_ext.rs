@@ -26,30 +26,54 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::rc::Rc;
 use bp3d_protoc::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::buffer::Builder;
 use crate::component::ComponentType;
+use crate::component::factory::{ContainerOptions, Factory, Key};
 use crate::field::option::Optional;
 use crate::field::primitive::from_fixed_field_type;
 use crate::proto::struct_ext::new_structure_internal;
 
-fn new_field_internal(mut builder: Builder<'static>, field: &Field) -> Builder<'static> {
+pub struct MessageExt {
+    message: Rc<Message>,
+    factory: Rc<Factory>
+}
+
+fn new_field_internal(factory: &Rc<Factory>, builder: Builder<'static>, field: &Field) -> crate::component::factory::Result<Builder<'static>> {
     match &field.ty {
-        FieldType::Fixed(v) => builder.primitive(from_fixed_field_type(v.ty, field.endianness)),
+        FieldType::Fixed(v) => Ok(builder.primitive(from_fixed_field_type(v.ty, field.endianness))),
         FieldType::Ref(v) => {
             match v {
-                Referenced::Struct(v1) => new_structure_internal(Builder::new(&field.name), &*v1),
-                Referenced::Message(v1) => new_message_internal(Builder::new(&field.name), &*v1)
+                Referenced::Struct(v1) => Ok(new_structure_internal(Builder::new(&field.name), &*v1)),
+                Referenced::Message(v1) => new_message_internal(factory, Builder::new(&field.name), &*v1)
             }
         }
-        FieldType::Buffer => {
-            panic!("Buffer types are currently not supported");
+        FieldType::Buffer => factory.with_component(Key::for_buffer(field.codec.as_ref().unwrap(), None), |comp| comp.build(Builder::new(&field.name))),
+        FieldType::SizedBuffer(v) => factory.with_component(Key::for_buffer(field.codec.as_ref().unwrap(), Some(v.ty.into())), |comp| comp.build(Builder::new(&field.name))),
+        FieldType::FixedContainer(v) => {
+            let options = ContainerOptions {
+                inner_ty: v.item_type.clone(),
+                count_ty: v.ty.into(),
+                size_ty: None,
+            };
+            factory.with_component(Key::for_container(field.codec.as_ref().unwrap(), options), |comp| comp.build(Builder::new(&field.name)))
         }
-        FieldType::SizedBuffer(_) => {
-            panic!("Container types are currently not supported");
+        FieldType::Container(v) => {
+            let options = ContainerOptions {
+                inner_ty: Rc::new(MessageExt { factory: factory.clone(), message: v.item_type.clone() }),
+                count_ty: v.ty.into(),
+                size_ty: None,
+            };
+            factory.with_component(Key::for_container(field.codec.as_ref().unwrap(), options), |comp| comp.build(Builder::new(&field.name)))
         }
-        FieldType::FixedContainer(_) | FieldType::Container(_) | FieldType::SizedContainer(_) => {
-            panic!("Container types are currently not supported");
+        FieldType::SizedContainer(v) => {
+            let options = ContainerOptions {
+                inner_ty: Rc::new(MessageExt { factory: factory.clone(), message: v.item_type.clone() }),
+                count_ty: v.ty.into(),
+                size_ty: Some(v.size_ty.into()),
+            };
+            factory.with_component(Key::for_container(field.codec.as_ref().unwrap(), options), |comp| comp.build(Builder::new(&field.name)))
         }
         FieldType::Union(_) => {
             panic!("Union types are currently not supported");
@@ -62,7 +86,8 @@ fn new_field_internal(mut builder: Builder<'static>, field: &Field) -> Builder<'
 
 #[derive(Clone)]
 struct FieldType1 {
-    field: Field
+    field: Field,
+    factory: Rc<Factory>
 }
 
 impl ComponentType for FieldType1 {
@@ -71,31 +96,38 @@ impl ComponentType for FieldType1 {
     }
 
     fn build(&self, builder: Builder<'static>) -> Builder<'static> {
-        new_field_internal(builder, &self.field)
+        //TODO: Better error handling
+        new_field_internal(&self.factory, builder, &self.field).unwrap()
     }
 }
 
-fn new_message_internal(mut builder: Builder<'static>, value: &Message) -> Builder<'static> {
+fn new_message_internal(factory: &Rc<Factory>, mut builder: Builder<'static>, value: &Message) -> crate::component::factory::Result<Builder<'static>> {
     for field in &value.fields {
         if field.optional {
             let ft = FieldType1 {
-                field: field.clone()
+                field: field.clone(),
+                factory: factory.clone()
             };
             let opt = Optional(ft);
             builder = builder.add_child(Builder::new(&field.name).component(opt));
             continue;
         }
-        builder = builder.add_child(new_field_internal(Builder::new(&field.name), field));
+        builder = builder.add_child(new_field_internal(factory, Builder::new(&field.name), field)?);
     }
-    builder
+    Ok(builder)
 }
 
-impl ComponentType for Message {
+impl ComponentType for MessageExt {
     fn name(&self) -> &str {
-        &self.name
+        &self.message.name
+    }
+
+    fn key(&self) -> usize {
+        Rc::as_ptr(&self.message) as _
     }
 
     fn build(&self, builder: Builder<'static>) -> Builder<'static> {
-        new_message_internal(builder, self)
+        //TODO: Better error handling
+        new_message_internal(&self.factory, builder, &self.message).unwrap()
     }
 }
