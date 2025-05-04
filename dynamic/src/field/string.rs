@@ -57,7 +57,7 @@ impl Component for NullTerminatedString {
         while view.buffer().as_bytes()[motherfuckingrust] != 0x0 {
             motherfuckingrust += 1;
         }
-        view.location_mut().size = motherfuckingrust;
+        view.location_mut().size = motherfuckingrust + 1;
         Ok(())
     }
 

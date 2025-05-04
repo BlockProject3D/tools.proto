@@ -34,6 +34,7 @@ use std::rc::Rc;
 use crate::buffer::buffer::Buffer;
 use crate::component::{Component, util::DiscoverTool};
 use crate::field::primitive::{PrimitiveType, PrimitiveValue, PrimitiveValueMut};
+use bp3d_debug::trace;
 
 #[derive(Debug)]
 pub struct Location {
@@ -100,7 +101,12 @@ impl<'a> BufferView<'a> {
     fn get_hex_max_width(&self) -> usize {
         let mut hex_max_width = 0;
         for child in &self.children {
-            let len = (child.buffer.len() + (child.location.offset as usize)) * 3;
+            trace!({len=child.buffer.len()} {offset=child.location.offset}, "get_hex_max_width");
+            let len = if child.buffer.len() == 0 {
+                3
+            } else {
+                (child.buffer.len() + (child.location.offset as usize)) * 3
+            };
             if len > hex_max_width {
                 hex_max_width = len;
             }
@@ -225,13 +231,11 @@ impl<'a> BufferView<'a> {
             return Ok(self.location.size);
         }
         if let Some(component) = self.component.take() {
+            //TODO: Use Rc instead of Box.
             let mut tool = DiscoverTool::new(self.items.take(), std::mem::replace(&mut self.children, Vec::new()));
-            match component.read(self, &mut tool) {
-                Ok(size) => size,
-                Err(e) => {
-                    self.component = Some(component);
-                    return Err(e);
-                }
+            if let Err(e) = component.read(self, &mut tool) {
+                self.component = Some(component);
+                return Err(e);
             };
             self.component = Some(component);
             let (mut items, children) = tool.into_inner();
@@ -252,6 +256,8 @@ impl<'a> BufferView<'a> {
                         return Err(bp3d_proto::message::Error::Truncated);
                     }
                     item.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((item_offset as usize)..(item_offset as usize) + size);
+                    //TODO: Check if this is fine
+                    item.location.offset = item_offset as _;
                     item.location.size = size;
                     item_offset += size as isize;
                 }
@@ -259,7 +265,7 @@ impl<'a> BufferView<'a> {
             self.children = children;
             self.items = items;
         }
-        let mut offset = 0;
+        let mut offset = self.location.size as isize;
         for child in &mut self.children {
             if child.location.offset != -1 {
                 offset = child.location.offset;
@@ -270,10 +276,13 @@ impl<'a> BufferView<'a> {
             unsafe { child.buffer.unsafe_buffer.delete() };
             child.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((offset as usize)..);
             let size = child.read()?;
+            trace!("size: {}", size);
             if (offset as usize) + size > self.buffer.len() {
                 return Err(bp3d_proto::message::Error::Truncated);
             }
             child.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((offset as usize)..(offset as usize) + size);
+            //TODO: Check if this is fine
+            child.location.offset = offset;
             child.location.size = size;
             offset += size as isize;
         }
@@ -300,6 +309,7 @@ impl<'a> BufferView<'a> {
                 child.shape()?
             }
         }
+        trace!("buffer after shape: {:?}", self.buffer.as_bytes());
         if self.path_component.parent.is_none() {
             self.flatten()?;
         }
@@ -311,8 +321,10 @@ impl<'a> BufferView<'a> {
             let mut v = Vec::with_capacity(self.buffer.len());
             for child in &mut self.children {
                 child.flatten_internal();
+                trace!("child buffer: {:?}", child.buffer.as_bytes());
                 let _ = v.write(child.buffer.as_bytes());
             }
+            trace!("master buffer: {:?}", v);
             unsafe { self.buffer.unsafe_buffer.copy(v.as_slice()) };
         }
     }

@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use bp3d_debug::trace;
 use crate::buffer::{BufferView, Location};
 use crate::component::{Component, ComponentType, util::DiscoverTool};
 
@@ -33,10 +34,12 @@ pub struct Optional<T: ComponentType>(pub T);
 
 impl<T: ComponentType> Component for Optional<T> {
     fn read(&self, view: &mut BufferView, items: &mut DiscoverTool) -> bp3d_proto::message::Result<()> {
+        view.location_mut().size = 1;
         let v = view.buffer().as_bytes()[0];
         if v != 0 {
+            trace!({v}, "discover child");
             items.discover_child(&self.0, Location {
-                offset: 1,
+                offset: -1,
                 size: 0,
                 fixed: false
             });
@@ -45,9 +48,15 @@ impl<T: ComponentType> Component for Optional<T> {
     }
 
     fn shape(&self, view: &mut BufferView, _: &Vec<BufferView>) -> bp3d_proto::message::Result<()> {
+        if view.buffer().is_empty() {
+            trace!("allocate optional");
+            view.buffer_mut().set_bytes(b"\0");
+        }
         if !view.is_empty() {
+            trace!("child found");
             view.buffer_mut().as_bytes_mut()[0] = 1;
         } else {
+            trace!("no children");
             view.buffer_mut().as_bytes_mut()[0] = 0;
         }
         Ok(())

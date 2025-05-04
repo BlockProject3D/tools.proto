@@ -41,6 +41,9 @@ fn test_msgs() {
     loader.load_from_folder("../testprog/src", &Options::from_package("testprog")).unwrap();
     loader.exclude("custom_codec_broken");
     let proto = Proto::build(loader, factory).unwrap();
-    let msg = proto.get_message("test.Test").unwrap().new_instance(true);
-    println!("{:?}", msg)
+    let mut msg = proto.get_message("test.Test").unwrap().new_instance(true);
+    println!("{}", msg);
+    msg["s1"].buffer_mut().copy_from(b"this is a test\n");
+    msg.shape().unwrap();
+    println!("{}", msg);
 }
