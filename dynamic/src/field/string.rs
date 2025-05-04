@@ -26,15 +26,17 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use bp3d_protoc::model::protocol::Endianness;
 use crate::buffer::{BufferView, Builder};
 use crate::component::{Component, ComponentType, util::DiscoverTool};
-use crate::field::codec::Codec;
+use crate::component::factory::SizeType;
+use crate::field::codec::{ByteCodecBE, ByteCodecLE, Codec};
 
 pub struct NullTerminatedString;
 
-pub struct VarcharString<T>(T);
+struct VarcharStringInner<T>(T);
 
-impl<T: Codec> Component for VarcharString<T> {
+impl<T: Codec> Component for VarcharStringInner<T> {
     fn read(&self, view: &mut BufferView, _: &mut DiscoverTool) -> bp3d_proto::message::Result<()> {
         let len = self.0.read(view.buffer().as_bytes());
         let data = &mut view["data"];
@@ -68,15 +70,22 @@ impl Component for NullTerminatedString {
     }
 }
 
-impl<T: Codec> ComponentType for VarcharString<T> {
+pub struct VarcharString(pub SizeType);
+
+impl ComponentType for VarcharString {
     fn build(&self, builder: Builder<'static>) -> Builder<'static> {
-        builder.add_child(Builder::new("len").fixed(0, size_of::<T>()))
-            .add_child(Builder::new("data"))
+        if self.0.get_endianness() == Endianness::Little {
+            builder.component(VarcharStringInner(ByteCodecLE)).add_child(Builder::new("len").fixed(0, self.0.get_size()))
+                .add_child(Builder::new("data"))
+        } else {
+            builder.component(VarcharStringInner(ByteCodecBE)).add_child(Builder::new("len").fixed(0, self.0.get_size()))
+                .add_child(Builder::new("data"))
+        }
     }
 }
 
 impl ComponentType for NullTerminatedString {
     fn build(&self, builder: Builder<'static>) -> Builder<'static> {
-        builder
+        builder.component(NullTerminatedString)
     }
 }

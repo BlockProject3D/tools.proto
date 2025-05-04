@@ -29,12 +29,13 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 use bp3d_protoc::api::core::loader::Loader;
-use bp3d_protoc::compiler::message::Message;
 use bp3d_protoc::compiler::Protocol;
 use bp3d_protoc::compiler::r#enum::Enum;
 use bp3d_protoc::compiler::structure::Structure;
 use bp3d_protoc::compiler::union::Union;
 use bp3d_protoc::compiler::util::imports::ImportSolver;
+use crate::component::factory::Factory;
+use crate::proto::message_ext::MessageExt;
 
 struct Solver;
 
@@ -51,19 +52,20 @@ impl ImportSolver for Solver {
 
 pub struct Proto {
     structures: HashMap<String, Rc<Structure>>,
-    messages: HashMap<String, Rc<Message>>,
+    messages: HashMap<String, Rc<MessageExt>>,
     unions: HashMap<String, Rc<Union>>,
     enums: HashMap<String, Rc<Enum>>,
 }
 
 impl Proto {
-    pub fn build(loader: Loader) -> Result<Self, bp3d_protoc::api::core::Error> {
+    pub fn build(loader: Loader, factory: Factory) -> Result<Self, bp3d_protoc::api::core::Error> {
         let mut proto = Proto {
             structures: Default::default(),
             messages: Default::default(),
             unions: Default::default(),
             enums: Default::default(),
         };
+        let factory = Rc::new(factory);
         let store = loader.compile(&Solver)?;
         for entry in store.entries() {
             if entry.userdata.is_excluded_from_generation() {
@@ -80,7 +82,10 @@ impl Proto {
                 proto.unions.insert(store.get_full_type_path(&entry.model, &value.name).unwrap(), value.clone());
             }
             for value in entry.model.messages.iter() {
-                proto.messages.insert(store.get_full_type_path(&entry.model, &value.name).unwrap(), value.clone());
+                proto.messages.insert(store.get_full_type_path(&entry.model, &value.name).unwrap(), Rc::new(MessageExt {
+                    factory: factory.clone(),
+                    message: value.clone()
+                }));
             }
         }
         Ok(proto)
@@ -90,7 +95,7 @@ impl Proto {
         self.structures.get(name)
     }
 
-    pub fn get_message(&self, name: &str) -> Option<&Rc<Message>> {
+    pub fn get_message(&self, name: &str) -> Option<&Rc<MessageExt>> {
         self.messages.get(name)
     }
 }

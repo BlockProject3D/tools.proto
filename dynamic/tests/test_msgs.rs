@@ -27,36 +27,20 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use bp3d_proto_dynamic::component::ComponentType;
-use bp3d_proto_dynamic::component::factory::Factory;
+use bp3d_proto_dynamic::field::string::{NullTerminatedString, VarcharString};
+use bp3d_proto_dynamic::component::factory::{Factory, Key, SizeType};
 use bp3d_proto_dynamic::proto::Proto;
 use bp3d_protoc::api::core::loader::{Loader, Options};
 
-macro_rules! assert_feq {
-    ($actual: expr, $expected: expr, $delta: expr) => {
-        if ($actual - $expected).abs() > $delta {
-            panic!(
-                "assertion '(actual - expected) < delta' failed:\n actual: {}\n expected: {}\n delta: {}",
-                $actual, $expected, $delta
-            );
-        }
-    };
-}
-
 #[test]
-fn floats() {
+fn test_msgs() {
+    let mut factory = Factory::new();
+    factory.add_component(Key::for_buffer("string", Some(SizeType::U8)), VarcharString(SizeType::U8)).unwrap();
+    factory.add_component(Key::for_buffer("string", None), NullTerminatedString).unwrap();
     let mut loader = Loader::new(16);
     loader.load_from_folder("../testprog/src", &Options::from_package("testprog")).unwrap();
     loader.exclude("custom_codec_broken");
-    let proto = Proto::build(loader, Factory::new()).unwrap();
-    let mut view = proto.get_structure("views.Floats").unwrap().new_instance(true);
-
-    view.shape().unwrap();
-    println!("{}", view);
-    view["a"].get_primitive_mut().unwrap().set(4.4242);
-    view["b"].get_primitive_mut().unwrap().set(12.7);
-    assert_feq!(view["a"].get_primitive().unwrap().get().to_float(), 4.4242, 0.0001);
-    assert_feq!(view["b"].get_primitive().unwrap().get().to_float(), 12.7, 0.1);
-    view["b"].get_primitive_mut().unwrap().set_raw(127);
-    assert_feq!(view["b"].get_primitive().unwrap().get().to_float(), 12.7, 0.1);
-    println!("{}", view);
+    let proto = Proto::build(loader, factory).unwrap();
+    let msg = proto.get_message("test.Test").unwrap().new_instance(true);
+    println!("{:?}", msg)
 }

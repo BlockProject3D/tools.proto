@@ -33,6 +33,7 @@ use std::rc::Rc;
 use crate::component::ComponentType;
 use bp3d_util::{simple_error, try_opt};
 use bp3d_protoc::compiler::structure::FixedFieldType;
+use bp3d_protoc::model::protocol::Endianness;
 
 simple_error! {
     pub Error {
@@ -47,21 +48,42 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub enum SizeType {
     U8,
-    U16,
-    U32,
-    U64
+    U16LE,
+    U16BE,
+    U32LE,
+    U32BE,
+    U64LE,
+    U64BE
 }
 
-impl From<FixedFieldType> for SizeType {
-    fn from(value: FixedFieldType) -> Self {
-        match value {
-            FixedFieldType::Int8 | FixedFieldType::UInt8 => SizeType::U8,
-            FixedFieldType::Int16 | FixedFieldType::UInt16 => SizeType::U16,
-            FixedFieldType::Int32 | FixedFieldType::UInt32 => SizeType::U32,
-            FixedFieldType::Int64 | FixedFieldType::UInt64 => SizeType::U64,
-            FixedFieldType::Float32 => SizeType::U32,
-            FixedFieldType::Float64 => SizeType::U64,
-            FixedFieldType::Bool => SizeType::U8
+impl SizeType {
+    pub fn get_endianness(&self) -> Endianness {
+        match self {
+            SizeType::U16LE | SizeType::U32LE | SizeType::U64LE => Endianness::Little,
+            _ => Endianness::Big
+        }
+    }
+
+    pub fn get_size(&self) -> usize {
+        match self {
+            SizeType::U8 => 1,
+            SizeType::U16LE | SizeType::U16BE => 2,
+            SizeType::U32LE | SizeType::U32BE => 4,
+            SizeType::U64LE | SizeType::U64BE => 8
+        }
+    }
+}
+
+impl From<(FixedFieldType, Endianness)> for SizeType {
+    fn from((value, endianness): (FixedFieldType, Endianness)) -> Self {
+        match (value, endianness) {
+            (FixedFieldType::Int8 | FixedFieldType::UInt8 | FixedFieldType::Bool, _) => SizeType::U8,
+            (FixedFieldType::Int16 | FixedFieldType::UInt16, Endianness::Little) => SizeType::U16LE,
+            (FixedFieldType::Int16 | FixedFieldType::UInt16, Endianness::Big) => SizeType::U16BE,
+            (FixedFieldType::Int32 | FixedFieldType::UInt32 | FixedFieldType::Float32, Endianness::Little) => SizeType::U32LE,
+            (FixedFieldType::Int32 | FixedFieldType::UInt32 | FixedFieldType::Float32, Endianness::Big) => SizeType::U32BE,
+            (FixedFieldType::Int64 | FixedFieldType::UInt64 | FixedFieldType::Float64, Endianness::Little) => SizeType::U64LE,
+            (FixedFieldType::Int64 | FixedFieldType::UInt64 | FixedFieldType::Float64, Endianness::Big) => SizeType::U64BE
         }
     }
 }
@@ -161,11 +183,11 @@ impl Factory {
         Ok(())
     }
 
-    pub fn add_component(&mut self, key: Key, component: Rc<dyn ComponentType>) -> Result<()> {
+    pub fn add_component(&mut self, key: Key, component: impl ComponentType + 'static) -> Result<()> {
         if self.components.get_mut().contains_key(&key) {
             return Err(Error::AlreadyRegistered(key.name));
         }
-        self.components.get_mut().insert(key, component);
+        self.components.get_mut().insert(key, Rc::new(component));
         Ok(())
     }
 

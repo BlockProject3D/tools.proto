@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use bp3d_proto_dynamic::component::ComponentType;
+use bp3d_proto_dynamic::component::factory::Factory;
 use bp3d_proto_dynamic::proto::Proto;
 use bp3d_protoc::api::core::loader::{Loader, Options};
 
@@ -36,7 +37,7 @@ fn test_basic2() {
     let mut loader = Loader::new(16);
     loader.load_from_folder("../testprog/src", &Options::from_package("testprog")).unwrap();
     loader.exclude("custom_codec_broken");
-    let proto = Proto::build(loader).unwrap();
+    let proto = Proto::build(loader, Factory::new()).unwrap();
     let mut view = proto.get_structure("bits.Numbers").unwrap().new_instance(false);
     view.read_view(&bytes).unwrap();
     println!("{}", view);
@@ -47,7 +48,7 @@ fn test_basic() {
     let mut loader = Loader::new(16);
     loader.load_from_folder("../testprog/src", &Options::from_package("testprog")).unwrap();
     loader.exclude("custom_codec_broken");
-    let proto = Proto::build(loader).unwrap();
+    let proto = Proto::build(loader, Factory::new()).unwrap();
     let mut view = proto.get_structure("bits.Numbers").unwrap().new_instance(false);
     view.read_copy(b"abcd").unwrap();
     view.buffer_mut().copy_from(b"1234");

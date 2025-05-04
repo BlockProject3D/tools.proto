@@ -29,4 +29,4 @@
 pub mod primitive;
 pub mod codec;
 pub mod option;
-mod string;
+pub mod string;

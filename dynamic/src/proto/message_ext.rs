@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::ops::Deref;
 use std::rc::Rc;
 use bp3d_protoc::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::buffer::Builder;
@@ -36,8 +37,16 @@ use crate::field::primitive::from_fixed_field_type;
 use crate::proto::struct_ext::new_structure_internal;
 
 pub struct MessageExt {
-    message: Rc<Message>,
-    factory: Rc<Factory>
+    pub(crate) message: Rc<Message>,
+    pub(crate) factory: Rc<Factory>
+}
+
+impl Deref for MessageExt {
+    type Target = Rc<Message>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.message
+    }
 }
 
 fn new_field_internal(factory: &Rc<Factory>, builder: Builder<'static>, field: &Field) -> crate::component::factory::Result<Builder<'static>> {
@@ -50,11 +59,11 @@ fn new_field_internal(factory: &Rc<Factory>, builder: Builder<'static>, field: &
             }
         }
         FieldType::Buffer => factory.with_component(Key::for_buffer(field.codec.as_ref().unwrap(), None), |comp| comp.build(Builder::new(&field.name))),
-        FieldType::SizedBuffer(v) => factory.with_component(Key::for_buffer(field.codec.as_ref().unwrap(), Some(v.ty.into())), |comp| comp.build(Builder::new(&field.name))),
+        FieldType::SizedBuffer(v) => factory.with_component(Key::for_buffer(field.codec.as_ref().unwrap(), Some((v.ty, field.endianness).into())), |comp| comp.build(Builder::new(&field.name))),
         FieldType::FixedContainer(v) => {
             let options = ContainerOptions {
                 inner_ty: v.item_type.clone(),
-                count_ty: v.ty.into(),
+                count_ty: (v.ty, field.endianness).into(),
                 size_ty: None,
             };
             factory.with_component(Key::for_container(field.codec.as_ref().unwrap(), options), |comp| comp.build(Builder::new(&field.name)))
@@ -62,7 +71,7 @@ fn new_field_internal(factory: &Rc<Factory>, builder: Builder<'static>, field: &
         FieldType::Container(v) => {
             let options = ContainerOptions {
                 inner_ty: Rc::new(MessageExt { factory: factory.clone(), message: v.item_type.clone() }),
-                count_ty: v.ty.into(),
+                count_ty: (v.ty, field.endianness).into(),
                 size_ty: None,
             };
             factory.with_component(Key::for_container(field.codec.as_ref().unwrap(), options), |comp| comp.build(Builder::new(&field.name)))
@@ -70,8 +79,8 @@ fn new_field_internal(factory: &Rc<Factory>, builder: Builder<'static>, field: &
         FieldType::SizedContainer(v) => {
             let options = ContainerOptions {
                 inner_ty: Rc::new(MessageExt { factory: factory.clone(), message: v.item_type.clone() }),
-                count_ty: v.ty.into(),
-                size_ty: Some(v.size_ty.into()),
+                count_ty: (v.ty, field.endianness).into(),
+                size_ty: Some((v.size_ty, field.endianness).into()),
             };
             factory.with_component(Key::for_container(field.codec.as_ref().unwrap(), options), |comp| comp.build(Builder::new(&field.name)))
         }
