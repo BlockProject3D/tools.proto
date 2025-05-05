@@ -72,6 +72,11 @@ impl<'a> Builder<'a> {
         self
     }
 
+    pub fn size(mut self, size: usize) -> Builder<'a> {
+        self.location.size = size;
+        self
+    }
+
     pub fn component(mut self, component: impl Component + 'static) -> Builder<'a> {
         self.component = Some(Box::new(component));
         self

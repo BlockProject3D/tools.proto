@@ -62,6 +62,10 @@ impl Component for NullTerminatedString {
     }
 
     fn shape(&self, view: &mut BufferView, _: &Vec<BufferView>) -> bp3d_proto::message::Result<()> {
+        if view.buffer().is_empty() {
+            view.buffer_mut().set_bytes(b"\0");
+            return Ok(())
+        }
         let motherfuckingrust = view.buffer().len() - 1;
         if view.buffer().as_bytes()[motherfuckingrust] != 0x0 {
             view.buffer_mut().as_bytes_mut()[motherfuckingrust] = 0x0;

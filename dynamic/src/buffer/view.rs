@@ -35,6 +35,7 @@ use crate::buffer::buffer::Buffer;
 use crate::component::{Component, util::DiscoverTool};
 use crate::field::primitive::{PrimitiveType, PrimitiveValue, PrimitiveValueMut};
 use bp3d_debug::trace;
+use crate::buffer::unsafe_buffer::UnsafeBuffer;
 
 #[derive(Debug)]
 pub struct Location {
@@ -317,6 +318,9 @@ impl<'a> BufferView<'a> {
             }
             self.component = Some(component);
             self.items = Some(items);
+        } else if self.buffer.is_empty() && self.location.size > 0 {
+            trace!({size=self.location.size}, "allocate empty buffer");
+            self.buffer.unsafe_buffer = UnsafeBuffer::with_capacity(self.location.size);
         }
         if !self.location.fixed {
             for child in &mut self.children {
@@ -335,10 +339,10 @@ impl<'a> BufferView<'a> {
             let mut v = Vec::with_capacity(self.buffer.len());
             for child in &mut self.children {
                 child.flatten_internal();
-                trace!("child buffer: {:?}", child.buffer.as_bytes());
+                trace!({name=&*child.path_component.name}, "child buffer: {:?}", child.buffer.as_bytes());
                 let _ = v.write(child.buffer.as_bytes());
             }
-            trace!("master buffer: {:?}", v);
+            trace!({name=&*self.path_component.name}, "master buffer: {:?}", v);
             unsafe { self.buffer.unsafe_buffer.copy(v.as_slice()) };
         }
     }

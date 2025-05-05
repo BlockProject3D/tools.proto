@@ -51,7 +51,7 @@ impl Deref for MessageExt {
 
 fn new_field_internal(factory: &Rc<Factory>, builder: Builder<'static>, field: &Field) -> crate::component::factory::Result<Builder<'static>> {
     match &field.ty {
-        FieldType::Fixed(v) => Ok(builder.primitive(from_fixed_field_type(v.ty, field.endianness))),
+        FieldType::Fixed(v) => Ok(builder.size(v.ty.get_byte_size()).primitive(from_fixed_field_type(v.ty, field.endianness))),
         FieldType::Ref(v) => {
             match v {
                 Referenced::Struct(v1) => Ok(new_structure_internal(Builder::new(&field.name), &*v1)),
