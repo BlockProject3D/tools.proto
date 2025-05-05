@@ -101,11 +101,11 @@ impl<'a> BufferView<'a> {
     fn get_hex_max_width(&self) -> usize {
         let mut hex_max_width = 0;
         for child in &self.children {
-            trace!({len=child.buffer.len()} {offset=child.location.offset}, "get_hex_max_width");
+            trace!({len=child.buffer.len()} {offset=child.buffer.offset}, "get_hex_max_width");
             let len = if child.buffer.len() == 0 {
                 3
             } else {
-                (child.buffer.len() + (child.location.offset as usize)) * 3
+                (child.buffer.len() + child.buffer.offset) * 3
             };
             if len > hex_max_width {
                 hex_max_width = len;
@@ -124,10 +124,10 @@ impl<'a> BufferView<'a> {
             let bytes = format!("{:X?}", child.buffer.as_bytes()).replace(",", "");
             let bytes = &bytes[1..bytes.len() - 1];
             let mut padding = String::from("");
-            for _ in 0..child.location.offset {
+            for _ in 0..child.buffer.offset {
                 padding += ".. ";
             }
-            writeln!(f, "| {: <path_max_width$} | {: ^6} | {: ^6} | {: <hex_max_width$} | {: ^10} |", child.get_path(), child.location.offset, child.location.size, padding + bytes, value)?;
+            writeln!(f, "| {: <path_max_width$} | {: ^6} | {: ^6} | {: <hex_max_width$} | {: ^10} |", child.get_path(), child.buffer.offset, child.buffer.len(), padding + bytes, value)?;
             child.dump_children(f, path_max_width, hex_max_width)?;
         }
         Ok(())
@@ -225,6 +225,7 @@ impl<'a> BufferView<'a> {
                 self.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index(..self.location.size);
                 for child in &mut self.children {
                     child.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index(child.location.offset as usize..child.location.offset as usize + child.location.size);
+                    child.buffer.offset = child.location.offset as usize;
                     child.read()?;
                 }
             }
@@ -256,9 +257,7 @@ impl<'a> BufferView<'a> {
                         return Err(bp3d_proto::message::Error::Truncated);
                     }
                     item.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((item_offset as usize)..(item_offset as usize) + size);
-                    //TODO: Check if this is fine
-                    item.location.offset = item_offset as _;
-                    item.location.size = size;
+                    item.buffer.offset = item_offset as _;
                     item_offset += size as isize;
                 }
             }
@@ -281,12 +280,9 @@ impl<'a> BufferView<'a> {
                 return Err(bp3d_proto::message::Error::Truncated);
             }
             child.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((offset as usize)..(offset as usize) + size);
-            //TODO: Check if this is fine
-            child.location.offset = offset;
-            child.location.size = size;
+            child.buffer.offset = offset as _;
             offset += size as isize;
         }
-        self.location.size = offset as _;
         self.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index(..offset as _);
         Ok(offset as _)
     }

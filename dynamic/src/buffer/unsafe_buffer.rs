@@ -70,10 +70,12 @@ pub enum UnsafeBuffer<'a> {
 }
 
 impl<'a> UnsafeBuffer<'a> {
+    #[inline(always)]
     pub fn from_copy(slice: &[u8]) -> UnsafeBuffer<'a> {
         UnsafeBuffer::Owned(Bytes::from_slice(slice))
     }
 
+    #[inline(always)]
     pub fn with_capacity(capacity: usize) -> UnsafeBuffer<'a> {
         UnsafeBuffer::Owned(Bytes::with_capacity(capacity))
     }
@@ -88,6 +90,7 @@ impl<'a> UnsafeBuffer<'a> {
         }
     }
 
+    #[inline(always)]
     pub fn as_bytes(&self) -> &[u8] {
         match self {
             UnsafeBuffer::Owned(v) => v.as_bytes(),
@@ -105,10 +108,12 @@ impl<'a> UnsafeBuffer<'a> {
         }
     }
 
+    #[inline(always)]
     pub fn index<I: Index>(&self, index: I) -> I::Output<'a> {
         index.index(self)
     }
 
+    #[inline(always)]
     pub fn len(&self) -> usize {
         match self {
             UnsafeBuffer::Owned(v) => v.len(),
@@ -116,6 +121,7 @@ impl<'a> UnsafeBuffer<'a> {
         }
     }
 
+    #[inline(always)]
     pub unsafe fn delete(&mut self) {
         match self {
             UnsafeBuffer::Owned(v) => v.delete(),

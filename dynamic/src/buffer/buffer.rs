@@ -33,12 +33,14 @@ use crate::buffer::unsafe_buffer::UnsafeBuffer;
 #[derive(Debug)]
 pub struct Buffer<'a> {
     pub(super) unsafe_buffer: UnsafeBuffer<'a>,
-    pub(super) flat: Rc<Cell<bool>>
+    pub(super) flat: Rc<Cell<bool>>,
+    pub(super) offset: usize
 }
 
 impl<'a> Buffer<'a> {
     pub fn set_bytes(&mut self, bytes: &'a [u8]) {
         self.unsafe_buffer = UnsafeBuffer::Borrowed(bytes);
+        self.offset = 0;
         self.flat.set(false);
     }
 
@@ -49,18 +51,27 @@ impl<'a> Buffer<'a> {
         }
     }
 
+    #[inline(always)]
     pub fn as_bytes(&self) -> &[u8] {
         self.unsafe_buffer.as_bytes()
     }
 
+    #[inline(always)]
     pub fn as_bytes_mut(&mut self) -> &mut [u8] {
         self.unsafe_buffer.as_bytes_mut()
     }
 
+    #[inline(always)]
     pub fn len(&self) -> usize {
         self.unsafe_buffer.len()
     }
 
+    #[inline(always)]
+    pub fn offset(&self) -> usize {
+        self.offset
+    }
+
+    #[inline(always)]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }

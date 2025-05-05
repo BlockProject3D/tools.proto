@@ -93,6 +93,7 @@ impl<'a> Builder<'a> {
             buffer: Buffer {
                 unsafe_buffer: UnsafeBuffer::Borrowed(b""),
                 flat: self.flat,
+                offset: 0
             },
             children: self.children,
             location: self.location,
