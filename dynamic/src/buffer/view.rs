@@ -176,9 +176,28 @@ impl<'a> BufferView<'a> {
         view.path_component.index.set((items.len() - 1) as _);
         items.push(view);
         self.items = Some(items);
+        self.buffer.flat.set(false);
     }
 
-    //TODO: Support remove_item.
+    pub fn remove_item(&mut self, index: usize) {
+        if let Some(items) = &mut self.items {
+            items.remove(index);
+            for (i, v) in items.iter_mut().enumerate() {
+                v.path_component.index.set(i as _);
+            }
+            self.buffer.flat.set(false);
+        }
+    }
+
+    pub fn add_child(&mut self, view: BufferView<'a>) {
+        self.children.push(view);
+        self.buffer.flat.set(false);
+    }
+
+    pub fn clear(&mut self) {
+        self.children.clear();
+        self.buffer.flat.set(false);
+    }
 
     pub fn get_mut(&mut self, path: &str) -> Option<&mut BufferView<'a>> {
         let split = path.split(".");
@@ -232,7 +251,6 @@ impl<'a> BufferView<'a> {
             return Ok(self.location.size);
         }
         if let Some(component) = self.component.take() {
-            //TODO: Use Rc instead of Box.
             let mut tool = DiscoverTool::new(self.items.take(), std::mem::replace(&mut self.children, Vec::new()));
             if let Err(e) = component.read(self, &mut tool) {
                 self.component = Some(component);
