@@ -58,4 +58,7 @@ fn test_msgs() {
     assert_eq!(msg["p1.Test1.p1"].get_primitive().unwrap().get().to_unsigned(), 0x12ABCDEF);
     assert_eq!(msg["p1.Test1.p3"].get_primitive().unwrap().get().to_unsigned(), 0xFF);
     println!("{}", msg);
+    msg["p1.Test1.s1"].buffer_mut().set_bytes(b"test ");
+    msg.shape().unwrap();
+    println!("{}", msg);
 }

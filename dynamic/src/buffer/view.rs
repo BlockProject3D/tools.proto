@@ -181,6 +181,9 @@ impl<'a> BufferView<'a> {
     pub fn add_item(&mut self, mut view: BufferView<'a>) {
         let mut items = self.items.take().unwrap_or_default();
         view.buffer.flat = self.buffer.flat.clone();
+        for child in view.iter_mut() {
+            child.buffer.flat = self.buffer.flat.clone();
+        }
         *unsafe { &mut *view.path_component.parent.get() } = Some(self.path_component.clone());
         view.path_component.index.set((items.len() - 1) as _);
         items.push(view);
@@ -200,6 +203,9 @@ impl<'a> BufferView<'a> {
 
     pub fn add_child(&mut self, mut view: BufferView<'a>) {
         view.buffer.flat = self.buffer.flat.clone();
+        for child in view.iter_mut() {
+            child.buffer.flat = self.buffer.flat.clone();
+        }
         *unsafe { &mut *view.path_component.parent.get() } = Some(self.path_component.clone());
         self.children.push(view);
         self.buffer.flat.set(false);
