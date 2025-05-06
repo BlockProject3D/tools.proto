@@ -128,7 +128,7 @@ impl<'a> BufferView<'a> {
     fn dump_children(&self, f: &mut std::fmt::Formatter<'_>, path_max_width: usize, hex_max_width: usize) -> std::fmt::Result {
         for child in &self.children {
             let value = child.get_primitive().map(|v| v.get().to_string()).unwrap_or("####".into());
-            let bytes = format!("{:X?}", child.buffer.as_bytes()).replace(",", "");
+            let bytes = format!("{:02X?}", child.buffer.as_bytes()).replace(",", "");
             let bytes = &bytes[1..bytes.len() - 1];
             let mut padding = String::from("");
             for _ in 0..child.buffer.offset {
