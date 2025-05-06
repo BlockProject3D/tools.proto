@@ -55,6 +55,7 @@ impl<T: ComponentType> Component for Optional<T> {
         if !view.is_empty() {
             trace!("child found");
             view.buffer_mut().as_bytes_mut()[0] = 1;
+            unsafe { view.iter_mut().next().unwrap_unchecked() }.location_mut().offset = 1;
         } else {
             trace!("no children");
             view.buffer_mut().as_bytes_mut()[0] = 0;

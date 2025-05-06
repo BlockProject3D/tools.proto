@@ -226,6 +226,10 @@ impl<'a> BufferView<'a> {
         self.children.iter()
     }
 
+    pub fn iter_mut(&mut self) -> impl Iterator<Item=&mut BufferView<'a>> {
+        self.children.iter_mut()
+    }
+
     pub fn read_copy(&mut self, bytes: &[u8]) -> bp3d_proto::message::Result<usize> {
         self.buffer.copy_from(bytes);
         self.read()
@@ -338,11 +342,13 @@ impl<'a> BufferView<'a> {
         if self.children.len() > 0 {
             let mut v = Vec::with_capacity(self.buffer.len());
             for child in &mut self.children {
+                //TODO: if child has an offset, copy from self.buffer to fill the remaining space.
                 child.flatten_internal();
                 trace!({name=&*child.path_component.name}, "child buffer: {:?}", child.buffer.as_bytes());
                 let _ = v.write(child.buffer.as_bytes());
             }
             trace!({name=&*self.path_component.name}, "master buffer: {:?}", v);
+            //TODO: delete and recreate self.buffer if buffer is not owned.
             unsafe { self.buffer.unsafe_buffer.copy(v.as_slice()) };
         }
     }
