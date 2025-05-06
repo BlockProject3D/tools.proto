@@ -46,4 +46,12 @@ fn test_msgs() {
     msg["s1"].buffer_mut().copy_from(b"this is a test\n");
     msg.shape().unwrap();
     println!("{}", msg);
+    let mut msg2 = proto.get_message("test.Test1").unwrap().new_instance(true);
+    msg2.shape().unwrap();
+    println!("{}", msg2);
+    msg2["p3"].get_primitive_mut().unwrap().set(255);
+    println!("{}", msg2);
+    msg["p1"].add_child(msg2);
+    msg.shape().unwrap();
+    println!("{}", msg);
 }

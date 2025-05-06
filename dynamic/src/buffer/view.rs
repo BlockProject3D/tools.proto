@@ -341,14 +341,20 @@ impl<'a> BufferView<'a> {
     fn flatten_internal(&mut self) {
         if self.children.len() > 0 {
             let mut v = Vec::with_capacity(self.buffer.len());
+            let mut offset: usize = 0;
             for child in &mut self.children {
-                //TODO: if child has an offset, copy from self.buffer to fill the remaining space.
+                if child.location.offset != -1 && child.location.offset > offset as _ {
+                    // The compiler should be able to infer the type isize/usize but as always
+                    // type-inference is broken.
+                    let len = child.location.offset - offset as isize;
+                    offset += v.write(&self.buffer.as_bytes()[..len as usize]).unwrap_or(0);
+                    offset += child.location.offset as usize;
+                }
                 child.flatten_internal();
                 trace!({name=&*child.path_component.name}, "child buffer: {:?}", child.buffer.as_bytes());
-                let _ = v.write(child.buffer.as_bytes());
+                offset += v.write(child.buffer.as_bytes()).unwrap_or(0);
             }
             trace!({name=&*self.path_component.name}, "master buffer: {:?}", v);
-            //TODO: delete and recreate self.buffer if buffer is not owned.
             unsafe { self.buffer.unsafe_buffer.copy(v.as_slice()) };
         }
     }

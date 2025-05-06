@@ -114,23 +114,29 @@ impl Bytes {
     }
 
     pub unsafe fn copy(&mut self, slice: &[u8]) -> bool {
-        let added_bytes = self.resize(slice.len());
+        let added_bytes = match self.resize(slice.len()) {
+            Some(v) => v,
+            None => {
+                *self = Bytes::from_slice(slice);
+                return true;
+            }
+        };
         copy_nonoverlapping(slice.as_ptr(), self.bytes.get().as_ptr(), slice.len());
         added_bytes == 0
     }
 
-    unsafe fn resize(&mut self, new_len: usize) -> usize {
+    unsafe fn resize(&mut self, new_len: usize) -> Option<usize> {
         let mut ptr = self.bytes.get();
         let len = self.len.get();
         if new_len == len {
-            return 0;
+            return Some(0);
         }
         if new_len < len {
             //FIXME: we need capacity support
-            return 0;
+            return Some(0);
         }
         if !self.owned {
-            panic!("Attempt to reserve bytes on non-owned buffer");
+            return None;
         }
         ptr = unsafe { NonNull::new_unchecked(realloc(ptr.as_ptr(), Layout::array::<u8>(len).unwrap(), new_len)) };
         // The number of bytes which were added in the realloc.
@@ -138,7 +144,7 @@ impl Bytes {
         //unsafe { write_bytes(ptr.add(len).as_ptr(), 0, ending) }
         self.bytes.set(ptr);
         self.len.set(new_len);
-        ending
+        Some(ending)
     }
 
     pub fn as_bytes(&self) -> &[u8] {
