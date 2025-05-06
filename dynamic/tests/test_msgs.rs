@@ -54,8 +54,8 @@ fn test_msgs() {
     msg["p1"].add_child(msg2);
     msg.shape().unwrap();
     println!("{}", msg);
-    msg["p1.Test1.p1"].get_primitive_mut().unwrap().set(0xABCDEF);
-    assert_eq!(msg["p1.Test1.p1"].get_primitive().unwrap().get().to_unsigned(), 0xABCDEF);
+    msg["p1.Test1.p1"].get_primitive_mut().unwrap().set(0x12ABCDEF);
+    assert_eq!(msg["p1.Test1.p1"].get_primitive().unwrap().get().to_unsigned(), 0x12ABCDEF);
     assert_eq!(msg["p1.Test1.p3"].get_primitive().unwrap().get().to_unsigned(), 0xFF);
     println!("{}", msg);
 }
