@@ -102,6 +102,10 @@ impl<'a> BufferView<'a> {
     }
 
     fn get_hex_max_width(&self) -> usize {
+        if self.buffer.flat.get() { //If the buffer is flat then hex max width is by definition the
+            // master buffer len.
+            return self.buffer.len() * 3;
+        }
         let mut hex_max_width = 0;
         for child in &self.children {
             trace!({len=child.buffer.len()} {offset=child.buffer.offset}, "get_hex_max_width");
@@ -174,8 +178,9 @@ impl<'a> BufferView<'a> {
         Some(view)
     }
 
-    pub fn add_item(&mut self, view: BufferView<'a>) {
+    pub fn add_item(&mut self, mut view: BufferView<'a>) {
         let mut items = self.items.take().unwrap_or_default();
+        view.buffer.flat = self.buffer.flat.clone();
         *unsafe { &mut *view.path_component.parent.get() } = Some(self.path_component.clone());
         view.path_component.index.set((items.len() - 1) as _);
         items.push(view);
@@ -193,7 +198,8 @@ impl<'a> BufferView<'a> {
         }
     }
 
-    pub fn add_child(&mut self, view: BufferView<'a>) {
+    pub fn add_child(&mut self, mut view: BufferView<'a>) {
+        view.buffer.flat = self.buffer.flat.clone();
         *unsafe { &mut *view.path_component.parent.get() } = Some(self.path_component.clone());
         self.children.push(view);
         self.buffer.flat.set(false);
@@ -245,6 +251,7 @@ impl<'a> BufferView<'a> {
     }
 
     fn read(&mut self) -> bp3d_proto::message::Result<usize> {
+        trace!({name=&*self.path_component.name}, "attempt read");
         if self.location.fixed {
             if self.buffer.len() < self.location.size {
                 return Err(bp3d_proto::message::Error::Truncated)
@@ -253,7 +260,7 @@ impl<'a> BufferView<'a> {
                 self.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index(..self.location.size);
                 for child in &mut self.children {
                     child.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index(child.location.offset as usize..child.location.offset as usize + child.location.size);
-                    child.buffer.offset = child.location.offset as usize;
+                    child.buffer.offset = self.buffer.offset + child.location.offset as usize;
                     child.read()?;
                 }
             }
@@ -279,12 +286,13 @@ impl<'a> BufferView<'a> {
                     }
                     unsafe { item.buffer.unsafe_buffer.delete() };
                     item.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((item_offset as usize)..);
+                    // Again type inference is broken.
+                    item.buffer.offset = self.buffer.offset + item_offset as usize;
                     let size = item.read()?;
                     if (item_offset as usize) + size > self.buffer.len() {
                         return Err(bp3d_proto::message::Error::Truncated);
                     }
                     item.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((item_offset as usize)..(item_offset as usize) + size);
-                    item.buffer.offset = item_offset as _;
                     item_offset += size as isize;
                 }
             }
@@ -301,13 +309,14 @@ impl<'a> BufferView<'a> {
             }
             unsafe { child.buffer.unsafe_buffer.delete() };
             child.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((offset as usize)..);
+            // Again type inference is broken.
+            child.buffer.offset = self.buffer.offset + offset as usize;
             let size = child.read()?;
-            trace!("size: {}", size);
             if (offset as usize) + size > self.buffer.len() {
                 return Err(bp3d_proto::message::Error::Truncated);
             }
             child.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((offset as usize)..(offset as usize) + size);
-            child.buffer.offset = offset as _;
+            trace!({name=&*child.path_component.name} {offset=child.buffer.offset}, "size: {}", size);
             offset += size as isize;
         }
         self.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index(..offset as _);
