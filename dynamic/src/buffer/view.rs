@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::cell::Cell;
+use std::cell::{Cell, UnsafeCell};
 use std::fmt::{Debug, Display};
 use std::io::Write;
 use std::ops::{Index, IndexMut};
@@ -48,7 +48,9 @@ pub struct Location {
 pub(super) struct PathComponent {
     pub(super) name: String,
     pub(super) index: Cell<isize>,
-    pub(super) parent: Option<Rc<PathComponent>>
+    // Unfortunately RefCell is unusable because if RefCell then loops are forbidden.
+    //TODO: Try to find better than UnsafeCell.
+    pub(super) parent: UnsafeCell<Option<Rc<PathComponent>>>
 }
 
 pub struct BufferView<'a> {
@@ -174,6 +176,7 @@ impl<'a> BufferView<'a> {
 
     pub fn add_item(&mut self, view: BufferView<'a>) {
         let mut items = self.items.take().unwrap_or_default();
+        *unsafe { &mut *view.path_component.parent.get() } = Some(self.path_component.clone());
         view.path_component.index.set((items.len() - 1) as _);
         items.push(view);
         self.items = Some(items);
@@ -191,6 +194,7 @@ impl<'a> BufferView<'a> {
     }
 
     pub fn add_child(&mut self, view: BufferView<'a>) {
+        *unsafe { &mut *view.path_component.parent.get() } = Some(self.path_component.clone());
         self.children.push(view);
         self.buffer.flat.set(false);
     }
@@ -332,7 +336,7 @@ impl<'a> BufferView<'a> {
             }
         }
         trace!("buffer after shape: {:?}", self.buffer.as_bytes());
-        if self.path_component.parent.is_none() {
+        if unsafe { &*self.path_component.parent.get() } .is_none() {
             self.flatten()?;
         }
         Ok(())
@@ -378,7 +382,7 @@ impl<'a> BufferView<'a> {
         let mut v = Vec::new();
         let mut comp = &self.path_component;
         v.push(comp.name.clone());
-        while let Some(parent) = &comp.parent {
+        while let Some(parent) = unsafe { &*comp.parent.get() } {
             comp = parent;
             let index = comp.index.get();
             if index != -1 {

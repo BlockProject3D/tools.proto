@@ -26,7 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::cell::Cell;
+use std::cell::{Cell, UnsafeCell};
 use std::rc::Rc;
 use crate::buffer::buffer::Buffer;
 use crate::buffer::unsafe_buffer::UnsafeBuffer;
@@ -93,7 +93,7 @@ impl<'a> Builder<'a> {
             path_component: Rc::new(PathComponent {
                 name: self.name,
                 index: Cell::new(-1),
-                parent: None,
+                parent: UnsafeCell::new(None),
             }),
             buffer: Buffer {
                 unsafe_buffer: UnsafeBuffer::Borrowed(b""),
@@ -121,7 +121,7 @@ impl<'a> Builder<'a> {
 
 fn setup_parents(view: &mut BufferView) {
     for child in &mut view.children {
-        unsafe { Rc::get_mut(&mut child.path_component).unwrap_unchecked() }.parent = Some(view.path_component.clone());
+        *unsafe { &mut *child.path_component.parent.get() } = Some(view.path_component.clone());
         setup_parents(child);
     }
 }
