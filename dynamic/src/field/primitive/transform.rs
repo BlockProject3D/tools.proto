@@ -39,22 +39,20 @@ pub trait ViewTransform {
 }
 
 pub struct SignedTransform {
-    pub max_positive: u64
+    pub max_positive: u64,
 }
 
 impl RawTransform for SignedTransform {
     fn bits_to_raw(&self, bits: u64) -> Value {
         if bits > self.max_positive {
-            Value::Signed(-((((!bits) & {self.max_positive}) + 1) as i64))
+            Value::Signed(-((((!bits) & { self.max_positive }) + 1) as i64))
         } else {
             Value::Signed((bits & self.max_positive) as i64)
         }
     }
 
     fn raw_to_bits(&self, value: Value) -> u64 {
-        unsafe {
-            std::mem::transmute(value.to_signed())
-        }
+        unsafe { std::mem::transmute(value.to_signed()) }
     }
 }
 

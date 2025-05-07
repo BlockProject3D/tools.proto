@@ -33,7 +33,7 @@ pub enum Value {
     Unsigned(u64),
     Signed(i64),
     Float(f64),
-    Bool(bool)
+    Bool(bool),
 }
 
 impl Display for Value {
@@ -42,7 +42,7 @@ impl Display for Value {
             Value::Unsigned(v) => write!(f, "{:.4}u", v),
             Value::Signed(v) => write!(f, "{:.4}i", v),
             Value::Float(v) => write!(f, "{:.4}f", v),
-            Value::Bool(v) => write!(f, "{}b", v)
+            Value::Bool(v) => write!(f, "{}b", v),
         }
     }
 }
@@ -83,7 +83,13 @@ impl Value {
             Value::Unsigned(v) => *v as i64,
             Value::Signed(v) => *v,
             Value::Float(v) => *v as i64,
-            Value::Bool(v) => if *v { 1 } else { 0 }
+            Value::Bool(v) => {
+                if *v {
+                    1
+                } else {
+                    0
+                }
+            }
         }
     }
 
@@ -92,7 +98,13 @@ impl Value {
             Value::Unsigned(v) => *v,
             Value::Signed(v) => *v as u64,
             Value::Float(v) => *v as u64,
-            Value::Bool(v) => if *v { 1 } else { 0 }
+            Value::Bool(v) => {
+                if *v {
+                    1
+                } else {
+                    0
+                }
+            }
         }
     }
 
@@ -101,7 +113,13 @@ impl Value {
             Value::Unsigned(v) => *v as f64,
             Value::Signed(v) => *v as f64,
             Value::Float(v) => *v,
-            Value::Bool(v) => if *v { 1.0 } else { 0.0 }
+            Value::Bool(v) => {
+                if *v {
+                    1.0
+                } else {
+                    0.0
+                }
+            }
         }
     }
 
@@ -110,7 +128,7 @@ impl Value {
             Value::Unsigned(v) => *v != 0,
             Value::Signed(v) => *v != 0,
             Value::Float(v) => *v != 0.0,
-            Value::Bool(v) => *v
+            Value::Bool(v) => *v,
         }
     }
 }

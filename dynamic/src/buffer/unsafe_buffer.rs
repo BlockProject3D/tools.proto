@@ -26,8 +26,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::ops::{Range, RangeFrom, RangeTo};
 use crate::buffer::bytes::Bytes;
+use std::ops::{Range, RangeFrom, RangeTo};
 
 pub trait Index {
     type Output<'a>;
@@ -39,7 +39,7 @@ impl Index for usize {
     fn index<'a>(self, buffer: &UnsafeBuffer<'a>) -> Self::Output<'a> {
         match buffer {
             UnsafeBuffer::Owned(v) => v.index(self),
-            UnsafeBuffer::Borrowed(v) => v[self]
+            UnsafeBuffer::Borrowed(v) => v[self],
         }
     }
 }
@@ -52,7 +52,7 @@ macro_rules! impl_index {
             fn index<'a>(self, buffer: &UnsafeBuffer<'a>) -> Self::Output<'a> {
                 match buffer {
                     UnsafeBuffer::Owned(v) => UnsafeBuffer::Owned(v.index(self)),
-                    UnsafeBuffer::Borrowed(v) => UnsafeBuffer::Borrowed(&v[self])
+                    UnsafeBuffer::Borrowed(v) => UnsafeBuffer::Borrowed(&v[self]),
                 }
             }
         }
@@ -66,7 +66,7 @@ impl_index!(RangeTo);
 #[derive(Debug)]
 pub enum UnsafeBuffer<'a> {
     Owned(Bytes),
-    Borrowed(&'a [u8])
+    Borrowed(&'a [u8]),
 }
 
 impl<'a> UnsafeBuffer<'a> {
@@ -94,7 +94,7 @@ impl<'a> UnsafeBuffer<'a> {
     pub fn as_bytes(&self) -> &[u8] {
         match self {
             UnsafeBuffer::Owned(v) => v.as_bytes(),
-            UnsafeBuffer::Borrowed(v) => v
+            UnsafeBuffer::Borrowed(v) => v,
         }
     }
 
@@ -117,7 +117,7 @@ impl<'a> UnsafeBuffer<'a> {
     pub fn len(&self) -> usize {
         match self {
             UnsafeBuffer::Owned(v) => v.len(),
-            UnsafeBuffer::Borrowed(v) => v.len()
+            UnsafeBuffer::Borrowed(v) => v.len(),
         }
     }
 
@@ -125,7 +125,7 @@ impl<'a> UnsafeBuffer<'a> {
     pub unsafe fn delete(&mut self) {
         match self {
             UnsafeBuffer::Owned(v) => v.delete(),
-            _ => ()
+            _ => (),
         }
     }
 }

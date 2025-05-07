@@ -26,14 +26,14 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::component::ComponentType;
+use bp3d_protoc::compiler::structure::FixedFieldType;
+use bp3d_protoc::model::protocol::Endianness;
+use bp3d_util::{simple_error, try_opt};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::rc::Rc;
-use crate::component::ComponentType;
-use bp3d_util::{simple_error, try_opt};
-use bp3d_protoc::compiler::structure::FixedFieldType;
-use bp3d_protoc::model::protocol::Endianness;
 
 simple_error! {
     pub Error {
@@ -53,14 +53,14 @@ pub enum SizeType {
     U32LE,
     U32BE,
     U64LE,
-    U64BE
+    U64BE,
 }
 
 impl SizeType {
     pub fn get_endianness(&self) -> Endianness {
         match self {
             SizeType::U16LE | SizeType::U32LE | SizeType::U64LE => Endianness::Little,
-            _ => Endianness::Big
+            _ => Endianness::Big,
         }
     }
 
@@ -69,7 +69,7 @@ impl SizeType {
             SizeType::U8 => 1,
             SizeType::U16LE | SizeType::U16BE => 2,
             SizeType::U32LE | SizeType::U32BE => 4,
-            SizeType::U64LE | SizeType::U64BE => 8
+            SizeType::U64LE | SizeType::U64BE => 8,
         }
     }
 }
@@ -80,10 +80,18 @@ impl From<(FixedFieldType, Endianness)> for SizeType {
             (FixedFieldType::Int8 | FixedFieldType::UInt8 | FixedFieldType::Bool, _) => SizeType::U8,
             (FixedFieldType::Int16 | FixedFieldType::UInt16, Endianness::Little) => SizeType::U16LE,
             (FixedFieldType::Int16 | FixedFieldType::UInt16, Endianness::Big) => SizeType::U16BE,
-            (FixedFieldType::Int32 | FixedFieldType::UInt32 | FixedFieldType::Float32, Endianness::Little) => SizeType::U32LE,
-            (FixedFieldType::Int32 | FixedFieldType::UInt32 | FixedFieldType::Float32, Endianness::Big) => SizeType::U32BE,
-            (FixedFieldType::Int64 | FixedFieldType::UInt64 | FixedFieldType::Float64, Endianness::Little) => SizeType::U64LE,
-            (FixedFieldType::Int64 | FixedFieldType::UInt64 | FixedFieldType::Float64, Endianness::Big) => SizeType::U64BE
+            (FixedFieldType::Int32 | FixedFieldType::UInt32 | FixedFieldType::Float32, Endianness::Little) => {
+                SizeType::U32LE
+            }
+            (FixedFieldType::Int32 | FixedFieldType::UInt32 | FixedFieldType::Float32, Endianness::Big) => {
+                SizeType::U32BE
+            }
+            (FixedFieldType::Int64 | FixedFieldType::UInt64 | FixedFieldType::Float64, Endianness::Little) => {
+                SizeType::U64LE
+            }
+            (FixedFieldType::Int64 | FixedFieldType::UInt64 | FixedFieldType::Float64, Endianness::Big) => {
+                SizeType::U64BE
+            }
         }
     }
 }
@@ -91,7 +99,7 @@ impl From<(FixedFieldType, Endianness)> for SizeType {
 pub struct ContainerOptions {
     pub inner_ty: Rc<dyn ComponentType>,
     pub count_ty: SizeType,
-    pub size_ty: Option<SizeType>
+    pub size_ty: Option<SizeType>,
 }
 
 impl ContainerOptions {
@@ -125,27 +133,27 @@ impl Hash for ContainerOptions {
 #[derive(Eq, PartialEq, Hash)]
 enum CompKeyInner {
     Container(ContainerOptions),
-    Buffer(Option<SizeType>)
+    Buffer(Option<SizeType>),
 }
 
 #[derive(Eq, PartialEq, Hash)]
 pub struct Key {
     name: String,
-    inner: CompKeyInner
+    inner: CompKeyInner,
 }
 
 impl Key {
     pub fn for_container(name: impl Into<String>, options: ContainerOptions) -> Self {
         Self {
             name: name.into(),
-            inner: CompKeyInner::Container(options)
+            inner: CompKeyInner::Container(options),
         }
     }
 
     pub fn for_buffer(name: impl Into<String>, size: Option<SizeType>) -> Self {
         Self {
             name: name.into(),
-            inner: CompKeyInner::Buffer(size)
+            inner: CompKeyInner::Buffer(size),
         }
     }
 }
@@ -153,7 +161,7 @@ impl Key {
 pub struct Factory {
     container_factories: HashMap<String, Box<dyn Fn(&ContainerOptions) -> Option<Rc<dyn ComponentType>>>>,
     buffer_factories: HashMap<String, Box<dyn Fn(Option<SizeType>) -> Option<Rc<dyn ComponentType>>>>,
-    components: RefCell<HashMap<Key, Rc<dyn ComponentType>>>
+    components: RefCell<HashMap<Key, Rc<dyn ComponentType>>>,
 }
 
 impl Factory {
@@ -161,22 +169,32 @@ impl Factory {
         Self {
             container_factories: HashMap::new(),
             buffer_factories: HashMap::new(),
-            components: RefCell::new(HashMap::new())
+            components: RefCell::new(HashMap::new()),
         }
     }
 
-    pub fn add_container_factory<F: Fn(&ContainerOptions) -> Option<Rc<dyn ComponentType>> + 'static>(&mut self, component_name: impl Into<String>, factory: F) -> Result<()> {
+    pub fn add_container_factory<F: Fn(&ContainerOptions) -> Option<Rc<dyn ComponentType>> + 'static>(
+        &mut self,
+        component_name: impl Into<String>,
+        factory: F,
+    ) -> Result<()> {
         let component_name = component_name.into();
-        if self.container_factories.contains_key(&component_name) && self.buffer_factories.contains_key(&component_name) {
+        if self.container_factories.contains_key(&component_name) && self.buffer_factories.contains_key(&component_name)
+        {
             return Err(Error::AlreadyRegistered(component_name));
         }
         self.container_factories.insert(component_name.clone(), Box::new(factory));
         Ok(())
     }
 
-    pub fn add_buffer_factory<F: Fn(Option<SizeType>) -> Option<Rc<dyn ComponentType>> + 'static>(&mut self, component_name: impl Into<String>, factory: F) -> Result<()> {
+    pub fn add_buffer_factory<F: Fn(Option<SizeType>) -> Option<Rc<dyn ComponentType>> + 'static>(
+        &mut self,
+        component_name: impl Into<String>,
+        factory: F,
+    ) -> Result<()> {
         let component_name = component_name.into();
-        if self.container_factories.contains_key(&component_name) && self.buffer_factories.contains_key(&component_name) {
+        if self.container_factories.contains_key(&component_name) && self.buffer_factories.contains_key(&component_name)
+        {
             return Err(Error::AlreadyRegistered(component_name));
         }
         self.buffer_factories.insert(component_name.clone(), Box::new(factory));
@@ -198,7 +216,7 @@ impl Factory {
         }
         let ct = match &key.inner {
             CompKeyInner::Container(opts) => self.container_factories.get(&key.name).map(|v| v(opts)),
-            CompKeyInner::Buffer(opt) => self.buffer_factories.get(&key.name).map(|v| v(*opt))
+            CompKeyInner::Buffer(opt) => self.buffer_factories.get(&key.name).map(|v| v(*opt)),
         };
         let ct = try_opt!(try_opt!(ct => Error::NotFound(key.name)) => Error::Fail(key.name));
         let component = components.entry(key).or_insert(ct);

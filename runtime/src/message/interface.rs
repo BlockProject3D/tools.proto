@@ -66,7 +66,9 @@ impl<T> Message<T> {
     }
 
     /// Access the underlying parts of this message.
-    pub fn into_parts(self) -> (T, usize) { (self.data, self.size) }
+    pub fn into_parts(self) -> (T, usize) {
+        (self.data, self.size)
+    }
 
     pub fn size(&self) -> usize {
         self.size

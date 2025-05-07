@@ -26,16 +26,16 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::buffer::buffer::Buffer;
+use crate::buffer::unsafe_buffer::UnsafeBuffer;
+use crate::component::{util::DiscoverTool, Component};
+use crate::field::primitive::{PrimitiveType, PrimitiveValue, PrimitiveValueMut};
+use bp3d_debug::trace;
 use std::cell::{Cell, UnsafeCell};
 use std::fmt::{Debug, Display};
 use std::io::Write;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
-use crate::buffer::buffer::Buffer;
-use crate::component::{Component, util::DiscoverTool};
-use crate::field::primitive::{PrimitiveType, PrimitiveValue, PrimitiveValueMut};
-use bp3d_debug::trace;
-use crate::buffer::unsafe_buffer::UnsafeBuffer;
 
 #[derive(Debug)]
 pub struct Location {
@@ -50,7 +50,7 @@ pub(super) struct PathComponent {
     pub(super) index: Cell<isize>,
     // Unfortunately RefCell is unusable because if RefCell then loops are forbidden.
     //TODO: Try to find better than UnsafeCell.
-    pub(super) parent: UnsafeCell<Option<Rc<PathComponent>>>
+    pub(super) parent: UnsafeCell<Option<Rc<PathComponent>>>,
 }
 
 pub struct BufferView<'a> {
@@ -66,9 +66,17 @@ pub struct BufferView<'a> {
 impl Debug for BufferView<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.primitive.is_none() {
-            write!(f, "BufferView {{ name: {}, location: {:?}, children: {:?} }}", self.path_component.name, self.location, self.children)
+            write!(
+                f,
+                "BufferView {{ name: {}, location: {:?}, children: {:?} }}",
+                self.path_component.name, self.location, self.children
+            )
         } else {
-            write!(f, "BufferView {{ name: {}, location: {:?}, children: {:?}, primitive }}", self.path_component.name, self.location, self.children)
+            write!(
+                f,
+                "BufferView {{ name: {}, location: {:?}, children: {:?}, primitive }}",
+                self.path_component.name, self.location, self.children
+            )
         }
     }
 }
@@ -77,9 +85,21 @@ impl Display for BufferView<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let path_max_width = self.get_path_max_width();
         let hex_max_width = self.get_hex_max_width();
-        writeln!(f, "|-{:-^path_max_width$}-|-{:-^6}-|-{:-^6}-|-{:-^hex_max_width$}-|-{:-^10}-|", "", "", "", "", "")?;
-        writeln!(f, "| {: ^path_max_width$} | {: ^6} | {: ^6} | {: ^hex_max_width$} | {: ^10} |", "Path", "Offset", "Size", "Hex", "Value")?;
-        writeln!(f, "|-{:-^path_max_width$}-|-{:-^6}-|-{:-^6}-|-{:-^hex_max_width$}-|-{:-^10}-|", "", "", "", "", "")?;
+        writeln!(
+            f,
+            "|-{:-^path_max_width$}-|-{:-^6}-|-{:-^6}-|-{:-^hex_max_width$}-|-{:-^10}-|",
+            "", "", "", "", ""
+        )?;
+        writeln!(
+            f,
+            "| {: ^path_max_width$} | {: ^6} | {: ^6} | {: ^hex_max_width$} | {: ^10} |",
+            "Path", "Offset", "Size", "Hex", "Value"
+        )?;
+        writeln!(
+            f,
+            "|-{:-^path_max_width$}-|-{:-^6}-|-{:-^6}-|-{:-^hex_max_width$}-|-{:-^10}-|",
+            "", "", "", "", ""
+        )?;
         self.dump_children(f, path_max_width, hex_max_width)?;
         Ok(())
     }
@@ -102,7 +122,8 @@ impl<'a> BufferView<'a> {
     }
 
     fn get_hex_max_width(&self) -> usize {
-        if self.buffer.flat.get() { //If the buffer is flat then hex max width is by definition the
+        if self.buffer.flat.get() {
+            //If the buffer is flat then hex max width is by definition the
             // master buffer len.
             return self.buffer.len() * 3;
         }
@@ -125,7 +146,12 @@ impl<'a> BufferView<'a> {
         hex_max_width
     }
 
-    fn dump_children(&self, f: &mut std::fmt::Formatter<'_>, path_max_width: usize, hex_max_width: usize) -> std::fmt::Result {
+    fn dump_children(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        path_max_width: usize,
+        hex_max_width: usize,
+    ) -> std::fmt::Result {
         for child in &self.children {
             let value = child.get_primitive().map(|v| v.get().to_string()).unwrap_or("####".into());
             let bytes = format!("{:02X?}", child.buffer.as_bytes()).replace(",", "");
@@ -134,7 +160,15 @@ impl<'a> BufferView<'a> {
             for _ in 0..child.buffer.offset {
                 padding += ".. ";
             }
-            writeln!(f, "| {: <path_max_width$} | {: ^6} | {: ^6} | {: <hex_max_width$} | {: ^10} |", child.get_path(), child.buffer.offset, child.buffer.len(), padding + bytes, value)?;
+            writeln!(
+                f,
+                "| {: <path_max_width$} | {: ^6} | {: ^6} | {: <hex_max_width$} | {: ^10} |",
+                child.get_path(),
+                child.buffer.offset,
+                child.buffer.len(),
+                padding + bytes,
+                value
+            )?;
             child.dump_children(f, path_max_width, hex_max_width)?;
         }
         Ok(())
@@ -238,11 +272,11 @@ impl<'a> BufferView<'a> {
         self.children.len()
     }
 
-    pub fn iter(&self) -> impl Iterator<Item=&BufferView<'a>> {
+    pub fn iter(&self) -> impl Iterator<Item = &BufferView<'a>> {
         self.children.iter()
     }
 
-    pub fn iter_mut(&mut self) -> impl Iterator<Item=&mut BufferView<'a>> {
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut BufferView<'a>> {
         self.children.iter_mut()
     }
 
@@ -257,15 +291,18 @@ impl<'a> BufferView<'a> {
     }
 
     fn read(&mut self) -> bp3d_proto::message::Result<usize> {
-        trace!({name=&*self.path_component.name}, "attempt read");
+        trace!({ name = &*self.path_component.name }, "attempt read");
         if self.location.fixed {
             if self.buffer.len() < self.location.size {
-                return Err(bp3d_proto::message::Error::Truncated)
+                return Err(bp3d_proto::message::Error::Truncated);
             }
             if !self.buffer.flat.get() {
                 self.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index(..self.location.size);
                 for child in &mut self.children {
-                    child.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index(child.location.offset as usize..child.location.offset as usize + child.location.size);
+                    child.buffer.unsafe_buffer = self
+                        .buffer
+                        .unsafe_buffer
+                        .index(child.location.offset as usize..child.location.offset as usize + child.location.size);
                     child.buffer.offset = self.buffer.offset + child.location.offset as usize;
                     child.read()?;
                 }
@@ -298,7 +335,8 @@ impl<'a> BufferView<'a> {
                     if (item_offset as usize) + size > self.buffer.len() {
                         return Err(bp3d_proto::message::Error::Truncated);
                     }
-                    item.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((item_offset as usize)..(item_offset as usize) + size);
+                    item.buffer.unsafe_buffer =
+                        self.buffer.unsafe_buffer.index((item_offset as usize)..(item_offset as usize) + size);
                     item_offset += size as isize;
                 }
             }
@@ -337,12 +375,12 @@ impl<'a> BufferView<'a> {
                     self.component = Some(component);
                     return Err(e);
                 }
-                _ => ()
+                _ => (),
             }
             self.component = Some(component);
             self.items = Some(items);
         } else if self.buffer.is_empty() && self.location.size > 0 {
-            trace!({size=self.location.size}, "allocate empty buffer");
+            trace!({ size = self.location.size }, "allocate empty buffer");
             self.buffer.unsafe_buffer = UnsafeBuffer::with_capacity(self.location.size);
         }
         if !self.location.fixed {
@@ -351,7 +389,7 @@ impl<'a> BufferView<'a> {
             }
         }
         trace!("buffer after shape: {:?}", self.buffer.as_bytes());
-        if unsafe { &*self.path_component.parent.get() } .is_none() {
+        if unsafe { &*self.path_component.parent.get() }.is_none() {
             self.flatten()?;
         }
         Ok(())
@@ -370,10 +408,14 @@ impl<'a> BufferView<'a> {
                     offset += child.location.offset as usize;
                 }
                 child.flatten_internal();
-                trace!({name=&*child.path_component.name}, "child buffer: {:?}", child.buffer.as_bytes());
+                trace!(
+                    { name = &*child.path_component.name },
+                    "child buffer: {:?}",
+                    child.buffer.as_bytes()
+                );
                 offset += v.write(child.buffer.as_bytes()).unwrap_or(0);
             }
-            trace!({name=&*self.path_component.name}, "master buffer: {:?}", v);
+            trace!({ name = &*self.path_component.name }, "master buffer: {:?}", v);
             unsafe { self.buffer.unsafe_buffer.copy(v.as_slice()) };
         }
     }
@@ -381,7 +423,7 @@ impl<'a> BufferView<'a> {
     fn flatten(&mut self) -> bp3d_proto::message::Result<()> {
         if self.buffer.flat.get() {
             // Nothing to do view is already flat!
-            return Ok(())
+            return Ok(());
         }
         self.flatten_internal();
         self.read()?;
@@ -417,7 +459,7 @@ impl<'a, 'b> Index<&'a str> for BufferView<'b> {
     fn index(&self, index: &'a str) -> &Self::Output {
         match self.get(index) {
             Some(view) => view,
-            None => panic!("Unable to find view with path '{}'", index)
+            None => panic!("Unable to find view with path '{}'", index),
         }
     }
 }
@@ -426,7 +468,7 @@ impl<'a, 'b> IndexMut<&'a str> for BufferView<'b> {
     fn index_mut(&mut self, index: &'a str) -> &mut Self::Output {
         match self.get_mut(index) {
             Some(view) => view,
-            None => panic!("Unable to find view with path '{}'", index)
+            None => panic!("Unable to find view with path '{}'", index),
         }
     }
 }

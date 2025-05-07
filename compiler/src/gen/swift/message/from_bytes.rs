@@ -52,7 +52,7 @@ pub fn gen_message_from_slice_impl(proto: &Protocol, codec_map: &CodecMap, msg: 
         Some(ty) => {
             templates.template.var("custom_type", ty);
             generate::<SwiftUtils, _>(templates, msg, &type_path_map, "impl_custom")
-        },
-        None => generate::<SwiftUtils, _>(templates, msg, &type_path_map, "impl")
+        }
+        None => generate::<SwiftUtils, _>(templates, msg, &type_path_map, "impl"),
     }
 }

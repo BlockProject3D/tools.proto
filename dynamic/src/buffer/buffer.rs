@@ -26,15 +26,15 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::buffer::unsafe_buffer::UnsafeBuffer;
 use std::cell::Cell;
 use std::rc::Rc;
-use crate::buffer::unsafe_buffer::UnsafeBuffer;
 
 #[derive(Debug)]
 pub struct Buffer<'a> {
     pub(super) unsafe_buffer: UnsafeBuffer<'a>,
     pub(super) flat: Rc<Cell<bool>>,
-    pub(super) offset: usize
+    pub(super) offset: usize,
 }
 
 impl<'a> Buffer<'a> {

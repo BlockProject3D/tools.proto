@@ -28,8 +28,8 @@
 
 use std::alloc::{alloc, dealloc, realloc, Layout};
 use std::cell::Cell;
-use std::ptr::copy_nonoverlapping;
 use std::ops::{Range, RangeFrom, RangeTo};
+use std::ptr::copy_nonoverlapping;
 use std::ptr::NonNull;
 use std::slice;
 
@@ -58,7 +58,10 @@ impl Index for Range<usize> {
         let required_len = self.len();
         let len = bytes.len.get();
         if required_len > len {
-            panic!("Cannot slice, range out of bounds: {} > {} ({}..{})", required_len, len, self.start, self.end);
+            panic!(
+                "Cannot slice, range out of bounds: {} > {} ({}..{})",
+                required_len, len, self.start, self.end
+            );
         }
         let bytes = unsafe { bytes.bytes.get().add(self.start) };
         Bytes {
@@ -105,7 +108,9 @@ impl Bytes {
 
     pub fn with_capacity(capacity: usize) -> Bytes {
         let ptr = unsafe { alloc(Layout::array::<u8>(capacity).unwrap()) };
-        unsafe { ptr.write_bytes(0, capacity); }
+        unsafe {
+            ptr.write_bytes(0, capacity);
+        }
         Bytes {
             bytes: unsafe { Cell::new(NonNull::new_unchecked(ptr)) },
             len: Cell::new(capacity),

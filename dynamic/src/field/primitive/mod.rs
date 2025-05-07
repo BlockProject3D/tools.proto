@@ -26,12 +26,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod interface;
 mod core;
+mod interface;
 mod transform;
 mod value;
 
-pub use interface::*;
 pub use core::from_field;
 pub use core::from_fixed_field_type;
+pub use interface::*;
 pub use value::*;

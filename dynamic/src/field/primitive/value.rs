@@ -30,20 +30,17 @@ use crate::field::primitive::{PrimitiveType, Value};
 
 pub struct PrimitiveValue<'a> {
     bytes: &'a [u8],
-    ty: &'a dyn PrimitiveType
+    ty: &'a dyn PrimitiveType,
 }
 
 pub struct PrimitiveValueMut<'a> {
     bytes: &'a mut [u8],
-    ty: &'a dyn PrimitiveType
+    ty: &'a dyn PrimitiveType,
 }
 
 impl<'a> PrimitiveValue<'a> {
     pub fn new(bytes: &'a [u8], ty: &'a dyn PrimitiveType) -> Self {
-        Self {
-            bytes,
-            ty
-        }
+        Self { bytes, ty }
     }
 
     pub fn get_bin(&self) -> u64 {
@@ -61,10 +58,7 @@ impl<'a> PrimitiveValue<'a> {
 
 impl<'a> PrimitiveValueMut<'a> {
     pub fn new(bytes: &'a mut [u8], ty: &'a dyn PrimitiveType) -> Self {
-        Self {
-            bytes,
-            ty
-        }
+        Self { bytes, ty }
     }
 
     pub fn get_bin(&self) -> u64 {

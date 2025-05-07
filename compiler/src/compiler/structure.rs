@@ -67,7 +67,7 @@ impl FixedFieldType {
             FixedFieldType::UInt64 => 64,
             FixedFieldType::Float32 => 32,
             FixedFieldType::Float64 => 64,
-            FixedFieldType::Bool => 8
+            FixedFieldType::Bool => 8,
         }
     }
 
@@ -83,7 +83,7 @@ impl FixedFieldType {
             FixedFieldType::UInt64 => true,
             FixedFieldType::Float32 => false,
             FixedFieldType::Float64 => false,
-            FixedFieldType::Bool => false
+            FixedFieldType::Bool => false,
         }
     }
 

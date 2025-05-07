@@ -27,8 +27,8 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 mod core;
-mod struct_ext;
 mod message_ext;
+mod struct_ext;
 
 pub use core::Proto;
 pub use struct_ext::StructureExt;

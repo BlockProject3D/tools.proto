@@ -26,19 +26,19 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::ops::Deref;
-use std::rc::Rc;
-use bp3d_protoc::compiler::message::{Field, FieldType, Message, Referenced};
 use crate::buffer::Builder;
-use crate::component::ComponentType;
 use crate::component::factory::{ContainerOptions, Factory, Key};
+use crate::component::ComponentType;
 use crate::field::option::Optional;
 use crate::field::primitive::from_fixed_field_type;
 use crate::proto::struct_ext::new_structure_internal;
+use bp3d_protoc::compiler::message::{Field, FieldType, Message, Referenced};
+use std::ops::Deref;
+use std::rc::Rc;
 
 pub struct MessageExt {
     pub(crate) message: Rc<Message>,
-    pub(crate) factory: Rc<Factory>
+    pub(crate) factory: Rc<Factory>,
 }
 
 impl Deref for MessageExt {
@@ -49,40 +49,61 @@ impl Deref for MessageExt {
     }
 }
 
-fn new_field_internal(factory: &Rc<Factory>, builder: Builder<'static>, field: &Field) -> crate::component::factory::Result<Builder<'static>> {
+fn new_field_internal(
+    factory: &Rc<Factory>,
+    builder: Builder<'static>,
+    field: &Field,
+) -> crate::component::factory::Result<Builder<'static>> {
     match &field.ty {
-        FieldType::Fixed(v) => Ok(builder.size(v.ty.get_byte_size()).primitive(from_fixed_field_type(v.ty, field.endianness))),
-        FieldType::Ref(v) => {
-            match v {
-                Referenced::Struct(v1) => Ok(new_structure_internal(Builder::new(&field.name), &*v1)),
-                Referenced::Message(v1) => new_message_internal(factory, Builder::new(&field.name), &*v1)
-            }
+        FieldType::Fixed(v) => {
+            Ok(builder.size(v.ty.get_byte_size()).primitive(from_fixed_field_type(v.ty, field.endianness)))
         }
-        FieldType::Buffer => factory.with_component(Key::for_buffer(field.codec.as_ref().unwrap(), None), |comp| comp.build(Builder::new(&field.name))),
-        FieldType::SizedBuffer(v) => factory.with_component(Key::for_buffer(field.codec.as_ref().unwrap(), Some((v.ty, field.endianness).into())), |comp| comp.build(Builder::new(&field.name))),
+        FieldType::Ref(v) => match v {
+            Referenced::Struct(v1) => Ok(new_structure_internal(Builder::new(&field.name), &*v1)),
+            Referenced::Message(v1) => new_message_internal(factory, Builder::new(&field.name), &*v1),
+        },
+        FieldType::Buffer => factory.with_component(Key::for_buffer(field.codec.as_ref().unwrap(), None), |comp| {
+            comp.build(Builder::new(&field.name))
+        }),
+        FieldType::SizedBuffer(v) => factory.with_component(
+            Key::for_buffer(field.codec.as_ref().unwrap(), Some((v.ty, field.endianness).into())),
+            |comp| comp.build(Builder::new(&field.name)),
+        ),
         FieldType::FixedContainer(v) => {
             let options = ContainerOptions {
                 inner_ty: v.item_type.clone(),
                 count_ty: (v.ty, field.endianness).into(),
                 size_ty: None,
             };
-            factory.with_component(Key::for_container(field.codec.as_ref().unwrap(), options), |comp| comp.build(Builder::new(&field.name)))
+            factory.with_component(Key::for_container(field.codec.as_ref().unwrap(), options), |comp| {
+                comp.build(Builder::new(&field.name))
+            })
         }
         FieldType::Container(v) => {
             let options = ContainerOptions {
-                inner_ty: Rc::new(MessageExt { factory: factory.clone(), message: v.item_type.clone() }),
+                inner_ty: Rc::new(MessageExt {
+                    factory: factory.clone(),
+                    message: v.item_type.clone(),
+                }),
                 count_ty: (v.ty, field.endianness).into(),
                 size_ty: None,
             };
-            factory.with_component(Key::for_container(field.codec.as_ref().unwrap(), options), |comp| comp.build(Builder::new(&field.name)))
+            factory.with_component(Key::for_container(field.codec.as_ref().unwrap(), options), |comp| {
+                comp.build(Builder::new(&field.name))
+            })
         }
         FieldType::SizedContainer(v) => {
             let options = ContainerOptions {
-                inner_ty: Rc::new(MessageExt { factory: factory.clone(), message: v.item_type.clone() }),
+                inner_ty: Rc::new(MessageExt {
+                    factory: factory.clone(),
+                    message: v.item_type.clone(),
+                }),
                 count_ty: (v.ty, field.endianness).into(),
                 size_ty: Some((v.size_ty, field.endianness).into()),
             };
-            factory.with_component(Key::for_container(field.codec.as_ref().unwrap(), options), |comp| comp.build(Builder::new(&field.name)))
+            factory.with_component(Key::for_container(field.codec.as_ref().unwrap(), options), |comp| {
+                comp.build(Builder::new(&field.name))
+            })
         }
         FieldType::Union(_) => {
             panic!("Union types are currently not supported");
@@ -96,7 +117,7 @@ fn new_field_internal(factory: &Rc<Factory>, builder: Builder<'static>, field: &
 #[derive(Clone)]
 struct FieldType1 {
     field: Field,
-    factory: Rc<Factory>
+    factory: Rc<Factory>,
 }
 
 impl ComponentType for FieldType1 {
@@ -110,12 +131,16 @@ impl ComponentType for FieldType1 {
     }
 }
 
-fn new_message_internal(factory: &Rc<Factory>, mut builder: Builder<'static>, value: &Message) -> crate::component::factory::Result<Builder<'static>> {
+fn new_message_internal(
+    factory: &Rc<Factory>,
+    mut builder: Builder<'static>,
+    value: &Message,
+) -> crate::component::factory::Result<Builder<'static>> {
     for field in &value.fields {
         if field.optional {
             let ft = FieldType1 {
                 field: field.clone(),
-                factory: factory.clone()
+                factory: factory.clone(),
             };
             let opt = Optional(ft);
             builder = builder.add_child(Builder::new(&field.name).component(opt));

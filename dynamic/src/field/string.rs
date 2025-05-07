@@ -26,11 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_protoc::model::protocol::Endianness;
 use crate::buffer::{BufferView, Builder};
-use crate::component::{Component, ComponentType, util::DiscoverTool};
 use crate::component::factory::SizeType;
+use crate::component::{util::DiscoverTool, Component, ComponentType};
 use crate::field::codec::{ByteCodecBE, ByteCodecLE, Codec};
+use bp3d_protoc::model::protocol::Endianness;
 
 pub struct NullTerminatedString;
 
@@ -64,7 +64,7 @@ impl Component for NullTerminatedString {
     fn shape(&self, view: &mut BufferView, _: &Vec<BufferView>) -> bp3d_proto::message::Result<()> {
         if view.buffer().is_empty() {
             view.buffer_mut().set_bytes(b"\0");
-            return Ok(())
+            return Ok(());
         }
         let motherfuckingrust = view.buffer().len() - 1;
         if view.buffer().as_bytes()[motherfuckingrust] != 0x0 {
@@ -79,10 +79,14 @@ pub struct VarcharString(pub SizeType);
 impl ComponentType for VarcharString {
     fn build(&self, builder: Builder<'static>) -> Builder<'static> {
         if self.0.get_endianness() == Endianness::Little {
-            builder.component(VarcharStringInner(ByteCodecLE)).add_child(Builder::new("len").fixed(0, self.0.get_size()))
+            builder
+                .component(VarcharStringInner(ByteCodecLE))
+                .add_child(Builder::new("len").fixed(0, self.0.get_size()))
                 .add_child(Builder::new("data"))
         } else {
-            builder.component(VarcharStringInner(ByteCodecBE)).add_child(Builder::new("len").fixed(0, self.0.get_size()))
+            builder
+                .component(VarcharStringInner(ByteCodecBE))
+                .add_child(Builder::new("len").fixed(0, self.0.get_size()))
                 .add_child(Builder::new("data"))
         }
     }

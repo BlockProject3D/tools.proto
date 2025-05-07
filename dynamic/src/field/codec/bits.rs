@@ -35,10 +35,7 @@ pub struct BitCodecLE {
 
 impl BitCodecLE {
     pub fn new(bit_offset: usize, bit_size: usize) -> Self {
-        Self {
-            bit_size,
-            bit_offset
-        }
+        Self { bit_size, bit_offset }
     }
 }
 
@@ -67,10 +64,7 @@ pub struct BitCodecBE {
 
 impl BitCodecBE {
     pub fn new(bit_offset: usize, bit_size: usize) -> Self {
-        Self {
-            bit_size,
-            bit_offset
-        }
+        Self { bit_size, bit_offset }
     }
 }
 

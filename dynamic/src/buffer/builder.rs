@@ -26,14 +26,14 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::cell::{Cell, UnsafeCell};
-use std::rc::Rc;
 use crate::buffer::buffer::Buffer;
 use crate::buffer::unsafe_buffer::UnsafeBuffer;
-use crate::buffer::BufferView;
 use crate::buffer::view::{Location, PathComponent};
+use crate::buffer::BufferView;
 use crate::component::Component;
 use crate::field::primitive::PrimitiveType;
+use std::cell::{Cell, UnsafeCell};
+use std::rc::Rc;
 
 pub struct Builder<'a> {
     name: String,
@@ -41,7 +41,7 @@ pub struct Builder<'a> {
     location: Location,
     component: Option<Box<dyn Component>>,
     flat: Rc<Cell<bool>>,
-    primitive: Option<Box<dyn PrimitiveType>>
+    primitive: Option<Box<dyn PrimitiveType>>,
 }
 
 impl<'a> Builder<'a> {
@@ -56,7 +56,7 @@ impl<'a> Builder<'a> {
             },
             component: None,
             flat: Rc::new(Cell::new(false)),
-            primitive: None
+            primitive: None,
         }
     }
 
@@ -98,13 +98,13 @@ impl<'a> Builder<'a> {
             buffer: Buffer {
                 unsafe_buffer: UnsafeBuffer::Borrowed(b""),
                 flat: self.flat,
-                offset: 0
+                offset: 0,
             },
             children: self.children,
             location: self.location,
             component: self.component,
             primitive: self.primitive,
-            items: None
+            items: None,
         }
     }
 

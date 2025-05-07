@@ -26,14 +26,14 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mod view;
-mod unsafe_buffer;
-mod bytes;
-mod builder;
 mod buffer;
+mod builder;
+mod bytes;
+mod unsafe_buffer;
+mod view;
 
-pub use view::{ BufferView, Location };
 pub use builder::Builder;
+pub use view::{BufferView, Location};
 
 #[cfg(test)]
 mod tests {
@@ -46,8 +46,9 @@ mod tests {
                 Builder::new("hdr")
                     .fixed(0, 8)
                     .add_child(Builder::new("inner1").fixed(0, 4))
-                    .add_child(Builder::new("inner2").fixed(4, 4))
-            ).build(false);
+                    .add_child(Builder::new("inner2").fixed(4, 4)),
+            )
+            .build(false);
         view["hdr.inner1"].buffer_mut().set_bytes(b"abcd");
         view["hdr.inner2"].buffer_mut().set_bytes(b"efgh");
         view.shape().unwrap();

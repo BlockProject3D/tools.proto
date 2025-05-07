@@ -26,16 +26,21 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use bp3d_proto_dynamic::component::factory::{Factory, Key, SizeType};
 use bp3d_proto_dynamic::component::ComponentType;
 use bp3d_proto_dynamic::field::string::{NullTerminatedString, VarcharString};
-use bp3d_proto_dynamic::component::factory::{Factory, Key, SizeType};
 use bp3d_proto_dynamic::proto::Proto;
 use bp3d_protoc::api::core::loader::{Loader, Options};
 
 #[test]
 fn test_msgs() {
     let mut factory = Factory::new();
-    factory.add_component(Key::for_buffer("string", Some(SizeType::U8)), VarcharString(SizeType::U8)).unwrap();
+    factory
+        .add_component(
+            Key::for_buffer("string", Some(SizeType::U8)),
+            VarcharString(SizeType::U8),
+        )
+        .unwrap();
     factory.add_component(Key::for_buffer("string", None), NullTerminatedString).unwrap();
     let mut loader = Loader::new(16);
     loader.load_from_folder("../testprog/src", &Options::from_package("testprog")).unwrap();
@@ -55,7 +60,10 @@ fn test_msgs() {
     msg.shape().unwrap();
     println!("{}", msg);
     msg["p1.Test1.p1"].get_primitive_mut().unwrap().set(0x12ABCDEF);
-    assert_eq!(msg["p1.Test1.p1"].get_primitive().unwrap().get().to_unsigned(), 0x12ABCDEF);
+    assert_eq!(
+        msg["p1.Test1.p1"].get_primitive().unwrap().get().to_unsigned(),
+        0x12ABCDEF
+    );
     assert_eq!(msg["p1.Test1.p3"].get_primitive().unwrap().get().to_unsigned(), 0xFF);
     println!("{}", msg);
     msg["p1.Test1.s1"].buffer_mut().set_bytes(b"test ");

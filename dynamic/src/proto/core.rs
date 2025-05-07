@@ -26,16 +26,16 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::collections::HashMap;
-use std::rc::Rc;
+use crate::component::factory::Factory;
+use crate::proto::message_ext::MessageExt;
 use bp3d_protoc::api::core::loader::Loader;
-use bp3d_protoc::compiler::Protocol;
 use bp3d_protoc::compiler::r#enum::Enum;
 use bp3d_protoc::compiler::structure::Structure;
 use bp3d_protoc::compiler::union::Union;
 use bp3d_protoc::compiler::util::imports::ImportSolver;
-use crate::component::factory::Factory;
-use crate::proto::message_ext::MessageExt;
+use bp3d_protoc::compiler::Protocol;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 struct Solver;
 
@@ -73,19 +73,31 @@ impl Proto {
                 continue;
             }
             for value in entry.model.structs.iter() {
-                proto.structures.insert(store.get_full_type_path(&entry.model, &value.name).unwrap(), value.clone());
+                proto.structures.insert(
+                    store.get_full_type_path(&entry.model, &value.name).unwrap(),
+                    value.clone(),
+                );
             }
             for value in entry.model.enums.iter() {
-                proto.enums.insert(store.get_full_type_path(&entry.model, &value.name).unwrap(), value.clone());
+                proto.enums.insert(
+                    store.get_full_type_path(&entry.model, &value.name).unwrap(),
+                    value.clone(),
+                );
             }
             for value in entry.model.unions.iter() {
-                proto.unions.insert(store.get_full_type_path(&entry.model, &value.name).unwrap(), value.clone());
+                proto.unions.insert(
+                    store.get_full_type_path(&entry.model, &value.name).unwrap(),
+                    value.clone(),
+                );
             }
             for value in entry.model.messages.iter() {
-                proto.messages.insert(store.get_full_type_path(&entry.model, &value.name).unwrap(), Rc::new(MessageExt {
-                    factory: factory.clone(),
-                    message: value.clone()
-                }));
+                proto.messages.insert(
+                    store.get_full_type_path(&entry.model, &value.name).unwrap(),
+                    Rc::new(MessageExt {
+                        factory: factory.clone(),
+                        message: value.clone(),
+                    }),
+                );
             }
         }
         Ok(proto)

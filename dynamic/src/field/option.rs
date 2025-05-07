@@ -26,9 +26,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_debug::trace;
 use crate::buffer::{BufferView, Location};
-use crate::component::{Component, ComponentType, util::DiscoverTool};
+use crate::component::{util::DiscoverTool, Component, ComponentType};
+use bp3d_debug::trace;
 
 pub struct Optional<T: ComponentType>(pub T);
 
@@ -37,12 +37,15 @@ impl<T: ComponentType> Component for Optional<T> {
         view.location_mut().size = 1;
         let v = view.buffer().as_bytes()[0];
         if v != 0 {
-            trace!({v}, "discover child");
-            items.discover_child(&self.0, Location {
-                offset: -1,
-                size: 0,
-                fixed: false
-            });
+            trace!({ v }, "discover child");
+            items.discover_child(
+                &self.0,
+                Location {
+                    offset: -1,
+                    size: 0,
+                    fixed: false,
+                },
+            );
         }
         Ok(())
     }

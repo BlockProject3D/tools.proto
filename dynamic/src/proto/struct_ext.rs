@@ -26,10 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use bp3d_util::extension;
-use bp3d_protoc::compiler::structure::{Field, FieldType, Structure};
 use crate::buffer::Builder;
 use crate::component::ComponentType;
+use bp3d_protoc::compiler::structure::{Field, FieldType, Structure};
+use bp3d_util::extension;
 
 extension! {
     pub extension StructureExt: Structure {
@@ -40,8 +40,7 @@ extension! {
 pub(super) fn new_structure_internal<'a>(builder: Builder<'a>, value: &Structure) -> Builder<'a> {
     let mut builder = builder.fixed(0, value.byte_size);
     for field in &value.fields {
-        let mut field_builder = Builder::new(&field.name)
-            .fixed(field.loc.byte_offset, field.loc.byte_size);
+        let mut field_builder = Builder::new(&field.name).fixed(field.loc.byte_offset, field.loc.byte_size);
         if let Some(primitive) = crate::field::primitive::from_field(field) {
             field_builder = field_builder.primitive(primitive);
         }
@@ -49,7 +48,7 @@ pub(super) fn new_structure_internal<'a>(builder: Builder<'a>, value: &Structure
             FieldType::Struct(v) => {
                 field_builder = field_builder.add_child(new_structure_internal(Builder::new(&field.name), v));
             }
-            _ => ()
+            _ => (),
         }
         builder = builder.add_child(field_builder);
     }
@@ -74,12 +73,10 @@ impl StructureExt for Structure {
             let field = structure.fields.iter().find(|v| v.name == segment)?;
             match &field.ty {
                 FieldType::Struct(v) => structure = &*v,
-                _ => {
-                    match segments.next() {
-                        None => return Some(field),
-                        Some(_) => return None
-                    }
-                }
+                _ => match segments.next() {
+                    None => return Some(field),
+                    Some(_) => return None,
+                },
             }
         }
         None

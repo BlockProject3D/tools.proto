@@ -26,11 +26,13 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::field::codec::{BitCodecBE, BitCodecLE, ByteCodecBE, ByteCodecLE, Codec};
+use crate::field::primitive::transform::{
+    Float32Transform, Float64Transform, FloatTransform, NoneTransform, RawTransform, SignedTransform, ViewTransform,
+};
+use crate::field::primitive::{PrimitiveType, Value};
 use bp3d_protoc::compiler::structure::{Field, FieldRaw, FieldView, FixedFieldType};
 use bp3d_protoc::model::protocol::Endianness;
-use crate::field::codec::{BitCodecBE, BitCodecLE, ByteCodecBE, ByteCodecLE, Codec};
-use crate::field::primitive::{PrimitiveType, Value};
-use crate::field::primitive::transform::{Float32Transform, Float64Transform, FloatTransform, NoneTransform, RawTransform, SignedTransform, ViewTransform};
 
 struct Primitive<C: Codec, TRaw: RawTransform, TView: ViewTransform> {
     codec: C,
@@ -40,11 +42,7 @@ struct Primitive<C: Codec, TRaw: RawTransform, TView: ViewTransform> {
 
 impl<C: Codec, TRaw: RawTransform, TView: ViewTransform> Primitive<C, TRaw, TView> {
     pub fn new(codec: C, raw: TRaw, view: TView) -> Self {
-        Self {
-            codec,
-            raw,
-            view
-        }
+        Self { codec, raw, view }
     }
 }
 
@@ -78,19 +76,19 @@ enum Raw {
     Signed(SignedTransform),
     Float32(Float32Transform),
     Float64(Float64Transform),
-    None(NoneTransform)
+    None(NoneTransform),
 }
 
 enum View {
     Float(FloatTransform),
-    None(NoneTransform)
+    None(NoneTransform),
 }
 
 enum Codec1 {
     BitLE(BitCodecLE),
     BitBE(BitCodecBE),
     ByteLE(ByteCodecLE),
-    ByteBE(ByteCodecBE)
+    ByteBE(ByteCodecBE),
 }
 
 fn get_field(codec: Codec1, raw: Raw, view: View) -> Box<dyn PrimitiveType> {
@@ -126,7 +124,7 @@ fn get_field(codec: Codec1, raw: Raw, view: View) -> Box<dyn PrimitiveType> {
         (Codec1::BitBE(c), Raw::Float64(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
         (Codec1::BitLE(c), Raw::Float64(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
         (Codec1::ByteLE(c), Raw::Float64(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteBE(c), Raw::Float64(r), View::Float(v)) => Box::new(Primitive::new(c, r, v))
+        (Codec1::ByteBE(c), Raw::Float64(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
     }
 }
 
@@ -138,7 +136,9 @@ pub fn from_field(field: &Field) -> Option<Box<dyn PrimitiveType>> {
     let raw = match fixed.raw {
         FieldRaw::Transmute => {
             if fixed.raw_type.is_signed() {
-                Raw::Signed(SignedTransform { max_positive: 2u64.pow(fixed.raw_type.get_aligned_bit_size() as u32 - 1) - 1 })
+                Raw::Signed(SignedTransform {
+                    max_positive: 2u64.pow(fixed.raw_type.get_aligned_bit_size() as u32 - 1) - 1,
+                })
             } else if fixed.raw_type == FixedFieldType::Float32 {
                 Raw::Float32(Float32Transform)
             } else if fixed.raw_type == FixedFieldType::Float64 {
@@ -146,19 +146,16 @@ pub fn from_field(field: &Field) -> Option<Box<dyn PrimitiveType>> {
             } else {
                 Raw::None(NoneTransform)
             }
-        },
-        FieldRaw::SignedCast(max_positive) => Raw::Signed(SignedTransform { max_positive: max_positive as _ }),
-        FieldRaw::None => Raw::None(NoneTransform)
+        }
+        FieldRaw::SignedCast(max_positive) => Raw::Signed(SignedTransform {
+            max_positive: max_positive as _,
+        }),
+        FieldRaw::None => Raw::None(NoneTransform),
     };
     let view = match fixed.view {
-        FieldView::Float { a, b, a_inv, b_inv } => View::Float(FloatTransform {
-            a,
-            b,
-            a_inv,
-            b_inv,
-        }),
+        FieldView::Float { a, b, a_inv, b_inv } => View::Float(FloatTransform { a, b, a_inv, b_inv }),
         FieldView::Enum(_) => return None,
-        _ => View::None(NoneTransform)
+        _ => View::None(NoneTransform),
     };
     let codec = match (fixed.endianness, (field.loc.bit_size % 8) == 0) {
         (Endianness::Little, true) => Codec1::ByteLE(ByteCodecLE),
@@ -184,7 +181,9 @@ pub fn from_fixed_field_type(ty: FixedFieldType, endianness: Endianness) -> Box<
         Endianness::Big => Codec1::ByteBE(ByteCodecBE),
     };
     let raw = if ty.is_signed() {
-        Raw::Signed(SignedTransform { max_positive: 2u64.pow(ty.get_aligned_bit_size() as u32 - 1) - 1 })
+        Raw::Signed(SignedTransform {
+            max_positive: 2u64.pow(ty.get_aligned_bit_size() as u32 - 1) - 1,
+        })
     } else if ty == FixedFieldType::Float32 {
         Raw::Float32(Float32Transform)
     } else if ty == FixedFieldType::Float64 {

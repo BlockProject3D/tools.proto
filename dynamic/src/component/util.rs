@@ -42,7 +42,7 @@ impl<'a> DiscoverTool<'a> {
             items: None,
             children: None,
             freed_children: children,
-            freed_items: items
+            freed_items: items,
         }
     }
 
