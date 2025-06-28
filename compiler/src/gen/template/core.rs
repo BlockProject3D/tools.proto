@@ -30,10 +30,10 @@ use crate::gen::codec::CodecMap;
 use crate::gen::template::options::Options;
 use crate::gen::template::parse_tree::{Component, Fragment, FragmentMode, Token};
 use crate::gen::template::Error;
+use bp3d_debug::trace;
 use itertools::Itertools;
 use std::borrow::Cow;
 use std::collections::HashMap;
-use bp3d_debug::trace;
 
 pub struct Template<'fragment, 'variable> {
     fragments: HashMap<String, Fragment<'fragment>>,
