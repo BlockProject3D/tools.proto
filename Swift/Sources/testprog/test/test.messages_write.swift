@@ -29,6 +29,7 @@
 import Foundation;
 import BP3DProto;
 
+
 extension TestTest1: BP3DProto.WriteTo {
     public typealias Input = Self;
     public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {

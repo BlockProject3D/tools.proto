@@ -40,6 +40,9 @@ use std::borrow::Cow;
 const TEMPLATE: &[u8] = include_bytes!("from_bytes.template");
 
 pub fn gen_message_from_slice_impl(proto: &Protocol, codec_map: &CodecMap, msg: &Message) -> Result<String, Error> {
+    if msg.ty.is_some() {
+        return Ok(String::new());
+    }
     let mut options = Options::default();
     options.functions_mut().add("remove_leading_coma", |v| Cow::Borrowed(&v[..v.len() - 2]));
     let mut templates = Templates {

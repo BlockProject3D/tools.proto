@@ -29,6 +29,15 @@
 import Foundation;
 import BP3DProto;
 
+public struct TestZst<B: BP3DProto.Buffer> {
+
+    public init() {
+
+    }
+
+}
+
+
 public struct TestTest1<B: BP3DProto.Buffer> {
     public let s1: String;
     public let p1: UInt32;

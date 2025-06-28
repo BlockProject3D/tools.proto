@@ -33,6 +33,7 @@ use crate::gen::template::Error;
 use itertools::Itertools;
 use std::borrow::Cow;
 use std::collections::HashMap;
+use bp3d_debug::trace;
 
 pub struct Template<'fragment, 'variable> {
     fragments: HashMap<String, Fragment<'fragment>>,
@@ -163,6 +164,7 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
                 false => Cow::Owned(format!("{}.{}", path, name)),
                 true => Cow::Borrowed(name),
             };
+            trace!({fragments=?self.fragments}, "Attempt to find fragment '{}'", name);
             let fragment = self.fragments.get(&*name).ok_or_else(|| Error::FragmentNotFound(String::from(&*name)))?;
             let sub_rendered = fragment
                 .content

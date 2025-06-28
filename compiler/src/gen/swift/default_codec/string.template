@@ -1,3 +1,5 @@
+#include base
+
 #fragment push decl.buffer:inline
 String
 #fragment pop

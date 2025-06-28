@@ -29,6 +29,7 @@
 import Foundation;
 import BP3DProto;
 
+
 extension TestTest1: BP3DProto.FromBytes  {
     public typealias Buffer = B;
     public typealias Output = Self;
