@@ -12,6 +12,23 @@
                     }
                 }
             ]
+        },
+        {
+            name: "SingleValue2",
+            fields: [
+                {
+                    name: "v",
+                    raw: {
+                        type: "float",
+                        bits: 8
+                    },
+                    view: {
+                        type: "float_range",
+                        min: 0.0,
+                        max: 1.0
+                    }
+                }
+            ]
         }
     ],
     messages: [
@@ -36,7 +53,8 @@
                         bits: 32
                     }
                 },
-                { name: "p3", item_type: "SingleValue" }
+                { name: "p3", item_type: "SingleValue" },
+                { name: "p4", item_type: "SingleValue2" }
             ]
         },
         {

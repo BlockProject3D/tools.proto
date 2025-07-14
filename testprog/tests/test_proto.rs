@@ -28,7 +28,7 @@
 
 use bp3d_proto::message::{FromBytes, WriteSelf};
 use testprog::external::test_proto::Test;
-use testprog::test::Test1;
+use testprog::test::{SingleValue2, Test1};
 
 #[test]
 fn basic() {
@@ -56,6 +56,7 @@ fn basic2() {
             s1: "test3",
             p1: 4242,
             p3: 42,
+            p4: SingleValue2::new().set_v(0.5).to_ref()
         }),
     }
     .write_self(&mut v)
@@ -67,4 +68,5 @@ fn basic2() {
     assert_eq!(msg.p1.as_ref().unwrap().s1, "test3");
     assert_eq!(msg.p1.as_ref().unwrap().p1, 4242);
     assert_eq!(msg.p1.as_ref().unwrap().p3, 42);
+    assert_eq!(msg.p1.as_ref().unwrap().p4.bin().get_v(), 127);
 }
