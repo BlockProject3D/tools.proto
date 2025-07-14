@@ -459,8 +459,9 @@ impl Field {
                     let is_fixed = r.fields[0].ty.as_fixed().is_some();
                     let is_none = r.fields[0].ty.as_fixed().map(|v| v.raw.is_none()).unwrap_or_default();
                     let is_byte_aligned = r.fields[0].loc.bit_size % 8 == 0;
+                    let view_is_none = r.fields[0].ty.as_fixed().map(|v| v.view.is_none()).unwrap_or_default();
                     trace!({has_headers} {is_single} {is_fixed} {is_none} {is_byte_aligned}, "Found struct reference: {}", r.name);
-                    if !has_headers && is_single && is_fixed && is_none && is_byte_aligned {
+                    if !has_headers && is_single && is_fixed && is_none && is_byte_aligned && view_is_none {
                         let fixed = unsafe { r.fields[0].ty.as_fixed().unwrap_unchecked() };
                         Ok(builder.fixed_size().build(FieldType::Fixed(FixedField { ty: fixed.bits_type })))
                     } else {

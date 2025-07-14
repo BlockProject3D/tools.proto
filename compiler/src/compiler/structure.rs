@@ -302,6 +302,10 @@ pub enum FieldView {
 }
 
 impl FieldView {
+    pub fn is_none(&self) -> bool {
+        matches!(self, Self::None)
+    }
+
     fn from_model(
         proto: &Protocol,
         ty: SimpleType,
