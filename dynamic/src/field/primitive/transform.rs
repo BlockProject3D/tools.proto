@@ -52,7 +52,7 @@ impl RawTransform for SignedTransform {
     }
 
     fn raw_to_bits(&self, value: Value) -> u64 {
-        unsafe { std::mem::transmute(value.to_signed()) }
+        i64::cast_unsigned(value.to_signed())
     }
 }
 
@@ -98,12 +98,12 @@ pub struct Float32Transform;
 
 impl RawTransform for Float32Transform {
     fn bits_to_raw(&self, bits: u64) -> Value {
-        let value: f32 = unsafe { std::mem::transmute(bits as u32) };
+        let value: f32 = f32::from_bits(bits as u32);
         Value::Float(value as _)
     }
 
     fn raw_to_bits(&self, value: Value) -> u64 {
-        let raw: u32 = unsafe { std::mem::transmute(value.to_float() as f32) };
+        let raw: u32 = (value.to_float() as f32).to_bits();
         raw as u64
     }
 }
@@ -112,11 +112,11 @@ pub struct Float64Transform;
 
 impl RawTransform for Float64Transform {
     fn bits_to_raw(&self, bits: u64) -> Value {
-        unsafe { Value::Float(std::mem::transmute(bits)) }
+        Value::Float(f64::from_bits(bits))
     }
 
     fn raw_to_bits(&self, value: Value) -> u64 {
-        unsafe { std::mem::transmute(value.to_float()) }
+        value.to_float().to_bits()
     }
 }
 
