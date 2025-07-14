@@ -37,7 +37,7 @@ fn write_message<W: Write>(out: W) {
             s1: "this is a test",
             p1: 42,
             p3: 42,
-            p4: vv.set_v(0.5).to_ref()
+            p4: vv.set_v(0.5).to_ref(),
         }),
         s1: "a test",
         s2: Some("hello world"),
