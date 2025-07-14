@@ -345,7 +345,7 @@ impl<'a> BufferView<'a> {
         }
         let mut offset = self.location.size as isize;
         for child in &mut self.children {
-            if child.location.offset != -1 {
+            if child.location.offset != -1 && !child.location.fixed {
                 offset = child.location.offset;
             }
             if offset as usize >= self.buffer.len() {
