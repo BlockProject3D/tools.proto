@@ -56,7 +56,7 @@ fn basic2() {
             s1: "test3",
             p1: 4242,
             p3: 42,
-            p4: SingleValue2::new().set_v(0.5).to_ref()
+            p4: SingleValue2::new().set_v(0.5).to_ref(),
         }),
     }
     .write_self(&mut v)
