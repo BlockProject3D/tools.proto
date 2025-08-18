@@ -116,7 +116,7 @@ impl<'a, T: FromBytes<'a, Output: ToUsize>, Item: FromBytes<'a, Output = Item>> 
 
 impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
     /// Returns an iterator over the elements contained in this list.
-    pub fn iter(&self) -> Iter<Item> {
+    pub fn iter(&self) -> Iter<'_, Item> {
         Iter {
             data: self.data.as_ref(),
             len: self.len,
@@ -125,7 +125,7 @@ impl<B: AsRef<[u8]>, T, Item> List<B, T, Item> {
     }
 
     /// Returns an iterator over the elements, with their offsets, contained in this list.
-    pub fn iter_offsets(&self) -> IterOffsets<Item> {
+    pub fn iter_offsets(&self) -> IterOffsets<'_, Item> {
         IterOffsets {
             data: self.data.as_ref(),
             len: self.len,

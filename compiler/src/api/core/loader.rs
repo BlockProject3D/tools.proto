@@ -119,7 +119,7 @@ impl<'a> Loader<'a> {
         self.models.retain(|entry| entry.model.name != name);
     }
 
-    pub fn compile<T: ImportSolver>(mut self, solver: &T) -> Result<ProtocolStore<T, Options<'a>>, Error> {
+    pub fn compile<'b, T: ImportSolver>(mut self, solver: &'b T) -> Result<ProtocolStore<'b, T, Options<'a>>, Error> {
         let mut protocols = ProtocolStore::new(solver);
         let mut iterations = self.max_iterations;
         while !self.models.is_empty() && iterations > 0 {

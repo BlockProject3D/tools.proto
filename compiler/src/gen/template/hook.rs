@@ -104,7 +104,7 @@ impl<'a> TemplateHooks<'a> {
         self
     }
 
-    pub fn get_fragments(&self, name: &str) -> impl Iterator<Item = &Fragment> {
+    pub fn get_fragments(&self, name: &str) -> impl Iterator<Item = &Fragment<'a>> {
         self.map.get(name).map(|v| v.iter()).unwrap_or([].iter()).filter_map(|v| match v {
             Hook::Fragment(v) => Some(v),
             Hook::Function(_) => None,

@@ -41,7 +41,7 @@ pub trait Utilities {
     fn get_bit_codec_inline(endianness: Endianness) -> &'static str;
     fn get_byte_codec_inline(endianness: Endianness) -> &'static str;
     fn get_byte_codec(endianness: Endianness) -> &'static str;
-    fn gen_description(desc: &Description) -> Cow<str> {
+    fn gen_description(desc: &Description) -> Cow<'_, str> {
         match desc {
             Description::Single(v) => Cow::Borrowed(v),
             Description::Multi(v) => Cow::Owned(v.join(" ")),

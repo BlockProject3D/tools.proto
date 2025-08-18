@@ -174,11 +174,11 @@ impl<'a> BufferView<'a> {
         Ok(())
     }
 
-    pub fn get_primitive(&self) -> Option<PrimitiveValue> {
+    pub fn get_primitive(&self) -> Option<PrimitiveValue<'_>> {
         self.primitive.as_ref().map(|v| PrimitiveValue::new(self.buffer.as_bytes(), &**v))
     }
 
-    pub fn get_primitive_mut(&mut self) -> Option<PrimitiveValueMut> {
+    pub fn get_primitive_mut(&mut self) -> Option<PrimitiveValueMut<'_>> {
         self.primitive.as_ref().map(|v| PrimitiveValueMut::new(self.buffer.as_bytes_mut(), &**v))
     }
 

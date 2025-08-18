@@ -53,14 +53,14 @@ fn guess_case_convention(s: &str) -> Convention {
     }
 }
 
-fn capitalize(value: &str) -> Cow<str> {
+fn capitalize(value: &str) -> Cow<'_, str> {
     match value.as_bytes().capitalise_ascii() {
         Cow::Borrowed(v) => String::from_utf8_lossy(v),
         Cow::Owned(v) => String::from(&*String::from_utf8_lossy(&*v)).into(),
     }
 }
 
-fn decapitalize(value: &str) -> Cow<str> {
+fn decapitalize(value: &str) -> Cow<'_, str> {
     match value.as_bytes().decapitalise_ascii() {
         Cow::Borrowed(v) => String::from_utf8_lossy(v),
         Cow::Owned(v) => String::from(&*String::from_utf8_lossy(&*v)).into(),

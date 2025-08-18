@@ -193,7 +193,7 @@ impl<'fragment, 'variable> Template<'fragment, 'variable> {
         Ok(rendered.join(""))
     }
 
-    pub fn scope(&self) -> Scope {
+    pub fn scope(&self) -> Scope<'_, 'fragment, 'variable> {
         Scope {
             template: self,
             variables: self.variables.clone(),

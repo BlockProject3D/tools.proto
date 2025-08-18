@@ -69,7 +69,7 @@ fn write_message_fast<T: WriteSelf>(value: T, ty: Type, out: &mut impl Write) {
     Item::write_to(&item, out).unwrap();
 }
 
-fn read_message(slice: &[u8], ty: Type) -> Value {
+fn read_message(slice: &[u8], ty: Type) -> Value<'_> {
     let msg = Item::from_bytes(slice).unwrap();
     assert_eq!(slice.len(), msg.size());
     let item = msg.into_inner();

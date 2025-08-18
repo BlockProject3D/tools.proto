@@ -70,7 +70,7 @@ async fn shape_write_message<'a, W: AsyncWriteExt + Unpin>(value: Value<'a>, out
     .unwrap();
 }
 
-fn read_message(slice: &[u8], ty: Type) -> Value {
+fn read_message(slice: &[u8], ty: Type) -> Value<'_> {
     let msg = Item::from_bytes(slice).unwrap();
     assert_eq!(slice.len(), msg.size());
     let item = msg.into_inner();
