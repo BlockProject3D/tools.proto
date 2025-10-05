@@ -118,6 +118,10 @@ impl Bytes {
         }
     }
 
+    pub fn as_ptr(&self) -> NonNull<u8> {
+        self.bytes.get()
+    }
+
     pub unsafe fn copy(&mut self, slice: &[u8]) -> bool {
         let added_bytes = match self.resize(slice.len()) {
             Some(v) => v,
@@ -130,7 +134,7 @@ impl Bytes {
         added_bytes == 0
     }
 
-    unsafe fn resize(&mut self, new_len: usize) -> Option<usize> {
+    pub unsafe fn resize(&mut self, new_len: usize) -> Option<usize> {
         let mut ptr = self.bytes.get();
         let len = self.len.get();
         if new_len == len {

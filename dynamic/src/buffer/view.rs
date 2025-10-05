@@ -36,6 +36,7 @@ use std::fmt::{Debug, Display};
 use std::io::Write;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
+use crate::buffer::byte_buf::ByteBuf;
 
 #[derive(Debug)]
 pub struct Location {
@@ -282,15 +283,26 @@ impl<'a> BufferView<'a> {
 
     pub fn read_copy(&mut self, bytes: &[u8]) -> bp3d_proto::message::Result<usize> {
         self.buffer.copy_from(bytes);
-        self.read()
+        self._read()
     }
 
     pub fn read_view(&mut self, bytes: &'a [u8]) -> bp3d_proto::message::Result<usize> {
         self.buffer.set_bytes(bytes);
-        self.read()
+        self._read()
     }
 
-    fn read(&mut self) -> bp3d_proto::message::Result<usize> {
+    pub fn read(&mut self, mut buf: ByteBuf) -> bp3d_proto::message::Result<usize> {
+        let len = buf.len();
+        if len != self.buffer.len() {
+            self.buffer.flat.set(false);
+        }
+        let b = std::mem::replace(&mut buf.unsafe_buffer, UnsafeBuffer::Borrowed(&[]));
+        unsafe { self.buffer.unsafe_buffer.delete() };
+        self.buffer.unsafe_buffer = b;
+        self._read()
+    }
+
+    fn _read(&mut self) -> bp3d_proto::message::Result<usize> {
         trace!({ name = &*self.path_component.name }, "attempt read");
         if self.location.fixed {
             if self.buffer.len() < self.location.size {
@@ -304,7 +316,7 @@ impl<'a> BufferView<'a> {
                         .unsafe_buffer
                         .index(child.location.offset as usize..child.location.offset as usize + child.location.size);
                     child.buffer.offset = self.buffer.offset + child.location.offset as usize;
-                    child.read()?;
+                    child._read()?;
                 }
             }
             return Ok(self.location.size);
@@ -331,7 +343,7 @@ impl<'a> BufferView<'a> {
                     item.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((item_offset as usize)..);
                     // Again type inference is broken.
                     item.buffer.offset = self.buffer.offset + item_offset as usize;
-                    let size = item.read()?;
+                    let size = item._read()?;
                     if (item_offset as usize) + size > self.buffer.len() {
                         return Err(bp3d_proto::message::Error::Truncated);
                     }
@@ -355,7 +367,7 @@ impl<'a> BufferView<'a> {
             child.buffer.unsafe_buffer = self.buffer.unsafe_buffer.index((offset as usize)..);
             // Again type inference is broken.
             child.buffer.offset = self.buffer.offset + offset as usize;
-            let size = child.read()?;
+            let size = child._read()?;
             if (offset as usize) + size > self.buffer.len() {
                 return Err(bp3d_proto::message::Error::Truncated);
             }
@@ -426,7 +438,7 @@ impl<'a> BufferView<'a> {
             return Ok(());
         }
         self.flatten_internal();
-        self.read()?;
+        self._read()?;
         self.buffer.flat.set(true);
         Ok(())
     }

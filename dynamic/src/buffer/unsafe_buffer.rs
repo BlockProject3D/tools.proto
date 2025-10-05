@@ -28,6 +28,7 @@
 
 use crate::buffer::bytes::Bytes;
 use std::ops::{Range, RangeFrom, RangeTo};
+use std::ptr::NonNull;
 
 pub trait Index {
     type Output<'a>;
@@ -127,5 +128,50 @@ impl<'a> UnsafeBuffer<'a> {
             UnsafeBuffer::Owned(v) => v.delete(),
             _ => (),
         }
+    }
+
+    fn extend(&mut self, size: usize) -> (NonNull<u8>, bool) {
+        if let UnsafeBuffer::Borrowed(v) = self {
+            *self = UnsafeBuffer::from_copy(v);
+        }
+        match self {
+            UnsafeBuffer::Owned(v) => {
+                let alloc = unsafe { v.resize(size) }.map(|v| v == 0).unwrap_or(false);
+                (v.as_ptr(), alloc)
+            },
+            UnsafeBuffer::Borrowed(_) => std::unreachable!()
+        }
+    }
+
+    pub fn append(&mut self, bytes: &[u8]) {
+        let (ptr, _) = self.extend(self.len() + bytes.len());
+        unsafe {
+            std::ptr::copy_nonoverlapping(bytes.as_ptr(), ptr.offset(self.len() as _).as_ptr(), bytes.len());
+        }
+    }
+
+    pub fn fill_hex(&mut self, start: usize, hex: &str) -> Result<bool, crate::buffer::byte_buf::InvalidHex> {
+        if hex.len() % 2 != 0 {
+            return Err(crate::buffer::byte_buf::InvalidHex);
+        }
+        let old_len = self.len();
+        let len = hex.len() / 2;
+        let mut alloc= false;
+        if start + len > self.len() {
+            let (ptr, alloc1) = self.extend(len);
+            if start > old_len {
+                for i in start..old_len {
+                    unsafe { ptr.offset(i as _).write(0) };
+                }
+            }
+            alloc = alloc1;
+        }
+        let mut idx = start;
+        for pair in hex.as_bytes().chunks_exact(2) {
+            let byte = u8::from_str_radix(std::str::from_utf8(pair).map_err(|_| crate::buffer::byte_buf::InvalidHex)?, 16).map_err(|_| crate::buffer::byte_buf::InvalidHex)?;
+            self.as_bytes_mut()[idx] = byte;
+            idx += 1;
+        }
+        Ok(alloc)
     }
 }

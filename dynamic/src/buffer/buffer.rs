@@ -28,7 +28,9 @@
 
 use crate::buffer::unsafe_buffer::UnsafeBuffer;
 use std::cell::Cell;
+use std::fmt::{Display, Formatter};
 use std::rc::Rc;
+use crate::buffer::byte_buf::ByteBuf;
 
 #[derive(Debug)]
 pub struct Buffer<'a> {
@@ -38,6 +40,19 @@ pub struct Buffer<'a> {
 }
 
 impl<'a> Buffer<'a> {
+    pub fn fill_hex(&mut self, start: usize, hex: &str) -> Result<(), crate::buffer::byte_buf::InvalidHex> {
+        let new_flat = self.unsafe_buffer.fill_hex(start, hex)?;
+        if self.flat.get() == true {
+            self.flat.set(new_flat);
+        }
+        Ok(())
+    }
+
+    pub fn append(&mut self, bytes: &[u8]) {
+        self.unsafe_buffer.append(bytes);
+        self.flat.set(false);
+    }
+
     pub fn set_bytes(&mut self, bytes: &'a [u8]) {
         self.unsafe_buffer = UnsafeBuffer::Borrowed(bytes);
         self.offset = 0;
@@ -74,5 +89,20 @@ impl<'a> Buffer<'a> {
     #[inline(always)]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    pub fn to_hex(&self) -> String {
+        let s = format!("{:02X?}", self.as_bytes()).replace(", ", "");
+        String::from(&s[1..s.len() - 1])
+    }
+
+    pub fn to_byte_buf(&self) -> ByteBuf {
+        ByteBuf::from(self.as_bytes())
+    }
+}
+
+impl Display for Buffer<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        self.to_hex().fmt(f)
     }
 }
