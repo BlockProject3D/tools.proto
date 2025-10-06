@@ -28,6 +28,7 @@
 
 use crate::field::codec::{ByteCodecBE, ByteCodecLE, Codec};
 
+#[derive(Clone)]
 pub struct BitCodecLE {
     bit_size: usize,
     bit_offset: usize,
@@ -57,6 +58,7 @@ impl Codec for BitCodecLE {
     }
 }
 
+#[derive(Clone)]
 pub struct BitCodecBE {
     bit_size: usize,
     bit_offset: usize,

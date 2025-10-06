@@ -28,7 +28,10 @@
 
 use crate::field::codec::Codec;
 
+#[derive(Clone)]
 pub struct ByteCodecLE;
+
+#[derive(Clone)]
 pub struct ByteCodecBE;
 
 impl Codec for ByteCodecLE {

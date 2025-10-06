@@ -38,6 +38,7 @@ pub trait ViewTransform {
     fn view_to_raw(&self, view: Value) -> Value;
 }
 
+#[derive(Clone)]
 pub struct SignedTransform {
     pub max_positive: u64,
 }
@@ -56,6 +57,7 @@ impl RawTransform for SignedTransform {
     }
 }
 
+#[derive(Clone)]
 pub struct BoolTransform;
 
 impl RawTransform for BoolTransform {
@@ -72,6 +74,7 @@ impl RawTransform for BoolTransform {
     }
 }
 
+#[derive(Clone)]
 pub struct NoneTransform;
 
 impl RawTransform for NoneTransform {
@@ -94,6 +97,7 @@ impl ViewTransform for NoneTransform {
     }
 }
 
+#[derive(Clone)]
 pub struct Float32Transform;
 
 impl RawTransform for Float32Transform {
@@ -108,6 +112,7 @@ impl RawTransform for Float32Transform {
     }
 }
 
+#[derive(Clone)]
 pub struct Float64Transform;
 
 impl RawTransform for Float64Transform {
@@ -120,6 +125,7 @@ impl RawTransform for Float64Transform {
     }
 }
 
+#[derive(Clone)]
 pub struct FloatTransform {
     pub a: f64,
     pub b: f64,

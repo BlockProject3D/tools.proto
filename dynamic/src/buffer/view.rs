@@ -125,7 +125,7 @@ fn align_buffers(init_offset: usize, parent: &mut BufferView, items: &Option<Vec
             location: child.location,
             component: None, //TODO: Find a way to make this cloneable.
             items: None,
-            primitive: None, //TODO: Find a way to make this cloneable.
+            primitive: child.primitive.as_ref().map(|v| v.clone1()),
         };
         align_buffers(init_offset, &mut new_child, &child.items, &child.children);
         parent.children.push(new_child);
@@ -150,7 +150,7 @@ fn align_buffers(init_offset: usize, parent: &mut BufferView, items: &Option<Vec
                 location: item.location,
                 component: None, //TODO: Find a way to make this cloneable.
                 items: None,
-                primitive: None, //TODO: Find a way to make this cloneable.
+                primitive: item.primitive.as_ref().map(|v| v.clone1())
             };
             align_buffers(init_offset, &mut new_item, &item.items, &item.children);
             items2.push(new_item);
@@ -178,7 +178,7 @@ impl Clone for BufferView<'_> {
             location: self.location,
             component: None, //TODO: Find a way to make this cloneable.
             items: None,
-            primitive: None, //TODO: Find a way to make this cloneable.
+            primitive: self.primitive.as_ref().map(|v| v.clone1())
         };
         align_buffers(init_offset, &mut parent, &self.items, &self.children);
         parent
