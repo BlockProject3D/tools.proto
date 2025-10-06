@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use bp3d_proto_dynamic::buffer::BufferView;
 use bp3d_proto_dynamic::component::factory::{Factory, Key, SizeType};
 use bp3d_proto_dynamic::component::ComponentType;
 use bp3d_proto_dynamic::field::string::{NullTerminatedString, VarcharString};
@@ -51,20 +52,7 @@ fn test_basic() {
     println!("{}", msg2);
 }
 
-#[test]
-fn test_msgs() {
-    let mut factory = Factory::new();
-    factory
-        .add_component(
-            Key::for_buffer("string", Some(SizeType::U8)),
-            VarcharString(SizeType::U8),
-        )
-        .unwrap();
-    factory.add_component(Key::for_buffer("string", None), NullTerminatedString).unwrap();
-    let mut loader = Loader::new(16);
-    loader.load_from_folder("../testprog/src", &Options::from_package("testprog")).unwrap();
-    loader.exclude("custom_codec_broken");
-    let proto = Proto::build(loader, factory).unwrap();
+fn init_msgs(proto: &Proto) -> BufferView<'static> {
     let mut msg = proto.get_message("test.Test").unwrap().new_instance(true);
     println!("{}", msg);
     msg["s1"].buffer_mut().copy_from(b"this is a test\n");
@@ -89,5 +77,43 @@ fn test_msgs() {
     println!("{}", msg);
     msg["p1.Test1.s1"].buffer_mut().set_bytes(b"test ");
     msg.shape().unwrap();
+    msg
+}
+
+#[test]
+fn test_msgs() {
+    let mut factory = Factory::new();
+    factory
+        .add_component(
+            Key::for_buffer("string", Some(SizeType::U8)),
+            VarcharString(SizeType::U8),
+        )
+        .unwrap();
+    factory.add_component(Key::for_buffer("string", None), NullTerminatedString).unwrap();
+    let mut loader = Loader::new(16);
+    loader.load_from_folder("../testprog/src", &Options::from_package("testprog")).unwrap();
+    loader.exclude("custom_codec_broken");
+    let proto = Proto::build(loader, factory).unwrap();
+    let msg = init_msgs(&proto);
     println!("{}", msg);
+}
+
+#[test]
+fn test_msgs_clone() {
+    let mut factory = Factory::new();
+    factory
+        .add_component(
+            Key::for_buffer("string", Some(SizeType::U8)),
+            VarcharString(SizeType::U8),
+        )
+        .unwrap();
+    factory.add_component(Key::for_buffer("string", None), NullTerminatedString).unwrap();
+    let mut loader = Loader::new(16);
+    loader.load_from_folder("../testprog/src", &Options::from_package("testprog")).unwrap();
+    loader.exclude("custom_codec_broken");
+    let proto = Proto::build(loader, factory).unwrap();
+    let msg = init_msgs(&proto);
+    println!("{}", msg);
+    let cloned = msg["p1"].clone();
+    println!("{}", cloned);
 }

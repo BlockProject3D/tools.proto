@@ -38,7 +38,7 @@ use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 use crate::buffer::byte_buf::ByteBuf;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Location {
     pub fixed: bool,
     pub offset: isize,
@@ -103,6 +103,85 @@ impl Display for BufferView<'_> {
         )?;
         self.dump_children(f, path_max_width, hex_max_width)?;
         Ok(())
+    }
+}
+
+fn align_buffers(init_offset: usize, parent: &mut BufferView, items: &Option<Vec<BufferView>>, children: &Vec<BufferView>) {
+    for child in children {
+        let item_offset = child.buffer.offset - init_offset - parent.buffer.offset;
+        let item_size = child.buffer.len();
+        let mut new_child = BufferView {
+            path_component: Rc::new(PathComponent {
+                name: child.path_component.name.clone(),
+                index: Cell::new(child.path_component.index.get()),
+                parent: UnsafeCell::new(Some(parent.path_component.clone()))
+            }),
+            buffer: Buffer {
+                unsafe_buffer: parent.buffer.unsafe_buffer.index(item_offset..item_offset + item_size),
+                flat: parent.buffer.flat.clone(),
+                offset: parent.buffer.offset + item_offset,
+            },
+            children: Vec::with_capacity(child.children.len()),
+            location: child.location,
+            component: None, //TODO: Find a way to make this cloneable.
+            items: None,
+            primitive: None, //TODO: Find a way to make this cloneable.
+        };
+        align_buffers(init_offset, &mut new_child, &child.items, &child.children);
+        parent.children.push(new_child);
+    }
+    if let Some(items) = items {
+        let mut items2 = Vec::with_capacity(items.len());
+        for item in items {
+            let item_offset = item.buffer.offset - init_offset - parent.buffer.offset;
+            let item_size = item.buffer.len();
+            let mut new_item = BufferView {
+                path_component: Rc::new(PathComponent {
+                    name: item.path_component.name.clone(),
+                    index: Cell::new(item.path_component.index.get()),
+                    parent: UnsafeCell::new(Some(parent.path_component.clone()))
+                }),
+                buffer: Buffer {
+                    unsafe_buffer: parent.buffer.unsafe_buffer.index(item_offset..item_offset + item_size),
+                    flat: parent.buffer.flat.clone(),
+                    offset: parent.buffer.offset + item_offset,
+                },
+                children: Vec::with_capacity(item.children.len()),
+                location: item.location,
+                component: None, //TODO: Find a way to make this cloneable.
+                items: None,
+                primitive: None, //TODO: Find a way to make this cloneable.
+            };
+            align_buffers(init_offset, &mut new_item, &item.items, &item.children);
+            items2.push(new_item);
+        }
+        parent.items = Some(items2);
+    }
+}
+
+impl Clone for BufferView<'_> {
+    fn clone(&self) -> Self {
+        let init_offset = self.buffer.offset;
+        let buf = UnsafeBuffer::from_copy(self.buffer.unsafe_buffer.as_bytes());
+        let mut parent = BufferView {
+            path_component: Rc::new(PathComponent {
+                name: self.path_component.name.clone(),
+                index: Cell::new(-1),
+                parent: UnsafeCell::new(None),
+            }),
+            buffer: Buffer {
+                unsafe_buffer: buf,
+                flat: Rc::new(Cell::new(self.buffer.flat.get())),
+                offset: 0,
+            },
+            children: Vec::with_capacity(self.children.len()),
+            location: self.location,
+            component: None, //TODO: Find a way to make this cloneable.
+            items: None,
+            primitive: None, //TODO: Find a way to make this cloneable.
+        };
+        align_buffers(init_offset, &mut parent, &self.items, &self.children);
+        parent
     }
 }
 
