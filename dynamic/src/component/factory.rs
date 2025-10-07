@@ -30,10 +30,9 @@ use crate::component::ComponentType;
 use bp3d_protoc::compiler::structure::FixedFieldType;
 use bp3d_protoc::model::protocol::Endianness;
 use bp3d_util::{simple_error, try_opt};
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 simple_error! {
     pub Error {
@@ -159,9 +158,9 @@ impl Key {
 }
 
 pub struct Factory {
-    container_factories: HashMap<String, Box<dyn Fn(&ContainerOptions) -> Option<Arc<dyn ComponentType>>>>,
-    buffer_factories: HashMap<String, Box<dyn Fn(Option<SizeType>) -> Option<Arc<dyn ComponentType>>>>,
-    components: RefCell<HashMap<Key, Arc<dyn ComponentType>>>,
+    container_factories: HashMap<String, Box<dyn Fn(&ContainerOptions) -> Option<Arc<dyn ComponentType>> + Send + Sync>>,
+    buffer_factories: HashMap<String, Box<dyn Fn(Option<SizeType>) -> Option<Arc<dyn ComponentType>> + Send + Sync>>,
+    components: Mutex<HashMap<Key, Arc<dyn ComponentType>>>,
 }
 
 impl Factory {
@@ -169,11 +168,11 @@ impl Factory {
         Self {
             container_factories: HashMap::new(),
             buffer_factories: HashMap::new(),
-            components: RefCell::new(HashMap::new()),
+            components: Mutex::new(HashMap::new()),
         }
     }
 
-    pub fn add_container_factory<F: Fn(&ContainerOptions) -> Option<Arc<dyn ComponentType>> + 'static>(
+    pub fn add_container_factory<F: Fn(&ContainerOptions) -> Option<Arc<dyn ComponentType>> + Send + Sync + 'static>(
         &mut self,
         component_name: impl Into<String>,
         factory: F,
@@ -187,7 +186,7 @@ impl Factory {
         Ok(())
     }
 
-    pub fn add_buffer_factory<F: Fn(Option<SizeType>) -> Option<Arc<dyn ComponentType>> + 'static>(
+    pub fn add_buffer_factory<F: Fn(Option<SizeType>) -> Option<Arc<dyn ComponentType>> + Send + Sync + 'static>(
         &mut self,
         component_name: impl Into<String>,
         factory: F,
@@ -202,15 +201,15 @@ impl Factory {
     }
 
     pub fn add_component(&mut self, key: Key, component: impl ComponentType + 'static) -> Result<()> {
-        if self.components.get_mut().contains_key(&key) {
+        if self.components.get_mut().unwrap().contains_key(&key) {
             return Err(Error::AlreadyRegistered(key.name));
         }
-        self.components.get_mut().insert(key, Arc::new(component));
+        self.components.get_mut().unwrap().insert(key, Arc::new(component));
         Ok(())
     }
 
     pub fn with_component<R>(&self, key: Key, f: impl FnOnce(&Arc<dyn ComponentType>) -> R) -> Result<R> {
-        let mut components = self.components.borrow_mut();
+        let mut components = self.components.lock().unwrap();
         if let Some(component) = components.get(&key) {
             return Ok(f(&*component));
         }

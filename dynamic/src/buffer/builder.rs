@@ -34,12 +34,13 @@ use crate::component::Component;
 use crate::field::primitive::PrimitiveType;
 use std::cell::{Cell, UnsafeCell};
 use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct Builder<'a> {
     name: String,
     children: Vec<BufferView<'a>>,
     location: Location,
-    component: Option<Box<dyn Component>>,
+    component: Option<Arc<dyn Component>>,
     flat: Rc<Cell<bool>>,
     primitive: Option<Box<dyn PrimitiveType>>,
 }
@@ -78,7 +79,7 @@ impl<'a> Builder<'a> {
     }
 
     pub fn component(mut self, component: impl Component + 'static) -> Builder<'a> {
-        self.component = Some(Box::new(component));
+        self.component = Some(Arc::new(component));
         self
     }
 

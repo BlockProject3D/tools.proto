@@ -35,9 +35,10 @@ use crate::compiler::Protocol;
 use crate::model::protocol::{Description, Endianness};
 use crate::model::structure::{SimpleType, StructFieldRaw, StructFieldView};
 use bp3d_debug::trace;
-use std::cell::Cell;
 use std::fmt::{Display, Formatter};
 use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FixedFieldType {
@@ -519,23 +520,36 @@ impl Field {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Structure {
     pub name: String,
     pub description: Option<Description>,
     pub fields: Vec<Field>,
     pub byte_size: usize,
     pub bit_size: usize,
-    used_in_header: Cell<bool>,
+    used_in_header: AtomicBool,
+}
+
+impl Clone for Structure {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name.clone(),
+            description: self.description.clone(),
+            fields: self.fields.clone(),
+            byte_size: self.byte_size,
+            bit_size: self.bit_size,
+            used_in_header: AtomicBool::new(self.is_used_in_header()),
+        }
+    }
 }
 
 impl Structure {
     pub fn set_used_in_header(&self) {
-        self.used_in_header.set(true);
+        self.used_in_header.store(true, Relaxed);
     }
 
     pub fn is_used_in_header(&self) -> bool {
-        self.used_in_header.get()
+        self.used_in_header.load(Relaxed)
     }
 
     pub fn from_model(proto: &Protocol, value: crate::model::structure::Structure) -> Result<Structure, Error> {
@@ -556,7 +570,7 @@ impl Structure {
             } else {
                 last_bit_offset / 8
             },
-            used_in_header: Cell::new(false),
+            used_in_header: AtomicBool::new(false),
         };
         if s.bit_size == 0 {
             return Err(Error::ZeroStruct);

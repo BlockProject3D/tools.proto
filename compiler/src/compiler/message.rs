@@ -37,9 +37,10 @@ use crate::model::message::MessageFieldValue;
 use crate::model::protocol::{Description, Endianness};
 use crate::model::structure::StructFieldRaw;
 use bp3d_debug::{error, trace};
-use std::cell::Cell;
 use std::fmt::{Display, Formatter};
 use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
 
 #[derive(Clone, Debug)]
 pub enum Referenced {
@@ -341,7 +342,7 @@ impl Field {
                                         size_ty,
                                     })))
                             } else {
-                                item_type.embedded.set(true);
+                                item_type.embedded.store(true, Relaxed);
                                 Ok(
                                     builder.codec(Some("list".into())).dynamic_size().build(FieldType::Container(
                                         ContainerField {
@@ -387,7 +388,7 @@ impl Field {
                                         size_ty,
                                     })))
                             } else {
-                                item_type.embedded.set(true);
+                                item_type.embedded.store(true, Relaxed);
                                 Ok(builder.dynamic_size().build(FieldType::Container(ContainerField {
                                     ty,
                                     item_type,
@@ -474,19 +475,32 @@ impl Field {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Message {
     pub name: String,
     pub ty: Option<String>,
     pub description: Option<Description>,
     pub fields: Vec<Field>,
     pub size: SizeInfo,
-    embedded: Cell<bool>,
+    embedded: AtomicBool,
+}
+
+impl Clone for Message {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name.clone(),
+            ty: self.ty.clone(),
+            description: self.description.clone(),
+            fields: self.fields.clone(),
+            size: self.size,
+            embedded: AtomicBool::new(self.is_embedded())
+        }
+    }
 }
 
 impl Message {
     pub(crate) fn is_embedded(&self) -> bool {
-        self.embedded.get()
+        self.embedded.load(Relaxed)
     }
 
     pub fn from_model(proto: &Protocol, value: crate::model::message::Message) -> Result<Message, Error> {
@@ -522,7 +536,7 @@ impl Message {
                 is_dyn_sized,
                 is_element_dyn_sized: dyn_sized_elem_count > 0,
             },
-            embedded: Cell::new(false),
+            embedded: AtomicBool::new(false),
         })
     }
 }

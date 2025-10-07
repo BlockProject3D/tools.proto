@@ -36,6 +36,7 @@ use std::fmt::{Debug, Display};
 use std::io::Write;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
+use std::sync::Arc;
 use crate::buffer::byte_buf::ByteBuf;
 
 #[derive(Debug, Copy, Clone)]
@@ -59,7 +60,7 @@ pub struct BufferView<'a> {
     pub(super) buffer: Buffer<'a>,
     pub(super) children: Vec<BufferView<'a>>,
     pub(super) location: Location,
-    pub(super) component: Option<Box<dyn Component>>,
+    pub(super) component: Option<Arc<dyn Component>>,
     pub(super) items: Option<Vec<BufferView<'a>>>,
     pub(super) primitive: Option<Box<dyn PrimitiveType>>,
 }

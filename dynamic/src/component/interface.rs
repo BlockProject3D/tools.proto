@@ -29,7 +29,7 @@
 use crate::buffer::{BufferView, Builder};
 use crate::component::util::DiscoverTool;
 
-pub trait ComponentType {
+pub trait ComponentType: Send + Sync {
     /// Returns the type name of this component.
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
@@ -63,7 +63,7 @@ pub trait ComponentType {
     }
 }
 
-pub trait Component {
+pub trait Component: Send + Sync {
     /// Reads the data given in the BufferView.
     ///
     /// # Arguments

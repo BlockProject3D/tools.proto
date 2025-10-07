@@ -29,7 +29,7 @@
 mod bits;
 mod bytes;
 
-pub trait Codec {
+pub trait Codec: Send + Sync {
     fn read(&self, buffer: &[u8]) -> u64;
     fn write(&self, buffer: &mut [u8], value: u64);
 }
