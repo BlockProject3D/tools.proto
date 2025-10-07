@@ -133,21 +133,11 @@ impl Value {
     }
 }
 
-pub trait PrimitiveType: PrimitiveTypeClone {
+pub trait PrimitiveType: Send + Sync {
     fn get_bin(&self, bytes: &[u8]) -> u64;
     fn set_bin(&self, bytes: &mut [u8], bin: u64);
     fn get_raw(&self, bytes: &[u8]) -> Value;
     fn set_raw(&self, bytes: &mut [u8], raw: Value);
     fn get(&self, bytes: &[u8]) -> Value;
     fn set(&self, bytes: &mut [u8], value: Value);
-}
-
-pub trait PrimitiveTypeClone {
-    fn clone1(&self) -> Box<dyn PrimitiveType>;
-}
-
-impl<T: 'static + PrimitiveType + Clone> PrimitiveTypeClone for T {
-    fn clone1(&self) -> Box<dyn PrimitiveType> {
-        Box::new(self.clone())
-    }
 }

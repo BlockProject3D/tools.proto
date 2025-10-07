@@ -62,7 +62,7 @@ pub struct BufferView<'a> {
     pub(super) location: Location,
     pub(super) component: Option<Arc<dyn Component>>,
     pub(super) items: Option<Vec<BufferView<'a>>>,
-    pub(super) primitive: Option<Box<dyn PrimitiveType>>,
+    pub(super) primitive: Option<Arc<dyn PrimitiveType>>,
 }
 
 impl Debug for BufferView<'_> {
@@ -124,9 +124,9 @@ fn align_buffers(init_offset: usize, parent: &mut BufferView, items: &Option<Vec
             },
             children: Vec::with_capacity(child.children.len()),
             location: child.location,
-            component: None, //TODO: Find a way to make this cloneable.
+            component: child.component.clone(),
             items: None,
-            primitive: child.primitive.as_ref().map(|v| v.clone1()),
+            primitive: child.primitive.clone()
         };
         align_buffers(init_offset, &mut new_child, &child.items, &child.children);
         parent.children.push(new_child);
@@ -149,9 +149,9 @@ fn align_buffers(init_offset: usize, parent: &mut BufferView, items: &Option<Vec
                 },
                 children: Vec::with_capacity(item.children.len()),
                 location: item.location,
-                component: None, //TODO: Find a way to make this cloneable.
+                component: item.component.clone(),
                 items: None,
-                primitive: item.primitive.as_ref().map(|v| v.clone1())
+                primitive: item.primitive.clone()
             };
             align_buffers(init_offset, &mut new_item, &item.items, &item.children);
             items2.push(new_item);
@@ -177,9 +177,9 @@ impl Clone for BufferView<'_> {
             },
             children: Vec::with_capacity(self.children.len()),
             location: self.location,
-            component: None, //TODO: Find a way to make this cloneable.
+            component: self.component.clone(),
             items: None,
-            primitive: self.primitive.as_ref().map(|v| v.clone1())
+            primitive: self.primitive.clone()
         };
         align_buffers(init_offset, &mut parent, &self.items, &self.children);
         parent

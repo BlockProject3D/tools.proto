@@ -42,7 +42,7 @@ pub struct Builder<'a> {
     location: Location,
     component: Option<Arc<dyn Component>>,
     flat: Rc<Cell<bool>>,
-    primitive: Option<Box<dyn PrimitiveType>>,
+    primitive: Option<Arc<dyn PrimitiveType>>,
 }
 
 impl<'a> Builder<'a> {
@@ -61,7 +61,7 @@ impl<'a> Builder<'a> {
         }
     }
 
-    pub fn primitive(mut self, primitive: Box<dyn PrimitiveType>) -> Self {
+    pub fn primitive(mut self, primitive: Arc<dyn PrimitiveType>) -> Self {
         self.primitive = Some(primitive);
         self
     }

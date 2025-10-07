@@ -28,12 +28,12 @@
 
 use crate::field::primitive::Value;
 
-pub trait RawTransform {
+pub trait RawTransform: Send + Sync {
     fn bits_to_raw(&self, bits: u64) -> Value;
     fn raw_to_bits(&self, value: Value) -> u64;
 }
 
-pub trait ViewTransform {
+pub trait ViewTransform: Send + Sync {
     fn raw_to_view(&self, raw: Value) -> Value;
     fn view_to_raw(&self, view: Value) -> Value;
 }

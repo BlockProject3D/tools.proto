@@ -26,6 +26,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use std::sync::Arc;
 use crate::field::codec::{BitCodecBE, BitCodecLE, ByteCodecBE, ByteCodecLE, Codec};
 use crate::field::primitive::transform::{
     Float32Transform, Float64Transform, FloatTransform, NoneTransform, RawTransform, SignedTransform, ViewTransform,
@@ -47,7 +48,7 @@ impl<C: Codec, TRaw: RawTransform, TView: ViewTransform> Primitive<C, TRaw, TVie
     }
 }
 
-impl<C: 'static + Codec + Clone, TRaw: 'static + RawTransform + Clone, TView: 'static + ViewTransform + Clone> PrimitiveType for Primitive<C, TRaw, TView> {
+impl<C: 'static + Codec, TRaw: 'static + RawTransform, TView: 'static + ViewTransform> PrimitiveType for Primitive<C, TRaw, TView> {
     fn get_bin(&self, bytes: &[u8]) -> u64 {
         self.codec.read(bytes)
     }
@@ -92,47 +93,47 @@ enum Codec1 {
     ByteBE(ByteCodecBE),
 }
 
-fn get_field(codec: Codec1, raw: Raw, view: View) -> Box<dyn PrimitiveType> {
+fn get_field(codec: Codec1, raw: Raw, view: View) -> Arc<dyn PrimitiveType> {
     match (codec, raw, view) {
-        (Codec1::BitBE(c), Raw::None(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitLE(c), Raw::None(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteLE(c), Raw::None(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteBE(c), Raw::None(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitBE(c), Raw::Signed(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitLE(c), Raw::Signed(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteLE(c), Raw::Signed(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteBE(c), Raw::Signed(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitBE(c), Raw::Float32(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitLE(c), Raw::Float32(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteLE(c), Raw::Float32(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteBE(c), Raw::Float32(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitBE(c), Raw::Float64(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitLE(c), Raw::Float64(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteLE(c), Raw::Float64(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteBE(c), Raw::Float64(r), View::None(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitBE(c), Raw::None(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitLE(c), Raw::None(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteLE(c), Raw::None(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteBE(c), Raw::None(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitBE(c), Raw::Signed(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitLE(c), Raw::Signed(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteLE(c), Raw::Signed(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteBE(c), Raw::Signed(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitBE(c), Raw::Float32(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitLE(c), Raw::Float32(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteLE(c), Raw::Float32(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteBE(c), Raw::Float32(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitBE(c), Raw::Float64(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::BitLE(c), Raw::Float64(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteLE(c), Raw::Float64(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
-        (Codec1::ByteBE(c), Raw::Float64(r), View::Float(v)) => Box::new(Primitive::new(c, r, v)),
+        (Codec1::BitBE(c), Raw::None(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitLE(c), Raw::None(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteLE(c), Raw::None(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteBE(c), Raw::None(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitBE(c), Raw::Signed(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitLE(c), Raw::Signed(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteLE(c), Raw::Signed(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteBE(c), Raw::Signed(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitBE(c), Raw::Float32(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitLE(c), Raw::Float32(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteLE(c), Raw::Float32(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteBE(c), Raw::Float32(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitBE(c), Raw::Float64(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitLE(c), Raw::Float64(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteLE(c), Raw::Float64(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteBE(c), Raw::Float64(r), View::None(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitBE(c), Raw::None(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitLE(c), Raw::None(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteLE(c), Raw::None(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteBE(c), Raw::None(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitBE(c), Raw::Signed(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitLE(c), Raw::Signed(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteLE(c), Raw::Signed(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteBE(c), Raw::Signed(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitBE(c), Raw::Float32(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitLE(c), Raw::Float32(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteLE(c), Raw::Float32(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteBE(c), Raw::Float32(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitBE(c), Raw::Float64(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::BitLE(c), Raw::Float64(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteLE(c), Raw::Float64(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
+        (Codec1::ByteBE(c), Raw::Float64(r), View::Float(v)) => Arc::new(Primitive::new(c, r, v)),
     }
 }
 
 /// Attempts to construct a [PrimitiveType] from a structure [Field], returns [None] when the field
 /// cannot be represented a [PrimitiveType]. A value of [None] is typically returned when the field is
 /// an enum or is not fixed.
-pub fn from_field(field: &Field) -> Option<Box<dyn PrimitiveType>> {
+pub fn from_field(field: &Field) -> Option<Arc<dyn PrimitiveType>> {
     let fixed = field.ty.as_fixed()?;
     let raw = match fixed.raw {
         FieldRaw::Transmute => {
@@ -176,7 +177,7 @@ pub fn from_field(field: &Field) -> Option<Box<dyn PrimitiveType>> {
 /// * `endianness`: the endianness of the field.
 ///
 /// returns: Box<dyn PrimitiveType, Global>
-pub fn from_fixed_field_type(ty: FixedFieldType, endianness: Endianness) -> Box<dyn PrimitiveType> {
+pub fn from_fixed_field_type(ty: FixedFieldType, endianness: Endianness) -> Arc<dyn PrimitiveType> {
     let codec = match endianness {
         Endianness::Little => Codec1::ByteLE(ByteCodecLE),
         Endianness::Big => Codec1::ByteBE(ByteCodecBE),
