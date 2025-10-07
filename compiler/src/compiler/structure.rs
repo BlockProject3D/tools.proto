@@ -37,7 +37,7 @@ use crate::model::structure::{SimpleType, StructFieldRaw, StructFieldView};
 use bp3d_debug::trace;
 use std::cell::Cell;
 use std::fmt::{Display, Formatter};
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FixedFieldType {
@@ -295,7 +295,7 @@ pub enum FieldView {
     Float { a: f64, b: f64, a_inv: f64, b_inv: f64 },
 
     /// Apply an enum view.
-    Enum(Rc<Enum>),
+    Enum(Arc<Enum>),
 
     /// Don't do anything special, just return the raw value.
     None,
@@ -385,7 +385,7 @@ impl Display for FixedArrayField {
 pub enum FieldType {
     Fixed(FixedField),
     Array(FixedArrayField),
-    Struct(Rc<Structure>),
+    Struct(Arc<Structure>),
 }
 
 impl Display for FieldType {

@@ -39,12 +39,12 @@ use crate::model::structure::StructFieldRaw;
 use bp3d_debug::{error, trace};
 use std::cell::Cell;
 use std::fmt::{Display, Formatter};
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug)]
 pub enum Referenced {
-    Struct(Rc<Structure>),
-    Message(Rc<Message>),
+    Struct(Arc<Structure>),
+    Message(Arc<Message>),
 }
 
 impl Name for Referenced {
@@ -78,7 +78,7 @@ impl Referenced {
 #[derive(Clone, Debug)]
 pub struct FixedContainerField {
     pub ty: FixedFieldType,
-    pub item_type: Rc<Structure>,
+    pub item_type: Arc<Structure>,
 }
 
 impl Display for FixedContainerField {
@@ -101,7 +101,7 @@ impl Display for SizedBufferField {
 #[derive(Clone, Debug)]
 pub struct ContainerField {
     pub ty: FixedFieldType,
-    pub item_type: Rc<Message>,
+    pub item_type: Arc<Message>,
     pub nested: bool,
 }
 
@@ -114,7 +114,7 @@ impl Display for ContainerField {
 #[derive(Clone, Debug)]
 pub struct SizedContainerField {
     pub ty: FixedFieldType,
-    pub item_type: Rc<Message>,
+    pub item_type: Arc<Message>,
     pub size_ty: FixedFieldType,
 }
 
@@ -143,7 +143,7 @@ impl Display for FixedField {
 
 #[derive(Clone, Debug)]
 pub struct UnionField {
-    pub r: Rc<Union>,
+    pub r: Arc<Union>,
 }
 
 impl Display for UnionField {
@@ -429,7 +429,7 @@ impl Field {
                     let header_field = header_field.ok_or(Error::MissingHeaderForUnion)?;
                     match &header_field.ty {
                         FieldType::Ref(Referenced::Struct(v)) => {
-                            if !Rc::ptr_eq(&r.discriminant.root, v) {
+                            if !Arc::ptr_eq(&r.discriminant.root, v) {
                                 error!(
                                     "Union discriminant type mismatch, expected {}, got {}",
                                     v.name, r.discriminant.root.name

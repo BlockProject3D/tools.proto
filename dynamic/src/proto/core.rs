@@ -35,7 +35,7 @@ use bp3d_protoc::compiler::union::Union;
 use bp3d_protoc::compiler::util::imports::ImportSolver;
 use bp3d_protoc::compiler::Protocol;
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 struct Solver;
 
@@ -51,10 +51,10 @@ impl ImportSolver for Solver {
 }
 
 pub struct Proto {
-    structures: HashMap<String, Rc<Structure>>,
-    messages: HashMap<String, Rc<MessageExt>>,
-    unions: HashMap<String, Rc<Union>>,
-    enums: HashMap<String, Rc<Enum>>,
+    structures: HashMap<String, Arc<Structure>>,
+    messages: HashMap<String, Arc<MessageExt>>,
+    unions: HashMap<String, Arc<Union>>,
+    enums: HashMap<String, Arc<Enum>>,
 }
 
 impl Proto {
@@ -65,7 +65,7 @@ impl Proto {
             unions: Default::default(),
             enums: Default::default(),
         };
-        let factory = Rc::new(factory);
+        let factory = Arc::new(factory);
         let store = loader.compile(&Solver)?;
         for entry in store.entries() {
             if entry.userdata.is_excluded_from_generation() {
@@ -93,7 +93,7 @@ impl Proto {
             for value in entry.model.messages.iter() {
                 proto.messages.insert(
                     store.get_full_type_path(&entry.model, &value.name).unwrap(),
-                    Rc::new(MessageExt {
+                    Arc::new(MessageExt {
                         factory: factory.clone(),
                         message: value.clone(),
                     }),
@@ -103,11 +103,11 @@ impl Proto {
         Ok(proto)
     }
 
-    pub fn get_structure(&self, name: &str) -> Option<&Rc<Structure>> {
+    pub fn get_structure(&self, name: &str) -> Option<&Arc<Structure>> {
         self.structures.get(name)
     }
 
-    pub fn get_message(&self, name: &str) -> Option<&Rc<MessageExt>> {
+    pub fn get_message(&self, name: &str) -> Option<&Arc<MessageExt>> {
         self.messages.get(name)
     }
 }

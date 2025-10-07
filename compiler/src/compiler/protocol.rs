@@ -42,7 +42,7 @@ use crate::model::typedef::Typedef;
 use bp3d_debug::{info, trace};
 use std::borrow::Cow;
 use std::collections::BTreeMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 name_index!(Typedef => name);
 
@@ -153,7 +153,7 @@ impl Protocol {
         if let Some(types) = value.types {
             for v in types {
                 trace!({model=?&v}, "Adding typedef to protocol");
-                proto.types.insert(Rc::new(v));
+                proto.types.insert(Arc::new(v));
             }
         }
         info!("Running type inference pass...");
@@ -188,7 +188,7 @@ impl Protocol {
             trace!(">> Compiling enums...");
             for v in enums {
                 trace!({model=?&v}, "Compiling enum");
-                let v = Rc::new(Enum::from_model(v)?);
+                let v = Arc::new(Enum::from_model(v)?);
                 proto.enums.insert(v);
             }
         }
@@ -196,7 +196,7 @@ impl Protocol {
             trace!(">> Compiling structures...");
             for v in structs {
                 trace!({model=?&v}, "Compiling structure");
-                let v = Rc::new(Structure::from_model(&proto, v)?);
+                let v = Arc::new(Structure::from_model(&proto, v)?);
                 proto.structs.insert(v);
             }
         }
@@ -228,7 +228,7 @@ impl Protocol {
             trace!(">> Compiling messages with no references to unions...");
             for v in messages {
                 trace!({model=?&v}, "Compiling message");
-                let v = Rc::new(Message::from_model(&proto, v)?);
+                let v = Arc::new(Message::from_model(&proto, v)?);
                 proto.messages.insert(v);
             }
         }
@@ -236,14 +236,14 @@ impl Protocol {
             trace!(">> Compiling unions...");
             for v in unions {
                 trace!({model=?&v}, "Compiling union");
-                let v = Rc::new(Union::from_model(&proto, v)?);
+                let v = Arc::new(Union::from_model(&proto, v)?);
                 proto.unions.insert(v);
             }
         }
         trace!(">> Compiling messages with references to unions...");
         for (_, msg) in union_messages {
             trace!({model=?&msg}, "Compiling message");
-            let v = Rc::new(Message::from_model(&proto, msg)?);
+            let v = Arc::new(Message::from_model(&proto, msg)?);
             proto.messages.insert(v);
         }
 

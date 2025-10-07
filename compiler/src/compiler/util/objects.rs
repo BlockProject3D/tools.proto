@@ -28,13 +28,13 @@
 
 use bp3d_util::index_map::IndexMap;
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug)]
 pub struct ObjectStore<T> {
-    objects: Vec<Rc<T>>,
-    objects_by_name: IndexMap<Rc<T>>,
-    objects_imports: HashMap<String, Rc<T>>,
+    objects: Vec<Arc<T>>,
+    objects_by_name: IndexMap<Arc<T>>,
+    objects_imports: HashMap<String, Arc<T>>,
 }
 
 impl<T: bp3d_util::index_map::Index<Key = str>> Default for ObjectStore<T> {
@@ -52,20 +52,20 @@ impl<T: bp3d_util::index_map::Index<Key = str>> ObjectStore<T> {
         }
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = &Rc<T>> {
+    pub fn iter(&self) -> impl Iterator<Item = &Arc<T>> {
         self.objects.iter()
     }
 
-    pub fn get(&self, name: &str) -> Option<&Rc<T>> {
+    pub fn get(&self, name: &str) -> Option<&Arc<T>> {
         self.objects_by_name.get(name).or_else(|| self.objects_imports.get(name))
     }
 
-    pub fn insert(&mut self, obj: Rc<T>) {
+    pub fn insert(&mut self, obj: Arc<T>) {
         self.objects_by_name.insert(obj.clone());
         self.objects.push(obj);
     }
 
-    pub fn insert_import(&mut self, import_name: String, obj: Rc<T>) {
+    pub fn insert_import(&mut self, import_name: String, obj: Arc<T>) {
         self.objects_imports.insert(import_name, obj);
     }
 }

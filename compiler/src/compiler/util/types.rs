@@ -29,7 +29,7 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::ops::Deref;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub trait TypeMapper {
     fn map_local_type<'a>(&self, item_type: &'a str) -> Cow<'a, str>;
@@ -44,13 +44,13 @@ pub trait PtrKey {
     fn ptr_key(&self) -> usize;
 }
 
-impl<K> PtrKey for Rc<K> {
+impl<K> PtrKey for Arc<K> {
     fn ptr_key(&self) -> usize {
         &**self as *const K as usize
     }
 }
 
-impl<K: Name> Name for Rc<K> {
+impl<K: Name> Name for Arc<K> {
     fn name(&self) -> &str {
         self.deref().name()
     }

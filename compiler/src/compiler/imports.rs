@@ -33,15 +33,15 @@ use crate::compiler::union::Union;
 use crate::compiler::util::types::{Name, PtrKey};
 use crate::compiler::Protocol;
 use crate::model::typedef::Typedef;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Copy, Clone)]
 pub enum Import<'a> {
-    Struct(&'a Rc<Structure>),
-    Enum(&'a Rc<Enum>),
-    Union(&'a Rc<Union>),
-    Message(&'a Rc<Message>),
-    Type(&'a Rc<Typedef>),
+    Struct(&'a Arc<Structure>),
+    Enum(&'a Arc<Enum>),
+    Union(&'a Arc<Union>),
+    Message(&'a Arc<Message>),
+    Type(&'a Arc<Typedef>),
 }
 
 impl Name for Import<'_> {

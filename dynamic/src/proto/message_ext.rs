@@ -34,15 +34,15 @@ use crate::field::primitive::from_fixed_field_type;
 use crate::proto::struct_ext::new_structure_internal;
 use bp3d_protoc::compiler::message::{Field, FieldType, Message, Referenced};
 use std::ops::Deref;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct MessageExt {
-    pub(crate) message: Rc<Message>,
-    pub(crate) factory: Rc<Factory>,
+    pub(crate) message: Arc<Message>,
+    pub(crate) factory: Arc<Factory>,
 }
 
 impl Deref for MessageExt {
-    type Target = Rc<Message>;
+    type Target = Arc<Message>;
 
     fn deref(&self) -> &Self::Target {
         &self.message
@@ -50,7 +50,7 @@ impl Deref for MessageExt {
 }
 
 fn new_field_internal(
-    factory: &Rc<Factory>,
+    factory: &Arc<Factory>,
     builder: Builder<'static>,
     field: &Field,
 ) -> crate::component::factory::Result<Builder<'static>> {
@@ -81,7 +81,7 @@ fn new_field_internal(
         }
         FieldType::Container(v) => {
             let options = ContainerOptions {
-                inner_ty: Rc::new(MessageExt {
+                inner_ty: Arc::new(MessageExt {
                     factory: factory.clone(),
                     message: v.item_type.clone(),
                 }),
@@ -94,7 +94,7 @@ fn new_field_internal(
         }
         FieldType::SizedContainer(v) => {
             let options = ContainerOptions {
-                inner_ty: Rc::new(MessageExt {
+                inner_ty: Arc::new(MessageExt {
                     factory: factory.clone(),
                     message: v.item_type.clone(),
                 }),
@@ -117,7 +117,7 @@ fn new_field_internal(
 #[derive(Clone)]
 struct FieldType1 {
     field: Field,
-    factory: Rc<Factory>,
+    factory: Arc<Factory>,
 }
 
 impl ComponentType for FieldType1 {
@@ -132,7 +132,7 @@ impl ComponentType for FieldType1 {
 }
 
 fn new_message_internal(
-    factory: &Rc<Factory>,
+    factory: &Arc<Factory>,
     mut builder: Builder<'static>,
     value: &Message,
 ) -> crate::component::factory::Result<Builder<'static>> {
@@ -157,7 +157,7 @@ impl ComponentType for MessageExt {
     }
 
     fn key(&self) -> usize {
-        Rc::as_ptr(&self.message) as _
+        Arc::as_ptr(&self.message) as _
     }
 
     fn build(&self, builder: Builder<'static>) -> Builder<'static> {

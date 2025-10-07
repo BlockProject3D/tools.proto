@@ -33,7 +33,7 @@ use bp3d_util::{simple_error, try_opt};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
-use std::rc::Rc;
+use std::sync::Arc;
 
 simple_error! {
     pub Error {
@@ -97,7 +97,7 @@ impl From<(FixedFieldType, Endianness)> for SizeType {
 }
 
 pub struct ContainerOptions {
-    pub inner_ty: Rc<dyn ComponentType>,
+    pub inner_ty: Arc<dyn ComponentType>,
     pub count_ty: SizeType,
     pub size_ty: Option<SizeType>,
 }
@@ -109,7 +109,7 @@ impl ContainerOptions {
         if key != 0 {
             key
         } else {
-            Rc::as_ptr(&self.inner_ty) as *const () as _
+            Arc::as_ptr(&self.inner_ty) as *const () as _
         }
     }
 }
@@ -159,9 +159,9 @@ impl Key {
 }
 
 pub struct Factory {
-    container_factories: HashMap<String, Box<dyn Fn(&ContainerOptions) -> Option<Rc<dyn ComponentType>>>>,
-    buffer_factories: HashMap<String, Box<dyn Fn(Option<SizeType>) -> Option<Rc<dyn ComponentType>>>>,
-    components: RefCell<HashMap<Key, Rc<dyn ComponentType>>>,
+    container_factories: HashMap<String, Box<dyn Fn(&ContainerOptions) -> Option<Arc<dyn ComponentType>>>>,
+    buffer_factories: HashMap<String, Box<dyn Fn(Option<SizeType>) -> Option<Arc<dyn ComponentType>>>>,
+    components: RefCell<HashMap<Key, Arc<dyn ComponentType>>>,
 }
 
 impl Factory {
@@ -173,7 +173,7 @@ impl Factory {
         }
     }
 
-    pub fn add_container_factory<F: Fn(&ContainerOptions) -> Option<Rc<dyn ComponentType>> + 'static>(
+    pub fn add_container_factory<F: Fn(&ContainerOptions) -> Option<Arc<dyn ComponentType>> + 'static>(
         &mut self,
         component_name: impl Into<String>,
         factory: F,
@@ -187,7 +187,7 @@ impl Factory {
         Ok(())
     }
 
-    pub fn add_buffer_factory<F: Fn(Option<SizeType>) -> Option<Rc<dyn ComponentType>> + 'static>(
+    pub fn add_buffer_factory<F: Fn(Option<SizeType>) -> Option<Arc<dyn ComponentType>> + 'static>(
         &mut self,
         component_name: impl Into<String>,
         factory: F,
@@ -205,11 +205,11 @@ impl Factory {
         if self.components.get_mut().contains_key(&key) {
             return Err(Error::AlreadyRegistered(key.name));
         }
-        self.components.get_mut().insert(key, Rc::new(component));
+        self.components.get_mut().insert(key, Arc::new(component));
         Ok(())
     }
 
-    pub fn with_component<R>(&self, key: Key, f: impl FnOnce(&Rc<dyn ComponentType>) -> R) -> Result<R> {
+    pub fn with_component<R>(&self, key: Key, f: impl FnOnce(&Arc<dyn ComponentType>) -> R) -> Result<R> {
         let mut components = self.components.borrow_mut();
         if let Some(component) = components.get(&key) {
             return Ok(f(&*component));
@@ -223,7 +223,7 @@ impl Factory {
         Ok(f(component))
     }
 
-    pub fn get_component(&self, key: Key) -> Result<Rc<dyn ComponentType>> {
+    pub fn get_component(&self, key: Key) -> Result<Arc<dyn ComponentType>> {
         self.with_component(key, |c| c.clone())
     }
 }
