@@ -43,6 +43,8 @@ fn test_basic2() {
     println!("{}", view);
 }
 
+fn ensure_send<T: Send>(_: &T) {}
+
 #[test]
 fn test_basic() {
     let mut loader = Loader::new(16);
@@ -83,4 +85,5 @@ fn test_basic() {
     assert_eq!(value_a.get().to_signed(), 4);
     assert_eq!(value_a.get_bin(), 4);
     println!("{}", view);
+    ensure_send(&view);
 }

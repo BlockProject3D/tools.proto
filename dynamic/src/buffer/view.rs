@@ -65,6 +65,8 @@ pub struct BufferView<'a> {
     pub(super) primitive: Option<Arc<dyn PrimitiveType>>,
 }
 
+unsafe impl<'a> Send for BufferView<'a> {}
+
 impl Debug for BufferView<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.primitive.is_none() {

@@ -39,6 +39,8 @@ pub struct Buffer<'a> {
     pub(super) offset: usize,
 }
 
+unsafe impl<'a> Send for Buffer<'a> {}
+
 impl<'a> Buffer<'a> {
     pub fn fill_hex(&mut self, start: usize, hex: &str) -> Result<(), crate::buffer::byte_buf::InvalidHex> {
         let new_flat = self.unsafe_buffer.fill_hex(start, hex)?;
