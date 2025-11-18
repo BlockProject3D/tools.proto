@@ -1,11 +1,11 @@
 #fragment push decl
 #fragment push field
-{name}: {type}
+{name:to_camel_case}: {type}
 #fragment pop
     public init({init_field_list}) {{
 {initializers}
 #fragment push initializer
-        self.{name} = {name};
+        self.{name:to_camel_case} = {name:to_camel_case};
 #fragment pop
     }}
 #fragment pop

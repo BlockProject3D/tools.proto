@@ -2,7 +2,7 @@
 public struct {proto_name:to_pascal_case}{msg_name}<B: BP3DProto.Buffer> {{
 {fields}
 #fragment push field
-    public let {name}: {type};
+    public let {name:to_camel_case}: {type};
 #fragment pop
 
 {initializer}

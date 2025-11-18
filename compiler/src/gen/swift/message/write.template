@@ -5,16 +5,16 @@ extension {proto_name:to_pascal_case}{msg_name}: BP3DProto.WriteTo {{
     public static func write<B1: BP3DProto.WritableBuffer>(input: Self, to out: inout B1) throws {{
 {fields}
 #fragment push field
-        try {type}.write(input: input.{name}, to: &out);
+        try {type}.write(input: input.{name:to_camel_case}, to: &out);
 #fragment pop
 #fragment push field_string
-        try {type}.write(input: input.{name}, to: &out);
+        try {type}.write(input: input.{name:to_camel_case}, to: &out);
 #fragment pop
 #fragment push field_union
-        try {type}.write(input: input.{name}, header: input.{header_name}, to: &out);
+        try {type}.write(input: input.{name:to_camel_case}, header: input.{header_name}, to: &out);
 #fragment pop
 #fragment push field_header
-        try {type}.write(input: input.{name}, header: input.{header_name}, to: &out);
+        try {type}.write(input: input.{name:to_camel_case}, header: input.{header_name}, to: &out);
 #fragment pop
     }}
 }}
