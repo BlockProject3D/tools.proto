@@ -158,7 +158,8 @@ impl Key {
 }
 
 pub struct Factory {
-    container_factories: HashMap<String, Box<dyn Fn(&ContainerOptions) -> Option<Arc<dyn ComponentType>> + Send + Sync>>,
+    container_factories:
+        HashMap<String, Box<dyn Fn(&ContainerOptions) -> Option<Arc<dyn ComponentType>> + Send + Sync>>,
     buffer_factories: HashMap<String, Box<dyn Fn(Option<SizeType>) -> Option<Arc<dyn ComponentType>> + Send + Sync>>,
     components: Mutex<HashMap<Key, Arc<dyn ComponentType>>>,
 }

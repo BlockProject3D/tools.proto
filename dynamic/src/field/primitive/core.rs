@@ -26,7 +26,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::sync::Arc;
 use crate::field::codec::{BitCodecBE, BitCodecLE, ByteCodecBE, ByteCodecLE, Codec};
 use crate::field::primitive::transform::{
     Float32Transform, Float64Transform, FloatTransform, NoneTransform, RawTransform, SignedTransform, ViewTransform,
@@ -34,6 +33,7 @@ use crate::field::primitive::transform::{
 use crate::field::primitive::{PrimitiveType, Value};
 use bp3d_protoc::compiler::structure::{Field, FieldRaw, FieldView, FixedFieldType};
 use bp3d_protoc::model::protocol::Endianness;
+use std::sync::Arc;
 
 #[derive(Clone)]
 struct Primitive<C: Codec, TRaw: RawTransform, TView: ViewTransform> {
@@ -48,7 +48,9 @@ impl<C: Codec, TRaw: RawTransform, TView: ViewTransform> Primitive<C, TRaw, TVie
     }
 }
 
-impl<C: 'static + Codec, TRaw: 'static + RawTransform, TView: 'static + ViewTransform> PrimitiveType for Primitive<C, TRaw, TView> {
+impl<C: 'static + Codec, TRaw: 'static + RawTransform, TView: 'static + ViewTransform> PrimitiveType
+    for Primitive<C, TRaw, TView>
+{
     fn get_bin(&self, bytes: &[u8]) -> u64 {
         self.codec.read(bytes)
     }

@@ -28,10 +28,10 @@
 
 mod buffer;
 mod builder;
+pub mod byte_buf;
 mod bytes;
 mod unsafe_buffer;
 mod view;
-pub mod byte_buf;
 
 pub use builder::Builder;
 pub use view::{BufferView, Location};

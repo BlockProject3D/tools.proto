@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::buffer::buffer::Buffer;
+use crate::buffer::byte_buf::ByteBuf;
 use crate::buffer::unsafe_buffer::UnsafeBuffer;
 use crate::component::{util::DiscoverTool, Component};
 use crate::field::primitive::{PrimitiveType, PrimitiveValue, PrimitiveValueMut};
@@ -37,7 +38,6 @@ use std::io::Write;
 use std::ops::{Index, IndexMut};
 use std::rc::Rc;
 use std::sync::Arc;
-use crate::buffer::byte_buf::ByteBuf;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Location {
@@ -109,7 +109,12 @@ impl Display for BufferView<'_> {
     }
 }
 
-fn align_buffers(init_offset: usize, parent: &mut BufferView, items: &Option<Vec<BufferView>>, children: &Vec<BufferView>) {
+fn align_buffers(
+    init_offset: usize,
+    parent: &mut BufferView,
+    items: &Option<Vec<BufferView>>,
+    children: &Vec<BufferView>,
+) {
     for child in children {
         let item_offset = child.buffer.offset - init_offset - parent.buffer.offset;
         let item_size = child.buffer.len();
@@ -117,7 +122,7 @@ fn align_buffers(init_offset: usize, parent: &mut BufferView, items: &Option<Vec
             path_component: Rc::new(PathComponent {
                 name: child.path_component.name.clone(),
                 index: Cell::new(child.path_component.index.get()),
-                parent: UnsafeCell::new(Some(parent.path_component.clone()))
+                parent: UnsafeCell::new(Some(parent.path_component.clone())),
             }),
             buffer: Buffer {
                 unsafe_buffer: parent.buffer.unsafe_buffer.index(item_offset..item_offset + item_size),
@@ -128,7 +133,7 @@ fn align_buffers(init_offset: usize, parent: &mut BufferView, items: &Option<Vec
             location: child.location,
             component: child.component.clone(),
             items: None,
-            primitive: child.primitive.clone()
+            primitive: child.primitive.clone(),
         };
         align_buffers(init_offset, &mut new_child, &child.items, &child.children);
         parent.children.push(new_child);
@@ -142,7 +147,7 @@ fn align_buffers(init_offset: usize, parent: &mut BufferView, items: &Option<Vec
                 path_component: Rc::new(PathComponent {
                     name: item.path_component.name.clone(),
                     index: Cell::new(item.path_component.index.get()),
-                    parent: UnsafeCell::new(Some(parent.path_component.clone()))
+                    parent: UnsafeCell::new(Some(parent.path_component.clone())),
                 }),
                 buffer: Buffer {
                     unsafe_buffer: parent.buffer.unsafe_buffer.index(item_offset..item_offset + item_size),
@@ -153,7 +158,7 @@ fn align_buffers(init_offset: usize, parent: &mut BufferView, items: &Option<Vec
                 location: item.location,
                 component: item.component.clone(),
                 items: None,
-                primitive: item.primitive.clone()
+                primitive: item.primitive.clone(),
             };
             align_buffers(init_offset, &mut new_item, &item.items, &item.children);
             items2.push(new_item);
@@ -181,7 +186,7 @@ impl Clone for BufferView<'_> {
             location: self.location,
             component: self.component.clone(),
             items: None,
-            primitive: self.primitive.clone()
+            primitive: self.primitive.clone(),
         };
         align_buffers(init_offset, &mut parent, &self.items, &self.children);
         parent

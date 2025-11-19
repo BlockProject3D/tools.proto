@@ -26,10 +26,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::error::Error;
-use std::fmt::Display;
 use crate::buffer::buffer::Buffer;
 use crate::buffer::unsafe_buffer::UnsafeBuffer;
+use std::error::Error;
+use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct InvalidHex;
@@ -41,13 +41,13 @@ impl Display for InvalidHex {
 }
 
 pub struct ByteBuf {
-    pub(super) unsafe_buffer: UnsafeBuffer<'static>
+    pub(super) unsafe_buffer: UnsafeBuffer<'static>,
 }
 
 impl<'a, 'b> From<&'a Buffer<'b>> for ByteBuf {
     fn from(buffer: &'a Buffer<'b>) -> Self {
         Self {
-            unsafe_buffer: UnsafeBuffer::from_copy(buffer.as_bytes())
+            unsafe_buffer: UnsafeBuffer::from_copy(buffer.as_bytes()),
         }
     }
 }
@@ -55,7 +55,7 @@ impl<'a, 'b> From<&'a Buffer<'b>> for ByteBuf {
 impl<'a> From<&'a [u8]> for ByteBuf {
     fn from(buffer: &'a [u8]) -> Self {
         Self {
-            unsafe_buffer: UnsafeBuffer::from_copy(buffer)
+            unsafe_buffer: UnsafeBuffer::from_copy(buffer),
         }
     }
 }
@@ -63,13 +63,13 @@ impl<'a> From<&'a [u8]> for ByteBuf {
 impl ByteBuf {
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
-            unsafe_buffer: UnsafeBuffer::with_capacity(capacity)
+            unsafe_buffer: UnsafeBuffer::with_capacity(capacity),
         }
     }
 
     pub fn new() -> Self {
         Self {
-            unsafe_buffer: UnsafeBuffer::Borrowed(&[])
+            unsafe_buffer: UnsafeBuffer::Borrowed(&[]),
         }
     }
 

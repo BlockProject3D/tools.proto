@@ -138,8 +138,8 @@ impl<'a> UnsafeBuffer<'a> {
             UnsafeBuffer::Owned(v) => {
                 let alloc = unsafe { v.resize(size) }.map(|v| v == 0).unwrap_or(false);
                 (v.as_ptr(), alloc)
-            },
-            UnsafeBuffer::Borrowed(_) => std::unreachable!()
+            }
+            UnsafeBuffer::Borrowed(_) => std::unreachable!(),
         }
     }
 
@@ -156,7 +156,7 @@ impl<'a> UnsafeBuffer<'a> {
         }
         let old_len = self.len();
         let len = hex.len() / 2;
-        let mut alloc= false;
+        let mut alloc = false;
         if start + len > self.len() {
             let (ptr, alloc1) = self.extend(len);
             if start > old_len {
@@ -168,7 +168,11 @@ impl<'a> UnsafeBuffer<'a> {
         }
         let mut idx = start;
         for pair in hex.as_bytes().chunks_exact(2) {
-            let byte = u8::from_str_radix(std::str::from_utf8(pair).map_err(|_| crate::buffer::byte_buf::InvalidHex)?, 16).map_err(|_| crate::buffer::byte_buf::InvalidHex)?;
+            let byte = u8::from_str_radix(
+                std::str::from_utf8(pair).map_err(|_| crate::buffer::byte_buf::InvalidHex)?,
+                16,
+            )
+            .map_err(|_| crate::buffer::byte_buf::InvalidHex)?;
             self.as_bytes_mut()[idx] = byte;
             idx += 1;
         }

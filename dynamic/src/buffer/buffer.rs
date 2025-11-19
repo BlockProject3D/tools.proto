@@ -26,11 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::buffer::byte_buf::ByteBuf;
 use crate::buffer::unsafe_buffer::UnsafeBuffer;
 use std::cell::Cell;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
-use crate::buffer::byte_buf::ByteBuf;
 
 #[derive(Debug)]
 pub struct Buffer<'a> {

@@ -38,9 +38,9 @@ use crate::model::protocol::{Description, Endianness};
 use crate::model::structure::StructFieldRaw;
 use bp3d_debug::{error, trace};
 use std::fmt::{Display, Formatter};
-use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
+use std::sync::Arc;
 
 #[derive(Clone, Debug)]
 pub enum Referenced {
@@ -493,7 +493,7 @@ impl Clone for Message {
             description: self.description.clone(),
             fields: self.fields.clone(),
             size: self.size,
-            embedded: AtomicBool::new(self.is_embedded())
+            embedded: AtomicBool::new(self.is_embedded()),
         }
     }
 }
